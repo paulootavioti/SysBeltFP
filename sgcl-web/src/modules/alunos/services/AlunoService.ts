@@ -26,4 +26,8 @@ export class AlunoService {
   static async alterarStatus(id: number) {
     return ApiClient.patch<Aluno>(`/alunos/${id}/ativo`);
   }
+  
+  static async prontuario<T>(id: number) {
+    return ApiClient.get<T>(`/alunos/${id}/prontuario`);
+  }
 }

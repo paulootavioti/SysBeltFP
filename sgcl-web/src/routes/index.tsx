@@ -1,7 +1,4 @@
-import {
-  Routes,
-  Route
-} from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import { Login } from "../pages/Login";
 import { Dashboard } from "../pages/Dashboard";
@@ -13,23 +10,14 @@ import { EditarAluno } from "../modules/alunos/pages/Editar";
 
 import { Aulas } from "../modules/aulas/pages/Listar";
 import { ChamadaAula } from "../modules/aulas/pages/Chamada";
+import { ProntuarioAluno } from "../modules/alunos/pages/Prontuario";
 
-import { PrivateRoute }
-from "./PrivateRoute";
-
+import { PrivateRoute } from "./PrivateRoute";
 
 export function AppRoutes() {
-
-  
-
   return (
-
     <Routes>
-
-      <Route
-        path="/"
-        element={<Login />}
-      />
+      <Route path="/" element={<Login />} />
 
       <Route
         path="/dashboard"
@@ -55,8 +43,13 @@ export function AppRoutes() {
           <PrivateRoute>
             <AlunoDetalhes />
           </PrivateRoute>
-      }
+        }
       />
+
+      <Route
+        path="/alunos/:id/prontuario"
+        element={<ProntuarioAluno />}
+      /> 
 
       <Route
         path="/alunos/cadastro"
@@ -76,12 +69,10 @@ export function AppRoutes() {
         }
       />
 
+     
+
       <Route path="/aulas" element={<Aulas />} />
       <Route path="/aulas/:id/chamada" element={<ChamadaAula />} />
-
     </Routes>
-
   );
-  
-
 }
