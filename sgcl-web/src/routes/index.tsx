@@ -55,8 +55,12 @@ export function AppRoutes() {
 
       <Route
         path="/alunos/:id/prontuario"
-        element={<ProntuarioAluno />}
-      /> 
+        element={
+          <PrivateRoute>
+            <ProntuarioAluno />
+          </PrivateRoute>
+        }
+      />
 
       <Route
         path="/alunos/cadastro"
@@ -76,8 +80,23 @@ export function AppRoutes() {
         }
       />
 
-      <Route path="/aulas" element={<Aulas />} />
-      <Route path="/aulas/:id/chamada" element={<ChamadaAula />} />
+      <Route
+        path="/aulas"
+        element={
+          <PrivateRoute>
+            <Aulas />
+          </PrivateRoute>
+        }
+      />
+      
+      <Route
+        path="/aulas/:id/chamada"
+        element={
+          <PrivateRoute>
+            <ChamadaAula />
+          </PrivateRoute>
+        }
+      />
 
       <Route
         path="/mensalidades"

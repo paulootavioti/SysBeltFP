@@ -65,21 +65,29 @@ export function ProntuarioAluno() {
   );
 
   const [loading, setLoading] = useState(true);
-
+  const [erro, setErro] = useState(false);
   useEffect(() => {
     async function carregar() {
       if (!id) return;
-
-      const data =
-        await AlunoService.prontuario<ProntuarioAlunoData>(Number(id));
-
-      setProntuario(data);
-      setLoading(false);
+      try {
+        const data =
+          await AlunoService.prontuario<ProntuarioAlunoData>(Number(id));
+        setProntuario(data);
+      } catch {
+        setErro(true);
+      } finally {
+        setLoading(false);
+      }
     }
-
     carregar();
   }, [id]);
-
+  if (erro) {
+    return (
+      <Page>
+        <p>Não foi possível carregar o prontuário do aluno.</p>
+      </Page>
+    );
+  }
   if (loading || !prontuario) {
     return (
       <Page>

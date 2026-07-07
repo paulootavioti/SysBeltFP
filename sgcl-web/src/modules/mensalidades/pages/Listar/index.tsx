@@ -6,6 +6,8 @@ import { MensalidadeCard } from "../components/MensalidadeCard";
 import { getApiErrorMessage } from "../utils/getApiErrorMessage";
 import { calcularStatusMensalidade } from "../utils/status";
 
+
+
 export function ListarMensalidades() {
   const navigate = useNavigate();
   const { mensalidades, loading, erro, setErro, carregarMensalidades } = useMensalidades();
