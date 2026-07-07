@@ -266,12 +266,13 @@ Pendências
 
 Status
 
-🟡 Em evolução
+🟢 Estrutura concluída
 
 Implementado
 
 - Evolução
 - Grau
+- Trilha Infantil (até Verde) e trilha Juvenil/Adulta (Branca a Preta), com validação de idade mínima e tempo de permanência
 
 Pendências
 

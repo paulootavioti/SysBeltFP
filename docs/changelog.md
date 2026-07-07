@@ -320,11 +320,21 @@ Início do módulo de mensalidades.
 
 ---
 
+## Graduação
+
+### Adicionado
+
+- Trilha de faixas Juvenil/Adulta (Branca, Azul, Roxa, Marrom, Preta), com validação de idade mínima e tempo de permanência na faixa atual antes de permitir a troca
+- Formulário de graduação agora filtra as faixas disponíveis conforme a idade do aluno (trilha Infantil até Verde, trilha Juvenil/Adulta a partir de 15 anos)
+
+---
+
 ## Correções gerais
 
 ### Corrigido
 
 - Bug crítico de import que impedia o carregamento de toda a aplicação
+- Relatório Comportamental lia de uma tabela que nunca era populada; agora usa os mesmos registros de presença/comportamento por aula que o Prontuário já usava
 
 ### Melhorado
 

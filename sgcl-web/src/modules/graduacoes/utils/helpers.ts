@@ -1,15 +1,15 @@
-import { FAIXAS } from "../types";
+import { FAIXAS_INFANTIL } from "../types";
 
 export function getProximaFaixa(faixaAtual: string): string | null {
-  const indice = FAIXAS.indexOf(faixaAtual);
-  if (indice === -1 || indice === FAIXAS.length - 1) {
+  const indice = FAIXAS_INFANTIL.indexOf(faixaAtual);
+  if (indice === -1 || indice === FAIXAS_INFANTIL.length - 1) {
     return null;
   }
-  return FAIXAS[indice + 1];
+  return FAIXAS_INFANTIL[indice + 1];
 }
 
 export function getIndiceFaixa(faixa: string): number {
-  return FAIXAS.indexOf(faixa);
+  return FAIXAS_INFANTIL.indexOf(faixa);
 }
 
 export function formatarData(data: string): string {

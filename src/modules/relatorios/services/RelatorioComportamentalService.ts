@@ -19,66 +19,30 @@ export class RelatorioComportamentalService {
     }
 
     const registros =
-      await prisma.comportamento.findMany({
+      await prisma.aulaAluno.findMany({
         where: {
           alunoId
         }
       });
 
-    const resumo = registros.reduce(
-      (acc, item) => {
-
-        acc.respeito += item.respeito;
-        acc.valentia += item.valentia;
-        acc.esforco += item.esforco;
-        acc.atencao += item.atencao;
-        acc.disciplina += item.disciplina;
-
-        return acc;
-
-      },
-      {
-        respeito: 0,
-        valentia: 0,
-        esforco: 0,
-        atencao: 0,
-        disciplina: 0
-      }
-    );
+    const resumo = {
+      respeito: registros.filter((r) => r.respeito).length,
+      valentia: registros.filter((r) => r.valentia).length,
+      esforco: registros.filter((r) => r.esforco).length,
+      atencao: registros.filter((r) => r.atencao).length,
+      disciplina: registros.filter((r) => r.disciplina).length,
+    };
 
     const ranking = [
-
-      {
-        nome: "Respeito",
-        valor: resumo.respeito
-      },
-
-      {
-        nome: "Valentia",
-        valor: resumo.valentia
-      },
-
-      {
-        nome: "Esforço",
-        valor: resumo.esforco
-      },
-
-      {
-        nome: "Atenção",
-        valor: resumo.atencao
-      },
-
-      {
-        nome: "Disciplina",
-        valor: resumo.disciplina
-      }
-
+      { nome: "Respeito", valor: resumo.respeito },
+      { nome: "Valentia", valor: resumo.valentia },
+      { nome: "Esforço", valor: resumo.esforco },
+      { nome: "Atenção", valor: resumo.atencao },
+      { nome: "Disciplina", valor: resumo.disciplina },
     ].sort((a, b) => b.valor - a.valor);
 
     return {
-
       aluno: aluno.nome,
-
       mensagem: `
 📋 RELATÓRIO COMPORTAMENTAL
 
@@ -98,9 +62,6 @@ Parabéns pela evolução!
 
 Equipe Cia de Lutas Weberty Viana
       `.trim()
-
     };
-
   }
-
 }
