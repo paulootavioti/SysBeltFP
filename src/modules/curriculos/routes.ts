@@ -25,4 +25,22 @@ curriculosRoutes.get(
   controller.show
 );
 
+curriculosRoutes.post(
+  "/modulos",
+  ensureAuthenticated,
+  controller.createModulo
+);
+
+curriculosRoutes.post(
+  "/aulas",
+  ensureAuthenticated,
+  controller.createAula
+);
+
+curriculosRoutes.post(
+  "/tecnicas",
+  ensureAuthenticated,
+  controller.createTecnica
+);
+
 export { curriculosRoutes };

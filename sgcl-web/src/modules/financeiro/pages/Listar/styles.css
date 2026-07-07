@@ -1,0 +1,19 @@
+.financeiro-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.financeiro-secao-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.financeiro-secao-header h2 {
+  font-size: var(--font-lg);
+  color: var(--text);
+  margin: 0;
+}

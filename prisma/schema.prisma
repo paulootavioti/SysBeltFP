@@ -321,6 +321,7 @@ model AulaCurriculo {
   objetivo        String?
   descricao       String?
   duracaoMinutos  Int?
+  jogosSugeridos  String?
 
   ordem           Int      @default(0)
 

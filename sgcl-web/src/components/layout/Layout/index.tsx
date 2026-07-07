@@ -70,6 +70,10 @@ export function Layout({
           📈 Relatórios
         </Link>
 
+        <Link to="/financeiro">
+          📊 Financeiro
+        </Link>
+
       </aside>
 
       <main className="content">

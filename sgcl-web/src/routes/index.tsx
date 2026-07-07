@@ -20,6 +20,7 @@ import { ListarGraduacoes } from "../modules/graduacoes/pages/Listar";
 import { ProximasGraduacoes } from "../modules/graduacoes/pages/Proximas";
 import { Relatorios } from "../modules/relatorios/pages/Listar";
 import { Competicoes } from "../modules/competicoes/pages/Listar";
+import { Financeiro } from "../modules/financeiro/pages/Listar";
 import { DetalheCompeticao } from "../modules/competicoes/pages/Detalhes";
 import { PrivateRoute } from "./PrivateRoute";
 
@@ -179,7 +180,16 @@ export function AppRoutes() {
             <Relatorios />
           </PrivateRoute>
         }
-      />            
+      />  
+
+      <Route
+        path="/financeiro"
+        element={
+          <PrivateRoute>
+            <Financeiro />
+          </PrivateRoute>
+        }
+      />          
       
     </Routes>
   );

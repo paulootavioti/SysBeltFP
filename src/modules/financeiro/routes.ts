@@ -5,13 +5,12 @@ import { ensureRole } from "../../shared/middlewares/ensureRole";
 
 const financeiroRoutes = Router();
 
-const financeiroController =
-  new FinanceiroController();
+const financeiroController = new FinanceiroController();
 
 financeiroRoutes.get(
   "/resumo",
   ensureAuthenticated,
-  ensureRole(["ADMIN"]),
+  ensureRole(["ADMIN", "RECEPCAO"]),
   financeiroController.resumo
 );
 
