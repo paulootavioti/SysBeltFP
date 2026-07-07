@@ -1,198 +1,488 @@
-# SGCL — Roadmap
+# SGCL Kids — Roadmap Oficial
 
-## Visão
+> Documento de Planejamento Estratégico
 
-O SGCL é o Sistema de Gestão da Cia de Lutas, criado para organizar a gestão pedagógica, administrativa e financeira da academia.
+Versão do documento: 2.0
 
-## Versão atual
+Última atualização: Julho/2026
 
-0.1.0-alpha
+---
 
-## Objetivo da versão 1.0
+# Visão
 
-Entregar um sistema funcional para uso real na Cia de Lutas Weberty Viana.
+O SGCL Kids é um sistema completo de gestão para academias de Jiu-Jitsu Infantil.
 
-## Módulos
+O projeto foi concebido para unir:
 
-### Concluídos
+- Gestão administrativa
+- Gestão pedagógica
+- Gestão esportiva
+- Gestão financeira
 
-- Autenticação
-- Dashboard
-- Alunos
-- Ficha do aluno
-- Controle de acesso
-- Design System inicial
+em uma única plataforma.
 
-### Em desenvolvimento
+O objetivo é transformar o acompanhamento dos alunos em um processo totalmente integrado, permitindo que professores, secretaria e coordenação trabalhem sobre a mesma base de informações.
 
-- Design System
-- Cadastro completo
+---
 
-### Planejados
+# Missão
 
-- Responsáveis
-- Professores
-- Turmas
-- Presenças
-- Graduações
-- Avaliação comportamental
-- Financeiro
-- Relatórios
-- WhatsApp
-- Competições
+Fornecer uma plataforma moderna para academias de artes marciais que permita acompanhar toda a jornada do aluno, desde sua matrícula até sua formação esportiva.
 
-## Sprints
+---
 
-### Sprint 1 — Fundação
+# Valores
 
-Status: Concluída
+- Simplicidade
+- Segurança
+- Organização
+- Pedagogia
+- Evolução contínua
+- Dados confiáveis
+- Experiência do professor
 
-- Backend Node.js
+---
+
+# Estado Atual
+
+Versão
+
+0.7.0-alpha
+
+Situação
+
+🟢 Desenvolvimento Ativo
+
+---
+
+# Tecnologias
+
+Backend
+
+- Node.js
+- Express
+- Prisma
+- SQLite
+- PostgreSQL (produção)
+
+Frontend
+
+- React
+- TypeScript
+- React Router
+
+Autenticação
+
+- JWT
+
+---
+
+# Módulos
+
+## Infraestrutura
+
+Status
+
+✅ Concluído
+
+Itens
+
+- API REST
 - Prisma
 - JWT
+- Middleware
 - Controle de perfis
-- Frontend React
+
+---
+
+## Dashboard
+
+Status
+
+🟡 Em evolução
+
+Implementado
+
+- Dashboard inicial
+
+Pendências
+
+- Indicadores
+- KPIs
+- Próximas graduações
+- Alertas
+
+---
+
+## Autenticação
+
+Status
+
+✅ Concluído
+
 - Login
-- Dashboard
-- Alunos
+- JWT
+- Controle de acesso
 
-### Sprint 2 — Design System
+---
 
-Status: Em andamento
+## Usuários
 
-Componentes:
+Status
 
-- Button
-- Input
-- Card
-- Layout
-- ErrorMessage
-- PageHeader
-- StatusBadge
-- Table
-- Loading
-- EmptyState
-- ConfirmDialog
-- Modal
+✅ Concluído
 
-### Sprint 3 — Cadastro completo
+- Cadastro
+- Perfis
+- Ativação
 
-Status: Planejada
+---
 
-- Cadastro completo de alunos
-- Responsáveis
-- Professores
-- Turmas
+## Alunos
 
-### Sprint 4 — Gestão pedagógica
+Status
 
-Status: Planejada
+🟢 Estrutura concluída
 
-- Presenças
-- Graduações
-- Avaliação comportamental
+Implementado
 
-### Sprint 5 — Financeiro
+- Cadastro completo
+- Escola
+- Saúde
+- Kimono
+- Turma
+- Foto (estrutura)
 
-Status: Planejada
+Pendências
 
-- Mensalidades
+- Upload real de imagem
+
+---
+
+## Responsáveis
+
+Status
+
+✅ Concluído
+
+- Cadastro
+- Financeiro
+- Emergência
+
+---
+
+## Turmas
+
+Status
+
+✅ Concluído
+
+- Cadastro
+- Professor
+- Horários
+
+---
+
+## Matrículas
+
+Status
+
+🟡 Planejado
+
+Objetivos
+
+- Matrícula anual
+- Histórico
+- Transferências
+
+---
+
+## Aulas
+
+Status
+
+✅ Concluído
+
+- Abrir aula
+- Chamada
+- Encerrar aula
+
+---
+
+## Comportamentos
+
+Status
+
+✅ Concluído
+
+- Respeito
+- Valentia
+- Esforço
+- Atenção
+- Disciplina
+
+---
+
+## Currículo
+
+Status
+
+🟢 Concluído
+
+- Cadastro
+- Organização por módulos
+
+---
+
+## Técnicas
+
+Status
+
+🟢 Concluído
+
+- Cadastro
+- Categorias
+- Faixas
+
+---
+
+## Prontuário
+
+Status
+
+🟡 Em desenvolvimento
+
+Implementado
+
+- Backend
+- Endpoint
+
+Pendências
+
+- Frontend
+- Timeline
+- Gráficos
+
+---
+
+## Graduação
+
+Status
+
+🟡 Em evolução
+
+Implementado
+
+- Evolução
+- Grau
+
+Pendências
+
+- Troca automática
+- Certificados
+
+---
+
+## Financeiro
+
+Status
+
+🟡 Em evolução
+
+Implementado
+
+- Estrutura
+- Mensalidades (início)
+
+Pendências
+
+- Recebimentos
+- Caixa
+- PIX
 - Inadimplência
-- Cobranças
-- Relatórios financeiros
 
-# Sprint 06
+---
 
-Cadastro do Aluno
+## Competições
 
-[x] Dados pessoais
+Status
 
-[x] Contato
+🟡 Estrutura pronta
 
-[ ] Endereço
+Pendências
 
-[ ] ViaCEP
+- Ranking
+- Medalhas
+- Estatísticas
 
-[ ] Escola
+---
 
-[ ] Saúde
+## Relatórios
 
-[ ] Kimono
+Status
 
-[ ] Foto
+🟡 Estrutura pronta
 
-[ ] Observações
+Pendências
 
-Sprint 07
+- PDF
+- Excel
+- WhatsApp
 
-Responsáveis
+---
 
-Sprint 08
+# Roadmap
 
-Turmas
+## Sprint 01
 
-lista oficial de módulos:
+✅ Fundação
 
-Dashboard
+---
 
-Alunos
+## Sprint 02
 
-Responsáveis
+✅ Autenticação
 
-Professores
+---
 
-Turmas
+## Sprint 03
 
-Matrículas
+✅ Design System Inicial
 
-Presenças
+---
 
-Graduações
+## Sprint 04
 
-Comportamentos
+✅ Cadastro Completo de Alunos
 
-Competições
+---
 
-Financeiro
+## Sprint 05
 
-Usuários
+✅ Responsáveis
 
-Configurações
+---
 
-Relatórios
+## Sprint 06
 
-Sprint 06
+✅ Turmas
 
-Cadastro Completo do Aluno
+---
 
-Sprint 07
+## Sprint 07
 
-Responsáveis
+✅ Aulas
 
-Sprint 08
+---
 
-Turmas
+## Sprint 08
 
-Sprint 09
+✅ Comportamentos
 
-Matrículas
+---
 
-Sprint 10
+## Sprint 09
 
-Presenças
+✅ Técnicas
 
-Sprint 11
+---
 
-Graduações
+## Sprint 10
 
-Sprint 12
+✅ Currículo
 
-Comportamento
+---
 
-Sprint 13
+## Sprint 11
 
-Financeiro
+🟡 Prontuário
 
-Sprint 14
+---
 
-Dashboard
+## Sprint 12
+
+🟡 Graduação Inteligente
+
+---
+
+## Sprint 13
+
+🟡 Financeiro
+
+---
+
+## Sprint 14
+
+🟡 Dashboard Executivo
+
+---
+
+## Sprint 15
+
+🔵 Planejamento Pedagógico
+
+---
+
+## Sprint 16
+
+🔵 Competições
+
+---
+
+## Sprint 17
+
+🔵 Relatórios
+
+---
+
+# Objetivo da versão 1.0
+
+A versão 1.0 deverá permitir o funcionamento completo da academia sem necessidade de controles paralelos em planilhas.
+
+Ela contemplará:
+
+- Cadastro completo
+- Prontuário
+- Planejamento pedagógico
+- Financeiro
+- Competições
+- Dashboard
+- Relatórios
+
+---
+
+# Versão 2.0
+
+Planejada para:
+
+- Aplicativo Mobile
+- Área dos Pais
+- Área do Professor
+- Área do Aluno
+- WhatsApp
+- IA para planejamento de aulas
+- IA para evolução técnica
+
+---
+
+# Longo Prazo
+
+Transformar o SGCL Kids em uma plataforma SaaS para academias de artes marciais.
+
+---
+
+# Critérios de Conclusão da Versão 1.0
+
+✔ Todos os módulos implementados
+
+✔ Testes concluídos
+
+✔ Documentação completa
+
+✔ Backup
+
+✔ Segurança
+
+✔ Deploy em produção
+
+✔ Primeira academia utilizando oficialmente o sistema

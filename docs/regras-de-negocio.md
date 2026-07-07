@@ -1,126 +1,631 @@
-# SGCL — Regras de Negócio
+# Regras de Negócio
 
-## Alunos
+Versão do documento: 1.0
 
-- Todo aluno possui cadastro individual.
-- O aluno pode estar ativo ou inativo.
-- Alunos não devem ser excluídos fisicamente do sistema.
-- A inativação preserva histórico de presenças, mensalidades, graduações e avaliações.
+Última atualização: Julho/2026
 
-Aluno
+---
 
-Pode possuir até dois responsáveis.
+# Objetivo
 
-Todo aluno pertence a uma turma.
+Este documento descreve todas as regras de negócio do SGCL Kids.
 
-Todo aluno possui histórico de graduação.
+Toda implementação realizada no sistema deve obedecer às regras aqui descritas.
 
-Todo aluno possui controle de presença.
+Caso uma regra seja alterada, este documento deverá ser atualizado antes da implementação.
 
-Todo aluno possui controle comportamental.
+---
 
-Depois:
+# Filosofia do Sistema
 
-## Cadastro do aluno
+O SGCL não é apenas um sistema administrativo.
 
-Campos planejados:
+Ele foi desenvolvido para acompanhar toda a jornada do aluno dentro da academia.
 
-- Nome completo
+O sistema considera quatro pilares.
+
+- Formação humana
+- Formação técnica
+- Formação esportiva
+- Formação administrativa
+
+Todos os módulos existem para atender um ou mais desses pilares.
+
+---
+
+# Cadastro de Alunos
+
+## RN-001
+
+Todo aluno deve possuir:
+
+- Nome
 - Data de nascimento
-- Foto
-- Endereço
-- Escola
-- Série escolar
-- Tamanho do kimono
-- Peso
-- Altura
-- Restrições médicas
-- Alergias
-- Medicamentos
-- Responsável 1
-- Responsável 2
-- Observações dos responsáveis
 
-## Graduação técnica
+---
 
-- O aluno inicia na faixa Branca.
-- A faixa não pode ser alterada pela edição cadastral.
-- A graduação deve ser registrada em módulo próprio.
-- Cada 8 presenças equivalem a 1 grau.
-- Cada 4 graus indicam possibilidade de troca de faixa.
-- A troca de faixa deve gerar histórico.
+## RN-002
 
-Graduação
+Não pode existir outro aluno com:
 
-Branca
+Nome
 
-↓
++
 
-Cinza e Branca
+Data de nascimento
 
-↓
+iguais.
 
-Cinza
+---
 
-↓
+## RN-003
 
-...
+O aluno pode permanecer inativo.
 
-Graus
+Nenhum histórico será apagado.
 
-8 presenças
+---
+
+## RN-004
+
+Toda alteração cadastral deve atualizar o campo:
+
+updatedAt
+
+---
+
+# Responsáveis
+
+## RN-010
+
+Um aluno pode possuir vários responsáveis.
+
+---
+
+## RN-011
+
+Um responsável pertence a apenas um aluno.
+
+(Esta regra poderá ser alterada futuramente.)
+
+---
+
+## RN-012
+
+Somente um responsável pode ser marcado como:
+
+Responsável Financeiro.
+
+---
+
+## RN-013
+
+Mais de um responsável pode buscar o aluno.
+
+---
+
+## RN-014
+
+Mais de um responsável pode receber comunicados.
+
+---
+
+# Turmas
+
+## RN-020
+
+Todo aluno pertence a apenas uma turma ativa.
+
+---
+
+## RN-021
+
+Uma turma pode possuir vários alunos.
+
+---
+
+## RN-022
+
+Uma turma pode ser inativada.
+
+Se isso ocorrer:
+
+Os alunos permanecem cadastrados.
+
+---
+
+# Aulas
+
+## RN-030
+
+Uma aula pertence a apenas uma turma.
+
+---
+
+## RN-031
+
+Uma aula inicia com status:
+
+ABERTA
+
+---
+
+## RN-032
+
+Uma aula pode ser finalizada apenas uma vez.
+
+---
+
+## RN-033
+
+Após finalizada:
+
+não poderá sofrer alterações.
+
+---
+
+## RN-034
+
+Ao criar uma aula:
+
+deve ser criado automaticamente um registro AulaAluno para cada aluno ativo da turma.
+
+---
+
+# Presença
+
+## RN-040
+
+A presença deixou de existir como entidade própria.
+
+Ela agora faz parte de:
+
+AulaAluno.
+
+---
+
+## RN-041
+
+Cada AulaAluno registra:
+
+- presença
+- comportamento
+- observações
+
+---
+
+## RN-042
+
+Um aluno possui apenas um registro AulaAluno por aula.
+
+---
+
+# Evolução
+
+## RN-050
+
+Cada presença válida contabiliza uma aula.
+
+---
+
+## RN-051
+
+Somente alunos presentes evoluem.
+
+---
+
+## RN-052
+
+Aulas canceladas não contabilizam evolução.
+
+---
+
+# Graus
+
+## RN-060
+
+Da faixa Branca até Verde.
+
+Cada:
+
+8 aulas
 
 ↓
 
 1 grau
 
+---
+
+## RN-061
+
+Após completar
+
 4 graus
 
 ↓
 
-Próxima faixa
+troca de faixa.
 
-## Faixas Kids
+---
 
-Ordem oficial planejada:
+## RN-062
 
-1. Branca
-2. Cinza e branca
-3. Cinza
-4. Cinza e preta
-5. Amarela e branca
-6. Amarela
-7. Amarela e preta
-8. Laranja e branca
-9. Laranja
-10. Laranja e preta
-11. Verde
+Ao trocar de faixa:
 
-## Graduação comportamental
+grau volta para zero.
 
-Critérios definidos:
+---
 
-- Azul: Respeito
-- Verde: Valentia
-- Laranja: Esforço
-- Amarelo: Atenção
-- Vermelho: Disciplina
+## RN-063
 
-## Financeiro
+Todo histórico permanece registrado.
 
-- Mensalidades podem estar pagas ou pendentes.
-- Mensalidade vencida é aquela com vencimento anterior à data atual e não paga.
-- O histórico financeiro deve ser preservado.
+---
 
-## Usuários
+# Faixas
 
-Perfis:
+A sequência oficial utilizada pelo sistema é:
 
-- ADMIN
-- PROFESSOR
-- RECEPCAO
+Branca
 
-Regras:
+Cinza e Branca
 
-- Usuário inativo não pode acessar o sistema.
-- O perfil atual deve ser validado no banco, não apenas no token.
+Cinza
+
+Cinza e Preta
+
+Amarela e Branca
+
+Amarela
+
+Amarela e Preta
+
+Laranja e Branca
+
+Laranja
+
+Laranja e Preta
+
+Verde
+
+Azul
+
+Roxa
+
+Marrom
+
+Preta
+
+---
+
+# Comportamentos
+
+O sistema utiliza cinco indicadores.
+
+---
+
+## Respeito
+
+Cor
+
+Azul
+
+---
+
+## Valentia
+
+Cor
+
+Verde
+
+---
+
+## Esforço
+
+Cor
+
+Laranja
+
+---
+
+## Atenção
+
+Cor
+
+Amarelo
+
+---
+
+## Disciplina
+
+Cor
+
+Vermelho
+
+---
+
+# Avaliação comportamental
+
+## RN-070
+
+Cada comportamento pode assumir:
+
+Sim
+
+Não
+
+durante a aula.
+
+---
+
+## RN-071
+
+A soma das aulas gera o indicador do prontuário.
+
+---
+
+## RN-072
+
+Os indicadores nunca são apagados.
+
+---
+
+# Currículo
+
+## RN-080
+
+Toda técnica pertence a uma categoria.
+
+---
+
+Categorias
+
+Quedas
+
+Raspagens
+
+Passagens
+
+Finalizações
+
+Defesas
+
+Movimentação
+
+---
+
+## RN-081
+
+Cada técnica possui:
+
+Faixa mínima.
+
+---
+
+## RN-082
+
+Técnicas inativas não aparecem para o professor.
+
+---
+
+# Planejamento
+
+## RN-090
+
+O planejamento da aula utilizará:
+
+Currículo
+
+↓
+
+Técnicas
+
+↓
+
+Jogos
+
+↓
+
+Objetivos
+
+---
+
+# Prontuário
+
+## RN-100
+
+O prontuário é o principal documento do aluno.
+
+---
+
+Ele reúne:
+
+Dados pessoais
+
+↓
+
+Responsáveis
+
+↓
+
+Turma
+
+↓
+
+Frequência
+
+↓
+
+Comportamentos
+
+↓
+
+Graduações
+
+↓
+
+Competições
+
+↓
+
+Financeiro
+
+↓
+
+Resumo
+
+---
+
+## RN-101
+
+Nenhum dado histórico poderá ser removido do prontuário.
+
+---
+
+# Financeiro
+
+## RN-110
+
+Cada mensalidade pertence a apenas um aluno.
+
+---
+
+## RN-111
+
+Uma mensalidade pode possuir:
+
+Pendente
+
+Paga
+
+Cancelada
+
+Atrasada
+
+---
+
+## RN-112
+
+O histórico financeiro nunca deve ser apagado.
+
+---
+
+# Competições
+
+## RN-120
+
+Cada competição pertence a um aluno.
+
+---
+
+## RN-121
+
+Uma competição registra:
+
+Evento
+
+Categoria
+
+Peso
+
+Resultado
+
+Data
+
+Observações
+
+---
+
+# Segurança
+
+## RN-130
+
+Todas as rotas exigem autenticação.
+
+Exceto:
+
+Login.
+
+---
+
+## RN-131
+
+Toda rota possui controle de perfil.
+
+---
+
+Perfis
+
+ADMIN
+
+PROFESSOR
+
+RECEPCAO
+
+---
+
+# Exclusão
+
+## RN-140
+
+Nenhuma entidade histórica poderá ser apagada.
+
+Exemplos
+
+Aulas
+
+Competições
+
+Mensalidades
+
+Graduações
+
+---
+
+## RN-141
+
+Cadastros deverão utilizar:
+
+ativo = false
+
+---
+
+# Auditoria
+
+## RN-150
+
+Toda alteração importante deverá possuir:
+
+Data
+
+Usuário
+
+Ação
+
+(Estrutura prevista para versões futuras.)
+
+---
+
+# Integrações Futuras
+
+WhatsApp
+
+PIX
+
+Área dos Pais
+
+Área do Professor
+
+Aplicativo Mobile
+
+Inteligência Artificial
+
+---ß
+
+# Princípios
+
+O SGCL foi desenvolvido considerando que o objetivo principal da academia não é apenas ensinar técnicas de Jiu-Jitsu, mas formar pessoas.
+
+Por isso, todas as regras do sistema procuram refletir tanto a evolução técnica quanto o desenvolvimento humano do aluno.
+
+Toda nova funcionalidade deverá respeitar esses princípios.
