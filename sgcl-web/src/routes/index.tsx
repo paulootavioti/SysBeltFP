@@ -12,6 +12,13 @@ import { Aulas } from "../modules/aulas/pages/Listar";
 import { ChamadaAula } from "../modules/aulas/pages/Chamada";
 import { ProntuarioAluno } from "../modules/alunos/pages/Prontuario";
 
+import { ListarMensalidades } from "../modules/mensalidades/pages/Listar";
+import { DetalheMensalidade } from "../modules/mensalidades/pages/Detalhes";
+import { NovaMensalidade } from "../modules/mensalidades/pages/Detalhes/novo";
+
+import { ListarGraduacoes } from "../modules/graduacoes/pages/Listar";
+import { ProximasGraduacoes } from "../modules/graduacoes/pages/Proximas";
+
 import { PrivateRoute } from "./PrivateRoute";
 
 export function AppRoutes() {
@@ -69,10 +76,53 @@ export function AppRoutes() {
         }
       />
 
-     
-
       <Route path="/aulas" element={<Aulas />} />
       <Route path="/aulas/:id/chamada" element={<ChamadaAula />} />
+
+      <Route
+        path="/mensalidades"
+        element={
+          <PrivateRoute>
+            <ListarMensalidades />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/mensalidades/novo"
+        element={
+          <PrivateRoute>
+            <NovaMensalidade />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/mensalidades/:id"
+        element={
+          <PrivateRoute>
+            <DetalheMensalidade />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/graduacoes"
+        element={
+          <PrivateRoute>
+            <ListarGraduacoes />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/graduacoes/proximas"
+        element={
+          <PrivateRoute>
+            <ProximasGraduacoes />
+          </PrivateRoute>
+        }
+      />
     </Routes>
   );
 }

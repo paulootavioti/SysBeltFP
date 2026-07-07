@@ -42,9 +42,23 @@ export function Layout({
           👦 Alunos
         </Link>
 
-        <p>📅 Presenças</p>
-        <p>🥋 Graduações</p>
-        <p>💰 Financeiro</p>
+        <Link to="/aulas">
+          📅 Aulas
+        </Link>
+
+        <Link to="/mensalidades">
+          💰 Mensalidades
+        </Link>
+
+        <Link to="/graduacoes">
+          🥋 Graduações
+        </Link>
+
+        <Link to="/graduacoes/proximas">
+          ⭐ Próximas Promoções
+        </Link>
+
+        <p>🏆 Competições</p>
         <p>📈 Relatórios</p>
 
       </aside>
