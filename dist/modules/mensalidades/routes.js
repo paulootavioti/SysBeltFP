@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.mensalidadesRoutes = void 0;
+const express_1 = require("express");
+const controller_1 = require("./controller");
+const ensureAuthenticated_1 = require("../../shared/middlewares/ensureAuthenticated");
+const ensureRole_1 = require("../../shared/middlewares/ensureRole");
+const mensalidadesRoutes = (0, express_1.Router)();
+exports.mensalidadesRoutes = mensalidadesRoutes;
+const mensalidadesController = new controller_1.MensalidadesController();
+mensalidadesRoutes.post("/", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "RECEPCAO"]), mensalidadesController.create);
+mensalidadesRoutes.get("/", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "RECEPCAO"]), mensalidadesController.list);
+mensalidadesRoutes.get("/vencidas", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "RECEPCAO"]), mensalidadesController.vencidas);
+mensalidadesRoutes.patch("/:id/pagar", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN"]), mensalidadesController.pagar);

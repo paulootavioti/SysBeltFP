@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.financeiroRoutes = void 0;
+const express_1 = require("express");
+const controller_1 = require("./controller");
+const ensureAuthenticated_1 = require("../../shared/middlewares/ensureAuthenticated");
+const ensureRole_1 = require("../../shared/middlewares/ensureRole");
+const financeiroRoutes = (0, express_1.Router)();
+exports.financeiroRoutes = financeiroRoutes;
+const financeiroController = new controller_1.FinanceiroController();
+financeiroRoutes.get("/resumo", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN"]), financeiroController.resumo);

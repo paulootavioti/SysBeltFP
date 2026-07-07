@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.graduacoesRoutes = void 0;
+const express_1 = require("express");
+const controller_1 = require("./controller");
+const ensureAuthenticated_1 = require("../../shared/middlewares/ensureAuthenticated");
+const ensureRole_1 = require("../../shared/middlewares/ensureRole");
+const graduacoesRoutes = (0, express_1.Router)();
+exports.graduacoesRoutes = graduacoesRoutes;
+const graduacoesController = new controller_1.GraduacoesController();
+graduacoesRoutes.post("/", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "PROFESSOR"]), graduacoesController.create);
+graduacoesRoutes.get("/", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "PROFESSOR", "RECEPCAO"]), graduacoesController.list);
+graduacoesRoutes.get("/aluno/:id", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "PROFESSOR", "RECEPCAO"]), graduacoesController.aluno);
+graduacoesRoutes.get("/proximas", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "PROFESSOR", "RECEPCAO"]), graduacoesController.proximas);
+graduacoesRoutes.get("/evolucao/:alunoId", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "PROFESSOR", "RECEPCAO"]), graduacoesController.evolucao);

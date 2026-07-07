@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.relatoriosRoutes = void 0;
+const express_1 = require("express");
+const controller_1 = require("./controller");
+const ensureAuthenticated_1 = require("../../shared/middlewares/ensureAuthenticated");
+const ensureRole_1 = require("../../shared/middlewares/ensureRole");
+const relatoriosRoutes = (0, express_1.Router)();
+exports.relatoriosRoutes = relatoriosRoutes;
+const relatoriosController = new controller_1.RelatoriosController();
+relatoriosRoutes.get("/evolucao/:alunoId", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "PROFESSOR", "RECEPCAO"]), relatoriosController.evolucao);
+relatoriosRoutes.get("/financeiro", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "PROFESSOR", "RECEPCAO"]), relatoriosController.financeiro);
+relatoriosRoutes.get("/ranking", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "PROFESSOR", "RECEPCAO"]), relatoriosController.ranking);
+relatoriosRoutes.get("/aniversariantes", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "PROFESSOR", "RECEPCAO"]), relatoriosController.aniversariantes);
+relatoriosRoutes.get("/comportamental/:alunoId", ensureAuthenticated_1.ensureAuthenticated, (0, ensureRole_1.ensureRole)(["ADMIN", "PROFESSOR", "RECEPCAO"]), relatoriosController.comportamental);
