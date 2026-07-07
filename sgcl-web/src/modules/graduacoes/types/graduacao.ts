@@ -44,16 +44,16 @@ export const FAIXAS = [
 ];
 
 // Colors for belts
-export const CORES_FAIXA: Record<string, string> = {
-  "Branca": "bg-white border-2 border-gray-300",
-  "Cinza e Branca": "bg-gray-100 border-2 border-gray-400",
-  "Cinza": "bg-gray-300",
-  "Cinza e Preta": "bg-gradient-to-r from-gray-300 to-gray-900",
-  "Amarela e Branca": "bg-gradient-to-r from-yellow-100 to-white",
-  "Amarela": "bg-yellow-400",
-  "Amarela e Preta": "bg-gradient-to-r from-yellow-400 to-gray-900",
-  "Laranja e Branca": "bg-gradient-to-r from-orange-300 to-white",
-  "Laranja": "bg-orange-500",
-  "Laranja e Preta": "bg-gradient-to-r from-orange-500 to-gray-900",
-  "Verde": "bg-green-500",
+export const CORES_FAIXA: Record<string, { background: string; color: string }> = {
+  "Branca": { background: "#FFFFFF", color: "#111827" },
+  "Cinza e Branca": { background: "linear-gradient(90deg, #FFFFFF 50%, #9CA3AF 50%)", color: "#111827" },
+  "Cinza": { background: "#9CA3AF", color: "#111827" },
+  "Cinza e Preta": { background: "linear-gradient(90deg, #9CA3AF 50%, #111827 50%)", color: "#FFFFFF" },
+  "Amarela e Branca": { background: "linear-gradient(90deg, #FFFFFF 50%, #FACC15 50%)", color: "#111827" },
+  "Amarela": { background: "#FACC15", color: "#111827" },
+  "Amarela e Preta": { background: "linear-gradient(90deg, #FACC15 50%, #111827 50%)", color: "#FFFFFF" },
+  "Laranja e Branca": { background: "linear-gradient(90deg, #FFFFFF 50%, #F97316 50%)", color: "#111827" },
+  "Laranja": { background: "#F97316", color: "#FFFFFF" },
+  "Laranja e Preta": { background: "linear-gradient(90deg, #F97316 50%, #111827 50%)", color: "#FFFFFF" },
+  "Verde": { background: "#22C55E", color: "#FFFFFF" },
 };

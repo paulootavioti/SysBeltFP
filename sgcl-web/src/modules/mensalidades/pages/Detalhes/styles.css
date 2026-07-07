@@ -1,0 +1,49 @@
+.mensalidade-detalhe-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space-4);
+}
+.mensalidade-detalhe-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+.mensalidade-detalhe-header h2 {
+  margin: 0;
+  color: var(--text);
+}
+.mensalidade-detalhe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.mensalidade-detalhe-grid p {
+  margin: 0 0 4px;
+  color: var(--text-light);
+  font-size: var(--font-sm);
+}
+.mensalidade-detalhe-grid strong {
+  color: var(--text);
+  font-size: var(--font-lg);
+}
+.mensalidade-detalhe-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.mensalidade-detalhe-id {
+  color: var(--text-light);
+  font-size: var(--font-sm);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+.mensalidade-detalhe-acoes {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}

@@ -1,0 +1,52 @@
+.aluno-elegivel-card {
+  background: var(--surface);
+  border: 2px solid var(--warning);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space-3);
+}
+.aluno-elegivel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.aluno-elegivel-header h3 {
+  margin: 0;
+  color: var(--text);
+}
+.aluno-elegivel-header p {
+  margin: 4px 0 0;
+  color: var(--text-light);
+  font-size: var(--font-sm);
+}
+.aluno-elegivel-faixa {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.aluno-elegivel-aviso {
+  background: rgba(245, 158, 11, .12);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.aluno-elegivel-aviso p {
+  margin: 0;
+  color: var(--warning);
+  font-weight: 600;
+  font-size: var(--font-sm);
+}
+.aluno-elegivel-aviso span {
+  color: var(--warning);
+  font-size: var(--font-xs);
+}
+.aluno-elegivel-card .button {
+  width: 100%;
+}

@@ -4,7 +4,7 @@ import { DataTable } from "../../../../../components/ui/DataTable";
 import { Badge } from "../../../../../components/ui/Badge";
 import { Actions } from "../../../../../components/ui/DataTable/Actions";
 
-import type { Responsavel } from "../../../types/responsavel";
+import type { Responsavel } from "../../../../responsaveis/types/responsavel";
 
 import "./styles.css";
 

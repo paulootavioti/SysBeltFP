@@ -1,4 +1,4 @@
-import type { Responsavel } from "../../../types/responsavel";
+import type { Responsavel } from "../../../../responsaveis/types/responsavel";
 
 export interface ResponsaveisTabProps {
   responsaveis: Responsavel[];

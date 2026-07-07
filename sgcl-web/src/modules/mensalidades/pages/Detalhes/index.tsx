@@ -1,14 +1,25 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Layout } from "../../../../components/layout/Layout";
+import { PageHeader } from "../../../../components/layout/PageHeader";
+import { Card } from "../../../../components/ui/Card";
+import { Button } from "../../../../components/ui/Button";
+import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
+import { Loading } from "../../../../components/ui/Loading";
+import { StatusBadge } from "../../../../components/ui/StatusBadge";
 import { MensalidadeService } from "../../services/MensalidadeService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
-import { calcularStatusMensalidade, formatarStatusMensalidade, corStatusMensalidade } from "../../utils/status";
+import { calcularStatusMensalidade } from "../../utils/status";
 import type { MensalidadeComAluno } from "../../types";
-
+import "./styles.css";
 function formatarData(data: string): string {
   return new Date(data).toLocaleDateString("pt-BR");
 }
-
+const STATUS_BADGE = {
+  PAGA: "PAGO",
+  PENDENTE: "PENDENTE",
+  VENCIDA: "VENCIDO",
+} as const;
 export function DetalheMensalidade() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -16,7 +27,6 @@ export function DetalheMensalidade() {
   const [loading, setLoading] = useState(true);
   const [marcandoPago, setMarcandoPago] = useState(false);
   const [erro, setErro] = useState("");
-
   useEffect(() => {
     async function carregarMensalidade() {
       try {
@@ -29,18 +39,14 @@ export function DetalheMensalidade() {
         setLoading(false);
       }
     }
-
     carregarMensalidade();
   }, [id]);
-
   async function handleMarcarComoPago() {
     try {
       if (!mensalidade) return;
       setMarcandoPago(true);
       setErro("");
       await MensalidadeService.marcarComoPago(mensalidade.id);
-      
-      // Recarregar dados
       const dados = await MensalidadeService.buscar(Number(id));
       setMensalidade(dados);
     } catch (error) {
@@ -49,150 +55,69 @@ export function DetalheMensalidade() {
       setMarcandoPago(false);
     }
   }
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Carregando...</p>
-      </div>
+      <Layout>
+        <Loading />
+      </Layout>
     );
   }
-
-  if (erro && !mensalidade) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
-          <p>{erro}</p>
-          <button
-            onClick={() => navigate("/mensalidades")}
-            className="mt-4 text-red-600 hover:text-red-800 underline"
-          >
-            Voltar
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   if (!mensalidade) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Mensalidade não encontrada</p>
-      </div>
+      <Layout>
+        <PageHeader title="Mensalidade" subtitle="Detalhes da mensalidade." />
+        <ErrorMessage message={erro || "Mensalidade não encontrada."} />
+        <Button type="button" variant="secondary" onClick={() => navigate("/mensalidades")}>
+          Voltar
+        </Button>
+      </Layout>
     );
   }
-
   const status = calcularStatusMensalidade(mensalidade);
-  const statusFormatado = formatarStatusMensalidade(status);
-  const corStatus = corStatusMensalidade(status);
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-6">
-        <div className="max-w-3xl mx-auto">
-          <button
-            onClick={() => navigate("/mensalidades")}
-            className="text-blue-600 hover:text-blue-800 mb-4"
-          >
-            ← Voltar
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Mensalidade - {mensalidade.aluno?.nome}
-          </h1>
+    <Layout>
+      <PageHeader
+        title={`Mensalidade - ${mensalidade.aluno?.nome}`}
+        subtitle="Detalhes da mensalidade."
+      />
+      <ErrorMessage message={erro} />
+      <div className="mensalidade-detalhe-card">
+        <div className="mensalidade-detalhe-header">
+          <h2>Detalhes</h2>
+          <StatusBadge status={STATUS_BADGE[status]} />
         </div>
-      </div>
-
-      {/* Conteúdo */}
-      <div className="max-w-3xl mx-auto px-6 py-8">
-        {erro && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {erro}
+        <div className="mensalidade-detalhe-grid">
+          <div>
+            <p>Aluno</p>
+            <strong>{mensalidade.aluno?.nome}</strong>
           </div>
-        )}
-
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          {/* Header com status */}
-          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Detalhes</h2>
-            <span className={`px-4 py-2 rounded-full text-sm font-semibold ${corStatus}`}>
-              {statusFormatado}
-            </span>
-          </div>
-
-          {/* Conteúdo */}
-          <div className="p-6 space-y-6">
-            {/* Aluno */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Aluno</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {mensalidade.aluno?.nome}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Faixa</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {mensalidade.aluno?.faixa}
-                </p>
-              </div>
-            </div>
-
-            {/* Valor e Datas */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-blue-50 px-4 py-3 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Valor</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  R$ {mensalidade.valor.toLocaleString("pt-BR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </p>
-              </div>
-
-              <div className="bg-yellow-50 px-4 py-3 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Vencimento</p>
-                <p className="font-semibold text-gray-900">
-                  {formatarData(mensalidade.vencimento)}
-                </p>
-              </div>
-
-              {mensalidade.dataPagamento && (
-                <div className="bg-green-50 px-4 py-3 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">Data de Pagamento</p>
-                  <p className="font-semibold text-gray-900">
-                    {formatarData(mensalidade.dataPagamento)}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* ID */}
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-600">ID da Mensalidade: {mensalidade.id}</p>
-            </div>
-          </div>
-
-          {/* Ações */}
-          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex gap-3">
-            {!mensalidade.pago && status !== "PAGA" && (
-              <button
-                onClick={handleMarcarComoPago}
-                disabled={marcandoPago}
-                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition"
-              >
-                {marcandoPago ? "Marcando..." : "✓ Marcar como Pago"}
-              </button>
-            )}
-            <button
-              onClick={() => navigate("/mensalidades")}
-              className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-900 font-medium py-2 px-4 rounded-lg transition"
-            >
-              Fechar
-            </button>
+          <div>
+            <p>Faixa</p>
+            <strong>{mensalidade.aluno?.faixa}</strong>
           </div>
         </div>
+        <div className="mensalidade-detalhe-kpis">
+          <Card
+            titulo="Valor"
+            valor={`R$ ${mensalidade.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          />
+          <Card titulo="Vencimento" valor={formatarData(mensalidade.vencimento)} />
+          {mensalidade.dataPagamento && (
+            <Card titulo="Data de Pagamento" valor={formatarData(mensalidade.dataPagamento)} />
+          )}
+        </div>
+        <p className="mensalidade-detalhe-id">ID da Mensalidade: {mensalidade.id}</p>
+        <div className="mensalidade-detalhe-acoes">
+          {!mensalidade.pago && status !== "PAGA" && (
+            <Button type="button" onClick={handleMarcarComoPago} disabled={marcandoPago}>
+              {marcandoPago ? "Marcando..." : "✓ Marcar como Pago"}
+            </Button>
+          )}
+          <Button type="button" variant="secondary" onClick={() => navigate("/mensalidades")}>
+            Fechar
+          </Button>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
