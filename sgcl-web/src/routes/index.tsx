@@ -15,10 +15,12 @@ import { ProntuarioAluno } from "../modules/alunos/pages/Prontuario";
 import { ListarMensalidades } from "../modules/mensalidades/pages/Listar";
 import { DetalheMensalidade } from "../modules/mensalidades/pages/Detalhes";
 import { NovaMensalidade } from "../modules/mensalidades/pages/Detalhes/novo";
-
+import { Usuarios } from "../modules/usuarios/pages/Listar";
 import { ListarGraduacoes } from "../modules/graduacoes/pages/Listar";
 import { ProximasGraduacoes } from "../modules/graduacoes/pages/Proximas";
-
+import { Relatorios } from "../modules/relatorios/pages/Listar";
+import { Competicoes } from "../modules/competicoes/pages/Listar";
+import { DetalheCompeticao } from "../modules/competicoes/pages/Detalhes";
 import { PrivateRoute } from "./PrivateRoute";
 
 export function AppRoutes() {
@@ -142,6 +144,43 @@ export function AppRoutes() {
           </PrivateRoute>
         }
       />
+
+      <Route
+        path="/usuarios"
+        element={
+          <PrivateRoute>
+            <Usuarios />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/competicoes"
+        element={
+          <PrivateRoute>
+            <Competicoes />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/competicoes/:id"
+        element={
+          <PrivateRoute>
+            <DetalheCompeticao />
+          </PrivateRoute>
+        }
+      />
+      
+      <Route
+        path="/relatorios"
+        element={
+          <PrivateRoute>
+            <Relatorios />
+          </PrivateRoute>
+        }
+      />            
+      
     </Routes>
   );
 }

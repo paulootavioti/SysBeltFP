@@ -1,0 +1,44 @@
+.competicao-detalhe-voltar {
+  margin-bottom: var(--space-3);
+}
+
+.competicao-detalhe-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-4);
+}
+
+.competicao-detalhe-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.competicao-atleta-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.competicao-atleta-card strong {
+  display: block;
+  color: var(--text);
+}
+
+.competicao-atleta-card > div:first-child span {
+  color: var(--text-light);
+  font-size: var(--font-sm);
+}
+
+.competicao-atleta-resultado {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}

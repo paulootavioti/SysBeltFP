@@ -58,8 +58,17 @@ export function Layout({
           ⭐ Próximas Promoções
         </Link>
 
-        <p>🏆 Competições</p>
-        <p>📈 Relatórios</p>
+        <Link to="/usuarios">
+          👤 Usuários
+        </Link>
+
+        <Link to="/competicoes">
+          🏆 Competições
+        </Link>
+
+        <Link to="/relatorios">
+          📈 Relatórios
+        </Link>
 
       </aside>
 

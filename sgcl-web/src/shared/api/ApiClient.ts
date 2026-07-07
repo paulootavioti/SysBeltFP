@@ -16,8 +16,8 @@ export class ApiClient {
     return response.data;
   }
 
-  static async patch<T>(url: string) {
-    const response = await api.patch<T>(url);
+  static async patch<T>(url: string, data?: unknown) {
+    const response = await api.patch<T>(url, data);
     return response.data;
   }
 

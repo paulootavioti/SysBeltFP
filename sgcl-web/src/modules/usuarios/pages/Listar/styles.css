@@ -1,0 +1,13 @@
+.usuarios-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-4);
+}
+.usuarios-perfil-select {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: var(--font-sm);
+  background: var(--surface);
+  color: var(--text);
+}

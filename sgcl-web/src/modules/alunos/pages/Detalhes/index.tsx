@@ -25,6 +25,8 @@ import { AlunoService } from "../../services/AlunoService";
 
 import type { AlunoCompleto } from "../../types/alunoCompleto";
 
+import "./styles.css";
+
 export function AlunoDetalhes() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -130,13 +132,21 @@ export function AlunoDetalhes() {
 
   return (
     <Layout>
-      <Button
-        type="button"
-        onClick={() => navigate("/alunos")}
-      >
-        Voltar para alunos
-      </Button>
-
+      <div className="aluno-detalhes-acoes">
+        <Button
+          type="button"
+          onClick={() => navigate("/alunos")}
+        >
+          Voltar para alunos
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => navigate(`/alunos/${aluno.id}/prontuario`)}
+        >
+          Ver Prontuário
+        </Button>
+      </div>
       <PageHeader
         title={aluno.nome}
         subtitle="Prontuário completo do aluno."
