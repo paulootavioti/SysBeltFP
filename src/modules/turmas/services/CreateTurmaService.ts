@@ -7,6 +7,7 @@ interface CreateTurmaDTO {
   horarioInicio: string;
   horarioFim: string;
   professor: string;
+  limiteAlunos?: number;
 }
 
 export class CreateTurmaService {

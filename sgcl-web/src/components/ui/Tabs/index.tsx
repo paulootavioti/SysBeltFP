@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 import "./styles.css";
 
 interface TabItem {
-  label: string;
+  label: ReactNode;
   value: string;
   content: ReactNode;
 }

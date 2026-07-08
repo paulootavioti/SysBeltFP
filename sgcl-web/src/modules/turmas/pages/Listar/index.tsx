@@ -61,6 +61,14 @@ export function Turmas() {
       render: (turma: Turma) => `${turma.horarioInicio} - ${turma.horarioFim}`,
     },
     {
+      header: "Vagas",
+      accessor: "limiteAlunos" as const,
+      render: (turma: Turma) =>
+        turma.limiteAlunos
+          ? `${turma._count?.alunos ?? 0}/${turma.limiteAlunos}`
+          : "Sem limite",
+    },
+    {
       header: "Status",
       accessor: "ativo" as const,
       render: (turma: Turma) => (

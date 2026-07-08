@@ -27,8 +27,8 @@ export function ContatoSection() {
     
         <FormGrid columns={2}>
     
-            <Input
-                label="Telefone"
+        <Input
+                label="Telefone *"
                 {...register("telefone")}
                 onChange={(e) => {
                     e.target.value = maskTelefone(e.target.value);

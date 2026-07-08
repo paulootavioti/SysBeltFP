@@ -2,3 +2,17 @@
   display: grid;
   gap: var(--space-4);
 }
+
+.aluno-form-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aluno-form-tab-erro {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  display: inline-block;
+}

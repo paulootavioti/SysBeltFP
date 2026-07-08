@@ -212,6 +212,8 @@ model Turma {
 
   professor     String
 
+  limiteAlunos  Int?
+
   ativo         Boolean  @default(true)
 
   curriculoId   Int?

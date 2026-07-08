@@ -10,6 +10,7 @@ import { FormSection } from "../../../../components/ui/FormSection";
 
 import { maskCPF } from "../../../../shared/formatters/masks";
 
+import { PARENTESCOS } from "../../../../shared/constants/parentesco";
 
 import type { ResponsavelFormData } from "../../schema/responsavel.schema";
 
@@ -33,8 +34,9 @@ export function DadosPessoaisSection() {
           />
         </FormGridItem>
 
-        <Input
+        <Select
           label="Parentesco"
+          options={PARENTESCOS}
           {...register("parentesco")}
         />
 

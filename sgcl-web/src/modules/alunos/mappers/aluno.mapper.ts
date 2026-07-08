@@ -7,6 +7,8 @@ export function formatarDataParaInput(data?: string | null) {
 }
 
 export function alunoParaFormulario(aluno?: Partial<Aluno>) {
+  const primeiroResponsavel = aluno?.responsaveis?.[0];
+
   return {
     nome: aluno?.nome ?? "",
     dataNascimento: formatarDataParaInput(aluno?.dataNascimento),
@@ -41,5 +43,18 @@ export function alunoParaFormulario(aluno?: Partial<Aluno>) {
     turmaId: aluno?.turmaId?.toString() ?? "",
 
     fotoUrl: aluno?.fotoUrl ?? "",
+
+    responsavel: {
+      id: primeiroResponsavel?.id,
+      nome: primeiroResponsavel?.nome ?? "",
+      parentesco: primeiroResponsavel?.parentesco ?? "",
+      telefone: primeiroResponsavel?.telefone ?? "",
+      whatsapp: primeiroResponsavel?.whatsapp ?? "",
+      email: primeiroResponsavel?.email ?? "",
+      responsavelFinanceiro: primeiroResponsavel?.responsavelFinanceiro ?? false,
+      podeBuscar: primeiroResponsavel?.podeBuscar ?? true,
+      contatoEmergencia: primeiroResponsavel?.contatoEmergencia ?? false,
+      recebeComunicados: primeiroResponsavel?.recebeComunicados ?? true,
+    },
   };
 }

@@ -8,6 +8,7 @@ import { Loading } from "../../../../components/ui/Loading";
 
 import { AlunoForm } from "../../components/AlunoForm";
 import { AlunoService } from "../../services/AlunoService";
+import { ResponsavelService } from "../../../responsaveis/services/ResponsavelService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 
 import type { Aluno } from "../../types";
@@ -51,6 +52,26 @@ export function EditarAluno() {
       setErro("");
 
       await AlunoService.editar(Number(id), data);
+
+      if (data.responsavel?.nome) {
+        const dadosResponsavel = {
+          nome: data.responsavel.nome,
+          parentesco: data.responsavel.parentesco || "Não informado",
+          telefone: data.responsavel.telefone,
+          whatsapp: data.responsavel.whatsapp,
+          email: data.responsavel.email,
+          responsavelFinanceiro: data.responsavel.responsavelFinanceiro ?? false,
+          podeBuscar: data.responsavel.podeBuscar ?? true,
+          contatoEmergencia: data.responsavel.contatoEmergencia ?? false,
+          recebeComunicados: data.responsavel.recebeComunicados ?? true,
+        };
+
+        if (data.responsavel.id) {
+          await ResponsavelService.atualizar(data.responsavel.id, Number(id), dadosResponsavel);
+        } else {
+          await ResponsavelService.criar(Number(id), dadosResponsavel);
+        }
+      }
 
       navigate("/alunos");
     } catch (error) {

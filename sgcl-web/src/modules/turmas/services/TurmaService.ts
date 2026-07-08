@@ -15,6 +15,7 @@ export class TurmaService {
     return ApiClient.post<Turma>("/turmas", {
       ...data,
       curriculoId: data.curriculoId ? Number(data.curriculoId) : undefined,
+      limiteAlunos: data.limiteAlunos ? Number(data.limiteAlunos) : undefined,
     });
   }
 

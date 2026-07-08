@@ -32,6 +32,7 @@ export function TurmaForm({ loading = false, onSubmit }: TurmaFormProps) {
       horarioFim: "",
       professor: "",
       curriculoId: "",
+      limiteAlunos: "",
     },
   });
 
@@ -80,6 +81,16 @@ export function TurmaForm({ loading = false, onSubmit }: TurmaFormProps) {
               label="Currículo (opcional)"
               options={curriculos.map((curriculo) => ({ label: curriculo.nome, value: String(curriculo.id) }))}
               {...register("curriculoId")}
+            />
+          </FormGridItem>
+
+          <FormGridItem>
+            <Input
+              label="Limite de Alunos (opcional)"
+              type="number"
+              min="1"
+              placeholder="Sem limite"
+              {...register("limiteAlunos")}
             />
           </FormGridItem>
         </FormGrid>

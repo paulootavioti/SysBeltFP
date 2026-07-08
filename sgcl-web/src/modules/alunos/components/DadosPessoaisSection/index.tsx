@@ -11,6 +11,7 @@ import { SEXOS } from "../../constants/sexo";
 import { maskCPF } from "../../../../shared/formatters/masks";
 import { calcularIdade } from "../../../../shared/formatters/data";
 
+
 import type { AlunoFormData } from "../../schema/aluno.schema";
 
 export function DadosPessoaisSection() {
@@ -30,14 +31,14 @@ export function DadosPessoaisSection() {
     >
       <FormGrid columns={2}>
         <FormGridItem span={2}>
-          <Input label="Nome" {...register("nome")} />
+        <Input label="Nome *" {...register("nome")} />
 
           <ErrorMessage message={errors.nome?.message ?? ""} />
         </FormGridItem>
 
         <div>
-          <Input
-            label="Data de nascimento"
+        <Input
+            label="Data de nascimento *"
             type="date"
             {...register("dataNascimento")}
           />

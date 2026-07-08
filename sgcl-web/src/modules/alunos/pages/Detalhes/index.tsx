@@ -146,6 +146,13 @@ export function AlunoDetalhes() {
         >
           Ver Prontuário
         </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => navigate(`/alunos/${aluno.id}/editar`)}
+        >
+          Editar
+        </Button>
       </div>
       <PageHeader
         title={aluno.nome}

@@ -1,3 +1,5 @@
+import type { Responsavel } from "../../responsaveis/types/responsavel";
+
 export interface TurmaResumo {
   id: number;
   nome: string;
@@ -54,4 +56,6 @@ export interface Aluno {
   
   createdAt?: string;
   updatedAt?: string;
+
+  responsaveis?: Responsavel[];
 }
