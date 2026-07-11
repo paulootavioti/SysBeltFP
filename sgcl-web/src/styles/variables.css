@@ -1,22 +1,39 @@
 :root {
 
   /* ===== Cores ===== */
+  /* Paleta: preto, dourado e branco */
 
-  --color-primary: #1E3A8A;
-  --color-secondary: #2563EB;
+  --color-primary: #17140F;
+  --color-secondary: #2B2620;
+
+  --color-accent: #C9A227;
+  --color-accent-light: #E4C86B;
+  --color-accent-soft: #F6EED0;
 
   --color-success: #16A34A;
-  --color-warning: #F59E0B;
-  --color-danger: #DC2626;
+  --color-warning: #B8860B;
+  --color-danger: #B3261E;
 
-  --color-background: #F4F6F9;
+  --color-background: #FAF9F6;
 
   --color-surface: #FFFFFF;
 
-  --color-border: #E5E7EB;
+  --color-border: #E7E3D8;
 
-  --color-text: #111827;
-  --color-text-light: #6B7280;
+  --color-text: #17140F;
+  --color-text-light: #726C60;
+
+  /* ===== Bordas ===== */
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* ===== Espaçamentos extras ===== */
+
+  --space-7: 56px;
+  --space-8: 64px;
 
   /* ===== Tipografia ===== */
 
@@ -61,6 +78,7 @@
 :root {
   --primary: var(--color-primary);
   --secondary: var(--color-secondary);
+  --accent: var(--color-accent);
   --success: var(--color-success);
   --warning: var(--color-warning);
   --danger: var(--color-danger);

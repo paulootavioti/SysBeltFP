@@ -5,91 +5,73 @@ import { useAuth } from "../../contexts/AuthContext";
 
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
+import { ErrorMessage } from "../../components/ui/ErrorMessage";
+
+import { getApiErrorMessage } from "../../shared/utils/getApiErrorMessage";
+
+import "./styles.css";
 
 export function Login() {
-
   const { login } = useAuth();
-
   const navigate = useNavigate();
 
-  const [email, setEmail] =
-    useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-  const [senha, setSenha] =
-    useState("");
-
-  async function handleSubmit(
-    e: React.FormEvent
-  ) {
-
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     try {
-
-      await login(
-        email,
-        senha
-      );
-
+      setCarregando(true);
+      setErro("");
+      await login(email, senha);
       navigate("/dashboard");
-
-    } catch {
-
-      alert(
-        "Usuário ou senha inválidos."
-      );
-
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Usuário ou senha inválidos."));
+    } finally {
+      setCarregando(false);
     }
-
   }
 
   return (
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-brand">
+          <span className="login-brand-selo">SGCL</span>
+          <h1>SGCL Kids</h1>
+          <p>Gestão de academia e artes marciais</p>
+        </div>
 
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        marginTop: 100
-      }}
-    >
+        <form className="login-form" onSubmit={handleSubmit}>
+          <Input
+            label="E-mail"
+            type="email"
+            placeholder="seu@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
 
-      <form
-        onSubmit={handleSubmit}
-      >
+          <Input
+            label="Senha"
+            type="password"
+            placeholder="••••••••"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
 
-        <h1>SGCL Kids</h1>
+          <ErrorMessage message={erro} />
 
-        <Input
-          placeholder="Email"
-          value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
-        />
-
-        <br />
-        <br />
-
-        <Input
-          type="password"
-          placeholder="Senha"
-          value={senha}
-          onChange={(e) =>
-            setSenha(e.target.value)
-          }
-        />
-
-        <br />
-        <br />
-
-        <Button type="submit">
-          Entrar
-        </Button>
-
-      </form>
-
+          <Button type="submit" disabled={carregando}>
+            {carregando ? "Entrando..." : "Entrar"}
+          </Button>
+        </form>
+      </div>
     </div>
-
   );
-
 }

@@ -17,30 +17,32 @@ export function Table<T extends { id: number }>({
   data,
 }: TableProps<T>) {
   return (
-    <table className="table">
-      <thead>
-        <tr>
-          {columns.map((column) => (
-            <th key={String(column.accessor)}>
-              {column.header}
-            </th>
-          ))}
-        </tr>
-      </thead>
-
-      <tbody>
-        {data.map((item) => (
-          <tr key={item.id}>
+    <div className="table-wrapper">
+      <table className="table">
+        <thead>
+          <tr>
             {columns.map((column) => (
-              <td key={String(column.accessor)}>
-                {column.render
-                  ? column.render(item)
-                  : String(item[column.accessor])}
-              </td>
+              <th key={String(column.accessor)}>
+                {column.header}
+              </th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+
+        <tbody>
+          {data.map((item) => (
+            <tr key={item.id}>
+              {columns.map((column) => (
+                <td key={String(column.accessor)}>
+                  {column.render
+                    ? column.render(item)
+                    : String(item[column.accessor])}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

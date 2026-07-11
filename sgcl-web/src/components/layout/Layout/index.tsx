@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../ui/Button";
 import {
   LuLayoutDashboard,
@@ -18,6 +19,8 @@ import {
   LuPiggyBank,
   LuCreditCard,
   LuLogOut,
+  LuMenu,
+  LuX,
 } from "react-icons/lu";
 import "./styles.css";
 
@@ -45,6 +48,13 @@ const NAV_ITEMS = [
 export function Layout({ children }: LayoutProps) {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [menuAberto, setMenuAberto] = useState(false);
+
+  useEffect(() => {
+    setMenuAberto(false);
+  }, [location.pathname]);
 
   function handleLogout() {
     logout();
@@ -53,8 +63,19 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="layout">
-      <aside className="sidebar">
-        <h2>SGCL Kids</h2>
+      <aside className={`sidebar${menuAberto ? " sidebar-aberta" : ""}`}>
+        <div className="sidebar-topo">
+          <h2>SGCL Kids</h2>
+
+          <button
+            type="button"
+            className="sidebar-fechar"
+            onClick={() => setMenuAberto(false)}
+            aria-label="Fechar menu"
+          >
+            <LuX size={22} />
+          </button>
+        </div>
 
         <hr />
 
@@ -75,13 +96,30 @@ export function Layout({ children }: LayoutProps) {
         </nav>
       </aside>
 
+      {menuAberto && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setMenuAberto(false)}
+          aria-hidden="true"
+        />
+      )}
+
       <main className="content">
         <header className="header">
-          <strong>{usuario?.nome}</strong>
+          <button
+            type="button"
+            className="menu-toggle"
+            onClick={() => setMenuAberto(true)}
+            aria-label="Abrir menu"
+          >
+            <LuMenu size={22} />
+          </button>
+
+          <strong className="header-usuario">{usuario?.nome}</strong>
 
           <Button onClick={handleLogout}>
             <LuLogOut size={16} />
-            Sair
+            <span className="botao-sair-texto">Sair</span>
           </Button>
         </header>
 

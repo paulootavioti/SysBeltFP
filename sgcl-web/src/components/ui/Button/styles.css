@@ -20,9 +20,17 @@
   color: #fff;
 }
 
+.button-primary:hover:not(:disabled) {
+  background: var(--color-secondary);
+}
+
 .button-secondary {
   background: var(--color-border);
   color: var(--color-text);
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: var(--color-accent-soft);
 }
 
 .button-danger {
