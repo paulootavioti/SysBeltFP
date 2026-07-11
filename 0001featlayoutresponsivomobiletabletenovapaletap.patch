@@ -1,0 +1,997 @@
+From 51b17dc032e1a3f882a006819bd53cf80198b60f Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 11 Jul 2026 00:57:45 +0000
+Subject: [PATCH] feat: layout responsivo (mobile/tablet) e nova paleta
+ preto/dourado/branco
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Responsividade:
+- Sidebar vira menu off-canvas com botão hambúrguer abaixo de 900px
+  (overlay, fechamento automático ao navegar, botão "Sair" só com ícone
+  em telas pequenas)
+- Corrige Table/styles.css, que continha por engano uma cópia desatualizada
+  do CSS do Button (bug pré-existente, tabela nunca teve estilo próprio) —
+  agora com wrapper de rolagem horizontal para telas estreitas
+- Corrige overflow horizontal em formulários com abas: containers grid
+  (.aluno-form, .responsavel-form, .form-grid, .form-section-content) sem
+  minmax(0, 1fr) deixavam a página inteira "vazar" pra direita em mobile
+  quando havia um campo com largura mínima intrínseca (ex.: input date)
+- Input/Select reforçados com width:100%/min-width:0; overflow-x:hidden
+  como rede de segurança global
+
+Paleta de cores (preto, dourado, branco):
+- Corrige outro bug pré-existente: tokens.css define --radius-sm/md/lg/xl
+  e --space-7/8 mas o arquivo nunca era importado — border-radius com essas
+  variáveis resolvia para nada havia tempos (cantos quadrados em vez de
+  arredondados em Button, Modal, Card, StatusBadge etc. no projeto todo).
+  Movido para variables.css, que é importado.
+- Nova paleta em variables.css: preto (#17140F) como primária, dourado
+  (#C9A227) como cor de destaque, branco/off-white como superfície/fundo
+- Sidebar: fundo preto, logo e divisor em dourado, item ativo como "pílula"
+  dourada com texto preto
+- Tabs: sublinhado da aba ativa em dourado
+- Botões: hover sutil; secundário com hover em dourado suave
+- Tela de Login reconstruída (estava sem estilo algum, com alert() de erro
+  e <br/> pra espaçamento): card centralizado com faixa preta/dourada,
+  gradiente de fundo, ErrorMessage no lugar de alert()
+---
+ .../src/components/layout/Layout/index.tsx    |  50 ++++-
+ .../src/components/layout/Layout/styles.css   | 184 +++++++++++++++++-
+ sgcl-web/src/components/ui/Button/styles.css  |   8 +
+ .../src/components/ui/FormGrid/styles.css     |  13 +-
+ .../src/components/ui/FormSection/styles.css  |   1 +
+ sgcl-web/src/components/ui/Input/styles.css   |   4 +
+ sgcl-web/src/components/ui/Select/styles.css  |   4 +
+ sgcl-web/src/components/ui/Table/index.tsx    |  46 ++---
+ sgcl-web/src/components/ui/Table/styles.css   |  48 +++--
+ sgcl-web/src/components/ui/Tabs/styles.css    |   2 +-
+ .../alunos/components/AlunoForm/styles.css    |   1 +
+ .../components/ResponsavelForm/styles.css     |   1 +
+ sgcl-web/src/pages/Login/index.tsx            | 126 +++++-------
+ sgcl-web/src/pages/Login/styles.css           |  77 ++++++++
+ sgcl-web/src/styles/global.css                |   5 +
+ sgcl-web/src/styles/variables.css             |  34 +++-
+ 16 files changed, 468 insertions(+), 136 deletions(-)
+ create mode 100644 sgcl-web/src/pages/Login/styles.css
+
+diff --git a/sgcl-web/src/components/layout/Layout/index.tsx b/sgcl-web/src/components/layout/Layout/index.tsx
+index e5b1964..1900257 100644
+--- a/sgcl-web/src/components/layout/Layout/index.tsx
++++ b/sgcl-web/src/components/layout/Layout/index.tsx
+@@ -1,6 +1,7 @@
+ import type { ReactNode } from "react";
++import { useEffect, useState } from "react";
+ import { useAuth } from "../../../contexts/AuthContext";
+-import { NavLink, useNavigate } from "react-router-dom";
++import { NavLink, useLocation, useNavigate } from "react-router-dom";
+ import { Button } from "../../ui/Button";
+ import {
+   LuLayoutDashboard,
+@@ -18,6 +19,8 @@ import {
+   LuPiggyBank,
+   LuCreditCard,
+   LuLogOut,
++  LuMenu,
++  LuX,
+ } from "react-icons/lu";
+ import "./styles.css";
+ 
+@@ -45,6 +48,13 @@ const NAV_ITEMS = [
+ export function Layout({ children }: LayoutProps) {
+   const { usuario, logout } = useAuth();
+   const navigate = useNavigate();
++  const location = useLocation();
++
++  const [menuAberto, setMenuAberto] = useState(false);
++
++  useEffect(() => {
++    setMenuAberto(false);
++  }, [location.pathname]);
+ 
+   function handleLogout() {
+     logout();
+@@ -53,8 +63,19 @@ export function Layout({ children }: LayoutProps) {
+ 
+   return (
+     <div className="layout">
+-      <aside className="sidebar">
+-        <h2>SGCL Kids</h2>
++      <aside className={`sidebar${menuAberto ? " sidebar-aberta" : ""}`}>
++        <div className="sidebar-topo">
++          <h2>SGCL Kids</h2>
++
++          <button
++            type="button"
++            className="sidebar-fechar"
++            onClick={() => setMenuAberto(false)}
++            aria-label="Fechar menu"
++          >
++            <LuX size={22} />
++          </button>
++        </div>
+ 
+         <hr />
+ 
+@@ -75,13 +96,30 @@ export function Layout({ children }: LayoutProps) {
+         </nav>
+       </aside>
+ 
++      {menuAberto && (
++        <div
++          className="sidebar-overlay"
++          onClick={() => setMenuAberto(false)}
++          aria-hidden="true"
++        />
++      )}
++
+       <main className="content">
+         <header className="header">
+-          <strong>{usuario?.nome}</strong>
++          <button
++            type="button"
++            className="menu-toggle"
++            onClick={() => setMenuAberto(true)}
++            aria-label="Abrir menu"
++          >
++            <LuMenu size={22} />
++          </button>
++
++          <strong className="header-usuario">{usuario?.nome}</strong>
+ 
+           <Button onClick={handleLogout}>
+             <LuLogOut size={16} />
+-            Sair
++            <span className="botao-sair-texto">Sair</span>
+           </Button>
+         </header>
+ 
+@@ -89,4 +127,4 @@ export function Layout({ children }: LayoutProps) {
+       </main>
+     </div>
+   );
+-}
+\ No newline at end of file
++}
+diff --git a/sgcl-web/src/components/layout/Layout/styles.css b/sgcl-web/src/components/layout/Layout/styles.css
+index 07d3553..ad76b68 100644
+--- a/sgcl-web/src/components/layout/Layout/styles.css
++++ b/sgcl-web/src/components/layout/Layout/styles.css
+@@ -6,6 +6,7 @@
+ .sidebar{
+ 
+   width:260px;
++  flex-shrink:0;
+ 
+   background:var(--primary);
+ 
+@@ -15,9 +16,52 @@
+ 
+ }
+ 
++.sidebar-topo{
++
++  display:flex;
++
++  align-items:center;
++
++  justify-content:space-between;
++
++}
++
+ .sidebar h2{
+ 
+   margin-top:0;
++  margin-bottom:0;
++
++  color:var(--accent);
++
++  letter-spacing:.02em;
++
++}
++
++.sidebar-fechar{
++
++  display:none;
++
++  border:0;
++
++  background:transparent;
++
++  color:white;
++
++  cursor:pointer;
++
++  padding:4px;
++
++  align-items:center;
++
++}
++
++.sidebar hr{
++
++  border:none;
++
++  border-top:1px solid rgba(201,162,39,.25);
++
++  margin:16px 0 0;
+ 
+ }
+ 
+@@ -65,7 +109,7 @@
+ 
+   opacity:1;
+ 
+-  background:rgba(255,255,255,.08);
++  background:rgba(201,162,39,.12);
+ 
+ }
+ 
+@@ -73,15 +117,24 @@
+ 
+   opacity:1;
+ 
+-  background:rgba(255,255,255,.16);
++  background:var(--accent);
++
++  color:var(--color-primary);
+ 
+-  font-weight:600;
++  font-weight:700;
++
++}
++
++.sidebar-overlay{
++
++  display:none;
+ 
+ }
+ 
+ .content{
+ 
+   flex:1;
++  min-width:0;
+ 
+   display:flex;
+ 
+@@ -92,6 +145,7 @@
+ .header{
+ 
+   height:72px;
++  flex-shrink:0;
+ 
+   background:white;
+ 
+@@ -103,12 +157,134 @@
+ 
+   justify-content:space-between;
+ 
++  gap:var(--space-3, 12px);
++
+   padding:0 24px;
+ 
+ }
+ 
++.menu-toggle{
++
++  display:none;
++
++  border:0;
++
++  background:transparent;
++
++  color:var(--text);
++
++  cursor:pointer;
++
++  padding:4px;
++
++  align-items:center;
++
++  flex-shrink:0;
++
++}
++
++.header-usuario{
++
++  flex:1;
++
++  min-width:0;
++
++  overflow:hidden;
++
++  text-overflow:ellipsis;
++
++  white-space:nowrap;
++
++}
++
+ .page{
+ 
+   padding:24px;
+ 
+-}
+\ No newline at end of file
++}
++
++@media (max-width: 900px){
++
++  .sidebar{
++
++    position:fixed;
++
++    top:0;
++
++    left:0;
++
++    bottom:0;
++
++    z-index:1100;
++
++    transform:translateX(-100%);
++
++    transition:transform .25s ease;
++
++    overflow-y:auto;
++
++    box-shadow:var(--shadow-lg, 0 8px 24px rgba(0,0,0,.15));
++
++  }
++
++  .sidebar-aberta{
++
++    transform:translateX(0);
++
++  }
++
++  .sidebar-fechar{
++
++    display:flex;
++
++  }
++
++  .sidebar-overlay{
++
++    display:block;
++
++    position:fixed;
++
++    inset:0;
++
++    background:rgba(0,0,0,.45);
++
++    z-index:1050;
++
++  }
++
++  .menu-toggle{
++
++    display:flex;
++
++  }
++
++  .header{
++
++    padding:0 16px;
++
++  }
++
++  .page{
++
++    padding:16px;
++
++  }
++
++  .botao-sair-texto{
++
++    display:none;
++
++  }
++
++}
++
++@media (max-width: 480px){
++
++  .header-usuario{
++
++    display:none;
++
++  }
++
++}
+diff --git a/sgcl-web/src/components/ui/Button/styles.css b/sgcl-web/src/components/ui/Button/styles.css
+index 53bc25a..1ff1f49 100644
+--- a/sgcl-web/src/components/ui/Button/styles.css
++++ b/sgcl-web/src/components/ui/Button/styles.css
+@@ -20,11 +20,19 @@
+   color: #fff;
+ }
+ 
++.button-primary:hover:not(:disabled) {
++  background: var(--color-secondary);
++}
++
+ .button-secondary {
+   background: var(--color-border);
+   color: var(--color-text);
+ }
+ 
++.button-secondary:hover:not(:disabled) {
++  background: var(--color-accent-soft);
++}
++
+ .button-danger {
+   background: var(--color-danger);
+   color: #fff;
+diff --git a/sgcl-web/src/components/ui/FormGrid/styles.css b/sgcl-web/src/components/ui/FormGrid/styles.css
+index 6649d5a..fc06d5c 100644
+--- a/sgcl-web/src/components/ui/FormGrid/styles.css
++++ b/sgcl-web/src/components/ui/FormGrid/styles.css
+@@ -1,28 +1,29 @@
+ .form-grid {
+   display: grid;
+   gap: var(--space-4);
++  min-width: 0;
+ }
+ 
+ .form-grid-1 {
+-  grid-template-columns: 1fr;
++  grid-template-columns: minmax(0, 1fr);
+ }
+ 
+ .form-grid-2 {
+-  grid-template-columns: repeat(2, 1fr);
++  grid-template-columns: repeat(2, minmax(0, 1fr));
+ }
+ 
+ .form-grid-3 {
+-  grid-template-columns: repeat(3, 1fr);
++  grid-template-columns: repeat(3, minmax(0, 1fr));
+ }
+ 
+ .form-grid-4 {
+-  grid-template-columns: repeat(4, 1fr);
++  grid-template-columns: repeat(4, minmax(0, 1fr));
+ }
+ 
+ @media (max-width: 768px) {
+   .form-grid-2,
+   .form-grid-3,
+   .form-grid-4 {
+-    grid-template-columns: 1fr;
++    grid-template-columns: minmax(0, 1fr);
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/sgcl-web/src/components/ui/FormSection/styles.css b/sgcl-web/src/components/ui/FormSection/styles.css
+index f0d40da..455b5cd 100644
+--- a/sgcl-web/src/components/ui/FormSection/styles.css
++++ b/sgcl-web/src/components/ui/FormSection/styles.css
+@@ -29,4 +29,5 @@
+ .form-section-content {
+   display: grid;
+   gap: var(--space-4);
++  min-width: 0;
+ }
+\ No newline at end of file
+diff --git a/sgcl-web/src/components/ui/Input/styles.css b/sgcl-web/src/components/ui/Input/styles.css
+index 1b431e4..bc70674 100644
+--- a/sgcl-web/src/components/ui/Input/styles.css
++++ b/sgcl-web/src/components/ui/Input/styles.css
+@@ -2,6 +2,8 @@
+   display: flex;
+   flex-direction: column;
+   gap: var(--space-2);
++  width: 100%;
++  min-width: 0;
+ }
+ 
+ .input-wrapper span {
+@@ -10,6 +12,8 @@
+ }
+ 
+ .input {
++  width: 100%;
++  min-width: 0;
+   border: 1px solid var(--color-border);
+   border-radius: var(--radius-lg);
+   padding: var(--space-3) var(--space-4);
+diff --git a/sgcl-web/src/components/ui/Select/styles.css b/sgcl-web/src/components/ui/Select/styles.css
+index fca1816..206c0fd 100644
+--- a/sgcl-web/src/components/ui/Select/styles.css
++++ b/sgcl-web/src/components/ui/Select/styles.css
+@@ -2,6 +2,8 @@
+   display: flex;
+   flex-direction: column;
+   gap: var(--space-2);
++  width: 100%;
++  min-width: 0;
+ }
+ 
+ .select-wrapper span {
+@@ -10,6 +12,8 @@
+ }
+ 
+ .select {
++  width: 100%;
++  min-width: 0;
+   border: 1px solid var(--color-border);
+   border-radius: var(--radius-lg);
+   padding: var(--space-3) var(--space-4);
+diff --git a/sgcl-web/src/components/ui/Table/index.tsx b/sgcl-web/src/components/ui/Table/index.tsx
+index 9ecd129..44e9958 100644
+--- a/sgcl-web/src/components/ui/Table/index.tsx
++++ b/sgcl-web/src/components/ui/Table/index.tsx
+@@ -17,30 +17,32 @@ export function Table<T extends { id: number }>({
+   data,
+ }: TableProps<T>) {
+   return (
+-    <table className="table">
+-      <thead>
+-        <tr>
+-          {columns.map((column) => (
+-            <th key={String(column.accessor)}>
+-              {column.header}
+-            </th>
+-          ))}
+-        </tr>
+-      </thead>
+-
+-      <tbody>
+-        {data.map((item) => (
+-          <tr key={item.id}>
++    <div className="table-wrapper">
++      <table className="table">
++        <thead>
++          <tr>
+             {columns.map((column) => (
+-              <td key={String(column.accessor)}>
+-                {column.render
+-                  ? column.render(item)
+-                  : String(item[column.accessor])}
+-              </td>
++              <th key={String(column.accessor)}>
++                {column.header}
++              </th>
+             ))}
+           </tr>
+-        ))}
+-      </tbody>
+-    </table>
++        </thead>
++
++        <tbody>
++          {data.map((item) => (
++            <tr key={item.id}>
++              {columns.map((column) => (
++                <td key={String(column.accessor)}>
++                  {column.render
++                    ? column.render(item)
++                    : String(item[column.accessor])}
++                </td>
++              ))}
++            </tr>
++          ))}
++        </tbody>
++      </table>
++    </div>
+   );
+ }
+\ No newline at end of file
+diff --git a/sgcl-web/src/components/ui/Table/styles.css b/sgcl-web/src/components/ui/Table/styles.css
+index c24e55a..13b7ddb 100644
+--- a/sgcl-web/src/components/ui/Table/styles.css
++++ b/sgcl-web/src/components/ui/Table/styles.css
+@@ -1,27 +1,41 @@
+-.button {
+-  border: 0;
++.table-wrapper {
++  width: 100%;
++  overflow-x: auto;
++  -webkit-overflow-scrolling: touch;
++
++  border: 1px solid var(--color-border);
+   border-radius: var(--radius-lg);
+-  padding: var(--space-3) var(--space-4);
+-  font-weight: 600;
+-  transition: var(--transition);
++  background: var(--color-surface);
+ }
+ 
+-.button:disabled {
+-  opacity: 0.7;
+-  cursor: not-allowed;
++.table {
++  width: 100%;
++  min-width: 640px;
++  border-collapse: collapse;
+ }
+ 
+-.button-primary {
+-  background: var(--color-primary);
+-  color: #fff;
++.table th,
++.table td {
++  padding: var(--space-3) var(--space-4);
++  text-align: left;
++  border-bottom: 1px solid var(--color-border);
++  font-size: var(--font-sm);
++  white-space: nowrap;
+ }
+ 
+-.button-secondary {
+-  background: var(--color-border);
++.table th {
++  font-weight: 700;
+   color: var(--color-text);
++  background: var(--color-background);
+ }
+ 
+-.button-danger {
+-  background: var(--color-danger);
+-  color: #fff;
+-}
+\ No newline at end of file
++.table tr:last-child td {
++  border-bottom: none;
++}
++
++@media (max-width: 640px) {
++  .table th,
++  .table td {
++    padding: var(--space-2) var(--space-3);
++  }
++}
+diff --git a/sgcl-web/src/components/ui/Tabs/styles.css b/sgcl-web/src/components/ui/Tabs/styles.css
+index a9cbbba..4a3d0d1 100644
+--- a/sgcl-web/src/components/ui/Tabs/styles.css
++++ b/sgcl-web/src/components/ui/Tabs/styles.css
+@@ -25,7 +25,7 @@
+ 
+ .tabs-trigger.active {
+   color: var(--color-primary);
+-  border-bottom-color: var(--color-primary);
++  border-bottom-color: var(--color-accent);
+ }
+ 
+ .tabs-content {
+diff --git a/sgcl-web/src/modules/alunos/components/AlunoForm/styles.css b/sgcl-web/src/modules/alunos/components/AlunoForm/styles.css
+index 0662936..ecd4eb8 100644
+--- a/sgcl-web/src/modules/alunos/components/AlunoForm/styles.css
++++ b/sgcl-web/src/modules/alunos/components/AlunoForm/styles.css
+@@ -1,5 +1,6 @@
+ .aluno-form {
+   display: grid;
++  grid-template-columns: minmax(0, 1fr);
+   gap: var(--space-4);
+ }
+ 
+diff --git a/sgcl-web/src/modules/responsaveis/components/ResponsavelForm/styles.css b/sgcl-web/src/modules/responsaveis/components/ResponsavelForm/styles.css
+index 2d9072c..f937a9f 100644
+--- a/sgcl-web/src/modules/responsaveis/components/ResponsavelForm/styles.css
++++ b/sgcl-web/src/modules/responsaveis/components/ResponsavelForm/styles.css
+@@ -1,4 +1,5 @@
+ .responsavel-form {
+   display: grid;
++  grid-template-columns: minmax(0, 1fr);
+   gap: var(--space-6);
+ }
+\ No newline at end of file
+diff --git a/sgcl-web/src/pages/Login/index.tsx b/sgcl-web/src/pages/Login/index.tsx
+index 7d44d31..7741337 100644
+--- a/sgcl-web/src/pages/Login/index.tsx
++++ b/sgcl-web/src/pages/Login/index.tsx
+@@ -5,91 +5,73 @@ import { useAuth } from "../../contexts/AuthContext";
+ 
+ import { Input } from "../../components/ui/Input";
+ import { Button } from "../../components/ui/Button";
++import { ErrorMessage } from "../../components/ui/ErrorMessage";
+ 
+-export function Login() {
++import { getApiErrorMessage } from "../../shared/utils/getApiErrorMessage";
+ 
+-  const { login } = useAuth();
++import "./styles.css";
+ 
++export function Login() {
++  const { login } = useAuth();
+   const navigate = useNavigate();
+ 
+-  const [email, setEmail] =
+-    useState("");
+-
+-  const [senha, setSenha] =
+-    useState("");
+-
+-  async function handleSubmit(
+-    e: React.FormEvent
+-  ) {
++  const [email, setEmail] = useState("");
++  const [senha, setSenha] = useState("");
++  const [erro, setErro] = useState("");
++  const [carregando, setCarregando] = useState(false);
+ 
++  async function handleSubmit(e: React.FormEvent) {
+     e.preventDefault();
+ 
+     try {
+-
+-      await login(
+-        email,
+-        senha
+-      );
+-
++      setCarregando(true);
++      setErro("");
++      await login(email, senha);
+       navigate("/dashboard");
+-
+-    } catch {
+-
+-      alert(
+-        "Usuário ou senha inválidos."
+-      );
+-
++    } catch (error) {
++      setErro(getApiErrorMessage(error, "Usuário ou senha inválidos."));
++    } finally {
++      setCarregando(false);
+     }
+-
+   }
+ 
+   return (
+-
+-    <div
+-      style={{
+-        display: "flex",
+-        justifyContent: "center",
+-        marginTop: 100
+-      }}
+-    >
+-
+-      <form
+-        onSubmit={handleSubmit}
+-      >
+-
+-        <h1>SGCL Kids</h1>
+-
+-        <Input
+-          placeholder="Email"
+-          value={email}
+-          onChange={(e) =>
+-            setEmail(e.target.value)
+-          }
+-        />
+-
+-        <br />
+-        <br />
+-
+-        <Input
+-          type="password"
+-          placeholder="Senha"
+-          value={senha}
+-          onChange={(e) =>
+-            setSenha(e.target.value)
+-          }
+-        />
+-
+-        <br />
+-        <br />
+-
+-        <Button type="submit">
+-          Entrar
+-        </Button>
+-
+-      </form>
+-
++    <div className="login-page">
++      <div className="login-card">
++        <div className="login-brand">
++          <span className="login-brand-selo">SGCL</span>
++          <h1>SGCL Kids</h1>
++          <p>Gestão de academia e artes marciais</p>
++        </div>
++
++        <form className="login-form" onSubmit={handleSubmit}>
++          <Input
++            label="E-mail"
++            type="email"
++            placeholder="seu@email.com"
++            value={email}
++            onChange={(e) => setEmail(e.target.value)}
++            autoComplete="email"
++            required
++          />
++
++          <Input
++            label="Senha"
++            type="password"
++            placeholder="••••••••"
++            value={senha}
++            onChange={(e) => setSenha(e.target.value)}
++            autoComplete="current-password"
++            required
++          />
++
++          <ErrorMessage message={erro} />
++
++          <Button type="submit" disabled={carregando}>
++            {carregando ? "Entrando..." : "Entrar"}
++          </Button>
++        </form>
++      </div>
+     </div>
+-
+   );
+-
+-}
+\ No newline at end of file
++}
+diff --git a/sgcl-web/src/pages/Login/styles.css b/sgcl-web/src/pages/Login/styles.css
+new file mode 100644
+index 0000000..b162322
+--- /dev/null
++++ b/sgcl-web/src/pages/Login/styles.css
+@@ -0,0 +1,77 @@
++.login-page {
++  min-height: 100vh;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  padding: var(--space-5);
++
++  background: radial-gradient(circle at top, #2A241A 0%, var(--color-primary) 55%, #0B0A08 100%);
++}
++
++.login-card {
++  width: 100%;
++  max-width: 400px;
++
++  background: var(--color-surface);
++  border-radius: var(--radius-xl);
++  box-shadow: var(--shadow-lg);
++  overflow: hidden;
++}
++
++.login-brand {
++  background: var(--color-primary);
++  padding: var(--space-7) var(--space-6) var(--space-6);
++  text-align: center;
++}
++
++.login-brand-selo {
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++
++  width: 56px;
++  height: 56px;
++  margin-bottom: var(--space-4);
++
++  border-radius: 50%;
++  border: 2px solid var(--color-accent);
++
++  color: var(--color-accent);
++  font-weight: 700;
++  font-size: var(--font-sm);
++  letter-spacing: .04em;
++}
++
++.login-brand h1 {
++  margin: 0;
++  color: #fff;
++  font-size: var(--font-xl);
++}
++
++.login-brand p {
++  margin: var(--space-2) 0 0;
++  color: var(--color-accent-light);
++  font-size: var(--font-sm);
++}
++
++.login-form {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-4);
++  padding: var(--space-6);
++}
++
++.login-form button {
++  margin-top: var(--space-2);
++  width: 100%;
++}
++
++@media (max-width: 480px) {
++  .login-brand {
++    padding: var(--space-6) var(--space-4) var(--space-5);
++  }
++
++  .login-form {
++    padding: var(--space-5) var(--space-4);
++  }
++}
+diff --git a/sgcl-web/src/styles/global.css b/sgcl-web/src/styles/global.css
+index 5cdcf8e..528b2d4 100644
+--- a/sgcl-web/src/styles/global.css
++++ b/sgcl-web/src/styles/global.css
+@@ -6,9 +6,14 @@
+ @import "./animations.css";
+ @import "./theme.css";
+ 
++html {
++  overflow-x: hidden;
++}
++
+ body {
+   font-family: var(--font-family);
+   color: var(--text);
++  overflow-x: hidden;
+ }
+ 
+ a {
+diff --git a/sgcl-web/src/styles/variables.css b/sgcl-web/src/styles/variables.css
+index 792b4b1..6331aa0 100644
+--- a/sgcl-web/src/styles/variables.css
++++ b/sgcl-web/src/styles/variables.css
+@@ -1,22 +1,39 @@
+ :root {
+ 
+   /* ===== Cores ===== */
++  /* Paleta: preto, dourado e branco */
+ 
+-  --color-primary: #1E3A8A;
+-  --color-secondary: #2563EB;
++  --color-primary: #17140F;
++  --color-secondary: #2B2620;
++
++  --color-accent: #C9A227;
++  --color-accent-light: #E4C86B;
++  --color-accent-soft: #F6EED0;
+ 
+   --color-success: #16A34A;
+-  --color-warning: #F59E0B;
+-  --color-danger: #DC2626;
++  --color-warning: #B8860B;
++  --color-danger: #B3261E;
+ 
+-  --color-background: #F4F6F9;
++  --color-background: #FAF9F6;
+ 
+   --color-surface: #FFFFFF;
+ 
+-  --color-border: #E5E7EB;
++  --color-border: #E7E3D8;
++
++  --color-text: #17140F;
++  --color-text-light: #726C60;
++
++  /* ===== Bordas ===== */
++
++  --radius-sm: 4px;
++  --radius-md: 8px;
++  --radius-lg: 12px;
++  --radius-xl: 16px;
++
++  /* ===== Espaçamentos extras ===== */
+ 
+-  --color-text: #111827;
+-  --color-text-light: #6B7280;
++  --space-7: 56px;
++  --space-8: 64px;
+ 
+   /* ===== Tipografia ===== */
+ 
+@@ -61,6 +78,7 @@
+ :root {
+   --primary: var(--color-primary);
+   --secondary: var(--color-secondary);
++  --accent: var(--color-accent);
+   --success: var(--color-success);
+   --warning: var(--color-warning);
+   --danger: var(--color-danger);
+-- 
+2.43.0
+
