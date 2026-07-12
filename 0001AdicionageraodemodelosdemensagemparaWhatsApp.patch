@@ -1,0 +1,1363 @@
+From 1bc9f1163191ff043481954e43f00f2dda4e5d27 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 11 Jul 2026 20:52:30 +0000
+Subject: [PATCH] =?UTF-8?q?Adiciona=20gera=C3=A7=C3=A3o=20de=20modelos=20d?=
+ =?UTF-8?q?e=20mensagem=20para=20WhatsApp=20e=20ajustes=20de=20apelido?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Novo módulo mensagens (backend + frontend) que gera textos prontos para
+  os cenários de lembrete semanal, vencimento próximo, mensalidade
+  atrasada, relatório mensal, congratulação por troca de faixa e ausência
+  do aluno, cada um com link wa.me e botão de copiar texto
+- Aviso automático ao responsável via WhatsApp quando a presença de um
+  aluno menor de idade é marcada na Chamada
+- Tabela de Alunos agora mostra Apelido no lugar de Nome e remove a coluna
+  Grau; Prontuário exibe o Apelido no cabeçalho; Graduações ganha coluna
+  de Grau
+- Corrige colisão de key no componente Table ao combinar header+accessor
+---
+ .../src/components/layout/Layout/index.tsx    |   2 +
+ sgcl-web/src/components/ui/Table/index.tsx    |   4 +-
+ .../src/modules/alunos/pages/Listar/index.tsx |  21 ++--
+ .../modules/alunos/pages/Prontuario/index.tsx |   3 +-
+ .../aulas/components/AulaAlunoCard/index.tsx  |  37 +++++-
+ .../aulas/components/AulaAlunoCard/types.ts   |   1 +
+ .../src/modules/aulas/pages/Chamada/index.tsx |   1 +
+ sgcl-web/src/modules/aulas/types/index.ts     |  10 ++
+ .../modules/graduacoes/pages/Listar/index.tsx |   5 +
+ .../src/modules/graduacoes/types/graduacao.ts |   2 +
+ .../mensagens/components/MensagemLista.css    |  48 ++++++++
+ .../mensagens/components/MensagemLista.tsx    | 105 ++++++++++++++++++
+ .../modules/mensagens/pages/Listar/index.tsx  |  88 +++++++++++++++
+ .../mensagens/services/MensagemService.ts     |  28 +++++
+ .../src/modules/mensagens/types/mensagem.ts   |   9 ++
+ sgcl-web/src/routes/index.tsx                 |  10 ++
+ sgcl-web/src/shared/utils/linkWhatsapp.ts     |  16 +++
+ src/modules/aulas/services/GetAulaService.ts  |  17 ++-
+ src/modules/mensagens/controller.ts           |  48 ++++++++
+ src/modules/mensagens/routes.ts               |  54 +++++++++
+ .../mensagens/services/AusenciaService.ts     |  72 ++++++++++++
+ .../CongratulacoesGraduacaoService.ts         |  64 +++++++++++
+ .../services/LembreteAtrasoService.ts         |  76 +++++++++++++
+ .../services/LembreteSemanalService.ts        |  61 ++++++++++
+ .../services/LembreteVencimentoService.ts     |  75 +++++++++++++
+ .../services/RelatorioMensalService.ts        |  79 +++++++++++++
+ src/modules/mensagens/utils.ts                |  47 ++++++++
+ src/server.ts                                 |   2 +
+ 28 files changed, 970 insertions(+), 15 deletions(-)
+ create mode 100644 sgcl-web/src/modules/mensagens/components/MensagemLista.css
+ create mode 100644 sgcl-web/src/modules/mensagens/components/MensagemLista.tsx
+ create mode 100644 sgcl-web/src/modules/mensagens/pages/Listar/index.tsx
+ create mode 100644 sgcl-web/src/modules/mensagens/services/MensagemService.ts
+ create mode 100644 sgcl-web/src/modules/mensagens/types/mensagem.ts
+ create mode 100644 sgcl-web/src/shared/utils/linkWhatsapp.ts
+ create mode 100644 src/modules/mensagens/controller.ts
+ create mode 100644 src/modules/mensagens/routes.ts
+ create mode 100644 src/modules/mensagens/services/AusenciaService.ts
+ create mode 100644 src/modules/mensagens/services/CongratulacoesGraduacaoService.ts
+ create mode 100644 src/modules/mensagens/services/LembreteAtrasoService.ts
+ create mode 100644 src/modules/mensagens/services/LembreteSemanalService.ts
+ create mode 100644 src/modules/mensagens/services/LembreteVencimentoService.ts
+ create mode 100644 src/modules/mensagens/services/RelatorioMensalService.ts
+ create mode 100644 src/modules/mensagens/utils.ts
+
+diff --git a/sgcl-web/src/components/layout/Layout/index.tsx b/sgcl-web/src/components/layout/Layout/index.tsx
+index 3bc4038..1465228 100644
+--- a/sgcl-web/src/components/layout/Layout/index.tsx
++++ b/sgcl-web/src/components/layout/Layout/index.tsx
+@@ -18,6 +18,7 @@ import {
+   LuChartLine,
+   LuPiggyBank,
+   LuCreditCard,
++  LuMessageCircle,
+   LuLogOut,
+   LuMenu,
+   LuX,
+@@ -43,6 +44,7 @@ const NAV_ITEMS = [
+   { to: "/relatorios", label: "Relatórios", icon: LuChartLine },
+   { to: "/financeiro", label: "Financeiro", icon: LuPiggyBank },
+   { to: "/planos", label: "Planos", icon: LuCreditCard },
++  { to: "/mensagens", label: "Mensagens", icon: LuMessageCircle },
+ ];
+ 
+ export function Layout({ children }: LayoutProps) {
+diff --git a/sgcl-web/src/components/ui/Table/index.tsx b/sgcl-web/src/components/ui/Table/index.tsx
+index 44e9958..d3837b1 100644
+--- a/sgcl-web/src/components/ui/Table/index.tsx
++++ b/sgcl-web/src/components/ui/Table/index.tsx
+@@ -22,7 +22,7 @@ export function Table<T extends { id: number }>({
+         <thead>
+           <tr>
+             {columns.map((column) => (
+-              <th key={String(column.accessor)}>
++              <th key={`${column.header}-${String(column.accessor)}`}>
+                 {column.header}
+               </th>
+             ))}
+@@ -33,7 +33,7 @@ export function Table<T extends { id: number }>({
+           {data.map((item) => (
+             <tr key={item.id}>
+               {columns.map((column) => (
+-                <td key={String(column.accessor)}>
++                <td key={`${column.header}-${String(column.accessor)}`}>
+                   {column.render
+                     ? column.render(item)
+                     : String(item[column.accessor])}
+diff --git a/sgcl-web/src/modules/alunos/pages/Listar/index.tsx b/sgcl-web/src/modules/alunos/pages/Listar/index.tsx
+index a5eff84..4d6005d 100644
+--- a/sgcl-web/src/modules/alunos/pages/Listar/index.tsx
++++ b/sgcl-web/src/modules/alunos/pages/Listar/index.tsx
+@@ -54,21 +54,26 @@ export function Alunos() {
+     }
+   }
+ 
+-  const alunosFiltrados = alunos.filter((aluno) =>
+-    aluno.nome.toLowerCase().includes(busca.toLowerCase())
+-  );
++  const alunosFiltrados = alunos.filter((aluno) => {
++    const termo = busca.toLowerCase();
++    return (
++      aluno.nome.toLowerCase().includes(termo) ||
++      (aluno.apelido ?? "").toLowerCase().includes(termo)
++    );
++  });
+ 
+   const columns = [
+     {
+-      header: "Nome",
+-      accessor: "nome" as const,
++      header: "Apelido",
++      accessor: "apelido" as const,
++      render: (aluno: Aluno) => aluno.apelido || aluno.nome,
+     },
+     {
+       header: "Idade",
+       accessor: "dataNascimento" as const,
+       render: (aluno: Aluno) => {
+         const idade = calcularIdade(aluno.dataNascimento);
+-    
++
+         return idade !== null ? `${idade} anos` : "-";
+       },
+     },
+@@ -76,10 +81,6 @@ export function Alunos() {
+       header: "Faixa",
+       accessor: "faixa" as const,
+     },
+-    {
+-      header: "Grau",
+-      accessor: "grau" as const,
+-    },
+     {
+       header: "Telefone",
+       accessor: "telefone" as const,
+diff --git a/sgcl-web/src/modules/alunos/pages/Prontuario/index.tsx b/sgcl-web/src/modules/alunos/pages/Prontuario/index.tsx
+index 47cf731..b53d04c 100644
+--- a/sgcl-web/src/modules/alunos/pages/Prontuario/index.tsx
++++ b/sgcl-web/src/modules/alunos/pages/Prontuario/index.tsx
+@@ -24,6 +24,7 @@ interface ProntuarioAlunoData {
+   aluno: {
+     id: number;
+     nome: string;
++    apelido?: string | null;
+     dataNascimento: string;
+     telefone?: string | null;
+     email?: string | null;
+@@ -100,7 +101,7 @@ export function ProntuarioAluno() {
+ 
+   return (
+     <Page>
+-      <PageHeader title={aluno.nome} subtitle="Prontuário completo do aluno." />
++      <PageHeader title={aluno.apelido || aluno.nome} subtitle="Prontuário completo do aluno." />
+ 
+       <div className="prontuario-grid">
+         <InfoCard
+diff --git a/sgcl-web/src/modules/aulas/components/AulaAlunoCard/index.tsx b/sgcl-web/src/modules/aulas/components/AulaAlunoCard/index.tsx
+index 1e51b8a..78922d0 100644
+--- a/sgcl-web/src/modules/aulas/components/AulaAlunoCard/index.tsx
++++ b/sgcl-web/src/modules/aulas/components/AulaAlunoCard/index.tsx
+@@ -1,6 +1,8 @@
+ import { Checkbox } from "../../../../components/ui/Checkbox";
++import { Button } from "../../../../components/ui/Button";
+ import { BehaviorSelector } from "../BehaviorSelector";
+ import { calcularIdade } from "../../../../shared/formatters/data";
++import { linkWhatsapp, formatarTelefoneWhatsapp } from "../../../../shared/utils/linkWhatsapp";
+ 
+ import type { AulaAlunoCardProps } from "./types";
+ 
+@@ -9,16 +11,39 @@ import "./styles.css";
+ export function AulaAlunoCard({
+   registro,
+   aulaFinalizada,
++  dataAula,
+   onChange,
+ }: AulaAlunoCardProps) {
+   const idade = calcularIdade(registro.aluno.dataNascimento);
+   const avaliaComportamento = idade !== null && idade <= 14;
++  const menorDeIdade = idade !== null && idade < 18;
++
++  const responsavel = registro.aluno.responsaveis?.find(
++    (item) => item.recebeComunicados && (item.whatsapp || item.telefone)
++  );
++
++  const telefoneResponsavel = formatarTelefoneWhatsapp(
++    responsavel?.whatsapp || responsavel?.telefone
++  );
++
++  const linkPresenca =
++    responsavel && telefoneResponsavel
++      ? linkWhatsapp(
++          telefoneResponsavel,
++          `Olá ${responsavel.nome}, informamos que ${
++            registro.aluno.apelido || registro.aluno.nome
++          } esteve presente no treino de ${new Date(dataAula).toLocaleDateString(
++            "pt-BR",
++            { timeZone: "UTC" }
++          )}.`
++        )
++      : null;
+ 
+   return (
+     <article className="aula-aluno-card">
+       <header className="aula-aluno-card-header">
+         <div>
+-          <h3>{registro.aluno.nome}</h3>
++          <h3>{registro.aluno.apelido || registro.aluno.nome}</h3>
+ 
+           <p>
+             Faixa {registro.aluno.faixa} • Grau{" "}
+@@ -38,6 +63,16 @@ export function AulaAlunoCard({
+         />
+       </header>
+ 
++      {registro.presente && menorDeIdade && linkPresenca && (
++        <Button
++          type="button"
++          variant="secondary"
++          onClick={() => window.open(linkPresenca, "_blank")}
++        >
++          Avisar responsável no WhatsApp
++        </Button>
++      )}
++
+       {avaliaComportamento && (
+         <BehaviorSelector
+           disabled={aulaFinalizada}
+diff --git a/sgcl-web/src/modules/aulas/components/AulaAlunoCard/types.ts b/sgcl-web/src/modules/aulas/components/AulaAlunoCard/types.ts
+index e33bf70..8820561 100644
+--- a/sgcl-web/src/modules/aulas/components/AulaAlunoCard/types.ts
++++ b/sgcl-web/src/modules/aulas/components/AulaAlunoCard/types.ts
+@@ -3,6 +3,7 @@ import type { AulaAluno } from "../../types";
+ export interface AulaAlunoCardProps {
+   registro: AulaAluno;
+   aulaFinalizada: boolean;
++  dataAula: string;
+ 
+   onChange(
+     registro: AulaAluno,
+diff --git a/sgcl-web/src/modules/aulas/pages/Chamada/index.tsx b/sgcl-web/src/modules/aulas/pages/Chamada/index.tsx
+index c6679d6..e3f6016 100644
+--- a/sgcl-web/src/modules/aulas/pages/Chamada/index.tsx
++++ b/sgcl-web/src/modules/aulas/pages/Chamada/index.tsx
+@@ -144,6 +144,7 @@ export function ChamadaAula() {
+           key={registro.id}
+           registro={registro}
+           aulaFinalizada={aula.status === "FINALIZADA"}
++          dataAula={aula.data}
+           onChange={atualizarAluno}
+         />
+       ))}
+diff --git a/sgcl-web/src/modules/aulas/types/index.ts b/sgcl-web/src/modules/aulas/types/index.ts
+index b1439c1..deaa801 100644
+--- a/sgcl-web/src/modules/aulas/types/index.ts
++++ b/sgcl-web/src/modules/aulas/types/index.ts
+@@ -39,9 +39,19 @@ export interface AulaAluno {
+   aluno: {
+     id: number;
+     nome: string;
++    apelido?: string | null;
+     faixa: string;
+     grau: number;
+     dataNascimento: string;
++    responsaveis?: {
++      id: number;
++      nome: string;
++      apelido?: string | null;
++      telefone?: string | null;
++      whatsapp?: string | null;
++      parentesco: string;
++      recebeComunicados: boolean;
++    }[];
+   };
+ }
+ 
+diff --git a/sgcl-web/src/modules/graduacoes/pages/Listar/index.tsx b/sgcl-web/src/modules/graduacoes/pages/Listar/index.tsx
+index 14149f7..7c67a8c 100644
+--- a/sgcl-web/src/modules/graduacoes/pages/Listar/index.tsx
++++ b/sgcl-web/src/modules/graduacoes/pages/Listar/index.tsx
+@@ -48,6 +48,11 @@ export function ListarGraduacoes() {
+       header: "Faixa",
+       accessor: "faixa" as const,
+     },
++    {
++      header: "Grau",
++      accessor: "alunoId" as const,
++      render: (grad: Graduacao) => grad.aluno?.grau ?? "-",
++    },
+     {
+       header: "Data",
+       accessor: "data" as const,
+diff --git a/sgcl-web/src/modules/graduacoes/types/graduacao.ts b/sgcl-web/src/modules/graduacoes/types/graduacao.ts
+index 4d5b772..ab05bef 100644
+--- a/sgcl-web/src/modules/graduacoes/types/graduacao.ts
++++ b/sgcl-web/src/modules/graduacoes/types/graduacao.ts
+@@ -6,6 +6,8 @@ export interface Graduacao {
+   aluno?: {
+     id: number;
+     nome: string;
++    apelido?: string | null;
++    grau: number;
+   };
+ }
+ 
+diff --git a/sgcl-web/src/modules/mensagens/components/MensagemLista.css b/sgcl-web/src/modules/mensagens/components/MensagemLista.css
+new file mode 100644
+index 0000000..077f3ae
+--- /dev/null
++++ b/sgcl-web/src/modules/mensagens/components/MensagemLista.css
+@@ -0,0 +1,48 @@
++.mensagem-lista {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-4);
++}
++
++.mensagem-card {
++  border: 1px solid var(--color-border);
++  border-radius: var(--radius-lg);
++  padding: var(--space-4);
++  background: var(--color-surface);
++}
++
++.mensagem-card-cabecalho {
++  display: flex;
++  justify-content: space-between;
++  align-items: center;
++  gap: var(--space-4);
++  flex-wrap: wrap;
++}
++
++.mensagem-card-tag {
++  font-size: var(--font-sm);
++  color: var(--color-text-light);
++  background: var(--color-accent-soft);
++  border-radius: var(--radius-sm);
++  padding: 2px var(--space-2);
++}
++
++.mensagem-card-texto {
++  white-space: pre-wrap;
++  margin: var(--space-3) 0;
++  color: var(--color-text);
++  font-size: var(--font-sm);
++  line-height: 1.5;
++}
++
++.mensagem-card-acoes {
++  display: flex;
++  align-items: center;
++  gap: var(--space-3);
++  flex-wrap: wrap;
++}
++
++.mensagem-card-sem-telefone {
++  color: var(--color-text-light);
++  font-size: var(--font-sm);
++}
+diff --git a/sgcl-web/src/modules/mensagens/components/MensagemLista.tsx b/sgcl-web/src/modules/mensagens/components/MensagemLista.tsx
+new file mode 100644
+index 0000000..d7f3a9b
+--- /dev/null
++++ b/sgcl-web/src/modules/mensagens/components/MensagemLista.tsx
+@@ -0,0 +1,105 @@
++import { useEffect, useState } from "react";
++
++import { Loading } from "../../../components/ui/Loading";
++import { EmptyState } from "../../../components/ui/EmptyState";
++import { ErrorMessage } from "../../../components/ui/ErrorMessage";
++import { Button } from "../../../components/ui/Button";
++
++import { linkWhatsapp } from "../../../shared/utils/linkWhatsapp";
++import { getApiErrorMessage } from "../../../shared/utils/getApiErrorMessage";
++import { useToast } from "../../../contexts/toast/useToast";
++
++import type { MensagemGerada } from "../types/mensagem";
++
++import "./MensagemLista.css";
++
++interface MensagemListaProps {
++  carregar: () => Promise<MensagemGerada[]>;
++  tituloVazio: string;
++  descricaoVazio: string;
++}
++
++export function MensagemLista({ carregar, tituloVazio, descricaoVazio }: MensagemListaProps) {
++  const toast = useToast();
++  const [mensagens, setMensagens] = useState<MensagemGerada[]>([]);
++  const [loading, setLoading] = useState(true);
++  const [erro, setErro] = useState("");
++
++  useEffect(() => {
++    let ativo = true;
++
++    async function buscar() {
++      try {
++        setLoading(true);
++        setErro("");
++        const data = await carregar();
++        if (ativo) setMensagens(data);
++      } catch (error) {
++        if (ativo) setErro(getApiErrorMessage(error, "Erro ao carregar mensagens."));
++      } finally {
++        if (ativo) setLoading(false);
++      }
++    }
++
++    buscar();
++
++    return () => {
++      ativo = false;
++    };
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, []);
++
++  async function copiarTexto(mensagem: string) {
++    try {
++      await navigator.clipboard.writeText(mensagem);
++      toast.success("Mensagem copiada.");
++    } catch {
++      toast.error("Não foi possível copiar a mensagem.");
++    }
++  }
++
++  if (loading) return <Loading />;
++
++  if (erro) return <ErrorMessage message={erro} />;
++
++  if (mensagens.length === 0) {
++    return <EmptyState title={tituloVazio} description={descricaoVazio} />;
++  }
++
++  return (
++    <div className="mensagem-lista">
++      {mensagens.map((item, index) => {
++        const link = linkWhatsapp(item.telefone, item.mensagem);
++
++        return (
++          <div key={`${item.alunoId}-${index}`} className="mensagem-card">
++            <div className="mensagem-card-cabecalho">
++              <strong>{item.nomeDestinatario}</strong>
++              <span className="mensagem-card-tag">
++                {item.destinatario === "RESPONSAVEL"
++                  ? `Responsável de ${item.apelido || item.nome}`
++                  : "Aluno"}
++              </span>
++            </div>
++
++            <p className="mensagem-card-texto">{item.mensagem}</p>
++
++            <div className="mensagem-card-acoes">
++              {link ? (
++                <Button type="button" onClick={() => window.open(link, "_blank")}>
++                  Abrir no WhatsApp
++                </Button>
++              ) : (
++                <span className="mensagem-card-sem-telefone">Sem telefone cadastrado</span>
++              )}
++
++              <Button type="button" variant="secondary" onClick={() => copiarTexto(item.mensagem)}>
++                Copiar texto
++              </Button>
++            </div>
++          </div>
++        );
++      })}
++    </div>
++  );
++}
+diff --git a/sgcl-web/src/modules/mensagens/pages/Listar/index.tsx b/sgcl-web/src/modules/mensagens/pages/Listar/index.tsx
+new file mode 100644
+index 0000000..d21f92f
+--- /dev/null
++++ b/sgcl-web/src/modules/mensagens/pages/Listar/index.tsx
+@@ -0,0 +1,88 @@
++import { Layout } from "../../../../components/layout/Layout";
++import { PageHeader } from "../../../../components/layout/PageHeader";
++import { Tabs } from "../../../../components/ui/Tabs";
++
++import { MensagemLista } from "../../components/MensagemLista";
++import { MensagemService } from "../../services/MensagemService";
++
++export function Mensagens() {
++  return (
++    <Layout>
++      <PageHeader
++        title="Mensagens"
++        subtitle="Modelos de mensagem prontos para enviar pelo WhatsApp Web."
++      />
++
++      <Tabs
++        tabs={[
++          {
++            label: "Lembrete de Treino",
++            value: "lembrete-semanal",
++            content: (
++              <MensagemLista
++                carregar={MensagemService.lembreteSemanal}
++                tituloVazio="Nenhum lembrete para enviar"
++                descricaoVazio="Não há alunos com turma cadastrada no momento."
++              />
++            ),
++          },
++          {
++            label: "Vencimento Próximo",
++            value: "lembrete-vencimento",
++            content: (
++              <MensagemLista
++                carregar={MensagemService.lembreteVencimento}
++                tituloVazio="Nenhum vencimento próximo"
++                descricaoVazio="Não há mensalidades vencendo em 5 dias."
++              />
++            ),
++          },
++          {
++            label: "Mensalidade Atrasada",
++            value: "lembrete-atraso",
++            content: (
++              <MensagemLista
++                carregar={MensagemService.lembreteAtraso}
++                tituloVazio="Nenhuma mensalidade atrasada"
++                descricaoVazio="Não há mensalidades com 10 dias de atraso."
++              />
++            ),
++          },
++          {
++            label: "Relatório Mensal",
++            value: "relatorio-mensal",
++            content: (
++              <MensagemLista
++                carregar={MensagemService.relatorioMensal}
++                tituloVazio="Nenhum relatório disponível"
++                descricaoVazio="Não há aulas registradas neste mês ainda."
++              />
++            ),
++          },
++          {
++            label: "Congratulações",
++            value: "congratulacoes-graduacao",
++            content: (
++              <MensagemLista
++                carregar={MensagemService.congratulacoesGraduacao}
++                tituloVazio="Nenhuma graduação recente"
++                descricaoVazio="Não há trocas de faixa nos últimos 7 dias."
++              />
++            ),
++          },
++          {
++            label: "Ausência",
++            value: "ausencia",
++            content: (
++              <MensagemLista
++                carregar={MensagemService.ausencia}
++                tituloVazio="Nenhuma ausência detectada"
++                descricaoVazio="Não há alunos ausentes há mais de 14 dias."
++              />
++            ),
++          },
++        ]}
++      />
++    </Layout>
++  );
++}
+diff --git a/sgcl-web/src/modules/mensagens/services/MensagemService.ts b/sgcl-web/src/modules/mensagens/services/MensagemService.ts
+new file mode 100644
+index 0000000..6d390ee
+--- /dev/null
++++ b/sgcl-web/src/modules/mensagens/services/MensagemService.ts
+@@ -0,0 +1,28 @@
++import { ApiClient } from "../../../shared/api/ApiClient";
++import type { MensagemGerada } from "../types/mensagem";
++
++export class MensagemService {
++  static async lembreteSemanal() {
++    return ApiClient.get<MensagemGerada[]>("/mensagens/lembrete-semanal");
++  }
++
++  static async lembreteVencimento() {
++    return ApiClient.get<MensagemGerada[]>("/mensagens/lembrete-vencimento");
++  }
++
++  static async lembreteAtraso() {
++    return ApiClient.get<MensagemGerada[]>("/mensagens/lembrete-atraso");
++  }
++
++  static async relatorioMensal() {
++    return ApiClient.get<MensagemGerada[]>("/mensagens/relatorio-mensal");
++  }
++
++  static async congratulacoesGraduacao() {
++    return ApiClient.get<MensagemGerada[]>("/mensagens/congratulacoes-graduacao");
++  }
++
++  static async ausencia() {
++    return ApiClient.get<MensagemGerada[]>("/mensagens/ausencia");
++  }
++}
+diff --git a/sgcl-web/src/modules/mensagens/types/mensagem.ts b/sgcl-web/src/modules/mensagens/types/mensagem.ts
+new file mode 100644
+index 0000000..984b547
+--- /dev/null
++++ b/sgcl-web/src/modules/mensagens/types/mensagem.ts
+@@ -0,0 +1,9 @@
++export interface MensagemGerada {
++  alunoId: number;
++  nome: string;
++  apelido?: string | null;
++  destinatario: "ALUNO" | "RESPONSAVEL";
++  nomeDestinatario: string;
++  telefone: string | null;
++  mensagem: string;
++}
+diff --git a/sgcl-web/src/routes/index.tsx b/sgcl-web/src/routes/index.tsx
+index 91f902f..1c3dfab 100644
+--- a/sgcl-web/src/routes/index.tsx
++++ b/sgcl-web/src/routes/index.tsx
+@@ -31,6 +31,7 @@ import { Turmas } from "../modules/turmas/pages/Listar";
+ import { DetalheTurma } from "../modules/turmas/pages/Detalhes";
+ 
+ import { Planos } from "../modules/planos/pages/Listar";
++import { Mensagens } from "../modules/mensagens/pages/Listar";
+ 
+ export function AppRoutes() {
+   return (
+@@ -244,6 +245,15 @@ export function AppRoutes() {
+         }
+       />
+ 
++      <Route
++        path="/mensagens"
++        element={
++          <PrivateRoute>
++            <Mensagens />
++          </PrivateRoute>
++        }
++      />
++
+     </Routes>
+   );
+ }
+diff --git a/sgcl-web/src/shared/utils/linkWhatsapp.ts b/sgcl-web/src/shared/utils/linkWhatsapp.ts
+new file mode 100644
+index 0000000..1595f3e
+--- /dev/null
++++ b/sgcl-web/src/shared/utils/linkWhatsapp.ts
+@@ -0,0 +1,16 @@
++export function linkWhatsapp(telefone: string | null | undefined, mensagem: string): string | null {
++  if (!telefone) return null;
++
++  return `https://wa.me/${telefone}?text=${encodeURIComponent(mensagem)}`;
++}
++
++export function formatarTelefoneWhatsapp(telefone?: string | null): string | null {
++  if (!telefone) return null;
++
++  const digitos = telefone.replace(/\D/g, "");
++  if (!digitos) return null;
++
++  if (digitos.startsWith("55") && digitos.length >= 12) return digitos;
++
++  return `55${digitos}`;
++}
+diff --git a/src/modules/aulas/services/GetAulaService.ts b/src/modules/aulas/services/GetAulaService.ts
+index fc11041..3098288 100644
+--- a/src/modules/aulas/services/GetAulaService.ts
++++ b/src/modules/aulas/services/GetAulaService.ts
+@@ -16,7 +16,22 @@ export class GetAulaService {
+         },
+         alunos: {
+           include: {
+-            aluno: true,
++            aluno: {
++              include: {
++                responsaveis: {
++                  where: { ativo: true },
++                  select: {
++                    id: true,
++                    nome: true,
++                    apelido: true,
++                    telefone: true,
++                    whatsapp: true,
++                    parentesco: true,
++                    recebeComunicados: true,
++                  },
++                },
++              },
++            },
+           },
+           orderBy: {
+             aluno: {
+diff --git a/src/modules/mensagens/controller.ts b/src/modules/mensagens/controller.ts
+new file mode 100644
+index 0000000..632dd30
+--- /dev/null
++++ b/src/modules/mensagens/controller.ts
+@@ -0,0 +1,48 @@
++import { Request, Response } from "express";
++
++import { LembreteSemanalService } from "./services/LembreteSemanalService";
++import { LembreteVencimentoService } from "./services/LembreteVencimentoService";
++import { LembreteAtrasoService } from "./services/LembreteAtrasoService";
++import { RelatorioMensalService } from "./services/RelatorioMensalService";
++import { CongratulacoesGraduacaoService } from "./services/CongratulacoesGraduacaoService";
++import { AusenciaService } from "./services/AusenciaService";
++
++export class MensagensController {
++
++  async lembreteSemanal(req: Request, res: Response) {
++    const service = new LembreteSemanalService();
++    const mensagens = await service.execute();
++    return res.json(mensagens);
++  }
++
++  async lembreteVencimento(req: Request, res: Response) {
++    const service = new LembreteVencimentoService();
++    const mensagens = await service.execute();
++    return res.json(mensagens);
++  }
++
++  async lembreteAtraso(req: Request, res: Response) {
++    const service = new LembreteAtrasoService();
++    const mensagens = await service.execute();
++    return res.json(mensagens);
++  }
++
++  async relatorioMensal(req: Request, res: Response) {
++    const service = new RelatorioMensalService();
++    const mensagens = await service.execute();
++    return res.json(mensagens);
++  }
++
++  async congratulacoesGraduacao(req: Request, res: Response) {
++    const service = new CongratulacoesGraduacaoService();
++    const mensagens = await service.execute();
++    return res.json(mensagens);
++  }
++
++  async ausencia(req: Request, res: Response) {
++    const service = new AusenciaService();
++    const mensagens = await service.execute();
++    return res.json(mensagens);
++  }
++
++}
+diff --git a/src/modules/mensagens/routes.ts b/src/modules/mensagens/routes.ts
+new file mode 100644
+index 0000000..b84b347
+--- /dev/null
++++ b/src/modules/mensagens/routes.ts
+@@ -0,0 +1,54 @@
++import { Router } from "express";
++import { MensagensController } from "./controller";
++import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
++import { ensureRole } from "../../shared/middlewares/ensureRole";
++
++const mensagensRoutes = Router();
++
++const controller = new MensagensController();
++
++const perfisPermitidos = ["ADMIN", "PROFESSOR", "RECEPCAO"];
++
++mensagensRoutes.get(
++  "/lembrete-semanal",
++  ensureAuthenticated,
++  ensureRole(perfisPermitidos),
++  controller.lembreteSemanal
++);
++
++mensagensRoutes.get(
++  "/lembrete-vencimento",
++  ensureAuthenticated,
++  ensureRole(perfisPermitidos),
++  controller.lembreteVencimento
++);
++
++mensagensRoutes.get(
++  "/lembrete-atraso",
++  ensureAuthenticated,
++  ensureRole(perfisPermitidos),
++  controller.lembreteAtraso
++);
++
++mensagensRoutes.get(
++  "/relatorio-mensal",
++  ensureAuthenticated,
++  ensureRole(perfisPermitidos),
++  controller.relatorioMensal
++);
++
++mensagensRoutes.get(
++  "/congratulacoes-graduacao",
++  ensureAuthenticated,
++  ensureRole(perfisPermitidos),
++  controller.congratulacoesGraduacao
++);
++
++mensagensRoutes.get(
++  "/ausencia",
++  ensureAuthenticated,
++  ensureRole(perfisPermitidos),
++  controller.ausencia
++);
++
++export { mensagensRoutes };
+diff --git a/src/modules/mensagens/services/AusenciaService.ts b/src/modules/mensagens/services/AusenciaService.ts
+new file mode 100644
+index 0000000..b665966
+--- /dev/null
++++ b/src/modules/mensagens/services/AusenciaService.ts
+@@ -0,0 +1,72 @@
++import { prisma } from "../../../shared/database/prisma";
++import { calcularIdade, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
++
++const DIAS_LIMITE_AUSENCIA = 14;
++
++export class AusenciaService {
++  async execute(): Promise<MensagemGerada[]> {
++    const dataLimite = new Date();
++    dataLimite.setUTCDate(dataLimite.getUTCDate() - DIAS_LIMITE_AUSENCIA);
++
++    const alunos = await prisma.aluno.findMany({
++      where: {
++        ativo: true,
++        turmaId: { not: null },
++      },
++      include: {
++        responsaveis: { where: { ativo: true, recebeComunicados: true } },
++        aulas: {
++          where: { presente: true },
++          include: { aula: { select: { data: true } } },
++          orderBy: { aula: { data: "desc" } },
++          take: 1,
++        },
++      },
++    });
++
++    const mensagens: MensagemGerada[] = [];
++
++    for (const aluno of alunos) {
++      const ultimaPresenca = aluno.aulas[0]?.aula.data;
++
++      const ausente = !ultimaPresenca || ultimaPresenca < dataLimite;
++
++      if (!ausente) continue;
++
++      const nomeExibicao = aluno.apelido || aluno.nome;
++
++      const texto = ultimaPresenca
++        ? `Olá! Sentimos a falta de ${nomeExibicao} no tatame — a última presença foi há mais de ${DIAS_LIMITE_AUSENCIA} dias. Está tudo bem? Esperamos vocês em breve! 🥋`
++        : `Olá! Notamos que ${nomeExibicao} ainda não compareceu a nenhuma aula. Podemos ajudar com alguma dúvida sobre os horários da turma?`;
++
++      const idade = calcularIdade(aluno.dataNascimento);
++
++      if (idade < 18) {
++        const responsavel = aluno.responsaveis[0];
++        if (!responsavel) continue;
++
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "RESPONSAVEL",
++          nomeDestinatario: responsavel.apelido || responsavel.nome,
++          telefone: formatarTelefoneWhatsapp(responsavel.whatsapp || responsavel.telefone),
++          mensagem: texto,
++        });
++      } else {
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "ALUNO",
++          nomeDestinatario: nomeExibicao,
++          telefone: formatarTelefoneWhatsapp(aluno.whatsapp || aluno.telefone),
++          mensagem: texto,
++        });
++      }
++    }
++
++    return mensagens;
++  }
++}
+diff --git a/src/modules/mensagens/services/CongratulacoesGraduacaoService.ts b/src/modules/mensagens/services/CongratulacoesGraduacaoService.ts
+new file mode 100644
+index 0000000..32ebca4
+--- /dev/null
++++ b/src/modules/mensagens/services/CongratulacoesGraduacaoService.ts
+@@ -0,0 +1,64 @@
++import { prisma } from "../../../shared/database/prisma";
++import { calcularIdade, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
++
++export class CongratulacoesGraduacaoService {
++  async execute(): Promise<MensagemGerada[]> {
++    const seteDiasAtras = new Date();
++    seteDiasAtras.setUTCDate(seteDiasAtras.getUTCDate() - 7);
++    seteDiasAtras.setUTCHours(0, 0, 0, 0);
++
++    const graduacoes = await prisma.graduacao.findMany({
++      where: {
++        data: { gte: seteDiasAtras },
++      },
++      include: {
++        aluno: {
++          include: {
++            responsaveis: { where: { ativo: true, recebeComunicados: true } },
++          },
++        },
++      },
++      orderBy: { data: "desc" },
++    });
++
++    const mensagens: MensagemGerada[] = [];
++
++    for (const graduacao of graduacoes) {
++      const aluno = graduacao.aluno;
++      const nomeExibicao = aluno.apelido || aluno.nome;
++
++      const texto =
++        `Parabéns, ${nomeExibicao}! 🎉🥋 Você conquistou a faixa ${graduacao.faixa}! ` +
++        `Essa conquista é resultado de muito esforço e dedicação no tatame. Continue assim!`;
++
++      const idade = calcularIdade(aluno.dataNascimento);
++
++      if (idade < 18) {
++        const responsavel = aluno.responsaveis[0];
++        if (!responsavel) continue;
++
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "RESPONSAVEL",
++          nomeDestinatario: responsavel.apelido || responsavel.nome,
++          telefone: formatarTelefoneWhatsapp(responsavel.whatsapp || responsavel.telefone),
++          mensagem: texto,
++        });
++      } else {
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "ALUNO",
++          nomeDestinatario: nomeExibicao,
++          telefone: formatarTelefoneWhatsapp(aluno.whatsapp || aluno.telefone),
++          mensagem: texto,
++        });
++      }
++    }
++
++    return mensagens;
++  }
++}
+diff --git a/src/modules/mensagens/services/LembreteAtrasoService.ts b/src/modules/mensagens/services/LembreteAtrasoService.ts
+new file mode 100644
+index 0000000..33e12d9
+--- /dev/null
++++ b/src/modules/mensagens/services/LembreteAtrasoService.ts
+@@ -0,0 +1,76 @@
++import { prisma } from "../../../shared/database/prisma";
++import {
++  calcularIdade,
++  formatarDataBr,
++  formatarTelefoneWhatsapp,
++  formatarValorBr,
++  type MensagemGerada,
++} from "../utils";
++
++export class LembreteAtrasoService {
++  async execute(): Promise<MensagemGerada[]> {
++    const hoje = new Date();
++    hoje.setUTCHours(0, 0, 0, 0);
++
++    const dataAlvo = new Date(hoje);
++    dataAlvo.setUTCDate(dataAlvo.getUTCDate() - 10);
++
++    const proximoDia = new Date(dataAlvo);
++    proximoDia.setUTCDate(proximoDia.getUTCDate() + 1);
++
++    const mensalidades = await prisma.mensalidade.findMany({
++      where: {
++        pago: false,
++        vencimento: { gte: dataAlvo, lt: proximoDia },
++      },
++      include: {
++        aluno: {
++          include: {
++            responsaveis: { where: { ativo: true, recebeComunicados: true } },
++          },
++        },
++      },
++    });
++
++    const mensagens: MensagemGerada[] = [];
++
++    for (const mensalidade of mensalidades) {
++      const aluno = mensalidade.aluno;
++      const nomeExibicao = aluno.apelido || aluno.nome;
++
++      const texto =
++        `Olá! Notamos que a mensalidade de ${nomeExibicao}, vencida em ${formatarDataBr(mensalidade.vencimento)} ` +
++        `(valor de R$ ${formatarValorBr(mensalidade.valor)}), ainda está em aberto. ` +
++        `Poderia verificar a situação, por favor? Qualquer dúvida estamos à disposição.`;
++
++      const idade = calcularIdade(aluno.dataNascimento);
++
++      if (idade < 18) {
++        const responsavel = aluno.responsaveis[0];
++        if (!responsavel) continue;
++
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "RESPONSAVEL",
++          nomeDestinatario: responsavel.apelido || responsavel.nome,
++          telefone: formatarTelefoneWhatsapp(responsavel.whatsapp || responsavel.telefone),
++          mensagem: texto,
++        });
++      } else {
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "ALUNO",
++          nomeDestinatario: nomeExibicao,
++          telefone: formatarTelefoneWhatsapp(aluno.whatsapp || aluno.telefone),
++          mensagem: texto,
++        });
++      }
++    }
++
++    return mensagens;
++  }
++}
+diff --git a/src/modules/mensagens/services/LembreteSemanalService.ts b/src/modules/mensagens/services/LembreteSemanalService.ts
+new file mode 100644
+index 0000000..78dfa0f
+--- /dev/null
++++ b/src/modules/mensagens/services/LembreteSemanalService.ts
+@@ -0,0 +1,61 @@
++import { prisma } from "../../../shared/database/prisma";
++import { calcularIdade, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
++
++export class LembreteSemanalService {
++  async execute(): Promise<MensagemGerada[]> {
++    const alunos = await prisma.aluno.findMany({
++      where: {
++        ativo: true,
++        turmaId: { not: null },
++      },
++      include: {
++        turma: true,
++        responsaveis: {
++          where: { ativo: true, recebeComunicados: true },
++        },
++      },
++    });
++
++    const mensagens: MensagemGerada[] = [];
++
++    for (const aluno of alunos) {
++      if (!aluno.turma) continue;
++
++      const nomeExibicao = aluno.apelido || aluno.nome;
++
++      const texto =
++        `Olá! Passando para lembrar que essa semana ${nomeExibicao} tem treino de Jiu-Jitsu ` +
++        `${aluno.turma.diasSemana}, das ${aluno.turma.horarioInicio} às ${aluno.turma.horarioFim}. ` +
++        `Contamos com a presença! 🥋`;
++
++      const idade = calcularIdade(aluno.dataNascimento);
++
++      if (idade < 18) {
++        const responsavel = aluno.responsaveis[0];
++        if (!responsavel) continue;
++
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "RESPONSAVEL",
++          nomeDestinatario: responsavel.apelido || responsavel.nome,
++          telefone: formatarTelefoneWhatsapp(responsavel.whatsapp || responsavel.telefone),
++          mensagem: texto,
++        });
++      } else {
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "ALUNO",
++          nomeDestinatario: nomeExibicao,
++          telefone: formatarTelefoneWhatsapp(aluno.whatsapp || aluno.telefone),
++          mensagem: texto,
++        });
++      }
++    }
++
++    return mensagens;
++  }
++}
+diff --git a/src/modules/mensagens/services/LembreteVencimentoService.ts b/src/modules/mensagens/services/LembreteVencimentoService.ts
+new file mode 100644
+index 0000000..bb051c9
+--- /dev/null
++++ b/src/modules/mensagens/services/LembreteVencimentoService.ts
+@@ -0,0 +1,75 @@
++import { prisma } from "../../../shared/database/prisma";
++import {
++  calcularIdade,
++  formatarDataBr,
++  formatarTelefoneWhatsapp,
++  formatarValorBr,
++  type MensagemGerada,
++} from "../utils";
++
++export class LembreteVencimentoService {
++  async execute(): Promise<MensagemGerada[]> {
++    const hoje = new Date();
++    hoje.setUTCHours(0, 0, 0, 0);
++
++    const dataAlvo = new Date(hoje);
++    dataAlvo.setUTCDate(dataAlvo.getUTCDate() + 5);
++
++    const proximoDia = new Date(dataAlvo);
++    proximoDia.setUTCDate(proximoDia.getUTCDate() + 1);
++
++    const mensalidades = await prisma.mensalidade.findMany({
++      where: {
++        pago: false,
++        vencimento: { gte: dataAlvo, lt: proximoDia },
++      },
++      include: {
++        aluno: {
++          include: {
++            responsaveis: { where: { ativo: true, recebeComunicados: true } },
++          },
++        },
++      },
++    });
++
++    const mensagens: MensagemGerada[] = [];
++
++    for (const mensalidade of mensalidades) {
++      const aluno = mensalidade.aluno;
++      const nomeExibicao = aluno.apelido || aluno.nome;
++
++      const texto =
++        `Olá! Passando para lembrar que a mensalidade de ${nomeExibicao} vence em 5 dias, ` +
++        `no dia ${formatarDataBr(mensalidade.vencimento)}, no valor de R$ ${formatarValorBr(mensalidade.valor)}. 😊`;
++
++      const idade = calcularIdade(aluno.dataNascimento);
++
++      if (idade < 18) {
++        const responsavel = aluno.responsaveis[0];
++        if (!responsavel) continue;
++
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "RESPONSAVEL",
++          nomeDestinatario: responsavel.apelido || responsavel.nome,
++          telefone: formatarTelefoneWhatsapp(responsavel.whatsapp || responsavel.telefone),
++          mensagem: texto,
++        });
++      } else {
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "ALUNO",
++          nomeDestinatario: nomeExibicao,
++          telefone: formatarTelefoneWhatsapp(aluno.whatsapp || aluno.telefone),
++          mensagem: texto,
++        });
++      }
++    }
++
++    return mensagens;
++  }
++}
+diff --git a/src/modules/mensagens/services/RelatorioMensalService.ts b/src/modules/mensagens/services/RelatorioMensalService.ts
+new file mode 100644
+index 0000000..3620b35
+--- /dev/null
++++ b/src/modules/mensagens/services/RelatorioMensalService.ts
+@@ -0,0 +1,79 @@
++import { prisma } from "../../../shared/database/prisma";
++import { calcularIdade, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
++
++export class RelatorioMensalService {
++  async execute(): Promise<MensagemGerada[]> {
++    const hoje = new Date();
++    const inicioMes = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), 1));
++    const inicioProximoMes = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth() + 1, 1));
++
++    const alunos = await prisma.aluno.findMany({
++      where: {
++        ativo: true,
++        turmaId: { not: null },
++      },
++      include: {
++        responsaveis: { where: { ativo: true, recebeComunicados: true } },
++        aulas: {
++          where: {
++            aula: {
++              data: { gte: inicioMes, lt: inicioProximoMes },
++            },
++          },
++        },
++      },
++    });
++
++    const mensagens: MensagemGerada[] = [];
++    const nomeMes = hoje.toLocaleDateString("pt-BR", { month: "long" });
++
++    for (const aluno of alunos) {
++      if (aluno.aulas.length === 0) continue;
++
++      const nomeExibicao = aluno.apelido || aluno.nome;
++
++      const totalAulas = aluno.aulas.length;
++      const presencas = aluno.aulas.filter((a) => a.presente).length;
++      const frequencia = Math.round((presencas / totalAulas) * 100);
++
++      const respeito = aluno.aulas.filter((a) => a.respeito).length;
++      const esforco = aluno.aulas.filter((a) => a.esforco).length;
++      const disciplina = aluno.aulas.filter((a) => a.disciplina).length;
++
++      const texto =
++        `Olá! Segue o resumo de ${nomeExibicao} em ${nomeMes}: ` +
++        `${presencas} de ${totalAulas} aulas (${frequencia}% de frequência). ` +
++        `Destaques de comportamento: respeito em ${respeito} aulas, esforço em ${esforco} aulas e disciplina em ${disciplina} aulas. ` +
++        `Continue incentivando essa evolução! 💪🥋`;
++
++      const idade = calcularIdade(aluno.dataNascimento);
++
++      if (idade < 18) {
++        const responsavel = aluno.responsaveis[0];
++        if (!responsavel) continue;
++
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "RESPONSAVEL",
++          nomeDestinatario: responsavel.apelido || responsavel.nome,
++          telefone: formatarTelefoneWhatsapp(responsavel.whatsapp || responsavel.telefone),
++          mensagem: texto,
++        });
++      } else {
++        mensagens.push({
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          apelido: aluno.apelido,
++          destinatario: "ALUNO",
++          nomeDestinatario: nomeExibicao,
++          telefone: formatarTelefoneWhatsapp(aluno.whatsapp || aluno.telefone),
++          mensagem: texto,
++        });
++      }
++    }
++
++    return mensagens;
++  }
++}
+diff --git a/src/modules/mensagens/utils.ts b/src/modules/mensagens/utils.ts
+new file mode 100644
+index 0000000..7f111d8
+--- /dev/null
++++ b/src/modules/mensagens/utils.ts
+@@ -0,0 +1,47 @@
++export interface MensagemGerada {
++  alunoId: number;
++  nome: string;
++  apelido?: string | null;
++  destinatario: "ALUNO" | "RESPONSAVEL";
++  nomeDestinatario: string;
++  telefone: string | null;
++  mensagem: string;
++}
++
++export function formatarTelefoneWhatsapp(telefone?: string | null): string | null {
++  if (!telefone) return null;
++
++  const digitos = telefone.replace(/\D/g, "");
++
++  if (!digitos) return null;
++
++  if (digitos.startsWith("55") && digitos.length >= 12) {
++    return digitos;
++  }
++
++  return `55${digitos}`;
++}
++
++export function calcularIdade(dataNascimento: Date): number {
++  const hoje = new Date();
++
++  let idade = hoje.getFullYear() - dataNascimento.getFullYear();
++
++  const aniversarioNaoChegou =
++    hoje.getMonth() < dataNascimento.getMonth() ||
++    (hoje.getMonth() === dataNascimento.getMonth() && hoje.getDate() < dataNascimento.getDate());
++
++  if (aniversarioNaoChegou) {
++    idade--;
++  }
++
++  return idade;
++}
++
++export function formatarDataBr(data: Date): string {
++  return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
++}
++
++export function formatarValorBr(valor: number): string {
++  return valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
++}
+diff --git a/src/server.ts b/src/server.ts
+index a05ec88..706b6ee 100644
+--- a/src/server.ts
++++ b/src/server.ts
+@@ -22,6 +22,7 @@ import { aulasRoutes } from "./modules/aulas/routes";
+ import { tecnicasRoutes } from "./modules/tecnicas/routes";
+ import { curriculosRoutes } from "./modules/curriculos/routes";
+ import { planosRoutes } from "./modules/planos/routes";
++import { mensagensRoutes } from "./modules/mensagens/routes";
+ const app = express();
+ 
+ app.use((req, res, next) => {
+@@ -61,6 +62,7 @@ app.use("/aulas", aulasRoutes);
+ app.use("/tecnicas", tecnicasRoutes);
+ app.use("/curriculos", curriculosRoutes);
+ app.use("/planos", planosRoutes);
++app.use("/mensagens", mensagensRoutes);
+ 
+ app.use("/auth", authRoutes);
+ app.use(errorHandler);
+-- 
+2.43.0
+

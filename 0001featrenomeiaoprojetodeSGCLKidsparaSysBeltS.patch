@@ -1,0 +1,601 @@
+From d83f5f09d45acdac3f1d7f071f39fd484630696f Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sat, 11 Jul 2026 20:16:04 +0000
+Subject: [PATCH] feat: renomeia o projeto de SGCL Kids para Sys Belt - Sistema
+ Faixa Preta
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Sidebar: logo "Sys Belt" com subtítulo "Sistema Faixa Preta"
+- Login: mesma marca (selo "SB", título e subtítulo)
+- Título da aba do navegador (index.html) e campo "projeto" da rota raiz
+  da API atualizados
+- Documentação (docs/*.md): todas as menções a "SGCL Kids" e "SGCL" como
+  nome do projeto atualizadas para "Sys Belt". Mantido "SGCL" apenas nos
+  2 lugares em que se refere ao namespace interno de componentes
+  (components/sgcl/, já usado no código) e não ao nome do produto —
+  renomear essa pasta seria um refactor de código maior, fora do pedido
+---
+ docs/README.md                                |  6 ++---
+ docs/api.md                                   |  2 +-
+ docs/architecture-decisions.md                |  4 +--
+ docs/arquitetura.md                           |  4 +--
+ docs/backend.md                               |  4 +--
+ docs/banco-de-dados.md                        |  4 +--
+ docs/changelog.md                             |  2 +-
+ docs/coding-standards.md                      |  4 +--
+ docs/deploy.md                                |  6 ++---
+ docs/design-system.md                         |  4 +--
+ docs/frontend.md                              |  6 ++---
+ docs/modelo-pedagogico.md                     | 14 +++++-----
+ docs/pedagogia/curriculo-kids.md              |  4 +--
+ docs/product-vision.md                        |  4 +--
+ docs/regras-de-negocio.md                     |  6 ++---
+ docs/roadmap.md                               |  6 ++---
+ docs/seguranca.md                             |  6 ++---
+ docs/testes.md                                |  6 ++---
+ sgcl-web/index.html                           |  2 +-
+ .../src/components/layout/Layout/index.tsx    |  5 +++-
+ .../src/components/layout/Layout/styles.css   | 26 +++++++++++++++++++
+ sgcl-web/src/pages/Login/index.tsx            |  6 ++---
+ src/server.ts                                 |  2 +-
+ 23 files changed, 81 insertions(+), 52 deletions(-)
+
+diff --git a/docs/README.md b/docs/README.md
+index 349fd23..99bb50b 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -1,4 +1,4 @@
+-# SGCL Kids
++# Sys Belt - Sistema Faixa Preta
+ 
+ > Sistema de Gestão da Cia de Lutas Weberty Viana
+ 
+@@ -6,7 +6,7 @@
+ 
+ # Sobre o projeto
+ 
+-O **SGCL Kids (Sistema de Gestão Cia de Lutas Kids)** é uma plataforma desenvolvida para realizar a gestão completa de academias de Jiu-Jitsu Infantil.
++O **Sys Belt - Sistema Faixa Preta** é uma plataforma desenvolvida para realizar a gestão completa de academias de Jiu-Jitsu Infantil.
+ 
+ O projeto nasceu da necessidade de integrar em um único sistema:
+ 
+@@ -19,7 +19,7 @@ O projeto nasceu da necessidade de integrar em um único sistema:
+ - Competições
+ - Relatórios
+ 
+-O grande diferencial do SGCL é unir a gestão administrativa com o planejamento pedagógico do Jiu-Jitsu Kids.
++O grande diferencial do Sys Belt é unir a gestão administrativa com o planejamento pedagógico do Jiu-Jitsu Kids.
+ 
+ ---
+ 
+diff --git a/docs/api.md b/docs/api.md
+index 95e2743..3cd9037 100644
+--- a/docs/api.md
++++ b/docs/api.md
+@@ -8,7 +8,7 @@ Versão do documento: 1.0
+ 
+ # Visão Geral
+ 
+-A API do SGCL Kids segue o padrão RESTful utilizando JSON para troca de informações entre frontend e backend.
++A API do Sys Belt - Sistema Faixa Preta segue o padrão RESTful utilizando JSON para troca de informações entre frontend e backend.
+ 
+ Todas as respostas utilizam UTF-8.
+ 
+diff --git a/docs/architecture-decisions.md b/docs/architecture-decisions.md
+index e060fb2..7b4a388 100644
+--- a/docs/architecture-decisions.md
++++ b/docs/architecture-decisions.md
+@@ -1,4 +1,4 @@
+-# SGCL — Architecture Decision Records
++# Sys Belt — Architecture Decision Records
+ 
+ ## ADR-001 — Separação entre Backend e Frontend
+ 
+@@ -6,7 +6,7 @@ Data: 25/06/2026
+ 
+ ### Decisão
+ 
+-O SGCL será dividido em dois projetos:
++O Sys Belt será dividido em dois projetos:
+ 
+ - sgcl-api
+ - sgcl-web
+diff --git a/docs/arquitetura.md b/docs/arquitetura.md
+index 87d1a44..3ab71ec 100644
+--- a/docs/arquitetura.md
++++ b/docs/arquitetura.md
+@@ -8,7 +8,7 @@ Versão do documento: 1.0
+ 
+ # Visão Geral
+ 
+-O SGCL Kids (Sistema de Gestão da Cia de Lutas) foi desenvolvido utilizando arquitetura em camadas, separando claramente responsabilidades entre frontend, backend, banco de dados e regras de negócio.
++O Sys Belt - Sistema Faixa Preta foi desenvolvido utilizando arquitetura em camadas, separando claramente responsabilidades entre frontend, backend, banco de dados e regras de negócio.
+ 
+ O objetivo principal dessa arquitetura é garantir:
+ 
+@@ -592,6 +592,6 @@ Design System próprio
+ 
+ # Resumo
+ 
+-O SGCL Kids foi arquitetado para ser uma plataforma completa de gestão pedagógica e administrativa para academias de artes marciais, priorizando modularidade, organização, escalabilidade e facilidade de manutenção.
++O Sys Belt - Sistema Faixa Preta foi arquitetado para ser uma plataforma completa de gestão pedagógica e administrativa para academias de artes marciais, priorizando modularidade, organização, escalabilidade e facilidade de manutenção.
+ 
+ A arquitetura atual suporta a evolução do sistema para uma solução SaaS sem necessidade de reestruturações profundas.
+\ No newline at end of file
+diff --git a/docs/backend.md b/docs/backend.md
+index 85d40c4..2d335a5 100644
+--- a/docs/backend.md
++++ b/docs/backend.md
+@@ -8,7 +8,7 @@ Versão do documento: 1.0
+ 
+ # Objetivo
+ 
+-O backend do SGCL Kids é responsável por toda a regra de negócio da aplicação.
++O backend do Sys Belt - Sistema Faixa Preta é responsável por toda a regra de negócio da aplicação.
+ 
+ Nenhuma regra de negócio deve existir no frontend.
+ 
+@@ -795,6 +795,6 @@ Próximas melhorias
+ 
+ # Conclusão
+ 
+-O backend do SGCL Kids foi projetado para manter uma arquitetura limpa, modular e escalável, garantindo facilidade de manutenção e evolução contínua do sistema.
++O backend do Sys Belt - Sistema Faixa Preta foi projetado para manter uma arquitetura limpa, modular e escalável, garantindo facilidade de manutenção e evolução contínua do sistema.
+ 
+ Todas as novas funcionalidades devem seguir os padrões definidos neste documento para preservar a consistência do projeto.
+\ No newline at end of file
+diff --git a/docs/banco-de-dados.md b/docs/banco-de-dados.md
+index 3403941..7e74ed6 100644
+--- a/docs/banco-de-dados.md
++++ b/docs/banco-de-dados.md
+@@ -8,7 +8,7 @@ Versão do documento: 1.0
+ 
+ # Objetivo
+ 
+-O banco de dados do SGCL Kids foi modelado para representar toda a vida acadêmica, esportiva e administrativa do aluno.
++O banco de dados do Sys Belt - Sistema Faixa Preta foi modelado para representar toda a vida acadêmica, esportiva e administrativa do aluno.
+ 
+ O modelo foi desenvolvido utilizando Prisma ORM, permitindo compatibilidade entre SQLite (desenvolvimento) e PostgreSQL (produção).
+ 
+@@ -921,4 +921,4 @@ Documentos
+ 
+ # Conclusão
+ 
+-O modelo de dados do SGCL Kids foi concebido para representar toda a jornada do aluno, desde sua matrícula até sua evolução esportiva, mantendo histórico completo e permitindo futuras expansões para uma plataforma SaaS sem necessidade de remodelagem estrutural.
+\ No newline at end of file
++O modelo de dados do Sys Belt - Sistema Faixa Preta foi concebido para representar toda a jornada do aluno, desde sua matrícula até sua evolução esportiva, mantendo histórico completo e permitindo futuras expansões para uma plataforma SaaS sem necessidade de remodelagem estrutural.
+\ No newline at end of file
+diff --git a/docs/changelog.md b/docs/changelog.md
+index 9bba465..bd047c7 100644
+--- a/docs/changelog.md
++++ b/docs/changelog.md
+@@ -1,6 +1,6 @@
+ # Changelog
+ 
+-Todas as mudanças relevantes do SGCL Kids serão documentadas neste arquivo.
++Todas as mudanças relevantes do Sys Belt - Sistema Faixa Preta serão documentadas neste arquivo.
+ 
+ O formato utilizado segue o conceito do **Keep a Changelog**, adaptado para o projeto.
+ 
+diff --git a/docs/coding-standards.md b/docs/coding-standards.md
+index cc1ac2f..2663bc4 100644
+--- a/docs/coding-standards.md
++++ b/docs/coding-standards.md
+@@ -1,8 +1,8 @@
+-# Coding Standards - SGCL
++# Coding Standards - Sys Belt
+ 
+ ## Objetivo
+ 
+-Este documento define os padrões de desenvolvimento adotados no SGCL.
++Este documento define os padrões de desenvolvimento adotados no Sys Belt.
+ 
+ ---
+ 
+diff --git a/docs/deploy.md b/docs/deploy.md
+index 10ecb90..71c6825 100644
+--- a/docs/deploy.md
++++ b/docs/deploy.md
+@@ -8,7 +8,7 @@ Versão: 1.0
+ 
+ # Objetivo
+ 
+-Este documento descreve o processo oficial de implantação (Deploy) do SGCL Kids.
++Este documento descreve o processo oficial de implantação (Deploy) do Sys Belt - Sistema Faixa Preta.
+ 
+ Seu objetivo é garantir que qualquer desenvolvedor consiga publicar uma nova versão do sistema de forma segura, reproduzível e documentada.
+ 
+@@ -16,7 +16,7 @@ Seu objetivo é garantir que qualquer desenvolvedor consiga publicar uma nova ve
+ 
+ # Ambientes
+ 
+-O SGCL possui três ambientes.
++O Sys Belt possui três ambientes.
+ 
+ ## Desenvolvimento
+ 
+@@ -630,4 +630,4 @@ Próximas melhorias
+ 
+ # Conclusão
+ 
+-O processo de Deploy do SGCL foi projetado para garantir segurança, disponibilidade e rastreabilidade, permitindo que novas versões sejam publicadas com mínimo risco e máxima previsibilidade.
+\ No newline at end of file
++O processo de Deploy do Sys Belt foi projetado para garantir segurança, disponibilidade e rastreabilidade, permitindo que novas versões sejam publicadas com mínimo risco e máxima previsibilidade.
+\ No newline at end of file
+diff --git a/docs/design-system.md b/docs/design-system.md
+index 3e40967..42420e0 100644
+--- a/docs/design-system.md
++++ b/docs/design-system.md
+@@ -8,7 +8,7 @@ Versão: 1.0
+ 
+ # Objetivo
+ 
+-O Design System do SGCL define todos os padrões visuais e de interação da aplicação.
++O Design System do Sys Belt define todos os padrões visuais e de interação da aplicação.
+ 
+ Seu objetivo é garantir:
+ 
+@@ -661,4 +661,4 @@ Internacionalização
+ 
+ # Conclusão
+ 
+-O Design System do SGCL garante que todas as telas da aplicação mantenham a mesma identidade visual e comportamento, reduzindo inconsistências e acelerando o desenvolvimento de novas funcionalidades.
+\ No newline at end of file
++O Design System do Sys Belt garante que todas as telas da aplicação mantenham a mesma identidade visual e comportamento, reduzindo inconsistências e acelerando o desenvolvimento de novas funcionalidades.
+\ No newline at end of file
+diff --git a/docs/frontend.md b/docs/frontend.md
+index 6098078..cf7c502 100644
+--- a/docs/frontend.md
++++ b/docs/frontend.md
+@@ -8,7 +8,7 @@ Versão do documento: 1.0
+ 
+ # Objetivo
+ 
+-O frontend do SGCL Kids foi desenvolvido utilizando React + TypeScript e segue uma arquitetura modular baseada em domínio.
++O frontend do Sys Belt - Sistema Faixa Preta foi desenvolvido utilizando React + TypeScript e segue uma arquitetura modular baseada em domínio.
+ 
+ Cada módulo da aplicação é independente, contendo suas próprias páginas, componentes, serviços, tipos, validações e utilitários.
+ 
+@@ -433,7 +433,7 @@ Botões
+ 
+ # Design System
+ 
+-O SGCL possui Design System próprio.
++O Sys Belt possui Design System próprio.
+ 
+ Componentes principais
+ 
+@@ -738,4 +738,4 @@ Próximas evoluções
+ 
+ # Conclusão
+ 
+-O frontend do SGCL Kids foi projetado para ser modular, escalável e consistente. Todo novo desenvolvimento deve seguir os padrões descritos neste documento para manter a organização e a experiência do usuário em toda a aplicação.
+\ No newline at end of file
++O frontend do Sys Belt - Sistema Faixa Preta foi projetado para ser modular, escalável e consistente. Todo novo desenvolvimento deve seguir os padrões descritos neste documento para manter a organização e a experiência do usuário em toda a aplicação.
+\ No newline at end of file
+diff --git a/docs/modelo-pedagogico.md b/docs/modelo-pedagogico.md
+index 869c382..8853832 100644
+--- a/docs/modelo-pedagogico.md
++++ b/docs/modelo-pedagogico.md
+@@ -4,7 +4,7 @@ Versão 1.0
+ 
+ Cia de Lutas Weberty Viana
+ 
+-Sistema SGCL Kids
++Sistema Sys Belt - Sistema Faixa Preta
+ 
+ ---
+ 
+@@ -14,7 +14,7 @@ O presente documento estabelece a metodologia pedagógica utilizada pela Cia de
+ 
+ Seu objetivo é padronizar o ensino entre todos os professores da equipe, garantindo que todas as crianças recebam uma formação consistente, progressiva e baseada em princípios técnicos, humanos e esportivos.
+ 
+-Este documento também serve como base para o funcionamento do SGCL Kids, sendo utilizado pelo sistema para organizar currículos, técnicas, avaliações e evolução dos alunos.
++Este documento também serve como base para o funcionamento do Sys Belt - Sistema Faixa Preta, sendo utilizado pelo sistema para organizar currículos, técnicas, avaliações e evolução dos alunos.
+ 
+ ---
+ 
+@@ -104,7 +104,7 @@ Preparar alunos para:
+ 
+ # Organização por Faixa Etária
+ 
+-O SGCL organiza os alunos em quatro categorias.
++O Sys Belt organiza os alunos em quatro categorias.
+ 
+ ## Infantil (4 a 14 anos)
+ 
+@@ -431,7 +431,7 @@ Atenção
+ 
+ Disciplina
+ 
+-Esses indicadores são registrados no SGCL e compõem o histórico comportamental do aluno.
++Esses indicadores são registrados no Sys Belt e compõem o histórico comportamental do aluno.
+ 
+ ---
+ 
+@@ -522,9 +522,9 @@ O sistema permitirá, futuramente, o compartilhamento de informações do prontu
+ 
+ ---
+ 
+-# Uso do SGCL
++# Uso do Sys Belt
+ 
+-O SGCL é o instrumento oficial para registrar:
++O Sys Belt é o instrumento oficial para registrar:
+ 
+ - presença
+ - evolução
+@@ -550,4 +550,4 @@ Novas técnicas, jogos, metodologias e critérios poderão ser incorporados conf
+ 
+ A metodologia da Cia de Lutas Weberty Viana busca formar crianças tecnicamente preparadas, emocionalmente equilibradas e comprometidas com valores que ultrapassam o ambiente esportivo.
+ 
+-O SGCL Kids foi concebido para apoiar essa missão, transformando o acompanhamento pedagógico em um processo estruturado, mensurável e contínuo.
+\ No newline at end of file
++O Sys Belt - Sistema Faixa Preta foi concebido para apoiar essa missão, transformando o acompanhamento pedagógico em um processo estruturado, mensurável e contínuo.
+\ No newline at end of file
+diff --git a/docs/pedagogia/curriculo-kids.md b/docs/pedagogia/curriculo-kids.md
+index 8b2a38f..7fb2238 100644
+--- a/docs/pedagogia/curriculo-kids.md
++++ b/docs/pedagogia/curriculo-kids.md
+@@ -2,7 +2,7 @@
+ 
+ ## 1. Objetivo
+ 
+-Organizar a evolução técnica, comportamental e pedagógica dos alunos do Infantil (4 a 14 anos), permitindo que o SGCL acompanhe presença, comportamento, técnicas aprendidas e critérios de graduação.
++Organizar a evolução técnica, comportamental e pedagógica dos alunos do Infantil (4 a 14 anos), permitindo que o Sys Belt acompanhe presença, comportamento, técnicas aprendidas e critérios de graduação.
+ 
+ ## 2. Divisão por idade
+ 
+@@ -77,7 +77,7 @@ O aluno será avaliado por:
+ - Aplicação em treinos
+ - Respeito aos colegas e professores
+ 
+-## 7. Objetivo do SGCL
++## 7. Objetivo do Sys Belt
+ 
+ O sistema deverá registrar:
+ 
+diff --git a/docs/product-vision.md b/docs/product-vision.md
+index fb7de44..0ee5032 100644
+--- a/docs/product-vision.md
++++ b/docs/product-vision.md
+@@ -1,8 +1,8 @@
+-# SGCL - Sistema de Gestão da Cia de Lutas
++# Sys Belt - Sistema Faixa Preta
+ 
+ ## Visão
+ 
+-O SGCL é um sistema de gestão desenvolvido para academias de Jiu-Jitsu, inicialmente criado para atender às necessidades da Cia de Lutas Weberty Viana.
++O Sys Belt é um sistema de gestão desenvolvido para academias de Jiu-Jitsu, inicialmente criado para atender às necessidades da Cia de Lutas Weberty Viana.
+ 
+ O objetivo é centralizar todas as informações acadêmicas, administrativas e financeiras em uma única plataforma.
+ 
+diff --git a/docs/regras-de-negocio.md b/docs/regras-de-negocio.md
+index cda7328..c8e1891 100644
+--- a/docs/regras-de-negocio.md
++++ b/docs/regras-de-negocio.md
+@@ -8,7 +8,7 @@ Versão do documento: 1.0
+ 
+ # Objetivo
+ 
+-Este documento descreve todas as regras de negócio do SGCL Kids.
++Este documento descreve todas as regras de negócio do Sys Belt - Sistema Faixa Preta.
+ 
+ Toda implementação realizada no sistema deve obedecer às regras aqui descritas.
+ 
+@@ -18,7 +18,7 @@ Caso uma regra seja alterada, este documento deverá ser atualizado antes da imp
+ 
+ # Filosofia do Sistema
+ 
+-O SGCL não é apenas um sistema administrativo.
++O Sys Belt não é apenas um sistema administrativo.
+ 
+ Ele foi desenvolvido para acompanhar toda a jornada do aluno dentro da academia.
+ 
+@@ -632,7 +632,7 @@ Inteligência Artificial
+ 
+ # Princípios
+ 
+-O SGCL foi desenvolvido considerando que o objetivo principal da academia não é apenas ensinar técnicas de Jiu-Jitsu, mas formar pessoas.
++O Sys Belt foi desenvolvido considerando que o objetivo principal da academia não é apenas ensinar técnicas de Jiu-Jitsu, mas formar pessoas.
+ 
+ Por isso, todas as regras do sistema procuram refletir tanto a evolução técnica quanto o desenvolvimento humano do aluno.
+ 
+diff --git a/docs/roadmap.md b/docs/roadmap.md
+index ced98c1..57e1706 100644
+--- a/docs/roadmap.md
++++ b/docs/roadmap.md
+@@ -1,4 +1,4 @@
+-# SGCL Kids — Roadmap Oficial
++# Sys Belt - Sistema Faixa Preta — Roadmap Oficial
+ 
+ > Documento de Planejamento Estratégico
+ 
+@@ -10,7 +10,7 @@ Versão do documento: 2.0
+ 
+ # Visão
+ 
+-O SGCL Kids é um sistema completo de gestão para academias de Jiu-Jitsu Infantil.
++O Sys Belt - Sistema Faixa Preta é um sistema completo de gestão para academias de Jiu-Jitsu Infantil.
+ 
+ O projeto foi concebido para unir:
+ 
+@@ -483,7 +483,7 @@ Planejada para:
+ 
+ # Longo Prazo
+ 
+-Transformar o SGCL Kids em uma plataforma SaaS para academias de artes marciais.
++Transformar o Sys Belt - Sistema Faixa Preta em uma plataforma SaaS para academias de artes marciais.
+ 
+ ---
+ 
+diff --git a/docs/seguranca.md b/docs/seguranca.md
+index 737ec76..429d343 100644
+--- a/docs/seguranca.md
++++ b/docs/seguranca.md
+@@ -8,7 +8,7 @@ Versão: 1.0
+ 
+ # Objetivo
+ 
+-Este documento define todas as diretrizes de segurança adotadas pelo SGCL Kids.
++Este documento define todas as diretrizes de segurança adotadas pelo Sys Belt - Sistema Faixa Preta.
+ 
+ Seu objetivo é proteger:
+ 
+@@ -23,7 +23,7 @@ Seu objetivo é proteger:
+ 
+ # Princípios
+ 
+-Toda funcionalidade do SGCL deve obedecer aos seguintes princípios:
++Toda funcionalidade do Sys Belt deve obedecer aos seguintes princípios:
+ 
+ - Confidencialidade
+ - Integridade
+@@ -582,6 +582,6 @@ Integração com serviços de monitoramento
+ 
+ # Conclusão
+ 
+-A segurança do SGCL deve evoluir continuamente.
++A segurança do Sys Belt deve evoluir continuamente.
+ 
+ Toda nova funcionalidade deverá ser analisada sob a perspectiva de proteção dos dados, controle de acesso e conformidade com as boas práticas de desenvolvimento seguro.
+\ No newline at end of file
+diff --git a/docs/testes.md b/docs/testes.md
+index cc97ea5..fc1cfad 100644
+--- a/docs/testes.md
++++ b/docs/testes.md
+@@ -8,7 +8,7 @@ Versão: 1.0
+ 
+ # Objetivo
+ 
+-Este documento define a estratégia oficial de testes do SGCL Kids.
++Este documento define a estratégia oficial de testes do Sys Belt - Sistema Faixa Preta.
+ 
+ Seu objetivo é garantir que todas as funcionalidades entregues apresentem qualidade, estabilidade e segurança antes de serem disponibilizadas aos usuários.
+ 
+@@ -37,7 +37,7 @@ Nenhuma funcionalidade deve ser considerada concluída sem passar pelos critéri
+ 
+ # Tipos de Teste
+ 
+-O SGCL utiliza quatro níveis.
++O Sys Belt utiliza quatro níveis.
+ 
+ - Testes manuais
+ - Testes unitários
+@@ -662,6 +662,6 @@ Fluxos críticos
+ 
+ # Conclusão
+ 
+-Os testes garantem que o SGCL evolua com segurança e previsibilidade.
++Os testes garantem que o Sys Belt evolua com segurança e previsibilidade.
+ 
+ Toda nova funcionalidade deverá passar pelos critérios definidos neste documento antes de ser considerada pronta para uso.
+\ No newline at end of file
+diff --git a/sgcl-web/index.html b/sgcl-web/index.html
+index ae46a0c..254bd8d 100644
+--- a/sgcl-web/index.html
++++ b/sgcl-web/index.html
+@@ -4,7 +4,7 @@
+     <meta charset="UTF-8" />
+     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title>sgcl-web</title>
++    <title>Sys Belt - Sistema Faixa Preta</title>
+   </head>
+   <body>
+     <div id="root"></div>
+diff --git a/sgcl-web/src/components/layout/Layout/index.tsx b/sgcl-web/src/components/layout/Layout/index.tsx
+index 1900257..3bc4038 100644
+--- a/sgcl-web/src/components/layout/Layout/index.tsx
++++ b/sgcl-web/src/components/layout/Layout/index.tsx
+@@ -65,7 +65,10 @@ export function Layout({ children }: LayoutProps) {
+     <div className="layout">
+       <aside className={`sidebar${menuAberto ? " sidebar-aberta" : ""}`}>
+         <div className="sidebar-topo">
+-          <h2>SGCL Kids</h2>
++          <div className="sidebar-marca">
++            <h2>Sys Belt</h2>
++            <span>Sistema Faixa Preta</span>
++          </div>
+ 
+           <button
+             type="button"
+diff --git a/sgcl-web/src/components/layout/Layout/styles.css b/sgcl-web/src/components/layout/Layout/styles.css
+index ad76b68..837c58d 100644
+--- a/sgcl-web/src/components/layout/Layout/styles.css
++++ b/sgcl-web/src/components/layout/Layout/styles.css
+@@ -26,6 +26,12 @@
+ 
+ }
+ 
++.sidebar-marca{
++
++  min-width:0;
++
++}
++
+ .sidebar h2{
+ 
+   margin-top:0;
+@@ -35,6 +41,26 @@
+ 
+   letter-spacing:.02em;
+ 
++  white-space:nowrap;
++
++}
++
++.sidebar-marca span{
++
++  display:block;
++
++  margin-top:2px;
++
++  font-size:11px;
++
++  color:rgba(255,255,255,.6);
++
++  text-transform:uppercase;
++
++  letter-spacing:.06em;
++
++  white-space:nowrap;
++
+ }
+ 
+ .sidebar-fechar{
+diff --git a/sgcl-web/src/pages/Login/index.tsx b/sgcl-web/src/pages/Login/index.tsx
+index 7741337..69b25fc 100644
+--- a/sgcl-web/src/pages/Login/index.tsx
++++ b/sgcl-web/src/pages/Login/index.tsx
+@@ -39,9 +39,9 @@ export function Login() {
+     <div className="login-page">
+       <div className="login-card">
+         <div className="login-brand">
+-          <span className="login-brand-selo">SGCL</span>
+-          <h1>SGCL Kids</h1>
+-          <p>Gestão de academia e artes marciais</p>
++          <span className="login-brand-selo">SB</span>
++          <h1>Sys Belt</h1>
++          <p>Sistema Faixa Preta</p>
+         </div>
+ 
+         <form className="login-form" onSubmit={handleSubmit}>
+diff --git a/src/server.ts b/src/server.ts
+index 12073ac..a05ec88 100644
+--- a/src/server.ts
++++ b/src/server.ts
+@@ -40,7 +40,7 @@ app.get("/", (req, res) => {
+   console.log("Entrou na rota raiz");
+ 
+   return res.json({
+-    projeto: "SGCL",
++    projeto: "Sys Belt - Sistema Faixa Preta",
+     versao: "1.0.0",
+   });
+ });
+-- 
+2.43.0
+
