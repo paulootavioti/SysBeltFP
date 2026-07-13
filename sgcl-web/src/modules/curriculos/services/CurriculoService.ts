@@ -32,4 +32,23 @@ export class CurriculoService {
   static async criarTecnica(data: TecnicaCurriculoFormData & { aulaCurriculoId: number }) {
     return ApiClient.post("/curriculos/tecnicas", data);
   }
+
+  static async atualizar(id: number, data: CurriculoFormData) {
+    return ApiClient.put<Curriculo>(`/curriculos/${id}`, data);
+  }
+
+  static async atualizarModulo(id: number, data: ModuloFormData) {
+    return ApiClient.put(`/curriculos/modulos/${id}`, data);
+  }
+
+  static async atualizarAula(
+    id: number,
+    data: Omit<AulaCurriculoFormData, "duracaoMinutos"> & { duracaoMinutos?: number }
+  ) {
+    return ApiClient.put(`/curriculos/aulas/${id}`, data);
+  }
+
+  static async atualizarTecnica(id: number, data: TecnicaCurriculoFormData) {
+    return ApiClient.put(`/curriculos/tecnicas/${id}`, data);
+  }
 }

@@ -6,6 +6,10 @@ import { GetCurriculoService } from "./services/GetCurriculoService";
 import { CreateModuloCurriculoService } from "./services/CreateModuloCurriculoService";
 import { CreateAulaCurriculoService } from "./services/CreateAulaCurriculoService";
 import { CreateTecnicaCurriculoService } from "./services/CreateTecnicaCurriculoService";
+import { UpdateCurriculoService } from "./services/UpdateCurriculoService";
+import { UpdateModuloCurriculoService } from "./services/UpdateModuloCurriculoService";
+import { UpdateAulaCurriculoService } from "./services/UpdateAulaCurriculoService";
+import { UpdateTecnicaCurriculoService } from "./services/UpdateTecnicaCurriculoService";
 
 export class CurriculosController {
   async create(req: Request, res: Response) {
@@ -54,5 +58,37 @@ export class CurriculosController {
     const tecnica = await service.execute(req.body);
 
     return res.status(201).json(tecnica);
+  }
+
+  async update(req: Request, res: Response) {
+    const service = new UpdateCurriculoService();
+
+    const curriculo = await service.execute(Number(req.params.id), req.body);
+
+    return res.json(curriculo);
+  }
+
+  async updateModulo(req: Request, res: Response) {
+    const service = new UpdateModuloCurriculoService();
+
+    const modulo = await service.execute(Number(req.params.id), req.body);
+
+    return res.json(modulo);
+  }
+
+  async updateAula(req: Request, res: Response) {
+    const service = new UpdateAulaCurriculoService();
+
+    const aula = await service.execute(Number(req.params.id), req.body);
+
+    return res.json(aula);
+  }
+
+  async updateTecnica(req: Request, res: Response) {
+    const service = new UpdateTecnicaCurriculoService();
+
+    const tecnica = await service.execute(Number(req.params.id), req.body);
+
+    return res.json(tecnica);
   }
 }

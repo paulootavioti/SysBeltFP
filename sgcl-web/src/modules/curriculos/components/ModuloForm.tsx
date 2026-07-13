@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -11,16 +12,22 @@ import { moduloSchema, type ModuloFormData } from "../schema/curriculo.schema";
 
 interface ModuloFormProps {
   loading?: boolean;
+  initialValues?: Partial<ModuloFormData>;
   onSubmit: (data: ModuloFormData) => void;
 }
 
-export function ModuloForm({ loading = false, onSubmit }: ModuloFormProps) {
+export function ModuloForm({ loading = false, initialValues, onSubmit }: ModuloFormProps) {
   const methods = useForm<ModuloFormData>({
     resolver: zodResolver(moduloSchema),
-    defaultValues: { nome: "", descricao: "", faixa: "" },
+    defaultValues: { nome: "", descricao: "", faixa: "", ...initialValues },
   });
 
   const { register, handleSubmit, formState: { errors } } = methods;
+
+  useEffect(() => {
+    methods.reset({ nome: "", descricao: "", faixa: "", ...initialValues });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues]);
 
   return (
     <FormProvider {...methods}>
@@ -41,7 +48,7 @@ export function ModuloForm({ loading = false, onSubmit }: ModuloFormProps) {
         </FormGrid>
 
         <Button type="submit" disabled={loading}>
-          {loading ? "Salvando..." : "Cadastrar Módulo"}
+          {loading ? "Salvando..." : initialValues ? "Salvar Alterações" : "Cadastrar Módulo"}
         </Button>
       </form>
     </FormProvider>

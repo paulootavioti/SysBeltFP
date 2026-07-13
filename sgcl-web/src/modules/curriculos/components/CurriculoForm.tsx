@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -11,16 +12,34 @@ import { curriculoSchema, type CurriculoFormData } from "../schema/curriculo.sch
 
 interface CurriculoFormProps {
   loading?: boolean;
+  initialValues?: Partial<CurriculoFormData>;
   onSubmit: (data: CurriculoFormData) => void;
 }
 
-export function CurriculoForm({ loading = false, onSubmit }: CurriculoFormProps) {
+export function CurriculoForm({ loading = false, initialValues, onSubmit }: CurriculoFormProps) {
   const methods = useForm<CurriculoFormData>({
     resolver: zodResolver(curriculoSchema),
-    defaultValues: { nome: "", descricao: "", modalidade: "Jiu-Jitsu", publico: "Kids" },
+    defaultValues: {
+      nome: "",
+      descricao: "",
+      modalidade: "Jiu-Jitsu",
+      publico: "Kids",
+      ...initialValues,
+    },
   });
 
   const { register, handleSubmit, formState: { errors } } = methods;
+
+  useEffect(() => {
+    methods.reset({
+      nome: "",
+      descricao: "",
+      modalidade: "Jiu-Jitsu",
+      publico: "Kids",
+      ...initialValues,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues]);
 
   return (
     <FormProvider {...methods}>
@@ -45,7 +64,7 @@ export function CurriculoForm({ loading = false, onSubmit }: CurriculoFormProps)
         </FormGrid>
 
         <Button type="submit" disabled={loading}>
-          {loading ? "Salvando..." : "Cadastrar Currículo"}
+          {loading ? "Salvando..." : initialValues ? "Salvar Alterações" : "Cadastrar Currículo"}
         </Button>
       </form>
     </FormProvider>

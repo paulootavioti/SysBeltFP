@@ -43,4 +43,28 @@ curriculosRoutes.post(
   controller.createTecnica
 );
 
+curriculosRoutes.put(
+  "/modulos/:id",
+  ensureAuthenticated,
+  controller.updateModulo
+);
+
+curriculosRoutes.put(
+  "/aulas/:id",
+  ensureAuthenticated,
+  controller.updateAula
+);
+
+curriculosRoutes.put(
+  "/tecnicas/:id",
+  ensureAuthenticated,
+  controller.updateTecnica
+);
+
+curriculosRoutes.put(
+  "/:id",
+  ensureAuthenticated,
+  controller.update
+);
+
 export { curriculosRoutes };

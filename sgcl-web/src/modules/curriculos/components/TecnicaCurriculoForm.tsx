@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -12,16 +13,22 @@ import { tecnicaCurriculoSchema, type TecnicaCurriculoFormData } from "../schema
 
 interface TecnicaCurriculoFormProps {
   loading?: boolean;
+  initialValues?: Partial<TecnicaCurriculoFormData>;
   onSubmit: (data: TecnicaCurriculoFormData) => void;
 }
 
-export function TecnicaCurriculoForm({ loading = false, onSubmit }: TecnicaCurriculoFormProps) {
+export function TecnicaCurriculoForm({ loading = false, initialValues, onSubmit }: TecnicaCurriculoFormProps) {
   const methods = useForm<TecnicaCurriculoFormData>({
     resolver: zodResolver(tecnicaCurriculoSchema),
-    defaultValues: { nome: "", categoria: "", descricao: "", obrigatoria: true },
+    defaultValues: { nome: "", categoria: "", descricao: "", obrigatoria: true, ...initialValues },
   });
 
   const { register, handleSubmit, formState: { errors } } = methods;
+
+  useEffect(() => {
+    methods.reset({ nome: "", categoria: "", descricao: "", obrigatoria: true, ...initialValues });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues]);
 
   return (
     <FormProvider {...methods}>
@@ -46,7 +53,7 @@ export function TecnicaCurriculoForm({ loading = false, onSubmit }: TecnicaCurri
         </FormGrid>
 
         <Button type="submit" disabled={loading}>
-          {loading ? "Salvando..." : "Cadastrar Técnica"}
+          {loading ? "Salvando..." : initialValues ? "Salvar Alterações" : "Cadastrar Técnica"}
         </Button>
       </form>
     </FormProvider>
