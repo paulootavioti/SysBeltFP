@@ -10,6 +10,7 @@ import { UpdateCurriculoService } from "./services/UpdateCurriculoService";
 import { UpdateModuloCurriculoService } from "./services/UpdateModuloCurriculoService";
 import { UpdateAulaCurriculoService } from "./services/UpdateAulaCurriculoService";
 import { UpdateTecnicaCurriculoService } from "./services/UpdateTecnicaCurriculoService";
+import { DeleteCurriculoService } from "./services/DeleteCurriculoService";
 
 export class CurriculosController {
   async create(req: Request, res: Response) {
@@ -90,5 +91,13 @@ export class CurriculosController {
     const tecnica = await service.execute(Number(req.params.id), req.body);
 
     return res.json(tecnica);
+  }
+
+  async delete(req: Request, res: Response) {
+    const service = new DeleteCurriculoService();
+
+    await service.execute(Number(req.params.id));
+
+    return res.status(204).send();
   }
 }

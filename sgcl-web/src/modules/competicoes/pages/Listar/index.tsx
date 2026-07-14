@@ -10,6 +10,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { Modal } from "../../../../components/ui/Modal";
 
+import { useAuth } from "../../../../contexts/AuthContext";
 import { useCompeticoes } from "../../hooks/useCompeticoes";
 import { CompeticaoService } from "../../services/CompeticaoService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -25,9 +26,13 @@ function formatarData(data: string): string {
 
 export function Competicoes() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
   const { competicoes, loading, erro, setErro, carregarCompeticoes } = useCompeticoes();
   const [modalAberto, setModalAberto] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const [excluindoId, setExcluindoId] = useState<number | null>(null);
+
+  const ehAdmin = usuario?.perfil === "ADMIN";
 
   async function handleCriarCompeticao(data: CompeticaoFormData) {
     try {
@@ -43,6 +48,23 @@ export function Competicoes() {
     }
   }
 
+  async function handleExcluirCompeticao(competicao: Competicao) {
+    if (!window.confirm(`Excluir a competição "${competicao.nome}"? Essa ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      setExcluindoId(competicao.id);
+      setErro("");
+      await CompeticaoService.excluir(competicao.id);
+      await carregarCompeticoes();
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao excluir competição."));
+    } finally {
+      setExcluindoId(null);
+    }
+  }
+
   const columns = [
     { header: "Nome", accessor: "nome" as const },
     {
@@ -55,13 +77,26 @@ export function Competicoes() {
       header: "Ações",
       accessor: "id" as const,
       render: (competicao: Competicao) => (
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => navigate(`/competicoes/${competicao.id}`)}
-        >
-          Ver atletas
-        </Button>
+        <div className="competicoes-acoes-linha">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => navigate(`/competicoes/${competicao.id}`)}
+          >
+            Ver atletas
+          </Button>
+
+          {ehAdmin && (
+            <Button
+              type="button"
+              variant="danger"
+              disabled={excluindoId === competicao.id}
+              onClick={() => handleExcluirCompeticao(competicao)}
+            >
+              {excluindoId === competicao.id ? "Excluindo..." : "Excluir"}
+            </Button>
+          )}
+        </div>
       ),
     },
   ];

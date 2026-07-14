@@ -27,4 +27,8 @@ export class CompeticaoService {
       resultado,
     });
   }
+
+  static async excluir(id: number) {
+    return ApiClient.delete(`/competicoes/${id}`);
+  }
 }

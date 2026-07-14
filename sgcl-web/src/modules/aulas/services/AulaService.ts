@@ -89,4 +89,12 @@ export class AulaService {
 
     return response.data;
   }
+
+  static async excluir(id: number) {
+    await api.delete(`/aulas/${id}`);
+  }
+
+  static async excluirProgramada(id: number) {
+    await api.delete(`/aulas/programadas/${id}`);
+  }
 }

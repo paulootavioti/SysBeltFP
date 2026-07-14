@@ -11,6 +11,7 @@ import { Loading } from "../../../../components/ui/Loading";
 import { Badge } from "../../../../components/ui/Badge";
 import { Modal } from "../../../../components/ui/Modal";
 
+import { useAuth } from "../../../../contexts/AuthContext";
 import { AulaService } from "../../services/AulaService";
 import { ProgramarAulaForm, type ProgramarAulaFormData } from "../../components/ProgramarAulaForm";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -27,6 +28,7 @@ function formatarDataHora(data: string) {
 
 export function ProgramacaoAulas() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
 
   const [programacoes, setProgramacoes] = useState<AulaProgramada[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +36,9 @@ export function ProgramacaoAulas() {
   const [modalAberto, setModalAberto] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [iniciandoId, setIniciandoId] = useState<number | null>(null);
+  const [excluindoId, setExcluindoId] = useState<number | null>(null);
+
+  const ehAdmin = usuario?.perfil === "ADMIN";
 
   async function carregarProgramacoes() {
     try {
@@ -83,6 +88,23 @@ export function ProgramacaoAulas() {
     }
   }
 
+  async function handleExcluir(programacao: AulaProgramada) {
+    if (!window.confirm("Excluir esta programação de aula? Essa ação não pode ser desfeita.")) {
+      return;
+    }
+
+    try {
+      setExcluindoId(programacao.id);
+      setErro("");
+      await AulaService.excluirProgramada(programacao.id);
+      await carregarProgramacoes();
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao excluir programação."));
+    } finally {
+      setExcluindoId(null);
+    }
+  }
+
   const columns = [
     { header: "Turma", accessor: "turma" as const, render: (p: AulaProgramada) => p.turma.nome },
     { header: "Data/Horário", accessor: "data" as const, render: (p: AulaProgramada) => formatarDataHora(p.data) },
@@ -103,14 +125,26 @@ export function ProgramacaoAulas() {
     {
       header: "Ações",
       accessor: "id" as const,
-      render: (p: AulaProgramada) =>
-        p.status === "PENDENTE" ? (
-          <Button type="button" onClick={() => handleIniciar(p.id)} disabled={iniciandoId === p.id}>
-            {iniciandoId === p.id ? "Iniciando..." : "Iniciar Aula"}
-          </Button>
-        ) : (
-          "-"
-        ),
+      render: (p: AulaProgramada) => (
+        <div className="programacao-acoes-linha">
+          {p.status === "PENDENTE" && (
+            <Button type="button" onClick={() => handleIniciar(p.id)} disabled={iniciandoId === p.id}>
+              {iniciandoId === p.id ? "Iniciando..." : "Iniciar Aula"}
+            </Button>
+          )}
+
+          {ehAdmin && (
+            <Button
+              type="button"
+              variant="danger"
+              disabled={excluindoId === p.id}
+              onClick={() => handleExcluir(p)}
+            >
+              {excluindoId === p.id ? "Excluindo..." : "Excluir"}
+            </Button>
+          )}
+        </div>
+      ),
     },
   ];
 

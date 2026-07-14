@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import { CurriculosController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+import { ensureRole } from "../../shared/middlewares/ensureRole";
 
 const curriculosRoutes = Router();
 
@@ -65,6 +66,13 @@ curriculosRoutes.put(
   "/:id",
   ensureAuthenticated,
   controller.update
+);
+
+curriculosRoutes.delete(
+  "/:id",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  controller.delete
 );
 
 export { curriculosRoutes };

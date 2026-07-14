@@ -9,6 +9,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Modal } from "../../../../components/ui/Modal";
 import { Badge } from "../../../../components/ui/Badge";
 
+import { useAuth } from "../../../../contexts/AuthContext";
 import { useCurriculos } from "../../hooks/useCurriculos";
 import { CurriculoService } from "../../services/CurriculoService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -37,9 +38,13 @@ type ModalState =
   | null;
 
 export function Curriculos() {
+  const { usuario } = useAuth();
   const { curriculos, loading, erro, setErro, carregarCurriculos } = useCurriculos();
   const [modal, setModal] = useState<ModalState>(null);
   const [salvando, setSalvando] = useState(false);
+  const [excluindoId, setExcluindoId] = useState<number | null>(null);
+
+  const ehAdmin = usuario?.perfil === "ADMIN";
 
   async function handleSalvarCurriculo(data: CurriculoFormData, editando?: Curriculo) {
     try {
@@ -117,6 +122,27 @@ export function Curriculos() {
     }
   }
 
+  async function handleExcluirCurriculo(curriculo: Curriculo) {
+    if (
+      !window.confirm(
+        `Excluir o currículo "${curriculo.nome}"? Todos os módulos, aulas e técnicas dele também serão apagados. Essa ação não pode ser desfeita.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setExcluindoId(curriculo.id);
+      setErro("");
+      await CurriculoService.excluir(curriculo.id);
+      await carregarCurriculos();
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao excluir currículo."));
+    } finally {
+      setExcluindoId(null);
+    }
+  }
+
   if (loading) {
     return (
       <Layout>
@@ -170,6 +196,17 @@ export function Curriculos() {
                 >
                   + Módulo
                 </Button>
+
+                {ehAdmin && (
+                  <Button
+                    type="button"
+                    variant="danger"
+                    disabled={excluindoId === curriculo.id}
+                    onClick={() => handleExcluirCurriculo(curriculo)}
+                  >
+                    {excluindoId === curriculo.id ? "Excluindo..." : "Excluir"}
+                  </Button>
+                )}
               </div>
             </div>
 

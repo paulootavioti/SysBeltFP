@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import { AulasController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+import { ensureRole } from "../../shared/middlewares/ensureRole";
 
 const aulasRoutes = Router();
 
@@ -49,11 +50,24 @@ aulasRoutes.patch(
   controller.iniciarProgramada
 );
 
+aulasRoutes.delete(
+  "/programadas/:id",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  controller.deleteProgramada
+);
+
 aulasRoutes.get(
   "/:id",
   ensureAuthenticated,
   controller.show
 );
 
+aulasRoutes.delete(
+  "/:id",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  controller.delete
+);
 
 export { aulasRoutes };

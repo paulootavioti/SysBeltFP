@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../../shared/database/prisma";
+import { DeleteCompeticaoService } from "./services/DeleteCompeticaoService";
 
 export class CompeticoesController {
 
@@ -89,5 +90,13 @@ export class CompeticoesController {
       });
   
     return res.json(inscricao);
+  }
+
+  async delete(req: Request, res: Response) {
+    const service = new DeleteCompeticaoService();
+
+    await service.execute(Number(req.params.id));
+
+    return res.status(204).send();
   }
 }

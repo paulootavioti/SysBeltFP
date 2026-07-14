@@ -8,6 +8,7 @@ import { Badge } from "../../../../components/ui/Badge";
 import { Modal } from "../../../../components/ui/Modal";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 
+import { useAuth } from "../../../../contexts/AuthContext";
 import { AulaService } from "../../services/AulaService";
 import { IniciarAulaForm, type IniciarAulaFormData } from "../../components/IniciarAulaForm";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -16,12 +17,15 @@ import type { Aula } from "../../types";
 
 export function Aulas() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
 
   const [aulas, setAulas] = useState<Aula[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [iniciando, setIniciando] = useState(false);
   const [erro, setErro] = useState("");
+
+  const ehAdmin = usuario?.perfil === "ADMIN";
 
   async function carregarAulas() {
     try {
@@ -57,6 +61,20 @@ export function Aulas() {
     }
   }
 
+  async function handleExcluirAula(aula: Aula) {
+    if (!window.confirm("Excluir esta aula? Os registros de chamada dela também serão apagados. Essa ação não pode ser desfeita.")) {
+      return;
+    }
+
+    try {
+      setErro("");
+      await AulaService.excluir(aula.id);
+      await carregarAulas();
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao excluir aula."));
+    }
+  }
+
   return (
     <Layout>
       <PageHeader title="Aulas" subtitle="Controle das aulas e chamadas." />
@@ -76,6 +94,7 @@ export function Aulas() {
         onEdit={(aula) => {
           navigate(`/aulas/${aula.id}/chamada`);
         }}
+        onDelete={ehAdmin ? handleExcluirAula : undefined}
         columns={[
           { header: "Turma", render: (aula) => aula.turma?.nome ?? "-" },
           { header: "Professor", render: (aula) => aula.professor ?? "-" },

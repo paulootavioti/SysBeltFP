@@ -51,4 +51,8 @@ export class CurriculoService {
   static async atualizarTecnica(id: number, data: TecnicaCurriculoFormData) {
     return ApiClient.put(`/curriculos/tecnicas/${id}`, data);
   }
+
+  static async excluir(id: number) {
+    return ApiClient.delete(`/curriculos/${id}`);
+  }
 }

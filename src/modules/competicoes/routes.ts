@@ -43,4 +43,11 @@ competicoesRoutes.patch(
   competicoesController.resultado
 );
 
+competicoesRoutes.delete(
+  "/:id",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  competicoesController.delete
+);
+
 export { competicoesRoutes };
