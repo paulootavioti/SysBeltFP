@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Select } from "../../../components/ui/Select";
 import { Input } from "../../../components/ui/Input";
+import { Checkbox } from "../../../components/ui/Checkbox";
 import { Button } from "../../../components/ui/Button";
 import { ErrorMessage } from "../../../components/ui/ErrorMessage";
 import { FormGrid } from "../../../components/ui/FormGrid";
@@ -27,8 +28,12 @@ export function GraduacaoForm({ loading = false, onSubmit }: GraduacaoFormProps)
     resolver: zodResolver(graduacaoSchema),
     defaultValues: {
       alunoId: "",
+      tipo: "FAIXA",
       faixa: "",
       data: new Date().toISOString().split("T")[0],
+      gerarCobranca: false,
+      valorCobranca: "",
+      vencimentoCobranca: "",
     },
   });
 
@@ -49,6 +54,9 @@ export function GraduacaoForm({ loading = false, onSubmit }: GraduacaoFormProps)
   const alunoIdSelecionado = watch("alunoId");
   const alunoSelecionado = alunos.find((a) => String(a.id) === alunoIdSelecionado);
 
+  const tipoSelecionado = watch("tipo");
+  const gerarCobranca = watch("gerarCobranca");
+
   const faixasDisponiveis = alunoSelecionado
     ? getFaixasDaTrilha(calcularIdade(alunoSelecionado.dataNascimento))
     : [];
@@ -62,7 +70,7 @@ export function GraduacaoForm({ loading = false, onSubmit }: GraduacaoFormProps)
               label="Aluno"
               disabled={carregandoAlunos}
               options={alunos.map((aluno) => ({
-                label: `${aluno.nome} - ${aluno.faixa}`,
+                label: `${aluno.nome} - ${aluno.faixa} (grau ${aluno.grau})`,
                 value: String(aluno.id),
               }))}
               {...register("alunoId")}
@@ -72,18 +80,49 @@ export function GraduacaoForm({ loading = false, onSubmit }: GraduacaoFormProps)
 
           <FormGridItem>
             <Select
-              label="Nova Faixa"
-              disabled={!alunoSelecionado}
-              options={faixasDisponiveis.map((faixa) => ({ label: faixa, value: faixa }))}
-              {...register("faixa")}
+              label="Tipo de Graduação"
+              options={[
+                { label: "Troca de Faixa", value: "FAIXA" },
+                { label: "Grau", value: "GRAU" },
+              ]}
+              {...register("tipo")}
             />
-            <ErrorMessage message={errors.faixa?.message ?? ""} />
           </FormGridItem>
+
+          {tipoSelecionado === "FAIXA" && (
+            <FormGridItem>
+              <Select
+                label="Nova Faixa"
+                disabled={!alunoSelecionado}
+                options={faixasDisponiveis.map((faixa) => ({ label: faixa, value: faixa }))}
+                {...register("faixa")}
+              />
+              <ErrorMessage message={errors.faixa?.message ?? ""} />
+            </FormGridItem>
+          )}
 
           <FormGridItem>
             <Input label="Data da Graduação" type="date" {...register("data")} />
             <ErrorMessage message={errors.data?.message ?? ""} />
           </FormGridItem>
+
+          <FormGridItem span={2}>
+            <Checkbox label="Gerar cobrança para esta graduação" {...register("gerarCobranca")} />
+          </FormGridItem>
+
+          {gerarCobranca && (
+            <>
+              <FormGridItem>
+                <Input label="Valor da Cobrança (R$)" type="number" step="0.01" {...register("valorCobranca")} />
+                <ErrorMessage message={errors.valorCobranca?.message ?? ""} />
+              </FormGridItem>
+
+              <FormGridItem>
+                <Input label="Vencimento da Cobrança" type="date" {...register("vencimentoCobranca")} />
+                <ErrorMessage message={errors.vencimentoCobranca?.message ?? ""} />
+              </FormGridItem>
+            </>
+          )}
         </FormGrid>
 
         <Button type="submit" disabled={loading}>

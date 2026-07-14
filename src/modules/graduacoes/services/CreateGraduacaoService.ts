@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirSemMensalidadeNoMes } from "../../mensalidades/utils/garantirSemMensalidadeNoMes";
 import {
   calcularIdade,
   getTrilhaFaixa,
@@ -7,14 +8,20 @@ import {
   REGRAS_FAIXA_JUVENIL_ADULTO,
 } from "../../../shared/constants/faixas";
 
+interface CobrancaDTO {
+  valor: number;
+  vencimento: string;
+}
+
 interface CreateGraduacaoDTO {
   faixa: string;
   data: string;
   alunoId: number;
+  cobranca?: CobrancaDTO;
 }
 
 export class CreateGraduacaoService {
-  async execute({ faixa, data, alunoId }: CreateGraduacaoDTO) {
+  async execute({ faixa, data, alunoId, cobranca }: CreateGraduacaoDTO) {
     const aluno = await prisma.aluno.findUnique({
       where: { id: alunoId },
     });
@@ -70,18 +77,34 @@ export class CreateGraduacaoService {
       }
     }
 
-    const graduacao = await prisma.graduacao.create({
-      data: {
-        faixa,
-        data: new Date(data),
-        alunoId,
-      },
-    });
+    if (cobranca) {
+      await garantirSemMensalidadeNoMes(alunoId, cobranca.vencimento);
+    }
 
-    await prisma.aluno.update({
-      where: { id: alunoId },
-      data: { faixa },
-    });
+    const [graduacao] = await prisma.$transaction([
+      prisma.graduacao.create({
+        data: {
+          faixa,
+          data: new Date(data),
+          alunoId,
+        },
+      }),
+      prisma.aluno.update({
+        where: { id: alunoId },
+        data: { faixa },
+      }),
+      ...(cobranca
+        ? [
+            prisma.mensalidade.create({
+              data: {
+                valor: cobranca.valor,
+                vencimento: new Date(cobranca.vencimento),
+                alunoId,
+              },
+            }),
+          ]
+        : []),
+    ]);
 
     return graduacao;
   }

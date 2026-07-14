@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../../shared/database/prisma";
 import { CreateGraduacaoService } from "./services/CreateGraduacaoService";
 import { GetEvolucaoAlunoService } from "./services/GetEvolucaoAlunoService";
+import { IncrementarGrauService } from "./services/IncrementarGrauService";
 
 export class GraduacoesController {
 
@@ -9,18 +10,33 @@ export class GraduacoesController {
     const {
       faixa,
       data,
-      alunoId
+      alunoId,
+      cobranca
     } = req.body;
-  
+
     const service = new CreateGraduacaoService();
-  
+
     const graduacao = await service.execute({
       faixa,
       data,
-      alunoId: Number(alunoId)
+      alunoId: Number(alunoId),
+      cobranca
     });
-  
+
     return res.status(201).json(graduacao);
+  }
+
+  async incrementarGrau(req: Request, res: Response) {
+    const { alunoId, cobranca } = req.body;
+
+    const service = new IncrementarGrauService();
+
+    const aluno = await service.execute({
+      alunoId: Number(alunoId),
+      cobranca
+    });
+
+    return res.status(201).json(aluno);
   }
 
   async list(req: Request, res: Response) {

@@ -13,6 +13,11 @@ ensureAuthenticated,
 ensureRole(["ADMIN", "PROFESSOR"]),
  graduacoesController.create);
 
+graduacoesRoutes.post("/grau",
+ensureAuthenticated,
+ensureRole(["ADMIN", "PROFESSOR"]),
+ graduacoesController.incrementarGrau);
+
 graduacoesRoutes.get("/",
 ensureAuthenticated,
 ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),

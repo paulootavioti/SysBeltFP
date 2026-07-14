@@ -1,5 +1,5 @@
 import { prisma } from "../../../shared/database/prisma";
-import { AppError } from "../../../shared/errors/AppError";
+import { garantirSemMensalidadeNoMes } from "../utils/garantirSemMensalidadeNoMes";
 
 interface CreateMensalidadeDTO {
   valor: number;
@@ -15,46 +15,13 @@ export class CreateMensalidadeService {
     alunoId
   }: CreateMensalidadeDTO) {
 
-    const dataVencimento =
-      new Date(vencimento);
-
-    const mes =
-      dataVencimento.getMonth();
-
-    const ano =
-      dataVencimento.getFullYear();
-
-    const mensalidadesAluno =
-      await prisma.mensalidade.findMany({
-        where: {
-          alunoId
-        }
-      });
-
-    const mensalidadeExistente =
-      mensalidadesAluno.find(item => {
-
-        const data =
-          new Date(item.vencimento);
-
-        return (
-          data.getMonth() === mes &&
-          data.getFullYear() === ano
-        );
-      });
-
-    if (mensalidadeExistente) {
-
-      throw new AppError(
-        "Já existe uma mensalidade para este aluno neste mês."
-      );
-    }
+    await garantirSemMensalidadeNoMes(alunoId, vencimento);
 
     const mensalidade =
       await prisma.mensalidade.create({
         data: {
           valor,
-          vencimento: dataVencimento,
+          vencimento: new Date(vencimento),
           alunoId
         }
       });
