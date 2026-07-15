@@ -8,7 +8,9 @@ export interface TecnicaAulaCurriculo {
   id: number;
   nome: string;
   categoria?: string | null;
+  descricao?: string | null;
   obrigatoria: boolean;
+  ordem: number;
 }
 
 export interface AulaCurriculoResumo {
@@ -64,6 +66,9 @@ export interface Aula {
 
   turma?: TurmaResumo | null;
   aulaCurriculo?: AulaCurriculoResumo | null;
+
+  jogosRealizados: string[];
+  tecnicasRealizadas: TecnicaAulaCurriculo[];
 
   alunos: AulaAluno[];
 }

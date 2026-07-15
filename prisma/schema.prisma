@@ -283,9 +283,12 @@ model Aula {
 
   aulaCurriculoId Int?
   aulaCurriculo   AulaCurriculo? @relation(fields: [aulaCurriculoId], references: [id])
-  programacao AulaProgramada? 
+  programacao AulaProgramada?
 
   alunos      AulaAluno[]
+
+  jogosRealizados    String[]           @default([])
+  tecnicasRealizadas TecnicaCurriculo[] @relation("AulaTecnicasRealizadas")
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @default(now()) @updatedAt
@@ -388,6 +391,8 @@ model TecnicaCurriculo {
 
   aulaCurriculoId Int
   aulaCurriculo   AulaCurriculo @relation(fields: [aulaCurriculoId], references: [id])
+
+  aulasQueRealizaram Aula[] @relation("AulaTecnicasRealizadas")
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt

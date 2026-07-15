@@ -21,6 +21,11 @@ interface UpdateAulaAlunoData {
   observacao?: string | null;
 }
 
+interface UpdateAulaData {
+  jogosRealizados?: string[];
+  tecnicasRealizadasIds?: number[];
+}
+
 export class AulaService {
   static async listar() {
     const response = await api.get<Aula[]>("/aulas");
@@ -86,6 +91,12 @@ export class AulaService {
     const response = await api.patch<Aula>(
       `/aulas/programadas/${id}/iniciar`
     );
+
+    return response.data;
+  }
+
+  static async atualizar(id: number, data: UpdateAulaData) {
+    const response = await api.put<Aula>(`/aulas/${id}`, data);
 
     return response.data;
   }

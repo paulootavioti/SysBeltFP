@@ -63,6 +63,12 @@ aulasRoutes.get(
   controller.show
 );
 
+aulasRoutes.put(
+  "/:id",
+  ensureAuthenticated,
+  controller.update
+);
+
 aulasRoutes.delete(
   "/:id",
   ensureAuthenticated,

@@ -11,6 +11,7 @@ import { ListAulasProgramadasService } from "./services/ListAulasProgramadasServ
 import { IniciarAulaProgramadaService } from "./services/IniciarAulaProgramadaService";
 import { DeleteAulaService } from "./services/DeleteAulaService";
 import { DeleteAulaProgramadaService } from "./services/DeleteAulaProgramadaService";
+import { UpdateAulaService } from "./services/UpdateAulaService";
 
 export class AulasController {
   async create(req: Request, res: Response) {
@@ -96,5 +97,13 @@ export class AulasController {
     await service.execute(Number(req.params.id));
 
     return res.status(204).send();
+  }
+
+  async update(req: Request, res: Response) {
+    const service = new UpdateAulaService();
+
+    const aula = await service.execute(Number(req.params.id), req.body);
+
+    return res.json(aula);
   }
 }

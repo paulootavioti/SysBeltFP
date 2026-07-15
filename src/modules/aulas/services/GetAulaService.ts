@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { aulaIncludeCompleto } from "./aulaInclude";
 
 export class GetAulaService {
   async execute(id: number) {
@@ -7,39 +8,7 @@ export class GetAulaService {
       where: {
         id,
       },
-      include: {
-        turma: true,
-        aulaCurriculo: {
-          include: {
-            tecnicas: true,
-          },
-        },
-        alunos: {
-          include: {
-            aluno: {
-              include: {
-                responsaveis: {
-                  where: { ativo: true },
-                  select: {
-                    id: true,
-                    nome: true,
-                    apelido: true,
-                    telefone: true,
-                    whatsapp: true,
-                    parentesco: true,
-                    recebeComunicados: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: {
-            aluno: {
-              nome: "asc",
-            },
-          },
-        },
-      },
+      include: aulaIncludeCompleto,
     });
 
     if (!aula) {
