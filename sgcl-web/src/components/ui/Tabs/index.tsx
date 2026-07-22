@@ -44,7 +44,7 @@ export function Tabs({
         ))}
       </div>
 
-      <div className="tabs-content">
+      <div className="tabs-content" key={activeTab}>
         {selectedTab?.content}
       </div>
     </div>
