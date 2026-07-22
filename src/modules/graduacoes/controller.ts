@@ -143,6 +143,8 @@ export class GraduacoesController {
       presencasPorAluno.map((item) => [item.alunoId, item._count._all])
     );
 
+    const aulasPorGrau = 8;
+
     const resultado = alunos
       .map((aluno) => {
         const totalPresencas = totalPorAluno.get(aluno.id) ?? 0;
@@ -152,7 +154,7 @@ export class GraduacoesController {
           nome: aluno.nome,
           faixa: aluno.faixa,
           presencas: totalPresencas,
-          aptoGraduacao: totalPresencas >= 20,
+          aptoGraduacao: totalPresencas > 0 && totalPresencas % aulasPorGrau === 0,
         };
       })
       .filter((aluno) => aluno.aptoGraduacao);

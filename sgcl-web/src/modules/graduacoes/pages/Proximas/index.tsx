@@ -73,16 +73,16 @@ export function ProximasGraduacoes() {
       ) : alunos.length === 0 ? (
         <EmptyState
           title="Nenhum aluno elegível no momento"
-          description="Alunos precisam de 20 ou mais aulas para aparecer aqui."
+          description="Alunos precisam de 8 ou mais aulas para aparecer aqui."
         />
       ) : (
         <div className="proximas-grid">
           {alunos.map((aluno) => (
             <AlunoElegivelCard
-              key={aluno.id}
+              key={aluno.alunoId}
               aluno={aluno}
               onPromover={(id) => {
-                const a = alunos.find((x) => x.id === id);
+                const a = alunos.find((x) => x.alunoId === id);
                 if (a) setAlunoSelecionado(a);
               }}
             />

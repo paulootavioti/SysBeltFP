@@ -41,6 +41,16 @@ export class GetAlunoCompletoService {
       throw new AppError("Aluno não encontrado.");
     }
 
-    return aluno;
+    const presencas = aluno.aulas
+      .filter((registro) => registro.presente)
+      .map((registro) => ({
+        id: registro.id,
+        data: registro.aula.data,
+      }));
+
+    return {
+      ...aluno,
+      presencas,
+    };
   }
 }

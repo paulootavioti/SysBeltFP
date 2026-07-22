@@ -187,7 +187,7 @@ export function Dashboard() {
         ) : (
           <div className="dashboard-lista">
             {proximasGraduacoes.slice(0, 5).map((aluno) => (
-              <div key={aluno.id} className="dashboard-lista-item">
+              <div key={aluno.alunoId} className="dashboard-lista-item">
                 <span>{aluno.nome}</span>
                 <span>{aluno.faixa}</span>
                 <span>{aluno.presencas} aulas</span>

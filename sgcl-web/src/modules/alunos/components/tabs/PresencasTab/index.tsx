@@ -13,7 +13,7 @@ export function PresencasTab({
 
   return (
     <div>
-      <h3>Presenças</h3>
+      <h3>Presenças ({aluno.presencas.length})</h3>
 
       {aluno.presencas.map((presenca) => (
         <p key={presenca.id}>

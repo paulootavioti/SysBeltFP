@@ -23,10 +23,9 @@ export interface EvolucaoAluno {
 }
 
 export interface AlunoElegivel {
-  id: number;
+  alunoId: number;
   nome: string;
   faixa: string;
-  grau: number;
   presencas: number;
 }
 

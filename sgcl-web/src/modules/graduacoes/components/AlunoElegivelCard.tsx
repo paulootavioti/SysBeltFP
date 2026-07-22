@@ -24,9 +24,9 @@ export function AlunoElegivelCard({
       </div>
       <div className="aluno-elegivel-aviso">
         <p>✓ Elegível para promoção!</p>
-        <span>{aluno.presencas} ≥ 20 aulas</span>
+        <span>{aluno.presencas} ≥ 8 aulas</span>
       </div>
-      <Button type="button" onClick={() => onPromover?.(aluno.id, aluno.faixa)}>
+      <Button type="button" onClick={() => onPromover?.(aluno.alunoId, aluno.faixa)}>
         Promover
       </Button>
     </div>
