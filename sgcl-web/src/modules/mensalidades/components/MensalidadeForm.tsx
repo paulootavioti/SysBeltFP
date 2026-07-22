@@ -30,6 +30,7 @@ export function MensalidadeForm({
       valor: "",
       vencimento: "",
       pago: false,
+      descricao: "",
     },
   });
   const { register, handleSubmit, formState: { errors } } = methods;
@@ -84,6 +85,14 @@ export function MensalidadeForm({
               type="date"
               {...register("dataPagamento")}
             />
+          </FormGridItem>
+          <FormGridItem span={2}>
+            <Input
+              label="Descrição"
+              placeholder="Ex: Mensalidade, Kimono novo, Taxa de exame..."
+              {...register("descricao")}
+            />
+            <ErrorMessage message={errors.descricao?.message ?? ""} />
           </FormGridItem>
           <FormGridItem span={2}>
             <Checkbox

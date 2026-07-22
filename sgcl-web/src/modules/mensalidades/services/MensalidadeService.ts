@@ -18,6 +18,7 @@ export class MensalidadeService {
       vencimento: data.vencimento,
       dataPagamento: data.dataPagamento || null,
       pago: data.pago,
+      descricao: data.descricao || null,
     });
   }
 

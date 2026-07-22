@@ -5,7 +5,8 @@ export interface Mensalidade {
   vencimento: string;
   dataPagamento?: string | null;
   pago: boolean;
-  
+  descricao?: string | null;
+
   // Relacionamentos
   aluno?: {
     id: number;

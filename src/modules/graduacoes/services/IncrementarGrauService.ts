@@ -41,6 +41,7 @@ export class IncrementarGrauService {
                 valor: cobranca.valor,
                 vencimento: new Date(cobranca.vencimento),
                 alunoId,
+                descricao: `Graduação de grau - Grau ${aluno.grau + 1}`,
               },
             }),
           ]

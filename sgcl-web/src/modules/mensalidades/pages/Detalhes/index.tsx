@@ -95,6 +95,10 @@ export function DetalheMensalidade() {
             <p>Faixa</p>
             <strong>{mensalidade.aluno?.faixa}</strong>
           </div>
+          <div>
+            <p>Descrição</p>
+            <strong>{mensalidade.descricao || "Mensalidade"}</strong>
+          </div>
         </div>
         <div className="mensalidade-detalhe-kpis">
           <Card

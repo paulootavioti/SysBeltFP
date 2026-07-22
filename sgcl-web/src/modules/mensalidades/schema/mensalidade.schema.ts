@@ -6,6 +6,7 @@ export const mensalidadeSchema = z.object({
   vencimento: z.string().min(1, "Informe a data de vencimento."),
   dataPagamento: z.string().optional().or(z.literal("")),
   pago: z.boolean(),
+  descricao: z.string().optional(),
 });
 
 export type MensalidadeFormData = z.infer<typeof mensalidadeSchema>;

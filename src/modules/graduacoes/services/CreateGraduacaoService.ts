@@ -95,6 +95,7 @@ export class CreateGraduacaoService {
                 valor: cobranca.valor,
                 vencimento: new Date(cobranca.vencimento),
                 alunoId,
+                descricao: `Troca de faixa - ${faixa}`,
               },
             }),
           ]

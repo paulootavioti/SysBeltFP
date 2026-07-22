@@ -131,6 +131,7 @@ model Mensalidade {
   vencimento     DateTime
   dataPagamento  DateTime?
   pago           Boolean   @default(false)
+  descricao      String?
 
   alunoId        Int
   aluno          Aluno     @relation(fields: [alunoId], references: [id])

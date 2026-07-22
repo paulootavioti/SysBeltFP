@@ -5,6 +5,7 @@ interface CreateMensalidadeDTO {
   valor: number;
   vencimento: string;
   alunoId: number;
+  descricao?: string | null;
 }
 
 export class CreateMensalidadeService {
@@ -12,7 +13,8 @@ export class CreateMensalidadeService {
   async execute({
     valor,
     vencimento,
-    alunoId
+    alunoId,
+    descricao
   }: CreateMensalidadeDTO) {
 
     await garantirSemMensalidadeNoMes(alunoId, vencimento);
@@ -22,7 +24,8 @@ export class CreateMensalidadeService {
         data: {
           valor,
           vencimento: new Date(vencimento),
-          alunoId
+          alunoId,
+          descricao: descricao?.trim() || "Mensalidade"
         }
       });
 

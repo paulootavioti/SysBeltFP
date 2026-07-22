@@ -27,7 +27,7 @@ export function MensalidadeCard({
       <div className="mensalidade-card-header">
         <div>
           <h3>{mensalidade.aluno?.nome}</h3>
-          <p>Faixa: {mensalidade.aluno?.faixa}</p>
+          <p>{mensalidade.descricao || "Mensalidade"} · Faixa: {mensalidade.aluno?.faixa}</p>
         </div>
         <StatusBadge status={STATUS_BADGE[status]} />
       </div>
