@@ -8,6 +8,7 @@ import { Button } from "../../components/ui/Button";
 import { ErrorMessage } from "../../components/ui/ErrorMessage";
 
 import { getApiErrorMessage } from "../../shared/utils/getApiErrorMessage";
+import { ROTA_PADRAO_POR_PERFIL, type Perfil } from "../../shared/constants/acessoPorPerfil";
 
 import "./styles.css";
 
@@ -26,8 +27,8 @@ export function Login() {
     try {
       setCarregando(true);
       setErro("");
-      await login(email, senha);
-      navigate("/dashboard");
+      const usuario = await login(email, senha);
+      navigate(ROTA_PADRAO_POR_PERFIL[usuario.perfil as Perfil] ?? "/alunos");
     } catch (error) {
       setErro(getApiErrorMessage(error, "Usuário ou senha inválidos."));
     } finally {

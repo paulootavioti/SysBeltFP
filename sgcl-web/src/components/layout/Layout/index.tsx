@@ -23,6 +23,7 @@ import {
   LuMenu,
   LuX,
 } from "react-icons/lu";
+import { perfilTemAcesso } from "../../../shared/constants/acessoPorPerfil";
 import "./styles.css";
 
 interface LayoutProps {
@@ -58,6 +59,8 @@ export function Layout({ children }: LayoutProps) {
     setMenuAberto(false);
   }, [location.pathname]);
 
+  const itensVisiveis = NAV_ITEMS.filter((item) => perfilTemAcesso(usuario?.perfil, item.to));
+
   function handleLogout() {
     logout();
     navigate("/");
@@ -85,7 +88,7 @@ export function Layout({ children }: LayoutProps) {
         <hr />
 
         <nav className="sidebar-nav">
-          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+          {itensVisiveis.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}

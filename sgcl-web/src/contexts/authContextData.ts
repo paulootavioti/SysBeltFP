@@ -10,7 +10,7 @@ export type Usuario = {
 export type AuthContextData = {
   usuario: Usuario | null;
   token: string | null;
-  login: (email: string, senha: string) => Promise<void>;
+  login: (email: string, senha: string) => Promise<Usuario>;
   logout: () => void;
 };
 

@@ -45,6 +45,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setUsuario(usuario);
     setToken(token);
+
+    return usuario as Usuario;
   }
 
   function logout() {
