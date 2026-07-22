@@ -8,7 +8,7 @@ import { Badge } from "../../../../components/ui/Badge";
 import { Modal } from "../../../../components/ui/Modal";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 
-import { useAuth } from "../../../../contexts/AuthContext";
+import { useAuth } from "../../../../contexts/useAuth";
 import { AulaService } from "../../services/AulaService";
 import { IniciarAulaForm, type IniciarAulaFormData } from "../../components/IniciarAulaForm";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";

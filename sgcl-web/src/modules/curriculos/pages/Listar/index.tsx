@@ -9,7 +9,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Modal } from "../../../../components/ui/Modal";
 import { Badge } from "../../../../components/ui/Badge";
 
-import { useAuth } from "../../../../contexts/AuthContext";
+import { useAuth } from "../../../../contexts/useAuth";
 import { useCurriculos } from "../../hooks/useCurriculos";
 import { CurriculoService } from "../../services/CurriculoService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";

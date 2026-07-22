@@ -10,7 +10,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { Modal } from "../../../../components/ui/Modal";
 
-import { useAuth } from "../../../../contexts/AuthContext";
+import { useAuth } from "../../../../contexts/useAuth";
 import { useCompeticoes } from "../../hooks/useCompeticoes";
 import { CompeticaoService } from "../../services/CompeticaoService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";

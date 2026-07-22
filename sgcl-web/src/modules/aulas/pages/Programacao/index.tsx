@@ -11,7 +11,7 @@ import { Loading } from "../../../../components/ui/Loading";
 import { Badge } from "../../../../components/ui/Badge";
 import { Modal } from "../../../../components/ui/Modal";
 
-import { useAuth } from "../../../../contexts/AuthContext";
+import { useAuth } from "../../../../contexts/useAuth";
 import { AulaService } from "../../services/AulaService";
 import { ProgramarAulaForm, type ProgramarAulaFormData } from "../../components/ProgramarAulaForm";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
