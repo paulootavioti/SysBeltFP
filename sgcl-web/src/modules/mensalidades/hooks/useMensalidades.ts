@@ -13,7 +13,7 @@ export function useMensalidades() {
       setErro("");
       const data = await MensalidadeService.listar();
       setMensalidades(data);
-    } catch (error) {
+    } catch {
       setErro("Erro ao carregar mensalidades.");
     } finally {
       setLoading(false);

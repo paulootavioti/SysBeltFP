@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth } from "../../../contexts/useAuth";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../ui/Button";
 import {

@@ -13,7 +13,7 @@ export function useGraduacoes() {
       setErro("");
       const data = await GraduacaoService.listar();
       setGraduacoes(data);
-    } catch (error) {
+    } catch {
       setErro("Erro ao carregar graduações.");
     } finally {
       setLoading(false);

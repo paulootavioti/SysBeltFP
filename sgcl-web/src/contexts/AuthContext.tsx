@@ -1,22 +1,8 @@
-import { createContext, useContext, useState } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { api } from "../services/api";
-
-type Usuario = {
-  id: number;
-  nome: string;
-  email: string;
-  perfil: string;
-};
-
-type AuthContextData = {
-  usuario: Usuario | null;
-  token: string | null;
-  login: (email: string, senha: string) => Promise<void>;
-  logout: () => void;
-};
-
-const AuthContext = createContext({} as AuthContextData);
+import { AuthContext } from "./authContextData";
+import type { Usuario } from "./authContextData";
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -83,8 +69,4 @@ export function AuthProvider({ children }: AuthProviderProps) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
 }
