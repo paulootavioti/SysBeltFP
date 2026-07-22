@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../../shared/database/prisma";
 import { DeleteCompeticaoService } from "./services/DeleteCompeticaoService";
+import { LIMITE_PADRAO_LISTAGEM } from "../../shared/constants/pagination";
 
 export class CompeticoesController {
 
@@ -26,6 +27,7 @@ export class CompeticoesController {
   async list(req: Request, res: Response) {
 
     const competicoes = await prisma.competicao.findMany({
+      take: LIMITE_PADRAO_LISTAGEM,
       orderBy: {
         data: "desc"
       }
@@ -59,6 +61,7 @@ export class CompeticoesController {
     const { id } = req.params;
   
     const atletas = await prisma.competicaoAluno.findMany({
+      take: LIMITE_PADRAO_LISTAGEM,
       where: {
         competicaoId: Number(id)
       },
