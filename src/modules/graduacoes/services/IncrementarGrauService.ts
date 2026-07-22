@@ -1,6 +1,5 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
-import { garantirSemMensalidadeNoMes } from "../../mensalidades/utils/garantirSemMensalidadeNoMes";
 
 const GRAUS_MAXIMOS_POR_FAIXA = 4;
 
@@ -28,10 +27,6 @@ export class IncrementarGrauService {
       throw new AppError(
         `O aluno já está no grau máximo (${GRAUS_MAXIMOS_POR_FAIXA}) desta faixa. Registre a troca de faixa.`
       );
-    }
-
-    if (cobranca) {
-      await garantirSemMensalidadeNoMes(alunoId, cobranca.vencimento);
     }
 
     const [alunoAtualizado] = await prisma.$transaction([

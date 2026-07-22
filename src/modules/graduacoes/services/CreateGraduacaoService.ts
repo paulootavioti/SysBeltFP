@@ -1,6 +1,5 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
-import { garantirSemMensalidadeNoMes } from "../../mensalidades/utils/garantirSemMensalidadeNoMes";
 import {
   calcularIdade,
   getTrilhaFaixa,
@@ -75,10 +74,6 @@ export class CreateGraduacaoService {
           );
         }
       }
-    }
-
-    if (cobranca) {
-      await garantirSemMensalidadeNoMes(alunoId, cobranca.vencimento);
     }
 
     const [graduacao] = await prisma.$transaction([
