@@ -24,6 +24,7 @@ import {
   LuX,
 } from "react-icons/lu";
 import { perfilTemAcesso } from "../../../shared/constants/acessoPorPerfil";
+import { NotificationBell } from "../../ui/NotificationBell";
 import "./styles.css";
 
 interface LayoutProps {
@@ -124,6 +125,10 @@ export function Layout({ children }: LayoutProps) {
           </button>
 
           <strong className="header-usuario">{usuario?.nome}</strong>
+
+          {(usuario?.perfil === "ADMIN" || usuario?.perfil === "RECEPCAO") && (
+            <NotificationBell />
+          )}
 
           <Button onClick={handleLogout}>
             <LuLogOut size={16} />
