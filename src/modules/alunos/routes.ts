@@ -2,6 +2,8 @@ import { Router } from "express";
 import { AlunosController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
 import { ensureRole } from "../../shared/middlewares/ensureRole";
+import { validateBody } from "../../shared/middlewares/validateBody";
+import { alunoSchema } from "./validation";
 
 const alunosRoutes = Router();
 
@@ -13,6 +15,7 @@ const alunosController =
     "/",
     ensureAuthenticated,
     ensureRole(["ADMIN", "RECEPCAO"]),
+    validateBody(alunoSchema),
     alunosController.create
   );
   
@@ -48,6 +51,7 @@ const alunosController =
     "/:id",
     ensureAuthenticated,
     ensureRole(["ADMIN", "RECEPCAO"]),
+    validateBody(alunoSchema),
     alunosController.update
   );
   

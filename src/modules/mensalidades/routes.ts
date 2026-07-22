@@ -2,6 +2,8 @@ import { Router } from "express";
 import { MensalidadesController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
 import { ensureRole } from "../../shared/middlewares/ensureRole";
+import { validateBody } from "../../shared/middlewares/validateBody";
+import { mensalidadeSchema } from "./validation";
 
 const mensalidadesRoutes = Router();
 
@@ -12,6 +14,7 @@ mensalidadesRoutes.post(
   "/",
   ensureAuthenticated,
   ensureRole(["ADMIN", "RECEPCAO"]),
+  validateBody(mensalidadeSchema),
   mensalidadesController.create
 );
 

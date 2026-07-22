@@ -2,6 +2,8 @@ import { Router } from "express";
 import { TurmasController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
 import { ensureRole } from "../../shared/middlewares/ensureRole";
+import { validateBody } from "../../shared/middlewares/validateBody";
+import { turmaSchema } from "./validation";
 
 const turmasRoutes = Router();
 
@@ -12,6 +14,7 @@ turmasRoutes.post(
   "/",
   ensureAuthenticated,
   ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  validateBody(turmaSchema),
   turmasController.create
 );
 
@@ -33,6 +36,7 @@ turmasRoutes.put(
   "/:id",
   ensureAuthenticated,
   ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  validateBody(turmaSchema),
   turmasController.update
 );
 

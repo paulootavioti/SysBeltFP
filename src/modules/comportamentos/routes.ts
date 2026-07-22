@@ -2,6 +2,8 @@ import { Router } from "express";
 import { ComportamentosController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
 import { ensureRole } from "../../shared/middlewares/ensureRole";
+import { validateBody } from "../../shared/middlewares/validateBody";
+import { comportamentoSchema } from "./validation";
 
 const comportamentosRoutes =
   Router();
@@ -16,6 +18,7 @@ comportamentosRoutes.post(
     "ADMIN",
     "PROFESSOR"
   ]),
+  validateBody(comportamentoSchema),
   comportamentosController.create
 );
 

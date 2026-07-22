@@ -14,7 +14,7 @@ export class TurmaService {
   static async criar(data: TurmaFormData) {
     return ApiClient.post<Turma>("/turmas", {
       ...data,
-      professorId: Number(data.professorId),
+      professorId: data.professorId ? Number(data.professorId) : undefined,
       curriculoId: data.curriculoId ? Number(data.curriculoId) : undefined,
       limiteAlunos: data.limiteAlunos ? Number(data.limiteAlunos) : undefined,
     });
@@ -23,7 +23,7 @@ export class TurmaService {
   static async editar(id: number, data: TurmaFormData) {
     return ApiClient.put<Turma>(`/turmas/${id}`, {
       ...data,
-      professorId: Number(data.professorId),
+      professorId: data.professorId ? Number(data.professorId) : undefined,
       curriculoId: data.curriculoId ? Number(data.curriculoId) : undefined,
       limiteAlunos: data.limiteAlunos ? Number(data.limiteAlunos) : undefined,
     });

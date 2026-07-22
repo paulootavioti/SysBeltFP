@@ -2,6 +2,8 @@ import { Router } from "express";
 import { GraduacoesController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
 import { ensureRole } from "../../shared/middlewares/ensureRole";
+import { validateBody } from "../../shared/middlewares/validateBody";
+import { graduacaoSchema, incrementarGrauSchema } from "./validation";
 
 const graduacoesRoutes = Router();
 
@@ -11,11 +13,13 @@ const graduacoesController =
 graduacoesRoutes.post("/",
 ensureAuthenticated,
 ensureRole(["ADMIN", "PROFESSOR"]),
+validateBody(graduacaoSchema),
  graduacoesController.create);
 
 graduacoesRoutes.post("/grau",
 ensureAuthenticated,
 ensureRole(["ADMIN", "PROFESSOR"]),
+validateBody(incrementarGrauSchema),
  graduacoesController.incrementarGrau);
 
 graduacoesRoutes.get("/",
