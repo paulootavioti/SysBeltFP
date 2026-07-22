@@ -100,18 +100,6 @@ export function Dashboard() {
     <Layout>
       <PageHeader title="Dashboard" subtitle="Resumo geral da academia." />
 
-      {dados.mensalidadesVencidas > 0 && (
-        <div className="dashboard-alerta">
-          <span>
-            ⚠️ {dados.mensalidadesVencidas} mensalidade(s) vencida(s) precisam de atenção.
-          </span>
-
-          <Button type="button" variant="secondary" onClick={() => navigate("/mensalidades")}>
-            Ver mensalidades
-          </Button>
-        </div>
-      )}
-
       <section className="dashboard-secao">
         <div className="dashboard-secao-cabecalho">
           <div>
