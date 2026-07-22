@@ -55,6 +55,12 @@ export class LoginService {
     const jwtSecret =
       process.env.JWT_SECRET as string;
 
+    // Sem refresh token de propósito: ensureAuthenticated já revalida o
+    // usuário (existência + ativo) no banco a cada requisição, então um
+    // token vazado só é útil até um admin desativar a conta em Usuários —
+    // não até a expiração natural. Se quiser uma janela mais curta,
+    // ajuste JWT_EXPIRES_IN nas variáveis de ambiente (não precisa mexer
+    // no código).
     const jwtExpiresIn =
       (process.env.JWT_EXPIRES_IN || "7d") as SignOptions["expiresIn"];
 
