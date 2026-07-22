@@ -31,4 +31,11 @@ dashboardRoutes.get(
   dashboardController.resumo
 );
 
+dashboardRoutes.get(
+  "/periodo",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  dashboardController.resumoPeriodo
+);
+
 export { dashboardRoutes };

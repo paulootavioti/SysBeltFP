@@ -26,10 +26,36 @@
   margin-bottom: var(--space-3);
 }
 
+.dashboard-secao-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.dashboard-secao-cabecalho h2 {
+  margin-bottom: 2px;
+}
+
+.dashboard-secao-rubrica {
+  font-size: var(--font-sm);
+  color: var(--text-light);
+  margin: 0;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.dashboard-graficos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
 }
 
 .dashboard-vazio {

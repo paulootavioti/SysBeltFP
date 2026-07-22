@@ -1,6 +1,11 @@
 
 import { Request, Response } from "express";
 import { prisma } from "../../shared/database/prisma";
+import { AppError } from "../../shared/errors/AppError";
+import { GetResumoPeriodoService } from "./services/GetResumoPeriodoService";
+import type { Periodo } from "./utils/periodo";
+
+const PERIODOS_VALIDOS: Periodo[] = ["DIARIO", "SEMANAL", "MENSAL", "ANUAL"];
 
 export class DashboardController {
 
@@ -90,5 +95,22 @@ export class DashboardController {
       graduacoes,
       competicoes
     });
+  }
+
+  async resumoPeriodo(req: Request, res: Response) {
+
+    const periodo = String(req.query.periodo || "MENSAL").toUpperCase();
+
+    if (!PERIODOS_VALIDOS.includes(periodo as Periodo)) {
+      throw new AppError(
+        `Período inválido. Use um dos seguintes: ${PERIODOS_VALIDOS.join(", ")}.`
+      );
+    }
+
+    const service = new GetResumoPeriodoService();
+
+    const resumo = await service.execute(periodo as Periodo);
+
+    return res.json(resumo);
   }
 }
