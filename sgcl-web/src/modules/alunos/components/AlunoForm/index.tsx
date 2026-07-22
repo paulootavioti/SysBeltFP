@@ -1,6 +1,5 @@
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 
 import { Button } from "../../../../components/ui/Button";
 import { ImageUpload } from "../../../../components/ui/ImageUpload";
@@ -40,7 +39,6 @@ function TabLabel({ texto, comErro }: { texto: string; comErro: boolean }) {
 }
 
 export function AlunoForm({ aluno, loading, onSubmit }: AlunoFormProps) {
-  const [, setFoto] = useState<File | null>(null);
   const methods = useForm<AlunoFormData>({
     resolver: zodResolver(alunoSchema),
     defaultValues: alunoParaFormulario(aluno),
@@ -83,7 +81,12 @@ export function AlunoForm({ aluno, loading, onSubmit }: AlunoFormProps) {
                 <>
                   <DadosPessoaisSection />
                   <FormSection title="Foto" subtitle="Foto do aluno.">
-                    <ImageUpload label="Foto" onChange={setFoto} />
+                    <ImageUpload
+                      label="Foto"
+                      prefixo="alunos"
+                      valorAtual={methods.watch("fotoUrl")}
+                      onChange={(url) => methods.setValue("fotoUrl", url)}
+                    />
                   </FormSection>
                 </>
               ),

@@ -71,3 +71,13 @@
   display:none;
 
 }
+
+.image-upload-erro{
+
+  color: var(--color-danger, #B3261E);
+
+  font-size: 13px;
+
+  margin: 0;
+
+}

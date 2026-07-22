@@ -21,6 +21,7 @@ import { tecnicasRoutes } from "./modules/tecnicas/routes";
 import { curriculosRoutes } from "./modules/curriculos/routes";
 import { planosRoutes } from "./modules/planos/routes";
 import { mensagensRoutes } from "./modules/mensagens/routes";
+import { uploadsRoutes } from "./modules/uploads/routes";
 
 const corsOrigin = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
@@ -63,6 +64,7 @@ app.use("/tecnicas", tecnicasRoutes);
 app.use("/curriculos", curriculosRoutes);
 app.use("/planos", planosRoutes);
 app.use("/mensagens", mensagensRoutes);
+app.use("/uploads", uploadsRoutes);
 
 app.use("/auth", authRoutes);
 app.use(errorHandler);
