@@ -1,5 +1,5 @@
 [build]
-  command = "npm install && npx prisma generate && cd sgcl-web && npm install && npm run build"
+  command = "npm ci --include=dev && npx prisma generate && cd sgcl-web && npm ci --include=dev && npm run build"
   publish = "sgcl-web/dist"
 
 [build.environment]
