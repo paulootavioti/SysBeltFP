@@ -1,0 +1,339 @@
+From 30ff5719474a66dc13129c6187c1fb3bf94976ea Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 22 Jul 2026 01:55:47 +0000
+Subject: [PATCH] =?UTF-8?q?perf:=20limita=20listagens=20sem=20pagina=C3=A7?=
+ =?UTF-8?q?=C3=A3o=20e=20corrige=20N+1=20em=20Pr=C3=B3ximas=20Gradua=C3=A7?=
+ =?UTF-8?q?=C3=B5es?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Adiciona um teto de segurança (500 registros) nas listagens que hoje
+  não têm paginação de verdade no frontend, pra evitar que uma tabela
+  grande retorne milhares de linhas numa resposta só. Não é paginação
+  completa com navegação por página — isso fica pra quando o volume de
+  dados justificar o trabalho de UI.
+- Deixei de fora ListMensalidadesService e ListAniversariantesService:
+  a tela de Mensalidades soma os valores no frontend a partir da lista
+  completa (total pendente/pago), e Aniversariantes filtra por mês no
+  código — colocar um teto ali faria essas contas ficarem erradas em
+  vez de só mais lentas. Precisam de um fix diferente (mover a soma/
+  filtro pro banco), fora do escopo deste ajuste pontual.
+- graduacoes/controller.ts (Próximas Graduações) fazia um count() por
+  aluno dentro de um for — trocado por uma única consulta agregada
+  (groupBy). Validei que o resultado bate exatamente com o comportamento
+  anterior (aluno com 22 presenças aparece, com 5 não aparece).
+---
+ .../alunos/services/ListAlunosService.ts      |  2 +
+ .../services/ListAulasProgramadasService.ts   |  2 +
+ .../aulas/services/ListAulasService.ts        |  2 +
+ src/modules/competicoes/controller.ts         |  3 +
+ .../services/ListComportamentosService.ts     |  2 +
+ .../services/ListCurriculosService.ts         |  2 +
+ src/modules/graduacoes/controller.ts          | 56 ++++++++++---------
+ .../GetMensalidadesVencidasService.ts         |  2 +
+ .../planos/services/ListPlanosService.ts      |  2 +
+ .../services/ListResponsaveisService.ts       |  2 +
+ .../tecnicas/services/ListTecnicasService.ts  |  2 +
+ .../turmas/services/ListTurmasService.ts      |  2 +
+ .../usuarios/services/ListUsuariosService.ts  |  2 +
+ src/shared/constants/pagination.ts            |  4 ++
+ 14 files changed, 59 insertions(+), 26 deletions(-)
+ create mode 100644 src/shared/constants/pagination.ts
+
+diff --git a/src/modules/alunos/services/ListAlunosService.ts b/src/modules/alunos/services/ListAlunosService.ts
+index 06cbd2d..4169c42 100644
+--- a/src/modules/alunos/services/ListAlunosService.ts
++++ b/src/modules/alunos/services/ListAlunosService.ts
+@@ -1,4 +1,5 @@
+ import { prisma } from "../../../shared/database/prisma";
++import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+ 
+ export class ListAlunosService {
+ 
+@@ -6,6 +7,7 @@ export class ListAlunosService {
+ 
+     const alunos =
+       await prisma.aluno.findMany({
++        take: LIMITE_PADRAO_LISTAGEM,
+         orderBy: {
+           nome: "asc"
+         },
+diff --git a/src/modules/aulas/services/ListAulasProgramadasService.ts b/src/modules/aulas/services/ListAulasProgramadasService.ts
+index fd2b1cd..5940d50 100644
+--- a/src/modules/aulas/services/ListAulasProgramadasService.ts
++++ b/src/modules/aulas/services/ListAulasProgramadasService.ts
+@@ -1,8 +1,10 @@
+ import { prisma } from "../../../shared/database/prisma";
++import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+ 
+ export class ListAulasProgramadasService {
+   async execute() {
+     return prisma.aulaProgramada.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       include: {
+         turma: true,
+         aulaCurriculo: true,
+diff --git a/src/modules/aulas/services/ListAulasService.ts b/src/modules/aulas/services/ListAulasService.ts
+index 84c6e31..3397667 100644
+--- a/src/modules/aulas/services/ListAulasService.ts
++++ b/src/modules/aulas/services/ListAulasService.ts
+@@ -1,8 +1,10 @@
+ import { prisma } from "../../../shared/database/prisma";
++import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+ 
+ export class ListAulasService {
+   async execute() {
+     return prisma.aula.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       include: {
+         turma: true,
+       },
+diff --git a/src/modules/competicoes/controller.ts b/src/modules/competicoes/controller.ts
+index a5a2c91..00cb813 100644
+--- a/src/modules/competicoes/controller.ts
++++ b/src/modules/competicoes/controller.ts
+@@ -1,6 +1,7 @@
+ import { Request, Response } from "express";
+ import { prisma } from "../../shared/database/prisma";
+ import { DeleteCompeticaoService } from "./services/DeleteCompeticaoService";
++import { LIMITE_PADRAO_LISTAGEM } from "../../shared/constants/pagination";
+ 
+ export class CompeticoesController {
+ 
+@@ -26,6 +27,7 @@ export class CompeticoesController {
+   async list(req: Request, res: Response) {
+ 
+     const competicoes = await prisma.competicao.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       orderBy: {
+         data: "desc"
+       }
+@@ -59,6 +61,7 @@ export class CompeticoesController {
+     const { id } = req.params;
+   
+     const atletas = await prisma.competicaoAluno.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       where: {
+         competicaoId: Number(id)
+       },
+diff --git a/src/modules/comportamentos/services/ListComportamentosService.ts b/src/modules/comportamentos/services/ListComportamentosService.ts
+index 8b1b434..6ca5b8f 100644
+--- a/src/modules/comportamentos/services/ListComportamentosService.ts
++++ b/src/modules/comportamentos/services/ListComportamentosService.ts
+@@ -1,8 +1,10 @@
+ import { prisma } from "../../../shared/database/prisma";
++import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+ 
+ export class ListComportamentosService {
+   async execute() {
+     return prisma.comportamento.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       include: {
+         aluno: true
+       },
+diff --git a/src/modules/curriculos/services/ListCurriculosService.ts b/src/modules/curriculos/services/ListCurriculosService.ts
+index f1fc8e9..7dd40de 100644
+--- a/src/modules/curriculos/services/ListCurriculosService.ts
++++ b/src/modules/curriculos/services/ListCurriculosService.ts
+@@ -1,8 +1,10 @@
+ import { prisma } from "../../../shared/database/prisma";
++import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+ 
+ export class ListCurriculosService {
+   async execute() {
+     return prisma.curriculo.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       where: {
+         ativo: true,
+       },
+diff --git a/src/modules/graduacoes/controller.ts b/src/modules/graduacoes/controller.ts
+index 335ec3d..c3a7282 100644
+--- a/src/modules/graduacoes/controller.ts
++++ b/src/modules/graduacoes/controller.ts
+@@ -3,6 +3,7 @@ import { prisma } from "../../shared/database/prisma";
+ import { CreateGraduacaoService } from "./services/CreateGraduacaoService";
+ import { GetEvolucaoAlunoService } from "./services/GetEvolucaoAlunoService";
+ import { IncrementarGrauService } from "./services/IncrementarGrauService";
++import { LIMITE_PADRAO_LISTAGEM } from "../../shared/constants/pagination";
+ 
+ export class GraduacoesController {
+ 
+@@ -42,6 +43,7 @@ export class GraduacoesController {
+   async list(req: Request, res: Response) {
+ 
+     const graduacoes = await prisma.graduacao.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       include: {
+         aluno: true
+       },
+@@ -127,32 +129,34 @@ export class GraduacoesController {
+         ativo: true
+       }
+     });
+-  
+-    const resultado = [];
+-  
+-    for (const aluno of alunos) {
+-  
+-      const totalPresencas =
+-        await prisma.aulaAluno.count({
+-          where: {
+-            alunoId: aluno.id,
+-            presente: true,
+-          },
+-        });
+-  
+-      resultado.push({
+-        alunoId: aluno.id,
+-        nome: aluno.nome,
+-        faixa: aluno.faixa,
+-        presencas: totalPresencas,
+-        aptoGraduacao: totalPresencas >= 20
+-      });
+-    }
+-  
+-    return res.json(
+-      resultado.filter(
+-        aluno => aluno.aptoGraduacao
+-      )
++
++    const presencasPorAluno = await prisma.aulaAluno.groupBy({
++      by: ["alunoId"],
++      where: {
++        presente: true,
++        alunoId: { in: alunos.map((aluno) => aluno.id) },
++      },
++      _count: { _all: true },
++    });
++
++    const totalPorAluno = new Map(
++      presencasPorAluno.map((item) => [item.alunoId, item._count._all])
+     );
++
++    const resultado = alunos
++      .map((aluno) => {
++        const totalPresencas = totalPorAluno.get(aluno.id) ?? 0;
++
++        return {
++          alunoId: aluno.id,
++          nome: aluno.nome,
++          faixa: aluno.faixa,
++          presencas: totalPresencas,
++          aptoGraduacao: totalPresencas >= 20,
++        };
++      })
++      .filter((aluno) => aluno.aptoGraduacao);
++
++    return res.json(resultado);
+   }
+ }
+\ No newline at end of file
+diff --git a/src/modules/mensalidades/services/GetMensalidadesVencidasService.ts b/src/modules/mensalidades/services/GetMensalidadesVencidasService.ts
+index d6bdc27..7640c34 100644
+--- a/src/modules/mensalidades/services/GetMensalidadesVencidasService.ts
++++ b/src/modules/mensalidades/services/GetMensalidadesVencidasService.ts
+@@ -1,4 +1,5 @@
+ import { prisma } from "../../../shared/database/prisma";
++import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+ 
+ export class GetMensalidadesVencidasService {
+ 
+@@ -8,6 +9,7 @@ export class GetMensalidadesVencidasService {
+ 
+     const mensalidades =
+       await prisma.mensalidade.findMany({
++        take: LIMITE_PADRAO_LISTAGEM,
+         where: {
+           pago: false,
+           vencimento: {
+diff --git a/src/modules/planos/services/ListPlanosService.ts b/src/modules/planos/services/ListPlanosService.ts
+index f99cb55..4ceb8a3 100644
+--- a/src/modules/planos/services/ListPlanosService.ts
++++ b/src/modules/planos/services/ListPlanosService.ts
+@@ -1,8 +1,10 @@
+ import { prisma } from "../../../shared/database/prisma";
++import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+ 
+ export class ListPlanosService {
+   async execute() {
+     return prisma.plano.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       orderBy: {
+         nome: "asc",
+       },
+diff --git a/src/modules/responsaveis/services/ListResponsaveisService.ts b/src/modules/responsaveis/services/ListResponsaveisService.ts
+index 82a4983..8ac076a 100644
+--- a/src/modules/responsaveis/services/ListResponsaveisService.ts
++++ b/src/modules/responsaveis/services/ListResponsaveisService.ts
+@@ -1,8 +1,10 @@
+ import { prisma } from "../../../shared/database/prisma";
++import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+ 
+ export class ListResponsaveisService {
+   async execute() {
+     return prisma.responsavel.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       include: {
+         aluno: {
+           select: {
+diff --git a/src/modules/tecnicas/services/ListTecnicasService.ts b/src/modules/tecnicas/services/ListTecnicasService.ts
+index f6ad011..979b31f 100644
+--- a/src/modules/tecnicas/services/ListTecnicasService.ts
++++ b/src/modules/tecnicas/services/ListTecnicasService.ts
+@@ -1,8 +1,10 @@
+ import { prisma } from "../../../shared/database/prisma";
++import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+ 
+ export class ListTecnicasService {
+   async execute() {
+     return prisma.tecnica.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       where: {
+         ativa: true,
+       },
+diff --git a/src/modules/turmas/services/ListTurmasService.ts b/src/modules/turmas/services/ListTurmasService.ts
+index 8f72068..aab0d84 100644
+--- a/src/modules/turmas/services/ListTurmasService.ts
++++ b/src/modules/turmas/services/ListTurmasService.ts
+@@ -1,8 +1,10 @@
+ import { prisma } from "../../../shared/database/prisma";
++import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+ 
+ export class ListTurmasService {
+   async execute() {
+     return prisma.turma.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       include: {
+         curriculo: true,
+         professor: {
+diff --git a/src/modules/usuarios/services/ListUsuariosService.ts b/src/modules/usuarios/services/ListUsuariosService.ts
+index 4e2e04a..ef07b66 100644
+--- a/src/modules/usuarios/services/ListUsuariosService.ts
++++ b/src/modules/usuarios/services/ListUsuariosService.ts
+@@ -1,10 +1,12 @@
+ import { prisma } from "../../../shared/database/prisma";
++import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+ 
+ export class ListUsuariosService {
+ 
+   async execute() {
+ 
+     return prisma.usuario.findMany({
++      take: LIMITE_PADRAO_LISTAGEM,
+       select: {
+         id: true,
+         nome: true,
+diff --git a/src/shared/constants/pagination.ts b/src/shared/constants/pagination.ts
+new file mode 100644
+index 0000000..ad85e6c
+--- /dev/null
++++ b/src/shared/constants/pagination.ts
+@@ -0,0 +1,4 @@
++// Teto de segurança para listagens que hoje não têm paginação real
++// (sem navegação por página no frontend). Evita que uma tabela muito
++// grande retorne milhares de linhas numa única resposta.
++export const LIMITE_PADRAO_LISTAGEM = 500;
+-- 
+2.43.0
+

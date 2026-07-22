@@ -1,0 +1,79 @@
+From 77aec546c6a885d3cdd15d14c1fdcd0865dadf69 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 22 Jul 2026 18:02:38 +0000
+Subject: [PATCH] fix: corrige imports de useAuth quebrados pelo build do CI
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+O commit anterior que separou useAuth do AuthContext (pra resolver o
+lint do react-refresh) só atualizou os 3 pontos de import que existiam
+no ambiente onde foi testado. Este repositório tem mais 4 páginas
+importando useAuth do caminho antigo (aulas/Listar, aulas/Programacao,
+competicoes/Listar, curriculos/Listar), que o CI acusou como erro de
+build (TS2305: has no exported member 'useAuth').
+
+Validado com build, lint, testes e teste de navegador nas 4 páginas
+afetadas.
+---
+ sgcl-web/src/modules/aulas/pages/Listar/index.tsx       | 2 +-
+ sgcl-web/src/modules/aulas/pages/Programacao/index.tsx  | 2 +-
+ sgcl-web/src/modules/competicoes/pages/Listar/index.tsx | 2 +-
+ sgcl-web/src/modules/curriculos/pages/Listar/index.tsx  | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/sgcl-web/src/modules/aulas/pages/Listar/index.tsx b/sgcl-web/src/modules/aulas/pages/Listar/index.tsx
+index 8bd3f4e..ae53238 100644
+--- a/sgcl-web/src/modules/aulas/pages/Listar/index.tsx
++++ b/sgcl-web/src/modules/aulas/pages/Listar/index.tsx
+@@ -8,7 +8,7 @@ import { Badge } from "../../../../components/ui/Badge";
+ import { Modal } from "../../../../components/ui/Modal";
+ import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
+ 
+-import { useAuth } from "../../../../contexts/AuthContext";
++import { useAuth } from "../../../../contexts/useAuth";
+ import { AulaService } from "../../services/AulaService";
+ import { IniciarAulaForm, type IniciarAulaFormData } from "../../components/IniciarAulaForm";
+ import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+diff --git a/sgcl-web/src/modules/aulas/pages/Programacao/index.tsx b/sgcl-web/src/modules/aulas/pages/Programacao/index.tsx
+index cb7339c..e286e12 100644
+--- a/sgcl-web/src/modules/aulas/pages/Programacao/index.tsx
++++ b/sgcl-web/src/modules/aulas/pages/Programacao/index.tsx
+@@ -11,7 +11,7 @@ import { Loading } from "../../../../components/ui/Loading";
+ import { Badge } from "../../../../components/ui/Badge";
+ import { Modal } from "../../../../components/ui/Modal";
+ 
+-import { useAuth } from "../../../../contexts/AuthContext";
++import { useAuth } from "../../../../contexts/useAuth";
+ import { AulaService } from "../../services/AulaService";
+ import { ProgramarAulaForm, type ProgramarAulaFormData } from "../../components/ProgramarAulaForm";
+ import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+diff --git a/sgcl-web/src/modules/competicoes/pages/Listar/index.tsx b/sgcl-web/src/modules/competicoes/pages/Listar/index.tsx
+index 0a34b32..1c77483 100644
+--- a/sgcl-web/src/modules/competicoes/pages/Listar/index.tsx
++++ b/sgcl-web/src/modules/competicoes/pages/Listar/index.tsx
+@@ -10,7 +10,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
+ import { Loading } from "../../../../components/ui/Loading";
+ import { Modal } from "../../../../components/ui/Modal";
+ 
+-import { useAuth } from "../../../../contexts/AuthContext";
++import { useAuth } from "../../../../contexts/useAuth";
+ import { useCompeticoes } from "../../hooks/useCompeticoes";
+ import { CompeticaoService } from "../../services/CompeticaoService";
+ import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+diff --git a/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx b/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx
+index 53a692e..84fa635 100644
+--- a/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx
++++ b/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx
+@@ -9,7 +9,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
+ import { Modal } from "../../../../components/ui/Modal";
+ import { Badge } from "../../../../components/ui/Badge";
+ 
+-import { useAuth } from "../../../../contexts/AuthContext";
++import { useAuth } from "../../../../contexts/useAuth";
+ import { useCurriculos } from "../../hooks/useCurriculos";
+ import { CurriculoService } from "../../services/CurriculoService";
+ import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+-- 
+2.43.0
+

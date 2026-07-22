@@ -1,0 +1,518 @@
+From 46e1911f2d64d211b9c754a786a62b311ae52d17 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 14 Jul 2026 00:25:02 +0000
+Subject: [PATCH] =?UTF-8?q?feat:=20adiciona=20cobran=C3=A7a=20opcional=20a?=
+ =?UTF-8?q?o=20registrar=20gradua=C3=A7=C3=A3o=20(grau=20ou=20faixa)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+No formulário de Registrar Graduação, o professor escolhe o tipo (Grau
+ou Troca de Faixa) e pode marcar "Gerar cobrança", informando valor e
+vencimento. A cobrança vira uma Mensalidade normal do aluno, aparecendo
+nas telas de Mensalidades/Financeiro já existentes.
+
+- Novo endpoint POST /graduacoes/grau para incrementar o grau do aluno
+  (grau é limitado a 4 por faixa; acima disso exige troca de faixa)
+- Graduação + cobrança são criadas na mesma transação: se já existir
+  mensalidade no mês, nada é gravado (nem a graduação, nem o grau)
+- Extrai a checagem de mensalidade duplicada no mês para um util
+  compartilhado, reaproveitado por Mensalidade, Graduação e Grau
+---
+ .../graduacoes/components/GraduacaoForm.tsx   | 53 ++++++++++++++---
+ .../graduacoes/schema/graduacao.schema.ts     | 27 +++++++--
+ .../graduacoes/services/GraduacaoService.ts   | 17 ++++++
+ src/modules/graduacoes/controller.ts          | 26 +++++++--
+ src/modules/graduacoes/routes.ts              |  5 ++
+ .../services/CreateGraduacaoService.ts        | 47 +++++++++++----
+ .../services/IncrementarGrauService.ts        | 57 +++++++++++++++++++
+ .../services/CreateMensalidadeService.ts      | 39 +------------
+ .../utils/garantirSemMensalidadeNoMes.ts      | 21 +++++++
+ 9 files changed, 227 insertions(+), 65 deletions(-)
+ create mode 100644 src/modules/graduacoes/services/IncrementarGrauService.ts
+ create mode 100644 src/modules/mensalidades/utils/garantirSemMensalidadeNoMes.ts
+
+diff --git a/sgcl-web/src/modules/graduacoes/components/GraduacaoForm.tsx b/sgcl-web/src/modules/graduacoes/components/GraduacaoForm.tsx
+index d2e3135..345e0b9 100644
+--- a/sgcl-web/src/modules/graduacoes/components/GraduacaoForm.tsx
++++ b/sgcl-web/src/modules/graduacoes/components/GraduacaoForm.tsx
+@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
+ 
+ import { Select } from "../../../components/ui/Select";
+ import { Input } from "../../../components/ui/Input";
++import { Checkbox } from "../../../components/ui/Checkbox";
+ import { Button } from "../../../components/ui/Button";
+ import { ErrorMessage } from "../../../components/ui/ErrorMessage";
+ import { FormGrid } from "../../../components/ui/FormGrid";
+@@ -27,8 +28,12 @@ export function GraduacaoForm({ loading = false, onSubmit }: GraduacaoFormProps)
+     resolver: zodResolver(graduacaoSchema),
+     defaultValues: {
+       alunoId: "",
++      tipo: "FAIXA",
+       faixa: "",
+       data: new Date().toISOString().split("T")[0],
++      gerarCobranca: false,
++      valorCobranca: "",
++      vencimentoCobranca: "",
+     },
+   });
+ 
+@@ -49,6 +54,9 @@ export function GraduacaoForm({ loading = false, onSubmit }: GraduacaoFormProps)
+   const alunoIdSelecionado = watch("alunoId");
+   const alunoSelecionado = alunos.find((a) => String(a.id) === alunoIdSelecionado);
+ 
++  const tipoSelecionado = watch("tipo");
++  const gerarCobranca = watch("gerarCobranca");
++
+   const faixasDisponiveis = alunoSelecionado
+     ? getFaixasDaTrilha(calcularIdade(alunoSelecionado.dataNascimento))
+     : [];
+@@ -62,7 +70,7 @@ export function GraduacaoForm({ loading = false, onSubmit }: GraduacaoFormProps)
+               label="Aluno"
+               disabled={carregandoAlunos}
+               options={alunos.map((aluno) => ({
+-                label: `${aluno.nome} - ${aluno.faixa}`,
++                label: `${aluno.nome} - ${aluno.faixa} (grau ${aluno.grau})`,
+                 value: String(aluno.id),
+               }))}
+               {...register("alunoId")}
+@@ -72,18 +80,49 @@ export function GraduacaoForm({ loading = false, onSubmit }: GraduacaoFormProps)
+ 
+           <FormGridItem>
+             <Select
+-              label="Nova Faixa"
+-              disabled={!alunoSelecionado}
+-              options={faixasDisponiveis.map((faixa) => ({ label: faixa, value: faixa }))}
+-              {...register("faixa")}
++              label="Tipo de Graduação"
++              options={[
++                { label: "Troca de Faixa", value: "FAIXA" },
++                { label: "Grau", value: "GRAU" },
++              ]}
++              {...register("tipo")}
+             />
+-            <ErrorMessage message={errors.faixa?.message ?? ""} />
+           </FormGridItem>
+ 
++          {tipoSelecionado === "FAIXA" && (
++            <FormGridItem>
++              <Select
++                label="Nova Faixa"
++                disabled={!alunoSelecionado}
++                options={faixasDisponiveis.map((faixa) => ({ label: faixa, value: faixa }))}
++                {...register("faixa")}
++              />
++              <ErrorMessage message={errors.faixa?.message ?? ""} />
++            </FormGridItem>
++          )}
++
+           <FormGridItem>
+             <Input label="Data da Graduação" type="date" {...register("data")} />
+             <ErrorMessage message={errors.data?.message ?? ""} />
+           </FormGridItem>
++
++          <FormGridItem span={2}>
++            <Checkbox label="Gerar cobrança para esta graduação" {...register("gerarCobranca")} />
++          </FormGridItem>
++
++          {gerarCobranca && (
++            <>
++              <FormGridItem>
++                <Input label="Valor da Cobrança (R$)" type="number" step="0.01" {...register("valorCobranca")} />
++                <ErrorMessage message={errors.valorCobranca?.message ?? ""} />
++              </FormGridItem>
++
++              <FormGridItem>
++                <Input label="Vencimento da Cobrança" type="date" {...register("vencimentoCobranca")} />
++                <ErrorMessage message={errors.vencimentoCobranca?.message ?? ""} />
++              </FormGridItem>
++            </>
++          )}
+         </FormGrid>
+ 
+         <Button type="submit" disabled={loading}>
+@@ -92,4 +131,4 @@ export function GraduacaoForm({ loading = false, onSubmit }: GraduacaoFormProps)
+       </form>
+     </FormProvider>
+   );
+-}
+\ No newline at end of file
++}
+diff --git a/sgcl-web/src/modules/graduacoes/schema/graduacao.schema.ts b/sgcl-web/src/modules/graduacoes/schema/graduacao.schema.ts
+index 3a6c73c..c99f1bb 100644
+--- a/sgcl-web/src/modules/graduacoes/schema/graduacao.schema.ts
++++ b/sgcl-web/src/modules/graduacoes/schema/graduacao.schema.ts
+@@ -3,10 +3,27 @@ import { FAIXAS_INFANTIL, FAIXAS_JUVENIL_ADULTO } from "../types";
+ 
+ const TODAS_AS_FAIXAS = [...new Set([...FAIXAS_INFANTIL, ...FAIXAS_JUVENIL_ADULTO])];
+ 
+-export const graduacaoSchema = z.object({
+-  alunoId: z.string().min(1, "Selecione um aluno."),
+-  faixa: z.string().refine((f) => TODAS_AS_FAIXAS.includes(f), "Faixa inválida."),
+-  data: z.string().min(1, "Informe a data da graduação."),
+-});
++export const graduacaoSchema = z
++  .object({
++    alunoId: z.string().min(1, "Selecione um aluno."),
++    tipo: z.enum(["FAIXA", "GRAU"]),
++    faixa: z.string().optional(),
++    data: z.string().min(1, "Informe a data da graduação."),
++    gerarCobranca: z.boolean().optional(),
++    valorCobranca: z.string().optional(),
++    vencimentoCobranca: z.string().optional(),
++  })
++  .refine((data) => data.tipo !== "FAIXA" || TODAS_AS_FAIXAS.includes(data.faixa ?? ""), {
++    message: "Faixa inválida.",
++    path: ["faixa"],
++  })
++  .refine((data) => !data.gerarCobranca || !!data.valorCobranca, {
++    message: "Informe o valor da cobrança.",
++    path: ["valorCobranca"],
++  })
++  .refine((data) => !data.gerarCobranca || !!data.vencimentoCobranca, {
++    message: "Informe a data de vencimento da cobrança.",
++    path: ["vencimentoCobranca"],
++  });
+ 
+ export type GraduacaoFormData = z.infer<typeof graduacaoSchema>;
+\ No newline at end of file
+diff --git a/sgcl-web/src/modules/graduacoes/services/GraduacaoService.ts b/sgcl-web/src/modules/graduacoes/services/GraduacaoService.ts
+index 98189c5..9078fa5 100644
+--- a/sgcl-web/src/modules/graduacoes/services/GraduacaoService.ts
++++ b/sgcl-web/src/modules/graduacoes/services/GraduacaoService.ts
+@@ -2,6 +2,15 @@ import { ApiClient } from "../../../shared/api/ApiClient";
+ import type { Graduacao, EvolucaoAluno, AlunoElegivel } from "../types";
+ import type { GraduacaoFormData } from "../schema/graduacao.schema";
+ 
++function montarCobranca(data: GraduacaoFormData) {
++  if (!data.gerarCobranca) return undefined;
++
++  return {
++    valor: Number(data.valorCobranca),
++    vencimento: data.vencimentoCobranca,
++  };
++}
++
+ export class GraduacaoService {
+   static async listar() {
+     return ApiClient.get<Graduacao[]>("/graduacoes");
+@@ -20,10 +29,18 @@ export class GraduacaoService {
+   }
+ 
+   static async criar(data: GraduacaoFormData) {
++    if (data.tipo === "GRAU") {
++      return ApiClient.post("/graduacoes/grau", {
++        alunoId: Number(data.alunoId),
++        cobranca: montarCobranca(data),
++      });
++    }
++
+     return ApiClient.post<Graduacao>("/graduacoes", {
+       alunoId: Number(data.alunoId),
+       faixa: data.faixa,
+       data: data.data,
++      cobranca: montarCobranca(data),
+     });
+   }
+ }
+diff --git a/src/modules/graduacoes/controller.ts b/src/modules/graduacoes/controller.ts
+index 0f4328b..335ec3d 100644
+--- a/src/modules/graduacoes/controller.ts
++++ b/src/modules/graduacoes/controller.ts
+@@ -2,6 +2,7 @@ import { Request, Response } from "express";
+ import { prisma } from "../../shared/database/prisma";
+ import { CreateGraduacaoService } from "./services/CreateGraduacaoService";
+ import { GetEvolucaoAlunoService } from "./services/GetEvolucaoAlunoService";
++import { IncrementarGrauService } from "./services/IncrementarGrauService";
+ 
+ export class GraduacoesController {
+ 
+@@ -9,20 +10,35 @@ export class GraduacoesController {
+     const {
+       faixa,
+       data,
+-      alunoId
++      alunoId,
++      cobranca
+     } = req.body;
+-  
++
+     const service = new CreateGraduacaoService();
+-  
++
+     const graduacao = await service.execute({
+       faixa,
+       data,
+-      alunoId: Number(alunoId)
++      alunoId: Number(alunoId),
++      cobranca
+     });
+-  
++
+     return res.status(201).json(graduacao);
+   }
+ 
++  async incrementarGrau(req: Request, res: Response) {
++    const { alunoId, cobranca } = req.body;
++
++    const service = new IncrementarGrauService();
++
++    const aluno = await service.execute({
++      alunoId: Number(alunoId),
++      cobranca
++    });
++
++    return res.status(201).json(aluno);
++  }
++
+   async list(req: Request, res: Response) {
+ 
+     const graduacoes = await prisma.graduacao.findMany({
+diff --git a/src/modules/graduacoes/routes.ts b/src/modules/graduacoes/routes.ts
+index 47ff7a5..e76f5bc 100644
+--- a/src/modules/graduacoes/routes.ts
++++ b/src/modules/graduacoes/routes.ts
+@@ -13,6 +13,11 @@ ensureAuthenticated,
+ ensureRole(["ADMIN", "PROFESSOR"]),
+  graduacoesController.create);
+ 
++graduacoesRoutes.post("/grau",
++ensureAuthenticated,
++ensureRole(["ADMIN", "PROFESSOR"]),
++ graduacoesController.incrementarGrau);
++
+ graduacoesRoutes.get("/",
+ ensureAuthenticated,
+ ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+diff --git a/src/modules/graduacoes/services/CreateGraduacaoService.ts b/src/modules/graduacoes/services/CreateGraduacaoService.ts
+index 80d5779..ec294f2 100644
+--- a/src/modules/graduacoes/services/CreateGraduacaoService.ts
++++ b/src/modules/graduacoes/services/CreateGraduacaoService.ts
+@@ -1,5 +1,6 @@
+ import { prisma } from "../../../shared/database/prisma";
+ import { AppError } from "../../../shared/errors/AppError";
++import { garantirSemMensalidadeNoMes } from "../../mensalidades/utils/garantirSemMensalidadeNoMes";
+ import {
+   calcularIdade,
+   getTrilhaFaixa,
+@@ -7,14 +8,20 @@ import {
+   REGRAS_FAIXA_JUVENIL_ADULTO,
+ } from "../../../shared/constants/faixas";
+ 
++interface CobrancaDTO {
++  valor: number;
++  vencimento: string;
++}
++
+ interface CreateGraduacaoDTO {
+   faixa: string;
+   data: string;
+   alunoId: number;
++  cobranca?: CobrancaDTO;
+ }
+ 
+ export class CreateGraduacaoService {
+-  async execute({ faixa, data, alunoId }: CreateGraduacaoDTO) {
++  async execute({ faixa, data, alunoId, cobranca }: CreateGraduacaoDTO) {
+     const aluno = await prisma.aluno.findUnique({
+       where: { id: alunoId },
+     });
+@@ -70,18 +77,34 @@ export class CreateGraduacaoService {
+       }
+     }
+ 
+-    const graduacao = await prisma.graduacao.create({
+-      data: {
+-        faixa,
+-        data: new Date(data),
+-        alunoId,
+-      },
+-    });
++    if (cobranca) {
++      await garantirSemMensalidadeNoMes(alunoId, cobranca.vencimento);
++    }
+ 
+-    await prisma.aluno.update({
+-      where: { id: alunoId },
+-      data: { faixa },
+-    });
++    const [graduacao] = await prisma.$transaction([
++      prisma.graduacao.create({
++        data: {
++          faixa,
++          data: new Date(data),
++          alunoId,
++        },
++      }),
++      prisma.aluno.update({
++        where: { id: alunoId },
++        data: { faixa },
++      }),
++      ...(cobranca
++        ? [
++            prisma.mensalidade.create({
++              data: {
++                valor: cobranca.valor,
++                vencimento: new Date(cobranca.vencimento),
++                alunoId,
++              },
++            }),
++          ]
++        : []),
++    ]);
+ 
+     return graduacao;
+   }
+diff --git a/src/modules/graduacoes/services/IncrementarGrauService.ts b/src/modules/graduacoes/services/IncrementarGrauService.ts
+new file mode 100644
+index 0000000..cd26685
+--- /dev/null
++++ b/src/modules/graduacoes/services/IncrementarGrauService.ts
+@@ -0,0 +1,57 @@
++import { prisma } from "../../../shared/database/prisma";
++import { AppError } from "../../../shared/errors/AppError";
++import { garantirSemMensalidadeNoMes } from "../../mensalidades/utils/garantirSemMensalidadeNoMes";
++
++const GRAUS_MAXIMOS_POR_FAIXA = 4;
++
++interface CobrancaDTO {
++  valor: number;
++  vencimento: string;
++}
++
++interface IncrementarGrauDTO {
++  alunoId: number;
++  cobranca?: CobrancaDTO;
++}
++
++export class IncrementarGrauService {
++  async execute({ alunoId, cobranca }: IncrementarGrauDTO) {
++    const aluno = await prisma.aluno.findUnique({
++      where: { id: alunoId },
++    });
++
++    if (!aluno) {
++      throw new AppError("Aluno não encontrado.");
++    }
++
++    if (aluno.grau >= GRAUS_MAXIMOS_POR_FAIXA) {
++      throw new AppError(
++        `O aluno já está no grau máximo (${GRAUS_MAXIMOS_POR_FAIXA}) desta faixa. Registre a troca de faixa.`
++      );
++    }
++
++    if (cobranca) {
++      await garantirSemMensalidadeNoMes(alunoId, cobranca.vencimento);
++    }
++
++    const [alunoAtualizado] = await prisma.$transaction([
++      prisma.aluno.update({
++        where: { id: alunoId },
++        data: { grau: { increment: 1 } },
++      }),
++      ...(cobranca
++        ? [
++            prisma.mensalidade.create({
++              data: {
++                valor: cobranca.valor,
++                vencimento: new Date(cobranca.vencimento),
++                alunoId,
++              },
++            }),
++          ]
++        : []),
++    ]);
++
++    return alunoAtualizado;
++  }
++}
+diff --git a/src/modules/mensalidades/services/CreateMensalidadeService.ts b/src/modules/mensalidades/services/CreateMensalidadeService.ts
+index b64d9bb..d03726f 100644
+--- a/src/modules/mensalidades/services/CreateMensalidadeService.ts
++++ b/src/modules/mensalidades/services/CreateMensalidadeService.ts
+@@ -1,5 +1,5 @@
+ import { prisma } from "../../../shared/database/prisma";
+-import { AppError } from "../../../shared/errors/AppError";
++import { garantirSemMensalidadeNoMes } from "../utils/garantirSemMensalidadeNoMes";
+ 
+ interface CreateMensalidadeDTO {
+   valor: number;
+@@ -15,46 +15,13 @@ export class CreateMensalidadeService {
+     alunoId
+   }: CreateMensalidadeDTO) {
+ 
+-    const dataVencimento =
+-      new Date(vencimento);
+-
+-    const mes =
+-      dataVencimento.getMonth();
+-
+-    const ano =
+-      dataVencimento.getFullYear();
+-
+-    const mensalidadesAluno =
+-      await prisma.mensalidade.findMany({
+-        where: {
+-          alunoId
+-        }
+-      });
+-
+-    const mensalidadeExistente =
+-      mensalidadesAluno.find(item => {
+-
+-        const data =
+-          new Date(item.vencimento);
+-
+-        return (
+-          data.getMonth() === mes &&
+-          data.getFullYear() === ano
+-        );
+-      });
+-
+-    if (mensalidadeExistente) {
+-
+-      throw new AppError(
+-        "Já existe uma mensalidade para este aluno neste mês."
+-      );
+-    }
++    await garantirSemMensalidadeNoMes(alunoId, vencimento);
+ 
+     const mensalidade =
+       await prisma.mensalidade.create({
+         data: {
+           valor,
+-          vencimento: dataVencimento,
++          vencimento: new Date(vencimento),
+           alunoId
+         }
+       });
+diff --git a/src/modules/mensalidades/utils/garantirSemMensalidadeNoMes.ts b/src/modules/mensalidades/utils/garantirSemMensalidadeNoMes.ts
+new file mode 100644
+index 0000000..f5c5079
+--- /dev/null
++++ b/src/modules/mensalidades/utils/garantirSemMensalidadeNoMes.ts
+@@ -0,0 +1,21 @@
++import { prisma } from "../../../shared/database/prisma";
++import { AppError } from "../../../shared/errors/AppError";
++
++export async function garantirSemMensalidadeNoMes(alunoId: number, vencimento: string) {
++  const dataVencimento = new Date(vencimento);
++  const mes = dataVencimento.getMonth();
++  const ano = dataVencimento.getFullYear();
++
++  const mensalidadesAluno = await prisma.mensalidade.findMany({
++    where: { alunoId },
++  });
++
++  const mensalidadeExistente = mensalidadesAluno.find((item) => {
++    const data = new Date(item.vencimento);
++    return data.getMonth() === mes && data.getFullYear() === ano;
++  });
++
++  if (mensalidadeExistente) {
++    throw new AppError("Já existe uma mensalidade para este aluno neste mês.");
++  }
++}
+-- 
+2.43.0
+

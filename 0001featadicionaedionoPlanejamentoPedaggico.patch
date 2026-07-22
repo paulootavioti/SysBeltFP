@@ -1,0 +1,830 @@
+From 5e5afbd7e350abc8c5c3c1be637532735615b7f4 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Mon, 13 Jul 2026 21:59:47 +0000
+Subject: [PATCH] =?UTF-8?q?feat:=20adiciona=20edi=C3=A7=C3=A3o=20no=20Plan?=
+ =?UTF-8?q?ejamento=20Pedag=C3=B3gico?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Currículo, Módulo, Aula Planejada e Técnica agora têm botão "Editar"
+além de cadastrar. Reaproveita os mesmos formulários (com initialValues
+pré-preenchidos) tanto para criar quanto para editar em cada nível.
+---
+ .../components/AulaCurriculoForm.tsx          |  27 ++-
+ .../curriculos/components/CurriculoForm.tsx   |  25 +-
+ .../curriculos/components/ModuloForm.tsx      |  13 +-
+ .../components/TecnicaCurriculoForm.tsx       |  13 +-
+ .../modules/curriculos/pages/Listar/index.tsx | 221 ++++++++++++++----
+ .../curriculos/pages/Listar/styles.css        |  13 ++
+ .../curriculos/services/CurriculoService.ts   |  19 ++
+ src/modules/curriculos/controller.ts          |  36 +++
+ src/modules/curriculos/routes.ts              |  24 ++
+ .../services/UpdateAulaCurriculoService.ts    |  26 +++
+ .../services/UpdateCurriculoService.ts        |  22 ++
+ .../services/UpdateModuloCurriculoService.ts  |  26 +++
+ .../services/UpdateTecnicaCurriculoService.ts |  24 ++
+ 13 files changed, 420 insertions(+), 69 deletions(-)
+ create mode 100644 src/modules/curriculos/services/UpdateAulaCurriculoService.ts
+ create mode 100644 src/modules/curriculos/services/UpdateCurriculoService.ts
+ create mode 100644 src/modules/curriculos/services/UpdateModuloCurriculoService.ts
+ create mode 100644 src/modules/curriculos/services/UpdateTecnicaCurriculoService.ts
+
+diff --git a/sgcl-web/src/modules/curriculos/components/AulaCurriculoForm.tsx b/sgcl-web/src/modules/curriculos/components/AulaCurriculoForm.tsx
+index 565e20a..9c68fd9 100644
+--- a/sgcl-web/src/modules/curriculos/components/AulaCurriculoForm.tsx
++++ b/sgcl-web/src/modules/curriculos/components/AulaCurriculoForm.tsx
+@@ -1,3 +1,4 @@
++import { useEffect } from "react";
+ import { useForm, FormProvider } from "react-hook-form";
+ import { zodResolver } from "@hookform/resolvers/zod";
+ 
+@@ -12,23 +13,31 @@ import { aulaCurriculoSchema, type AulaCurriculoFormData } from "../schema/curri
+ 
+ interface AulaCurriculoFormProps {
+   loading?: boolean;
++  initialValues?: Partial<AulaCurriculoFormData>;
+   onSubmit: (data: AulaCurriculoFormData) => void;
+ }
+ 
+-export function AulaCurriculoForm({ loading = false, onSubmit }: AulaCurriculoFormProps) {
++const AULA_DEFAULTS: AulaCurriculoFormData = {
++  titulo: "",
++  objetivo: "",
++  descricao: "",
++  duracaoMinutos: "",
++  jogosSugeridos: "",
++};
++
++export function AulaCurriculoForm({ loading = false, initialValues, onSubmit }: AulaCurriculoFormProps) {
+   const methods = useForm<AulaCurriculoFormData>({
+     resolver: zodResolver(aulaCurriculoSchema),
+-    defaultValues: {
+-      titulo: "",
+-      objetivo: "",
+-      descricao: "",
+-      duracaoMinutos: "",
+-      jogosSugeridos: "",
+-    },
++    defaultValues: { ...AULA_DEFAULTS, ...initialValues },
+   });
+ 
+   const { register, handleSubmit, formState: { errors } } = methods;
+ 
++  useEffect(() => {
++    methods.reset({ ...AULA_DEFAULTS, ...initialValues });
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [initialValues]);
++
+   return (
+     <FormProvider {...methods}>
+       <form onSubmit={handleSubmit(onSubmit)}>
+@@ -56,7 +65,7 @@ export function AulaCurriculoForm({ loading = false, onSubmit }: AulaCurriculoFo
+         </FormGrid>
+ 
+         <Button type="submit" disabled={loading}>
+-          {loading ? "Salvando..." : "Cadastrar Aula"}
++          {loading ? "Salvando..." : initialValues ? "Salvar Alterações" : "Cadastrar Aula"}
+         </Button>
+       </form>
+     </FormProvider>
+diff --git a/sgcl-web/src/modules/curriculos/components/CurriculoForm.tsx b/sgcl-web/src/modules/curriculos/components/CurriculoForm.tsx
+index c76e36d..0e85609 100644
+--- a/sgcl-web/src/modules/curriculos/components/CurriculoForm.tsx
++++ b/sgcl-web/src/modules/curriculos/components/CurriculoForm.tsx
+@@ -1,3 +1,4 @@
++import { useEffect } from "react";
+ import { useForm, FormProvider } from "react-hook-form";
+ import { zodResolver } from "@hookform/resolvers/zod";
+ 
+@@ -11,17 +12,35 @@ import { curriculoSchema, type CurriculoFormData } from "../schema/curriculo.sch
+ 
+ interface CurriculoFormProps {
+   loading?: boolean;
++  initialValues?: Partial<CurriculoFormData>;
+   onSubmit: (data: CurriculoFormData) => void;
+ }
+ 
+-export function CurriculoForm({ loading = false, onSubmit }: CurriculoFormProps) {
++export function CurriculoForm({ loading = false, initialValues, onSubmit }: CurriculoFormProps) {
+   const methods = useForm<CurriculoFormData>({
+     resolver: zodResolver(curriculoSchema),
+-    defaultValues: { nome: "", descricao: "", modalidade: "Jiu-Jitsu", publico: "Kids" },
++    defaultValues: {
++      nome: "",
++      descricao: "",
++      modalidade: "Jiu-Jitsu",
++      publico: "Kids",
++      ...initialValues,
++    },
+   });
+ 
+   const { register, handleSubmit, formState: { errors } } = methods;
+ 
++  useEffect(() => {
++    methods.reset({
++      nome: "",
++      descricao: "",
++      modalidade: "Jiu-Jitsu",
++      publico: "Kids",
++      ...initialValues,
++    });
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [initialValues]);
++
+   return (
+     <FormProvider {...methods}>
+       <form onSubmit={handleSubmit(onSubmit)}>
+@@ -45,7 +64,7 @@ export function CurriculoForm({ loading = false, onSubmit }: CurriculoFormProps)
+         </FormGrid>
+ 
+         <Button type="submit" disabled={loading}>
+-          {loading ? "Salvando..." : "Cadastrar Currículo"}
++          {loading ? "Salvando..." : initialValues ? "Salvar Alterações" : "Cadastrar Currículo"}
+         </Button>
+       </form>
+     </FormProvider>
+diff --git a/sgcl-web/src/modules/curriculos/components/ModuloForm.tsx b/sgcl-web/src/modules/curriculos/components/ModuloForm.tsx
+index c78b38e..daada66 100644
+--- a/sgcl-web/src/modules/curriculos/components/ModuloForm.tsx
++++ b/sgcl-web/src/modules/curriculos/components/ModuloForm.tsx
+@@ -1,3 +1,4 @@
++import { useEffect } from "react";
+ import { useForm, FormProvider } from "react-hook-form";
+ import { zodResolver } from "@hookform/resolvers/zod";
+ 
+@@ -11,17 +12,23 @@ import { moduloSchema, type ModuloFormData } from "../schema/curriculo.schema";
+ 
+ interface ModuloFormProps {
+   loading?: boolean;
++  initialValues?: Partial<ModuloFormData>;
+   onSubmit: (data: ModuloFormData) => void;
+ }
+ 
+-export function ModuloForm({ loading = false, onSubmit }: ModuloFormProps) {
++export function ModuloForm({ loading = false, initialValues, onSubmit }: ModuloFormProps) {
+   const methods = useForm<ModuloFormData>({
+     resolver: zodResolver(moduloSchema),
+-    defaultValues: { nome: "", descricao: "", faixa: "" },
++    defaultValues: { nome: "", descricao: "", faixa: "", ...initialValues },
+   });
+ 
+   const { register, handleSubmit, formState: { errors } } = methods;
+ 
++  useEffect(() => {
++    methods.reset({ nome: "", descricao: "", faixa: "", ...initialValues });
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [initialValues]);
++
+   return (
+     <FormProvider {...methods}>
+       <form onSubmit={handleSubmit(onSubmit)}>
+@@ -41,7 +48,7 @@ export function ModuloForm({ loading = false, onSubmit }: ModuloFormProps) {
+         </FormGrid>
+ 
+         <Button type="submit" disabled={loading}>
+-          {loading ? "Salvando..." : "Cadastrar Módulo"}
++          {loading ? "Salvando..." : initialValues ? "Salvar Alterações" : "Cadastrar Módulo"}
+         </Button>
+       </form>
+     </FormProvider>
+diff --git a/sgcl-web/src/modules/curriculos/components/TecnicaCurriculoForm.tsx b/sgcl-web/src/modules/curriculos/components/TecnicaCurriculoForm.tsx
+index b575a2a..5e8f612 100644
+--- a/sgcl-web/src/modules/curriculos/components/TecnicaCurriculoForm.tsx
++++ b/sgcl-web/src/modules/curriculos/components/TecnicaCurriculoForm.tsx
+@@ -1,3 +1,4 @@
++import { useEffect } from "react";
+ import { useForm, FormProvider } from "react-hook-form";
+ import { zodResolver } from "@hookform/resolvers/zod";
+ 
+@@ -12,17 +13,23 @@ import { tecnicaCurriculoSchema, type TecnicaCurriculoFormData } from "../schema
+ 
+ interface TecnicaCurriculoFormProps {
+   loading?: boolean;
++  initialValues?: Partial<TecnicaCurriculoFormData>;
+   onSubmit: (data: TecnicaCurriculoFormData) => void;
+ }
+ 
+-export function TecnicaCurriculoForm({ loading = false, onSubmit }: TecnicaCurriculoFormProps) {
++export function TecnicaCurriculoForm({ loading = false, initialValues, onSubmit }: TecnicaCurriculoFormProps) {
+   const methods = useForm<TecnicaCurriculoFormData>({
+     resolver: zodResolver(tecnicaCurriculoSchema),
+-    defaultValues: { nome: "", categoria: "", descricao: "", obrigatoria: true },
++    defaultValues: { nome: "", categoria: "", descricao: "", obrigatoria: true, ...initialValues },
+   });
+ 
+   const { register, handleSubmit, formState: { errors } } = methods;
+ 
++  useEffect(() => {
++    methods.reset({ nome: "", categoria: "", descricao: "", obrigatoria: true, ...initialValues });
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [initialValues]);
++
+   return (
+     <FormProvider {...methods}>
+       <form onSubmit={handleSubmit(onSubmit)}>
+@@ -46,7 +53,7 @@ export function TecnicaCurriculoForm({ loading = false, onSubmit }: TecnicaCurri
+         </FormGrid>
+ 
+         <Button type="submit" disabled={loading}>
+-          {loading ? "Salvando..." : "Cadastrar Técnica"}
++          {loading ? "Salvando..." : initialValues ? "Salvar Alterações" : "Cadastrar Técnica"}
+         </Button>
+       </form>
+     </FormProvider>
+diff --git a/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx b/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx
+index 95c4c02..99cb946 100644
+--- a/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx
++++ b/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx
+@@ -25,13 +25,15 @@ import type {
+   TecnicaCurriculoFormData,
+ } from "../../schema/curriculo.schema";
+ 
++import type { Curriculo, ModuloCurriculo, AulaCurriculo, TecnicaCurriculo } from "../../types/curriculo";
++
+ import "./styles.css";
+ 
+ type ModalState =
+-  | { tipo: "curriculo" }
+-  | { tipo: "modulo"; curriculoId: number }
+-  | { tipo: "aula"; moduloId: number }
+-  | { tipo: "tecnica"; aulaCurriculoId: number }
++  | { tipo: "curriculo"; editando?: Curriculo }
++  | { tipo: "modulo"; curriculoId: number; editando?: ModuloCurriculo }
++  | { tipo: "aula"; moduloId: number; editando?: AulaCurriculo }
++  | { tipo: "tecnica"; aulaCurriculoId: number; editando?: TecnicaCurriculo }
+   | null;
+ 
+ export function Curriculos() {
+@@ -39,61 +41,77 @@ export function Curriculos() {
+   const [modal, setModal] = useState<ModalState>(null);
+   const [salvando, setSalvando] = useState(false);
+ 
+-  async function handleCriarCurriculo(data: CurriculoFormData) {
++  async function handleSalvarCurriculo(data: CurriculoFormData, editando?: Curriculo) {
+     try {
+       setSalvando(true);
+       setErro("");
+-      await CurriculoService.criar(data);
++      if (editando) {
++        await CurriculoService.atualizar(editando.id, data);
++      } else {
++        await CurriculoService.criar(data);
++      }
+       await carregarCurriculos();
+       setModal(null);
+     } catch (error) {
+-      setErro(getApiErrorMessage(error, "Erro ao cadastrar currículo."));
++      setErro(getApiErrorMessage(error, "Erro ao salvar currículo."));
+     } finally {
+       setSalvando(false);
+     }
+   }
+ 
+-  async function handleCriarModulo(data: ModuloFormData, curriculoId: number) {
++  async function handleSalvarModulo(data: ModuloFormData, curriculoId: number, editando?: ModuloCurriculo) {
+     try {
+       setSalvando(true);
+       setErro("");
+-      await CurriculoService.criarModulo({ ...data, curriculoId });
++      if (editando) {
++        await CurriculoService.atualizarModulo(editando.id, data);
++      } else {
++        await CurriculoService.criarModulo({ ...data, curriculoId });
++      }
+       await carregarCurriculos();
+       setModal(null);
+     } catch (error) {
+-      setErro(getApiErrorMessage(error, "Erro ao cadastrar módulo."));
++      setErro(getApiErrorMessage(error, "Erro ao salvar módulo."));
+     } finally {
+       setSalvando(false);
+     }
+   }
+ 
+-  async function handleCriarAula(data: AulaCurriculoFormData, moduloId: number) {
++  async function handleSalvarAula(data: AulaCurriculoFormData, moduloId: number, editando?: AulaCurriculo) {
+     try {
+       setSalvando(true);
+       setErro("");
+-      await CurriculoService.criarAula({
++      const payload = {
+         ...data,
+         duracaoMinutos: data.duracaoMinutos ? Number(data.duracaoMinutos) : undefined,
+-        moduloId,
+-      });
++      };
++      if (editando) {
++        await CurriculoService.atualizarAula(editando.id, payload);
++      } else {
++        await CurriculoService.criarAula({ ...payload, moduloId });
++      }
+       await carregarCurriculos();
+       setModal(null);
+     } catch (error) {
+-      setErro(getApiErrorMessage(error, "Erro ao cadastrar aula."));
++      setErro(getApiErrorMessage(error, "Erro ao salvar aula."));
+     } finally {
+       setSalvando(false);
+     }
+   }
+ 
+-  async function handleCriarTecnica(data: TecnicaCurriculoFormData, aulaCurriculoId: number) {
++  async function handleSalvarTecnica(data: TecnicaCurriculoFormData, aulaCurriculoId: number, editando?: TecnicaCurriculo) {
+     try {
+       setSalvando(true);
+       setErro("");
+-      await CurriculoService.criarTecnica({ ...data, aulaCurriculoId });
++      if (editando) {
++        await CurriculoService.atualizarTecnica(editando.id, data);
++      } else {
++        await CurriculoService.criarTecnica({ ...data, aulaCurriculoId });
++      }
+       await carregarCurriculos();
+       setModal(null);
+     } catch (error) {
+-      setErro(getApiErrorMessage(error, "Erro ao cadastrar técnica."));
++      setErro(getApiErrorMessage(error, "Erro ao salvar técnica."));
+     } finally {
+       setSalvando(false);
+     }
+@@ -136,13 +154,23 @@ export function Curriculos() {
+                 <p>{curriculo.modalidade} — {curriculo.publico}</p>
+               </div>
+ 
+-              <Button
+-                type="button"
+-                variant="secondary"
+-                onClick={() => setModal({ tipo: "modulo", curriculoId: curriculo.id })}
+-              >
+-                + Módulo
+-              </Button>
++              <div className="curriculos-card-acoes">
++                <Button
++                  type="button"
++                  variant="secondary"
++                  onClick={() => setModal({ tipo: "curriculo", editando: curriculo })}
++                >
++                  Editar
++                </Button>
++
++                <Button
++                  type="button"
++                  variant="secondary"
++                  onClick={() => setModal({ tipo: "modulo", curriculoId: curriculo.id })}
++                >
++                  + Módulo
++                </Button>
++              </div>
+             </div>
+ 
+             {curriculo.modulos.length === 0 ? (
+@@ -156,13 +184,23 @@ export function Curriculos() {
+                       {modulo.faixa && <span className="modulo-faixa">{modulo.faixa}</span>}
+                     </div>
+ 
+-                    <Button
+-                      type="button"
+-                      variant="secondary"
+-                      onClick={() => setModal({ tipo: "aula", moduloId: modulo.id })}
+-                    >
+-                      + Aula
+-                    </Button>
++                    <div className="curriculos-card-acoes">
++                      <Button
++                        type="button"
++                        variant="secondary"
++                        onClick={() => setModal({ tipo: "modulo", curriculoId: curriculo.id, editando: modulo })}
++                      >
++                        Editar
++                      </Button>
++
++                      <Button
++                        type="button"
++                        variant="secondary"
++                        onClick={() => setModal({ tipo: "aula", moduloId: modulo.id })}
++                      >
++                        + Aula
++                      </Button>
++                    </div>
+                   </div>
+ 
+                   {modulo.aulas.length === 0 ? (
+@@ -178,24 +216,41 @@ export function Curriculos() {
+                             {aula.jogosSugeridos && <p>🎮 {aula.jogosSugeridos}</p>}
+                           </div>
+ 
+-                          <Button
+-                            type="button"
+-                            variant="secondary"
+-                            onClick={() => setModal({ tipo: "tecnica", aulaCurriculoId: aula.id })}
+-                          >
+-                            + Técnica
+-                          </Button>
++                          <div className="curriculos-card-acoes">
++                            <Button
++                              type="button"
++                              variant="secondary"
++                              onClick={() => setModal({ tipo: "aula", moduloId: modulo.id, editando: aula })}
++                            >
++                              Editar
++                            </Button>
++
++                            <Button
++                              type="button"
++                              variant="secondary"
++                              onClick={() => setModal({ tipo: "tecnica", aulaCurriculoId: aula.id })}
++                            >
++                              + Técnica
++                            </Button>
++                          </div>
+                         </div>
+ 
+                         {aula.tecnicas.length > 0 && (
+                           <div className="tecnicas-lista">
+                             {aula.tecnicas.map((tecnica) => (
+-                              <Badge
++                              <button
+                                 key={tecnica.id}
+-                                variant={tecnica.obrigatoria ? "info" : "neutral"}
++                                type="button"
++                                className="tecnica-badge-botao"
++                                title="Clique para editar"
++                                onClick={() =>
++                                  setModal({ tipo: "tecnica", aulaCurriculoId: aula.id, editando: tecnica })
++                                }
+                               >
+-                                {tecnica.nome}
+-                              </Badge>
++                                <Badge variant={tecnica.obrigatoria ? "info" : "neutral"}>
++                                  {tecnica.nome}
++                                </Badge>
++                              </button>
+                             ))}
+                           </div>
+                         )}
+@@ -209,28 +264,92 @@ export function Curriculos() {
+         ))
+       )}
+ 
+-      <Modal open={modal?.tipo === "curriculo"} title="Novo Currículo" onClose={() => setModal(null)}>
+-        <CurriculoForm loading={salvando} onSubmit={handleCriarCurriculo} />
++      <Modal
++        open={modal?.tipo === "curriculo"}
++        title={modal?.tipo === "curriculo" && modal.editando ? "Editar Currículo" : "Novo Currículo"}
++        onClose={() => setModal(null)}
++      >
++        <CurriculoForm
++          loading={salvando}
++          initialValues={
++            modal?.tipo === "curriculo" && modal.editando
++              ? {
++                  nome: modal.editando.nome,
++                  descricao: modal.editando.descricao ?? "",
++                  modalidade: modal.editando.modalidade,
++                  publico: modal.editando.publico,
++                }
++              : undefined
++          }
++          onSubmit={(data) => modal?.tipo === "curriculo" && handleSalvarCurriculo(data, modal.editando)}
++        />
+       </Modal>
+ 
+-      <Modal open={modal?.tipo === "modulo"} title="Novo Módulo" onClose={() => setModal(null)}>
++      <Modal
++        open={modal?.tipo === "modulo"}
++        title={modal?.tipo === "modulo" && modal.editando ? "Editar Módulo" : "Novo Módulo"}
++        onClose={() => setModal(null)}
++      >
+         <ModuloForm
+           loading={salvando}
+-          onSubmit={(data) => modal?.tipo === "modulo" && handleCriarModulo(data, modal.curriculoId)}
++          initialValues={
++            modal?.tipo === "modulo" && modal.editando
++              ? {
++                  nome: modal.editando.nome,
++                  descricao: modal.editando.descricao ?? "",
++                  faixa: modal.editando.faixa ?? "",
++                }
++              : undefined
++          }
++          onSubmit={(data) =>
++            modal?.tipo === "modulo" && handleSalvarModulo(data, modal.curriculoId, modal.editando)
++          }
+         />
+       </Modal>
+ 
+-      <Modal open={modal?.tipo === "aula"} title="Nova Aula Planejada" onClose={() => setModal(null)}>
++      <Modal
++        open={modal?.tipo === "aula"}
++        title={modal?.tipo === "aula" && modal.editando ? "Editar Aula Planejada" : "Nova Aula Planejada"}
++        onClose={() => setModal(null)}
++      >
+         <AulaCurriculoForm
+           loading={salvando}
+-          onSubmit={(data) => modal?.tipo === "aula" && handleCriarAula(data, modal.moduloId)}
++          initialValues={
++            modal?.tipo === "aula" && modal.editando
++              ? {
++                  titulo: modal.editando.titulo,
++                  objetivo: modal.editando.objetivo ?? "",
++                  descricao: modal.editando.descricao ?? "",
++                  jogosSugeridos: modal.editando.jogosSugeridos ?? "",
++                  duracaoMinutos:
++                    modal.editando.duracaoMinutos != null ? String(modal.editando.duracaoMinutos) : "",
++                }
++              : undefined
++          }
++          onSubmit={(data) => modal?.tipo === "aula" && handleSalvarAula(data, modal.moduloId, modal.editando)}
+         />
+       </Modal>
+ 
+-      <Modal open={modal?.tipo === "tecnica"} title="Nova Técnica Sugerida" onClose={() => setModal(null)}>
++      <Modal
++        open={modal?.tipo === "tecnica"}
++        title={modal?.tipo === "tecnica" && modal.editando ? "Editar Técnica" : "Nova Técnica Sugerida"}
++        onClose={() => setModal(null)}
++      >
+         <TecnicaCurriculoForm
+           loading={salvando}
+-          onSubmit={(data) => modal?.tipo === "tecnica" && handleCriarTecnica(data, modal.aulaCurriculoId)}
++          initialValues={
++            modal?.tipo === "tecnica" && modal.editando
++              ? {
++                  nome: modal.editando.nome,
++                  categoria: modal.editando.categoria ?? "",
++                  descricao: modal.editando.descricao ?? "",
++                  obrigatoria: modal.editando.obrigatoria,
++                }
++              : undefined
++          }
++          onSubmit={(data) =>
++            modal?.tipo === "tecnica" && handleSalvarTecnica(data, modal.aulaCurriculoId, modal.editando)
++          }
+         />
+       </Modal>
+     </Layout>
+diff --git a/sgcl-web/src/modules/curriculos/pages/Listar/styles.css b/sgcl-web/src/modules/curriculos/pages/Listar/styles.css
+index bb7a5a8..d68cde7 100644
+--- a/sgcl-web/src/modules/curriculos/pages/Listar/styles.css
++++ b/sgcl-web/src/modules/curriculos/pages/Listar/styles.css
+@@ -93,4 +93,17 @@
+   color: var(--text-light);
+   font-size: var(--font-sm);
+   margin: var(--space-2) 0;
++}
++
++.curriculos-card-acoes {
++  display: flex;
++  gap: var(--space-2);
++  flex-wrap: wrap;
++}
++
++.tecnica-badge-botao {
++  background: none;
++  border: none;
++  padding: 0;
++  cursor: pointer;
+ }
+\ No newline at end of file
+diff --git a/sgcl-web/src/modules/curriculos/services/CurriculoService.ts b/sgcl-web/src/modules/curriculos/services/CurriculoService.ts
+index c8ba348..5430e58 100644
+--- a/sgcl-web/src/modules/curriculos/services/CurriculoService.ts
++++ b/sgcl-web/src/modules/curriculos/services/CurriculoService.ts
+@@ -32,4 +32,23 @@ export class CurriculoService {
+   static async criarTecnica(data: TecnicaCurriculoFormData & { aulaCurriculoId: number }) {
+     return ApiClient.post("/curriculos/tecnicas", data);
+   }
++
++  static async atualizar(id: number, data: CurriculoFormData) {
++    return ApiClient.put<Curriculo>(`/curriculos/${id}`, data);
++  }
++
++  static async atualizarModulo(id: number, data: ModuloFormData) {
++    return ApiClient.put(`/curriculos/modulos/${id}`, data);
++  }
++
++  static async atualizarAula(
++    id: number,
++    data: Omit<AulaCurriculoFormData, "duracaoMinutos"> & { duracaoMinutos?: number }
++  ) {
++    return ApiClient.put(`/curriculos/aulas/${id}`, data);
++  }
++
++  static async atualizarTecnica(id: number, data: TecnicaCurriculoFormData) {
++    return ApiClient.put(`/curriculos/tecnicas/${id}`, data);
++  }
+ }
+\ No newline at end of file
+diff --git a/src/modules/curriculos/controller.ts b/src/modules/curriculos/controller.ts
+index c89b01b..7541948 100644
+--- a/src/modules/curriculos/controller.ts
++++ b/src/modules/curriculos/controller.ts
+@@ -6,6 +6,10 @@ import { GetCurriculoService } from "./services/GetCurriculoService";
+ import { CreateModuloCurriculoService } from "./services/CreateModuloCurriculoService";
+ import { CreateAulaCurriculoService } from "./services/CreateAulaCurriculoService";
+ import { CreateTecnicaCurriculoService } from "./services/CreateTecnicaCurriculoService";
++import { UpdateCurriculoService } from "./services/UpdateCurriculoService";
++import { UpdateModuloCurriculoService } from "./services/UpdateModuloCurriculoService";
++import { UpdateAulaCurriculoService } from "./services/UpdateAulaCurriculoService";
++import { UpdateTecnicaCurriculoService } from "./services/UpdateTecnicaCurriculoService";
+ 
+ export class CurriculosController {
+   async create(req: Request, res: Response) {
+@@ -55,4 +59,36 @@ export class CurriculosController {
+ 
+     return res.status(201).json(tecnica);
+   }
++
++  async update(req: Request, res: Response) {
++    const service = new UpdateCurriculoService();
++
++    const curriculo = await service.execute(Number(req.params.id), req.body);
++
++    return res.json(curriculo);
++  }
++
++  async updateModulo(req: Request, res: Response) {
++    const service = new UpdateModuloCurriculoService();
++
++    const modulo = await service.execute(Number(req.params.id), req.body);
++
++    return res.json(modulo);
++  }
++
++  async updateAula(req: Request, res: Response) {
++    const service = new UpdateAulaCurriculoService();
++
++    const aula = await service.execute(Number(req.params.id), req.body);
++
++    return res.json(aula);
++  }
++
++  async updateTecnica(req: Request, res: Response) {
++    const service = new UpdateTecnicaCurriculoService();
++
++    const tecnica = await service.execute(Number(req.params.id), req.body);
++
++    return res.json(tecnica);
++  }
+ }
+\ No newline at end of file
+diff --git a/src/modules/curriculos/routes.ts b/src/modules/curriculos/routes.ts
+index c8ab359..cf8fa08 100644
+--- a/src/modules/curriculos/routes.ts
++++ b/src/modules/curriculos/routes.ts
+@@ -43,4 +43,28 @@ curriculosRoutes.post(
+   controller.createTecnica
+ );
+ 
++curriculosRoutes.put(
++  "/modulos/:id",
++  ensureAuthenticated,
++  controller.updateModulo
++);
++
++curriculosRoutes.put(
++  "/aulas/:id",
++  ensureAuthenticated,
++  controller.updateAula
++);
++
++curriculosRoutes.put(
++  "/tecnicas/:id",
++  ensureAuthenticated,
++  controller.updateTecnica
++);
++
++curriculosRoutes.put(
++  "/:id",
++  ensureAuthenticated,
++  controller.update
++);
++
+ export { curriculosRoutes };
+\ No newline at end of file
+diff --git a/src/modules/curriculos/services/UpdateAulaCurriculoService.ts b/src/modules/curriculos/services/UpdateAulaCurriculoService.ts
+new file mode 100644
+index 0000000..ae5d550
+--- /dev/null
++++ b/src/modules/curriculos/services/UpdateAulaCurriculoService.ts
+@@ -0,0 +1,26 @@
++import { prisma } from "../../../shared/database/prisma";
++
++interface UpdateAulaCurriculoDTO {
++  titulo: string;
++  objetivo?: string;
++  descricao?: string;
++  duracaoMinutos?: number;
++  jogosSugeridos?: string;
++  ordem?: number;
++}
++
++export class UpdateAulaCurriculoService {
++  async execute(id: number, data: UpdateAulaCurriculoDTO) {
++    return prisma.aulaCurriculo.update({
++      where: { id },
++      data: {
++        titulo: data.titulo,
++        objetivo: data.objetivo,
++        descricao: data.descricao,
++        duracaoMinutos: data.duracaoMinutos,
++        jogosSugeridos: data.jogosSugeridos,
++        ordem: data.ordem,
++      },
++    });
++  }
++}
+diff --git a/src/modules/curriculos/services/UpdateCurriculoService.ts b/src/modules/curriculos/services/UpdateCurriculoService.ts
+new file mode 100644
+index 0000000..983e50d
+--- /dev/null
++++ b/src/modules/curriculos/services/UpdateCurriculoService.ts
+@@ -0,0 +1,22 @@
++import { prisma } from "../../../shared/database/prisma";
++
++interface UpdateCurriculoDTO {
++  nome: string;
++  descricao?: string;
++  modalidade?: string;
++  publico?: string;
++}
++
++export class UpdateCurriculoService {
++  async execute(id: number, data: UpdateCurriculoDTO) {
++    return prisma.curriculo.update({
++      where: { id },
++      data: {
++        nome: data.nome,
++        descricao: data.descricao,
++        modalidade: data.modalidade ?? "Jiu-Jitsu",
++        publico: data.publico ?? "Kids",
++      },
++    });
++  }
++}
+diff --git a/src/modules/curriculos/services/UpdateModuloCurriculoService.ts b/src/modules/curriculos/services/UpdateModuloCurriculoService.ts
+new file mode 100644
+index 0000000..354ba82
+--- /dev/null
++++ b/src/modules/curriculos/services/UpdateModuloCurriculoService.ts
+@@ -0,0 +1,26 @@
++import { prisma } from "../../../shared/database/prisma";
++
++interface UpdateModuloCurriculoDTO {
++  nome: string;
++  descricao?: string;
++  faixa?: string;
++  idadeMinima?: number;
++  idadeMaxima?: number;
++  ordem?: number;
++}
++
++export class UpdateModuloCurriculoService {
++  async execute(id: number, data: UpdateModuloCurriculoDTO) {
++    return prisma.moduloCurriculo.update({
++      where: { id },
++      data: {
++        nome: data.nome,
++        descricao: data.descricao,
++        faixa: data.faixa,
++        idadeMinima: data.idadeMinima,
++        idadeMaxima: data.idadeMaxima,
++        ordem: data.ordem,
++      },
++    });
++  }
++}
+diff --git a/src/modules/curriculos/services/UpdateTecnicaCurriculoService.ts b/src/modules/curriculos/services/UpdateTecnicaCurriculoService.ts
+new file mode 100644
+index 0000000..871f28b
+--- /dev/null
++++ b/src/modules/curriculos/services/UpdateTecnicaCurriculoService.ts
+@@ -0,0 +1,24 @@
++import { prisma } from "../../../shared/database/prisma";
++
++interface UpdateTecnicaCurriculoDTO {
++  nome: string;
++  categoria?: string;
++  descricao?: string;
++  obrigatoria?: boolean;
++  ordem?: number;
++}
++
++export class UpdateTecnicaCurriculoService {
++  async execute(id: number, data: UpdateTecnicaCurriculoDTO) {
++    return prisma.tecnicaCurriculo.update({
++      where: { id },
++      data: {
++        nome: data.nome,
++        categoria: data.categoria,
++        descricao: data.descricao,
++        obrigatoria: data.obrigatoria,
++        ordem: data.ordem,
++      },
++    });
++  }
++}
+-- 
+2.43.0
+

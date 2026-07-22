@@ -1,0 +1,555 @@
+From c86b5ccf727b77bcd4422973cd46e0db1f4e7fe7 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 15 Jul 2026 20:52:48 +0000
+Subject: [PATCH] =?UTF-8?q?feat:=20checklist=20de=20jogos/t=C3=A9cnicas=20?=
+ =?UTF-8?q?na=20chamada=20e=20detalhe=20da=20t=C3=A9cnica=20em=20modal?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Na tela de Chamada, dentro do Plano de Aula:
+- Jogos sugeridos ganham um checkbox por item (a lista vem do texto livre
+  cadastrado no currículo, dividido por linha) e o que foi marcado fica
+  salvo na aula (Aula.jogosRealizados).
+- Técnicas sugeridas ganham checkbox de "realizada" (Aula.tecnicasRealizadas,
+  relação n:n) e, ao clicar no nome da técnica, abre uma janela flutuante
+  com categoria, se é obrigatória e a descrição do conteúdo.
+- Checkboxes ficam desabilitados com a aula finalizada ou enquanto uma
+  marcação anterior ainda está salvando (corrige uma corrida real onde
+  marcar dois itens em sequência rápida podia perder o primeiro).
+
+Migração nova: Aula.jogosRealizados (String[]) e a relação implícita
+Aula<->TecnicaCurriculo para tecnicasRealizadas.
+---
+ .../migration.sql                             |  19 +++
+ prisma/schema.prisma                          |   7 +-
+ .../src/modules/aulas/pages/Chamada/index.tsx | 118 ++++++++++++++++--
+ .../modules/aulas/pages/Chamada/styles.css    |  39 ++++--
+ .../src/modules/aulas/services/AulaService.ts |  11 ++
+ sgcl-web/src/modules/aulas/types/index.ts     |   5 +
+ src/modules/aulas/controller.ts               |   9 ++
+ src/modules/aulas/routes.ts                   |   6 +
+ src/modules/aulas/services/GetAulaService.ts  |  37 +-----
+ .../aulas/services/UpdateAulaService.ts       |  33 +++++
+ src/modules/aulas/services/aulaInclude.ts     |  36 ++++++
+ 11 files changed, 269 insertions(+), 51 deletions(-)
+ create mode 100644 prisma/migrations/20260715204329_aula_jogos_tecnicas_realizadas/migration.sql
+ create mode 100644 src/modules/aulas/services/UpdateAulaService.ts
+ create mode 100644 src/modules/aulas/services/aulaInclude.ts
+
+diff --git a/prisma/migrations/20260715204329_aula_jogos_tecnicas_realizadas/migration.sql b/prisma/migrations/20260715204329_aula_jogos_tecnicas_realizadas/migration.sql
+new file mode 100644
+index 0000000..5e5b9ee
+--- /dev/null
++++ b/prisma/migrations/20260715204329_aula_jogos_tecnicas_realizadas/migration.sql
+@@ -0,0 +1,19 @@
++-- AlterTable
++ALTER TABLE "Aula" ADD COLUMN     "jogosRealizados" TEXT[] DEFAULT ARRAY[]::TEXT[];
++
++-- CreateTable
++CREATE TABLE "_AulaTecnicasRealizadas" (
++    "A" INTEGER NOT NULL,
++    "B" INTEGER NOT NULL,
++
++    CONSTRAINT "_AulaTecnicasRealizadas_AB_pkey" PRIMARY KEY ("A","B")
++);
++
++-- CreateIndex
++CREATE INDEX "_AulaTecnicasRealizadas_B_index" ON "_AulaTecnicasRealizadas"("B");
++
++-- AddForeignKey
++ALTER TABLE "_AulaTecnicasRealizadas" ADD CONSTRAINT "_AulaTecnicasRealizadas_A_fkey" FOREIGN KEY ("A") REFERENCES "Aula"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "_AulaTecnicasRealizadas" ADD CONSTRAINT "_AulaTecnicasRealizadas_B_fkey" FOREIGN KEY ("B") REFERENCES "TecnicaCurriculo"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+diff --git a/prisma/schema.prisma b/prisma/schema.prisma
+index 50967b2..b0f78f4 100644
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -283,10 +283,13 @@ model Aula {
+ 
+   aulaCurriculoId Int?
+   aulaCurriculo   AulaCurriculo? @relation(fields: [aulaCurriculoId], references: [id])
+-  programacao AulaProgramada? 
++  programacao AulaProgramada?
+ 
+   alunos      AulaAluno[]
+ 
++  jogosRealizados    String[]           @default([])
++  tecnicasRealizadas TecnicaCurriculo[] @relation("AulaTecnicasRealizadas")
++
+   createdAt   DateTime  @default(now())
+   updatedAt   DateTime  @default(now()) @updatedAt
+ 
+@@ -389,6 +392,8 @@ model TecnicaCurriculo {
+   aulaCurriculoId Int
+   aulaCurriculo   AulaCurriculo @relation(fields: [aulaCurriculoId], references: [id])
+ 
++  aulasQueRealizaram Aula[] @relation("AulaTecnicasRealizadas")
++
+   createdAt       DateTime @default(now())
+   updatedAt       DateTime @default(now()) @updatedAt
+ }
+diff --git a/sgcl-web/src/modules/aulas/pages/Chamada/index.tsx b/sgcl-web/src/modules/aulas/pages/Chamada/index.tsx
+index e3f6016..a37453d 100644
+--- a/sgcl-web/src/modules/aulas/pages/Chamada/index.tsx
++++ b/sgcl-web/src/modules/aulas/pages/Chamada/index.tsx
+@@ -7,6 +7,9 @@ import { PageHeader } from "../../../../components/layout/PageHeader";
+ import { AulaAlunoCard } from "../../components/AulaAlunoCard";
+ import { Loading } from "../../../../components/ui/Loading";
+ import { Button } from "../../../../components/ui/Button";
++import { Checkbox } from "../../../../components/ui/Checkbox";
++import { Modal } from "../../../../components/ui/Modal";
++import { Badge } from "../../../../components/ui/Badge";
+ 
+ import { Page } from "../../../../components/sgcl/layout/Page";
+ import { Section } from "../../../../components/sgcl/layout/Section";
+@@ -15,13 +18,24 @@ import { StatusBadge } from "../../../../components/sgcl/feedback/StatusBadge";
+ 
+ import { AulaService } from "../../services/AulaService";
+ 
+-import type { Aula, AulaAluno } from "../../types";
++import type { Aula, AulaAluno, TecnicaAulaCurriculo } from "../../types";
++
++function jogosComoLista(jogosSugeridos?: string | null): string[] {
++  if (!jogosSugeridos) return [];
++
++  return jogosSugeridos
++    .split("\n")
++    .map((linha) => linha.trim())
++    .filter((linha) => linha.length > 0);
++}
+ 
+ export function ChamadaAula() {
+   const { id } = useParams();
+ 
+   const [aula, setAula] = useState<Aula | null>(null);
+   const [loading, setLoading] = useState(true);
++  const [tecnicaDetalhe, setTecnicaDetalhe] = useState<TecnicaAulaCurriculo | null>(null);
++  const [salvandoPlano, setSalvandoPlano] = useState(false);
+ 
+   useEffect(() => {
+     async function carregarAula() {
+@@ -63,6 +77,40 @@ export function ChamadaAula() {
+ 
+   }
+ 
++  async function alternarJogo(jogo: string, feito: boolean) {
++    if (!aula || salvandoPlano) return;
++
++    const jogosRealizados = feito
++      ? [...aula.jogosRealizados, jogo]
++      : aula.jogosRealizados.filter((item) => item !== jogo);
++
++    try {
++      setSalvandoPlano(true);
++      const atualizada = await AulaService.atualizar(aula.id, { jogosRealizados });
++      setAula(atualizada);
++    } finally {
++      setSalvandoPlano(false);
++    }
++  }
++
++  async function alternarTecnica(tecnicaId: number, feito: boolean) {
++    if (!aula || salvandoPlano) return;
++
++    const idsAtuais = aula.tecnicasRealizadas.map((tecnica) => tecnica.id);
++
++    const tecnicasRealizadasIds = feito
++      ? [...idsAtuais, tecnicaId]
++      : idsAtuais.filter((id) => id !== tecnicaId);
++
++    try {
++      setSalvandoPlano(true);
++      const atualizada = await AulaService.atualizar(aula.id, { tecnicasRealizadasIds });
++      setAula(atualizada);
++    } finally {
++      setSalvandoPlano(false);
++    }
++  }
++
+   async function finalizarAula() {
+     if (!aula) return;
+ 
+@@ -115,19 +163,51 @@ export function ChamadaAula() {
+               <p><strong>🎯 Objetivo:</strong> {aula.aulaCurriculo.objetivo}</p>
+             )}
+ 
+-            {aula.aulaCurriculo.jogosSugeridos && (
+-              <p><strong>🎮 Jogos sugeridos:</strong> {aula.aulaCurriculo.jogosSugeridos}</p>
++            {jogosComoLista(aula.aulaCurriculo.jogosSugeridos).length > 0 && (
++              <div className="chamada-plano-jogos">
++                <strong>🎮 Jogos sugeridos:</strong>
++                <div className="chamada-plano-jogos-lista">
++                  {jogosComoLista(aula.aulaCurriculo.jogosSugeridos).map((jogo) => (
++                    <Checkbox
++                      key={jogo}
++                      label={jogo}
++                      checked={aula.jogosRealizados.includes(jogo)}
++                      disabled={aula.status === "FINALIZADA" || salvandoPlano}
++                      onChange={(event) => alternarJogo(jogo, event.target.checked)}
++                    />
++                  ))}
++                </div>
++              </div>
+             )}
+ 
+             {aula.aulaCurriculo.tecnicas.length > 0 && (
+               <div className="chamada-plano-tecnicas">
+                 <strong>Técnicas sugeridas:</strong>
+                 <div className="chamada-plano-tecnicas-lista">
+-                  {aula.aulaCurriculo.tecnicas.map((tecnica) => (
+-                    <span key={tecnica.id} className="chamada-plano-tecnica">
+-                      {tecnica.nome}
+-                    </span>
+-                  ))}
++                  {aula.aulaCurriculo.tecnicas.map((tecnica) => {
++                    const realizada = aula.tecnicasRealizadas.some((item) => item.id === tecnica.id);
++
++                    return (
++                      <div key={tecnica.id} className="chamada-plano-tecnica-linha">
++                        <Checkbox
++                          label=""
++                          checked={realizada}
++                          disabled={aula.status === "FINALIZADA" || salvandoPlano}
++                          onChange={(event) => alternarTecnica(tecnica.id, event.target.checked)}
++                        />
++
++                        <button
++                          type="button"
++                          className="chamada-plano-tecnica-botao"
++                          onClick={() => setTecnicaDetalhe(tecnica)}
++                        >
++                          <Badge variant={tecnica.obrigatoria ? "info" : "neutral"}>
++                            {tecnica.nome}
++                          </Badge>
++                        </button>
++                      </div>
++                    );
++                  })}
+                 </div>
+               </div>
+             )}
+@@ -157,6 +237,28 @@ export function ChamadaAula() {
+         </Button>
+       )}
+ 
++      <Modal
++        open={tecnicaDetalhe !== null}
++        title={tecnicaDetalhe?.nome ?? ""}
++        onClose={() => setTecnicaDetalhe(null)}
++      >
++        {tecnicaDetalhe && (
++          <div className="chamada-tecnica-detalhe">
++            <div className="chamada-tecnica-detalhe-tags">
++              <Badge variant={tecnicaDetalhe.obrigatoria ? "info" : "neutral"}>
++                {tecnicaDetalhe.obrigatoria ? "Obrigatória" : "Opcional"}
++              </Badge>
++
++              {tecnicaDetalhe.categoria && <Badge variant="neutral">{tecnicaDetalhe.categoria}</Badge>}
++            </div>
++
++            <p>
++              {tecnicaDetalhe.descricao || "Nenhuma descrição cadastrada para esta técnica."}
++            </p>
++          </div>
++        )}
++      </Modal>
++
+     </Page>
+ 
+   );
+diff --git a/sgcl-web/src/modules/aulas/pages/Chamada/styles.css b/sgcl-web/src/modules/aulas/pages/Chamada/styles.css
+index cfa52ba..0eb06ab 100644
+--- a/sgcl-web/src/modules/aulas/pages/Chamada/styles.css
++++ b/sgcl-web/src/modules/aulas/pages/Chamada/styles.css
+@@ -17,18 +17,41 @@
+   gap: var(--space-2);
+ }
+ 
+-.chamada-plano-tecnicas-lista {
++.chamada-plano-jogos-lista {
+   display: flex;
++  flex-direction: column;
+   gap: var(--space-2);
++  margin-top: var(--space-2);
++}
++
++.chamada-plano-tecnicas-lista {
++  display: flex;
++  gap: var(--space-3);
+   flex-wrap: wrap;
+-  margin-top: var(--space-1);
++  margin-top: var(--space-2);
++}
++
++.chamada-plano-tecnica-linha {
++  display: flex;
++  align-items: center;
++  gap: var(--space-1);
++}
++
++.chamada-plano-tecnica-botao {
++  background: none;
++  border: none;
++  padding: 0;
++  cursor: pointer;
++}
++
++.chamada-tecnica-detalhe-tags {
++  display: flex;
++  gap: var(--space-2);
++  margin-bottom: var(--space-3);
+ }
+ 
+-.chamada-plano-tecnica {
+-  background: var(--background);
+-  border: 1px solid var(--border);
+-  border-radius: 999px;
+-  padding: 4px 12px;
+-  font-size: var(--font-sm);
++.chamada-tecnica-detalhe p {
+   color: var(--text);
++  line-height: 1.6;
++  margin: 0;
+ }
+\ No newline at end of file
+diff --git a/sgcl-web/src/modules/aulas/services/AulaService.ts b/sgcl-web/src/modules/aulas/services/AulaService.ts
+index 473808e..28ed08c 100644
+--- a/sgcl-web/src/modules/aulas/services/AulaService.ts
++++ b/sgcl-web/src/modules/aulas/services/AulaService.ts
+@@ -21,6 +21,11 @@ interface UpdateAulaAlunoData {
+   observacao?: string | null;
+ }
+ 
++interface UpdateAulaData {
++  jogosRealizados?: string[];
++  tecnicasRealizadasIds?: number[];
++}
++
+ export class AulaService {
+   static async listar() {
+     const response = await api.get<Aula[]>("/aulas");
+@@ -90,6 +95,12 @@ export class AulaService {
+     return response.data;
+   }
+ 
++  static async atualizar(id: number, data: UpdateAulaData) {
++    const response = await api.put<Aula>(`/aulas/${id}`, data);
++
++    return response.data;
++  }
++
+   static async excluir(id: number) {
+     await api.delete(`/aulas/${id}`);
+   }
+diff --git a/sgcl-web/src/modules/aulas/types/index.ts b/sgcl-web/src/modules/aulas/types/index.ts
+index deaa801..1b40c21 100644
+--- a/sgcl-web/src/modules/aulas/types/index.ts
++++ b/sgcl-web/src/modules/aulas/types/index.ts
+@@ -8,7 +8,9 @@ export interface TecnicaAulaCurriculo {
+   id: number;
+   nome: string;
+   categoria?: string | null;
++  descricao?: string | null;
+   obrigatoria: boolean;
++  ordem: number;
+ }
+ 
+ export interface AulaCurriculoResumo {
+@@ -65,6 +67,9 @@ export interface Aula {
+   turma?: TurmaResumo | null;
+   aulaCurriculo?: AulaCurriculoResumo | null;
+ 
++  jogosRealizados: string[];
++  tecnicasRealizadas: TecnicaAulaCurriculo[];
++
+   alunos: AulaAluno[];
+ }
+ export interface AulaProgramada {
+diff --git a/src/modules/aulas/controller.ts b/src/modules/aulas/controller.ts
+index cd483fc..7cff7f0 100644
+--- a/src/modules/aulas/controller.ts
++++ b/src/modules/aulas/controller.ts
+@@ -11,6 +11,7 @@ import { ListAulasProgramadasService } from "./services/ListAulasProgramadasServ
+ import { IniciarAulaProgramadaService } from "./services/IniciarAulaProgramadaService";
+ import { DeleteAulaService } from "./services/DeleteAulaService";
+ import { DeleteAulaProgramadaService } from "./services/DeleteAulaProgramadaService";
++import { UpdateAulaService } from "./services/UpdateAulaService";
+ 
+ export class AulasController {
+   async create(req: Request, res: Response) {
+@@ -97,4 +98,12 @@ export class AulasController {
+ 
+     return res.status(204).send();
+   }
++
++  async update(req: Request, res: Response) {
++    const service = new UpdateAulaService();
++
++    const aula = await service.execute(Number(req.params.id), req.body);
++
++    return res.json(aula);
++  }
+ }
+\ No newline at end of file
+diff --git a/src/modules/aulas/routes.ts b/src/modules/aulas/routes.ts
+index d177cd3..d6b2294 100644
+--- a/src/modules/aulas/routes.ts
++++ b/src/modules/aulas/routes.ts
+@@ -63,6 +63,12 @@ aulasRoutes.get(
+   controller.show
+ );
+ 
++aulasRoutes.put(
++  "/:id",
++  ensureAuthenticated,
++  controller.update
++);
++
+ aulasRoutes.delete(
+   "/:id",
+   ensureAuthenticated,
+diff --git a/src/modules/aulas/services/GetAulaService.ts b/src/modules/aulas/services/GetAulaService.ts
+index 3098288..9cfa740 100644
+--- a/src/modules/aulas/services/GetAulaService.ts
++++ b/src/modules/aulas/services/GetAulaService.ts
+@@ -1,5 +1,6 @@
+ import { prisma } from "../../../shared/database/prisma";
+ import { AppError } from "../../../shared/errors/AppError";
++import { aulaIncludeCompleto } from "./aulaInclude";
+ 
+ export class GetAulaService {
+   async execute(id: number) {
+@@ -7,39 +8,7 @@ export class GetAulaService {
+       where: {
+         id,
+       },
+-      include: {
+-        turma: true,
+-        aulaCurriculo: {
+-          include: {
+-            tecnicas: true,
+-          },
+-        },
+-        alunos: {
+-          include: {
+-            aluno: {
+-              include: {
+-                responsaveis: {
+-                  where: { ativo: true },
+-                  select: {
+-                    id: true,
+-                    nome: true,
+-                    apelido: true,
+-                    telefone: true,
+-                    whatsapp: true,
+-                    parentesco: true,
+-                    recebeComunicados: true,
+-                  },
+-                },
+-              },
+-            },
+-          },
+-          orderBy: {
+-            aluno: {
+-              nome: "asc",
+-            },
+-          },
+-        },
+-      },
++      include: aulaIncludeCompleto,
+     });
+ 
+     if (!aula) {
+@@ -48,4 +17,4 @@ export class GetAulaService {
+ 
+     return aula;
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/src/modules/aulas/services/UpdateAulaService.ts b/src/modules/aulas/services/UpdateAulaService.ts
+new file mode 100644
+index 0000000..e160250
+--- /dev/null
++++ b/src/modules/aulas/services/UpdateAulaService.ts
+@@ -0,0 +1,33 @@
++import { prisma } from "../../../shared/database/prisma";
++import { AppError } from "../../../shared/errors/AppError";
++import { aulaIncludeCompleto } from "./aulaInclude";
++
++interface UpdateAulaDTO {
++  jogosRealizados?: string[];
++  tecnicasRealizadasIds?: number[];
++}
++
++export class UpdateAulaService {
++  async execute(id: number, data: UpdateAulaDTO) {
++    const aula = await prisma.aula.findUnique({ where: { id } });
++
++    if (!aula) {
++      throw new AppError("Aula não encontrada.");
++    }
++
++    return prisma.aula.update({
++      where: { id },
++      data: {
++        ...(data.jogosRealizados !== undefined && {
++          jogosRealizados: data.jogosRealizados,
++        }),
++        ...(data.tecnicasRealizadasIds !== undefined && {
++          tecnicasRealizadas: {
++            set: data.tecnicasRealizadasIds.map((tecnicaId) => ({ id: tecnicaId })),
++          },
++        }),
++      },
++      include: aulaIncludeCompleto,
++    });
++  }
++}
+diff --git a/src/modules/aulas/services/aulaInclude.ts b/src/modules/aulas/services/aulaInclude.ts
+new file mode 100644
+index 0000000..6cd24e5
+--- /dev/null
++++ b/src/modules/aulas/services/aulaInclude.ts
+@@ -0,0 +1,36 @@
++import { Prisma } from "@prisma/client";
++
++export const aulaIncludeCompleto = {
++  turma: true,
++  aulaCurriculo: {
++    include: {
++      tecnicas: true,
++    },
++  },
++  tecnicasRealizadas: true,
++  alunos: {
++    include: {
++      aluno: {
++        include: {
++          responsaveis: {
++            where: { ativo: true },
++            select: {
++              id: true,
++              nome: true,
++              apelido: true,
++              telefone: true,
++              whatsapp: true,
++              parentesco: true,
++              recebeComunicados: true,
++            },
++          },
++        },
++      },
++    },
++    orderBy: {
++      aluno: {
++        nome: "asc",
++      },
++    },
++  },
++} satisfies Prisma.AulaInclude;
+-- 
+2.43.0
+

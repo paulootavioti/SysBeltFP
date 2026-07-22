@@ -1,0 +1,1391 @@
+From 0767433566b42bc51fd2933ddeb4726ba51c5ef5 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 22 Jul 2026 01:08:18 +0000
+Subject: [PATCH 2/2] feat: implementa upload de foto real via Netlify Blobs
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+O componente ImageUpload aceitava o arquivo e mostrava um preview local
+(URL.createObjectURL), mas nunca enviava nada ao backend — o estado do
+arquivo selecionado nem era lido (const [, setFoto] = useState(...)).
+Quem cadastrava um aluno achava que tinha salvo a foto; não salvava nada.
+
+- Novo módulo uploads: POST /uploads (multipart, campo "arquivo") grava
+  no Netlify Blobs e devolve a URL; GET /uploads/:prefixo/:arquivo serve
+  o arquivo de volta (autenticado)
+- ImageUpload agora faz o upload de verdade ao selecionar o arquivo, e
+  carrega o preview da foto já salva via blob autenticado (uma tag <img>
+  comum não manda o header de autenticação, por isso o preview busca a
+  imagem via fetch e converte pra object URL)
+- AlunoForm liga o resultado no campo fotoUrl do formulário
+
+Não deu pra testar a gravação/leitura real no Netlify Blobs neste
+ambiente — validei tudo que dá pra validar sem o runtime da Netlify
+(parsing do multipart, validação de tipo de arquivo, permissão), mas
+o armazenamento em si só roda dentro do contexto de uma Netlify
+Function ou via `netlify dev` com credenciais vinculadas.
+---
+ package-lock.json                             | 675 +++++++++++++++++-
+ package.json                                  |   3 +
+ .../src/components/ui/ImageUpload/index.tsx   |  64 +-
+ .../src/components/ui/ImageUpload/styles.css  |  10 +
+ .../alunos/components/AlunoForm/index.tsx     |   9 +-
+ sgcl-web/src/shared/services/UploadService.ts |  19 +
+ src/app.ts                                    |   2 +
+ src/modules/uploads/controller.ts             |  44 ++
+ src/modules/uploads/routes.ts                 |  31 +
+ .../uploads/services/GetFotoService.ts        |  22 +
+ .../uploads/services/UploadFotoService.ts     |  40 ++
+ src/modules/uploads/services/blobStore.ts     |  12 +
+ 12 files changed, 915 insertions(+), 16 deletions(-)
+ create mode 100644 sgcl-web/src/shared/services/UploadService.ts
+ create mode 100644 src/modules/uploads/controller.ts
+ create mode 100644 src/modules/uploads/routes.ts
+ create mode 100644 src/modules/uploads/services/GetFotoService.ts
+ create mode 100644 src/modules/uploads/services/UploadFotoService.ts
+ create mode 100644 src/modules/uploads/services/blobStore.ts
+
+diff --git a/package-lock.json b/package-lock.json
+index a068944..fc8257f 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -10,11 +10,13 @@
+       "hasInstallScript": true,
+       "license": "ISC",
+       "dependencies": {
++        "@netlify/blobs": "^10.7.9",
+         "@prisma/client": "^6.16.2",
+         "bcryptjs": "^3.0.3",
+         "cors": "^2.8.6",
+         "express": "^5.2.1",
+         "jsonwebtoken": "^9.0.3",
++        "multer": "^2.2.0",
+         "serverless-http": "^4.0.0",
+         "zod": "^4.4.3"
+       },
+@@ -23,6 +25,7 @@
+         "@types/cors": "^2.8.19",
+         "@types/express": "^5.0.6",
+         "@types/jsonwebtoken": "^9.0.10",
++        "@types/multer": "^2.2.0",
+         "@types/node": "^25.9.3",
+         "prisma": "^6.16.2",
+         "ts-node-dev": "^2.0.0",
+@@ -42,6 +45,25 @@
+         "node": ">=12"
+       }
+     },
++    "node_modules/@envelop/instrumentation": {
++      "version": "1.0.0",
++      "resolved": "https://registry.npmjs.org/@envelop/instrumentation/-/instrumentation-1.0.0.tgz",
++      "integrity": "sha512-cxgkB66RQB95H3X27jlnxCRNTmPuSTgmBAq6/4n2Dtv4hsk4yz8FadA1ggmd0uZzvKqWD6CR+WFgTjhDqg7eyw==",
++      "license": "MIT",
++      "dependencies": {
++        "@whatwg-node/promise-helpers": "^1.2.1",
++        "tslib": "^2.5.0"
++      },
++      "engines": {
++        "node": ">=18.0.0"
++      }
++    },
++    "node_modules/@fastify/busboy": {
++      "version": "3.2.0",
++      "resolved": "https://registry.npmjs.org/@fastify/busboy/-/busboy-3.2.0.tgz",
++      "integrity": "sha512-m9FVDXU3GT2ITSe0UaMA5rU3QkfC/UXtCU8y0gSN/GugTqtVldOBWIB5V6V3sbmenVZUIpU6f+mPEO2+m5iTaA==",
++      "license": "MIT"
++    },
+     "node_modules/@jridgewell/resolve-uri": {
+       "version": "3.1.2",
+       "resolved": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
+@@ -70,6 +92,222 @@
+         "@jridgewell/sourcemap-codec": "^1.4.10"
+       }
+     },
++    "node_modules/@netlify/blobs": {
++      "version": "10.7.9",
++      "resolved": "https://registry.npmjs.org/@netlify/blobs/-/blobs-10.7.9.tgz",
++      "integrity": "sha512-NEM8aNAMZCCWBWymomMM/fn5wmPGyGE8pendgsSu5mL7UNz+aXqGcHS0MiHWU/osyg+geiZuS+Rx956SVrMM/w==",
++      "license": "MIT",
++      "dependencies": {
++        "@netlify/dev-utils": "4.4.6",
++        "@netlify/otel": "^6.0.3",
++        "@netlify/runtime-utils": "2.3.0"
++      },
++      "engines": {
++        "node": "^14.16.0 || >=16.0.0"
++      }
++    },
++    "node_modules/@netlify/dev-utils": {
++      "version": "4.4.6",
++      "resolved": "https://registry.npmjs.org/@netlify/dev-utils/-/dev-utils-4.4.6.tgz",
++      "integrity": "sha512-P6X+xS3glvhiTX6AAocYvnZtqXtWhvxMX4AdPgv2iw6cXjGL2criUveX7bSjp6DiyHfvQpNdG0ZRpeBEVAFf1g==",
++      "license": "MIT",
++      "dependencies": {
++        "@whatwg-node/server": "^0.10.0",
++        "ansis": "^4.1.0",
++        "atomically": "^2.0.3",
++        "chokidar": "^4.0.1",
++        "decache": "^4.6.2",
++        "dettle": "^1.0.5",
++        "dot-prop": "9.0.0",
++        "empathic": "^2.0.0",
++        "env-paths": "^3.0.0",
++        "image-size": "^2.0.2",
++        "js-image-generator": "^1.0.4",
++        "parse-gitignore": "^2.0.0",
++        "semver": "^7.7.2",
++        "tmp-promise": "^3.0.3"
++      },
++      "engines": {
++        "node": "^18.14.0 || >=20"
++      }
++    },
++    "node_modules/@netlify/dev-utils/node_modules/chokidar": {
++      "version": "4.0.3",
++      "resolved": "https://registry.npmjs.org/chokidar/-/chokidar-4.0.3.tgz",
++      "integrity": "sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==",
++      "license": "MIT",
++      "dependencies": {
++        "readdirp": "^4.0.1"
++      },
++      "engines": {
++        "node": ">= 14.16.0"
++      },
++      "funding": {
++        "url": "https://paulmillr.com/funding/"
++      }
++    },
++    "node_modules/@netlify/dev-utils/node_modules/readdirp": {
++      "version": "4.1.2",
++      "resolved": "https://registry.npmjs.org/readdirp/-/readdirp-4.1.2.tgz",
++      "integrity": "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==",
++      "license": "MIT",
++      "engines": {
++        "node": ">= 14.18.0"
++      },
++      "funding": {
++        "type": "individual",
++        "url": "https://paulmillr.com/funding/"
++      }
++    },
++    "node_modules/@netlify/otel": {
++      "version": "6.0.3",
++      "resolved": "https://registry.npmjs.org/@netlify/otel/-/otel-6.0.3.tgz",
++      "integrity": "sha512-NIjIjB/aItiXKB6+wzSwfSyYqbNsVSzzlEPryxxTC5ZJiYSYSm82wAOcQ+9VdiufQyZO5t8jzHVPULo7a9L9sQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@opentelemetry/api": "1.9.0",
++        "@opentelemetry/core": "2.7.1",
++        "@opentelemetry/instrumentation": "^0.217.0",
++        "@opentelemetry/resources": "2.7.1",
++        "@opentelemetry/sdk-trace-node": "2.7.1"
++      },
++      "engines": {
++        "node": "^18.14.0 || >=20.6.1"
++      }
++    },
++    "node_modules/@netlify/runtime-utils": {
++      "version": "2.3.0",
++      "resolved": "https://registry.npmjs.org/@netlify/runtime-utils/-/runtime-utils-2.3.0.tgz",
++      "integrity": "sha512-cW8weDvsKV7zfia2m5EcBy6KILGoPD+eYZ3qWNGnIo05DGF28goPES0xKSDkNYgAF/2rRSIhie2qcBhbGVgSRg==",
++      "license": "MIT",
++      "engines": {
++        "node": "^18.14.0 || >=20"
++      }
++    },
++    "node_modules/@opentelemetry/api": {
++      "version": "1.9.0",
++      "resolved": "https://registry.npmjs.org/@opentelemetry/api/-/api-1.9.0.tgz",
++      "integrity": "sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==",
++      "license": "Apache-2.0",
++      "engines": {
++        "node": ">=8.0.0"
++      }
++    },
++    "node_modules/@opentelemetry/api-logs": {
++      "version": "0.217.0",
++      "resolved": "https://registry.npmjs.org/@opentelemetry/api-logs/-/api-logs-0.217.0.tgz",
++      "integrity": "sha512-Cdq0jW2lknrNfrAm92MyEAvpe2cRsKjdnQLHUL6xRA4IVUnsWx6P65E7NcUO0Y+L4w1Aee5iV8FvjSwd+lrs9A==",
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@opentelemetry/api": "^1.3.0"
++      },
++      "engines": {
++        "node": ">=8.0.0"
++      }
++    },
++    "node_modules/@opentelemetry/context-async-hooks": {
++      "version": "2.7.1",
++      "resolved": "https://registry.npmjs.org/@opentelemetry/context-async-hooks/-/context-async-hooks-2.7.1.tgz",
++      "integrity": "sha512-OPFBYuXEn1E4ja3Y6eeA7O+ZnLBNcXTV5Cgsn1VaqBZ6hC5FnpZPLBNme1LJY8ZtF4aOujPKFoeWN4ik487KuQ==",
++      "license": "Apache-2.0",
++      "engines": {
++        "node": "^18.19.0 || >=20.6.0"
++      },
++      "peerDependencies": {
++        "@opentelemetry/api": ">=1.0.0 <1.10.0"
++      }
++    },
++    "node_modules/@opentelemetry/core": {
++      "version": "2.7.1",
++      "resolved": "https://registry.npmjs.org/@opentelemetry/core/-/core-2.7.1.tgz",
++      "integrity": "sha512-QAqIj32AtK6+pEVNG7EOVxHdE06RP+FM5qpiEJ4RtDcFIqKUZHYhl7/7UY5efhwmwNAg7j8QbJVBLxMerc0+gw==",
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@opentelemetry/semantic-conventions": "^1.29.0"
++      },
++      "engines": {
++        "node": "^18.19.0 || >=20.6.0"
++      },
++      "peerDependencies": {
++        "@opentelemetry/api": ">=1.0.0 <1.10.0"
++      }
++    },
++    "node_modules/@opentelemetry/instrumentation": {
++      "version": "0.217.0",
++      "resolved": "https://registry.npmjs.org/@opentelemetry/instrumentation/-/instrumentation-0.217.0.tgz",
++      "integrity": "sha512-24ucQMjz7Y34Kw3trbxL2ZrssbtgWnR+Clpaa+YdeWuuyH3Cvk23Q03PcQvqiZrDvt8AmQmjgg9v6Y9PHoxG7w==",
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@opentelemetry/api-logs": "0.217.0",
++        "import-in-the-middle": "^3.0.0",
++        "require-in-the-middle": "^8.0.0"
++      },
++      "engines": {
++        "node": "^18.19.0 || >=20.6.0"
++      },
++      "peerDependencies": {
++        "@opentelemetry/api": "^1.3.0"
++      }
++    },
++    "node_modules/@opentelemetry/resources": {
++      "version": "2.7.1",
++      "resolved": "https://registry.npmjs.org/@opentelemetry/resources/-/resources-2.7.1.tgz",
++      "integrity": "sha512-DeT6KKolmC4e/dRQvMQ/RwlnzhaqeiFOXY5ngoOPJ07GgVVKxZOg9EcrNZb5aTzUn+iCrJldAgOfQm1O/QfPAQ==",
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@opentelemetry/core": "2.7.1",
++        "@opentelemetry/semantic-conventions": "^1.29.0"
++      },
++      "engines": {
++        "node": "^18.19.0 || >=20.6.0"
++      },
++      "peerDependencies": {
++        "@opentelemetry/api": ">=1.3.0 <1.10.0"
++      }
++    },
++    "node_modules/@opentelemetry/sdk-trace-base": {
++      "version": "2.7.1",
++      "resolved": "https://registry.npmjs.org/@opentelemetry/sdk-trace-base/-/sdk-trace-base-2.7.1.tgz",
++      "integrity": "sha512-NAYIlsF8MPUsKqJMiDQJTMPOmlbawC1Iz/omMLygZ1C9am8fTKYjTaI+OZM+WTY3t3Glo0wnOg/6/pac6RGPPw==",
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@opentelemetry/core": "2.7.1",
++        "@opentelemetry/resources": "2.7.1",
++        "@opentelemetry/semantic-conventions": "^1.29.0"
++      },
++      "engines": {
++        "node": "^18.19.0 || >=20.6.0"
++      },
++      "peerDependencies": {
++        "@opentelemetry/api": ">=1.3.0 <1.10.0"
++      }
++    },
++    "node_modules/@opentelemetry/sdk-trace-node": {
++      "version": "2.7.1",
++      "resolved": "https://registry.npmjs.org/@opentelemetry/sdk-trace-node/-/sdk-trace-node-2.7.1.tgz",
++      "integrity": "sha512-pCpQxU68lV+I9s9svqMyVu5iHdDDUnqUpSxqwyCU8A9ejEsSnMPCbearwsUO4yk08ZJzAIUCFuReMdVQvHrdvg==",
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@opentelemetry/context-async-hooks": "2.7.1",
++        "@opentelemetry/core": "2.7.1",
++        "@opentelemetry/sdk-trace-base": "2.7.1"
++      },
++      "engines": {
++        "node": "^18.19.0 || >=20.6.0"
++      },
++      "peerDependencies": {
++        "@opentelemetry/api": ">=1.0.0 <1.10.0"
++      }
++    },
++    "node_modules/@opentelemetry/semantic-conventions": {
++      "version": "1.43.0",
++      "resolved": "https://registry.npmjs.org/@opentelemetry/semantic-conventions/-/semantic-conventions-1.43.0.tgz",
++      "integrity": "sha512-eSYWTm620tTk45EKSedaUL8MFYI8hW164hIXsgIHyxu3VobUB3fFCu5t0hQby6OoWRPsG1KkKUG2M5UadiLiVg==",
++      "license": "Apache-2.0",
++      "engines": {
++        "node": ">=14"
++      }
++    },
+     "node_modules/@prisma/client": {
+       "version": "6.16.2",
+       "resolved": "https://registry.npmjs.org/@prisma/client/-/client-6.16.2.tgz",
+@@ -278,6 +516,16 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/@types/multer": {
++      "version": "2.2.0",
++      "resolved": "https://registry.npmjs.org/@types/multer/-/multer-2.2.0.tgz",
++      "integrity": "sha512-3U1troeqGV8Ntp7Q3klwf4zr23VEoqYVocYXaswm9+8z3O9UHDYAqLxjJ/h550iRADTjKdOdhhasXw6gD6kYtg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@types/express": "*"
++      }
++    },
+     "node_modules/@types/node": {
+       "version": "25.9.3",
+       "resolved": "https://registry.npmjs.org/@types/node/-/node-25.9.3.tgz",
+@@ -337,6 +585,75 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/@whatwg-node/disposablestack": {
++      "version": "0.0.6",
++      "resolved": "https://registry.npmjs.org/@whatwg-node/disposablestack/-/disposablestack-0.0.6.tgz",
++      "integrity": "sha512-LOtTn+JgJvX8WfBVJtF08TGrdjuFzGJc4mkP8EdDI8ADbvO7kiexYep1o8dwnt0okb0jYclCDXF13xU7Ge4zSw==",
++      "license": "MIT",
++      "dependencies": {
++        "@whatwg-node/promise-helpers": "^1.0.0",
++        "tslib": "^2.6.3"
++      },
++      "engines": {
++        "node": ">=18.0.0"
++      }
++    },
++    "node_modules/@whatwg-node/fetch": {
++      "version": "0.10.13",
++      "resolved": "https://registry.npmjs.org/@whatwg-node/fetch/-/fetch-0.10.13.tgz",
++      "integrity": "sha512-b4PhJ+zYj4357zwk4TTuF2nEe0vVtOrwdsrNo5hL+u1ojXNhh1FgJ6pg1jzDlwlT4oBdzfSwaBwMCtFCsIWg8Q==",
++      "license": "MIT",
++      "dependencies": {
++        "@whatwg-node/node-fetch": "^0.8.3",
++        "urlpattern-polyfill": "^10.0.0"
++      },
++      "engines": {
++        "node": ">=18.0.0"
++      }
++    },
++    "node_modules/@whatwg-node/node-fetch": {
++      "version": "0.8.6",
++      "resolved": "https://registry.npmjs.org/@whatwg-node/node-fetch/-/node-fetch-0.8.6.tgz",
++      "integrity": "sha512-BDMdYFcerLQkwA2RTldxOqRCs6ZQD1S7UgP3pUdGUkcbgTrP/V5ko77ZkCww9DHmC4lpoYuwigGfQYj285gMvA==",
++      "license": "MIT",
++      "dependencies": {
++        "@fastify/busboy": "^3.1.1",
++        "@whatwg-node/disposablestack": "^0.0.6",
++        "@whatwg-node/promise-helpers": "^1.3.2",
++        "tslib": "^2.6.3"
++      },
++      "engines": {
++        "node": ">=18.0.0"
++      }
++    },
++    "node_modules/@whatwg-node/promise-helpers": {
++      "version": "1.3.2",
++      "resolved": "https://registry.npmjs.org/@whatwg-node/promise-helpers/-/promise-helpers-1.3.2.tgz",
++      "integrity": "sha512-Nst5JdK47VIl9UcGwtv2Rcgyn5lWtZ0/mhRQ4G8NN2isxpq2TO30iqHzmwoJycjWuyUfg3GFXqP/gFHXeV57IA==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "^2.6.3"
++      },
++      "engines": {
++        "node": ">=16.0.0"
++      }
++    },
++    "node_modules/@whatwg-node/server": {
++      "version": "0.10.18",
++      "resolved": "https://registry.npmjs.org/@whatwg-node/server/-/server-0.10.18.tgz",
++      "integrity": "sha512-kMwLlxUbduttIgaPdSkmEarFpP+mSY8FEm+QWMBRJwxOHWkri+cxd8KZHO9EMrB9vgUuz+5WEaCawaL5wGVoXg==",
++      "license": "MIT",
++      "dependencies": {
++        "@envelop/instrumentation": "^1.0.0",
++        "@whatwg-node/disposablestack": "^0.0.6",
++        "@whatwg-node/fetch": "^0.10.13",
++        "@whatwg-node/promise-helpers": "^1.3.2",
++        "tslib": "^2.6.3"
++      },
++      "engines": {
++        "node": ">=18.0.0"
++      }
++    },
+     "node_modules/accepts": {
+       "version": "2.0.0",
+       "resolved": "https://registry.npmjs.org/accepts/-/accepts-2.0.0.tgz",
+@@ -376,6 +693,15 @@
+         "node": ">=0.4.0"
+       }
+     },
++    "node_modules/ansis": {
++      "version": "4.3.1",
++      "resolved": "https://registry.npmjs.org/ansis/-/ansis-4.3.1.tgz",
++      "integrity": "sha512-BJ8/l4R5LRE7hW9WdSuGYrLSHi2ynxeFpDFbH0K/CgNeY/tyhk+vO6TYxXC5r5CpUhNVX310xzPsN/H9lCdfOA==",
++      "license": "ISC",
++      "engines": {
++        "node": ">=14"
++      }
++    },
+     "node_modules/anymatch": {
+       "version": "3.1.3",
+       "resolved": "https://registry.npmjs.org/anymatch/-/anymatch-3.1.3.tgz",
+@@ -390,6 +716,12 @@
+         "node": ">= 8"
+       }
+     },
++    "node_modules/append-field": {
++      "version": "1.0.0",
++      "resolved": "https://registry.npmjs.org/append-field/-/append-field-1.0.0.tgz",
++      "integrity": "sha512-klpgFSWLW1ZEs8svjfb7g4qWY0YS5imI82dTg+QahUvJ8YqAY0P10Uk8tTyh9ZGuYEZEMaeJYCF5BFuX552hsw==",
++      "license": "MIT"
++    },
+     "node_modules/arg": {
+       "version": "4.1.3",
+       "resolved": "https://registry.npmjs.org/arg/-/arg-4.1.3.tgz",
+@@ -397,6 +729,16 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/atomically": {
++      "version": "2.1.1",
++      "resolved": "https://registry.npmjs.org/atomically/-/atomically-2.1.1.tgz",
++      "integrity": "sha512-P4w9o2dqARji6P7MHprklbfiArZAWvo07yW7qs3pdljb3BWr12FIB7W+p0zJiuiVsUpRO0iZn1kFFcpPegg0tQ==",
++      "license": "MIT",
++      "dependencies": {
++        "stubborn-fs": "^2.0.0",
++        "when-exit": "^2.1.4"
++      }
++    },
+     "node_modules/balanced-match": {
+       "version": "1.0.2",
+       "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
+@@ -464,9 +806,9 @@
+       }
+     },
+     "node_modules/brace-expansion": {
+-      "version": "1.1.15",
+-      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.15.tgz",
+-      "integrity": "sha512-EwOCDEex4quD37XhqM3omwtMoJjr//isUZz1JopUNWms+4Z2ViyM/k1YIRePpoVNnQhENnxtFjLaxNHrT7xIUg==",
++      "version": "1.1.16",
++      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.16.tgz",
++      "integrity": "sha512-IDw48K2/2kRkg9LdJxurvq3lV3aBgq0REY89duEqFRthjlPdXHKMj7EnQOXVckxzgisinf3nHfrcE2FufFLXMw==",
+       "dev": true,
+       "license": "MIT",
+       "dependencies": {
+@@ -497,9 +839,19 @@
+       "version": "1.1.2",
+       "resolved": "https://registry.npmjs.org/buffer-from/-/buffer-from-1.1.2.tgz",
+       "integrity": "sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==",
+-      "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/busboy": {
++      "version": "1.6.0",
++      "resolved": "https://registry.npmjs.org/busboy/-/busboy-1.6.0.tgz",
++      "integrity": "sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==",
++      "dependencies": {
++        "streamsearch": "^1.1.0"
++      },
++      "engines": {
++        "node": ">=10.16.0"
++      }
++    },
+     "node_modules/bytes": {
+       "version": "3.1.2",
+       "resolved": "https://registry.npmjs.org/bytes/-/bytes-3.1.2.tgz",
+@@ -597,6 +949,14 @@
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
++    "node_modules/callsite": {
++      "version": "1.0.0",
++      "resolved": "https://registry.npmjs.org/callsite/-/callsite-1.0.0.tgz",
++      "integrity": "sha512-0vdNRFXn5q+dtOqjfFtmtlI9N2eVZ7LMyEV2iKC5mEEFvSg/69Ml6b/WU2qF8W1nLRa0wiSrDT3Y5jOHZCwKPQ==",
++      "engines": {
++        "node": "*"
++      }
++    },
+     "node_modules/chokidar": {
+       "version": "3.6.0",
+       "resolved": "https://registry.npmjs.org/chokidar/-/chokidar-3.6.0.tgz",
+@@ -632,6 +992,12 @@
+         "consola": "^3.2.3"
+       }
+     },
++    "node_modules/cjs-module-lexer": {
++      "version": "2.2.0",
++      "resolved": "https://registry.npmjs.org/cjs-module-lexer/-/cjs-module-lexer-2.2.0.tgz",
++      "integrity": "sha512-4bHTS2YuzUvtoLjdy+98ykbNB5jS0+07EvFNXerqZQJ89F7DI6ET7OQo/HJuW6K0aVsKA9hj9/RVb2kQVOrPDQ==",
++      "license": "MIT"
++    },
+     "node_modules/concat-map": {
+       "version": "0.0.1",
+       "resolved": "https://registry.npmjs.org/concat-map/-/concat-map-0.0.1.tgz",
+@@ -639,6 +1005,21 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/concat-stream": {
++      "version": "2.0.0",
++      "resolved": "https://registry.npmjs.org/concat-stream/-/concat-stream-2.0.0.tgz",
++      "integrity": "sha512-MWufYdFw53ccGjCA+Ol7XJYpAlW6/prSMzuPOTRnJGcGzuhLn4Scrz7qf6o8bROZ514ltazcIFJZevcfbo0x7A==",
++      "engines": [
++        "node >= 6.0"
++      ],
++      "license": "MIT",
++      "dependencies": {
++        "buffer-from": "^1.0.0",
++        "inherits": "^2.0.3",
++        "readable-stream": "^3.0.2",
++        "typedarray": "^0.0.6"
++      }
++    },
+     "node_modules/confbox": {
+       "version": "0.2.4",
+       "resolved": "https://registry.npmjs.org/confbox/-/confbox-0.2.4.tgz",
+@@ -737,6 +1118,15 @@
+         }
+       }
+     },
++    "node_modules/decache": {
++      "version": "4.6.2",
++      "resolved": "https://registry.npmjs.org/decache/-/decache-4.6.2.tgz",
++      "integrity": "sha512-2LPqkLeu8XWHU8qNCS3kcF6sCcb5zIzvWaAHYSvPfwhdd7mHuah29NssMzrTYyHN4F5oFy2ko9OBYxegtU0FEw==",
++      "license": "MIT",
++      "dependencies": {
++        "callsite": "^1.0.0"
++      }
++    },
+     "node_modules/deepmerge-ts": {
+       "version": "7.1.5",
+       "resolved": "https://registry.npmjs.org/deepmerge-ts/-/deepmerge-ts-7.1.5.tgz",
+@@ -770,6 +1160,12 @@
+       "devOptional": true,
+       "license": "MIT"
+     },
++    "node_modules/dettle": {
++      "version": "1.0.5",
++      "resolved": "https://registry.npmjs.org/dettle/-/dettle-1.0.5.tgz",
++      "integrity": "sha512-ZVyjhAJ7sCe1PNXEGveObOH9AC8QvMga3HJIghHawtG7mE4K5pW9nz/vDGAr/U7a3LWgdOzEE7ac9MURnyfaTA==",
++      "license": "MIT"
++    },
+     "node_modules/diff": {
+       "version": "4.0.4",
+       "resolved": "https://registry.npmjs.org/diff/-/diff-4.0.4.tgz",
+@@ -780,6 +1176,21 @@
+         "node": ">=0.3.1"
+       }
+     },
++    "node_modules/dot-prop": {
++      "version": "9.0.0",
++      "resolved": "https://registry.npmjs.org/dot-prop/-/dot-prop-9.0.0.tgz",
++      "integrity": "sha512-1gxPBJpI/pcjQhKgIU91II6Wkay+dLcN3M6rf2uwP8hRur3HtQXjVrdAK3sjC0piaEuxzMwjXChcETiJl47lAQ==",
++      "license": "MIT",
++      "dependencies": {
++        "type-fest": "^4.18.2"
++      },
++      "engines": {
++        "node": ">=18"
++      },
++      "funding": {
++        "url": "https://github.com/sponsors/sindresorhus"
++      }
++    },
+     "node_modules/dotenv": {
+       "version": "16.6.1",
+       "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-16.6.1.tgz",
+@@ -847,7 +1258,6 @@
+       "version": "2.0.0",
+       "resolved": "https://registry.npmjs.org/empathic/-/empathic-2.0.0.tgz",
+       "integrity": "sha512-i6UzDscO/XfAcNYD75CfICkmfLedpyPDdozrLMmQc5ORaQcdMoc21OnlEylMIqI7U8eniKrPMxxtj8k0vhmJhA==",
+-      "devOptional": true,
+       "license": "MIT",
+       "engines": {
+         "node": ">=14"
+@@ -862,6 +1272,18 @@
+         "node": ">= 0.8"
+       }
+     },
++    "node_modules/env-paths": {
++      "version": "3.0.0",
++      "resolved": "https://registry.npmjs.org/env-paths/-/env-paths-3.0.0.tgz",
++      "integrity": "sha512-dtJUTepzMW3Lm/NPxRf3wP4642UWhjL2sQxc+ym2YMj1m/H2zDNQOlezafzkHwn6sMstjHTwG6iQQsctDW/b1A==",
++      "license": "MIT",
++      "engines": {
++        "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
++      },
++      "funding": {
++        "url": "https://github.com/sponsors/sindresorhus"
++      }
++    },
+     "node_modules/es-define-property": {
+       "version": "1.0.1",
+       "resolved": "https://registry.npmjs.org/es-define-property/-/es-define-property-1.0.1.tgz",
+@@ -880,6 +1302,12 @@
+         "node": ">= 0.4"
+       }
+     },
++    "node_modules/es-module-lexer": {
++      "version": "2.3.1",
++      "resolved": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-2.3.1.tgz",
++      "integrity": "sha512-shc1dbU90Yl/xq1QrC7QRtfcwURZuVRfPhZbDoldJ1cn1gzDvBaBWlv0eFolj5+0znnPJz5TXLxsN77X/12KTA==",
++      "license": "MIT"
++    },
+     "node_modules/es-object-atoms": {
+       "version": "1.1.2",
+       "resolved": "https://registry.npmjs.org/es-object-atoms/-/es-object-atoms-1.1.2.tgz",
+@@ -1225,6 +1653,32 @@
+         "url": "https://opencollective.com/express"
+       }
+     },
++    "node_modules/image-size": {
++      "version": "2.0.2",
++      "resolved": "https://registry.npmjs.org/image-size/-/image-size-2.0.2.tgz",
++      "integrity": "sha512-IRqXKlaXwgSMAMtpNzZa1ZAe8m+Sa1770Dhk8VkSsP9LS+iHD62Zd8FQKs8fbPiagBE7BzoFX23cxFnwshpV6w==",
++      "license": "MIT",
++      "bin": {
++        "image-size": "bin/image-size.js"
++      },
++      "engines": {
++        "node": ">=16.x"
++      }
++    },
++    "node_modules/import-in-the-middle": {
++      "version": "3.3.2",
++      "resolved": "https://registry.npmjs.org/import-in-the-middle/-/import-in-the-middle-3.3.2.tgz",
++      "integrity": "sha512-jTd2FfOgOWOdgjkHuk/1Ms8VKFXkPs15ymYBETw1sAOrO/dY3XeGVRWir9qBbw7pXr0T2eTFwfCZ+N02HmiNGA==",
++      "license": "Apache-2.0",
++      "dependencies": {
++        "cjs-module-lexer": "^2.2.0",
++        "es-module-lexer": "^2.2.0",
++        "module-details-from-path": "^1.0.4"
++      },
++      "engines": {
++        "node": ">=18"
++      }
++    },
+     "node_modules/inflight": {
+       "version": "1.0.6",
+       "resolved": "https://registry.npmjs.org/inflight/-/inflight-1.0.6.tgz",
+@@ -1330,6 +1784,21 @@
+         "jiti": "lib/jiti-cli.mjs"
+       }
+     },
++    "node_modules/jpeg-js": {
++      "version": "0.4.4",
++      "resolved": "https://registry.npmjs.org/jpeg-js/-/jpeg-js-0.4.4.tgz",
++      "integrity": "sha512-WZzeDOEtTOBK4Mdsar0IqEU5sMr3vSV2RqkAIzUEV2BHnUfKGyswWFPFwK5EeDo93K3FohSHbLAjj0s1Wzd+dg==",
++      "license": "BSD-3-Clause"
++    },
++    "node_modules/js-image-generator": {
++      "version": "1.0.4",
++      "resolved": "https://registry.npmjs.org/js-image-generator/-/js-image-generator-1.0.4.tgz",
++      "integrity": "sha512-ckb7kyVojGAnArouVR+5lBIuwU1fcrn7E/YYSd0FK7oIngAkMmRvHASLro9Zt5SQdWToaI66NybG+OGxPw/HlQ==",
++      "license": "ISC",
++      "dependencies": {
++        "jpeg-js": "^0.4.2"
++      }
++    },
+     "node_modules/jsonwebtoken": {
+       "version": "9.0.3",
+       "resolved": "https://registry.npmjs.org/jsonwebtoken/-/jsonwebtoken-9.0.3.tgz",
+@@ -1513,12 +1982,80 @@
+         "node": ">=10"
+       }
+     },
++    "node_modules/module-details-from-path": {
++      "version": "1.0.4",
++      "resolved": "https://registry.npmjs.org/module-details-from-path/-/module-details-from-path-1.0.4.tgz",
++      "integrity": "sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==",
++      "license": "MIT"
++    },
+     "node_modules/ms": {
+       "version": "2.1.3",
+       "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+       "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
+       "license": "MIT"
+     },
++    "node_modules/multer": {
++      "version": "2.2.0",
++      "resolved": "https://registry.npmjs.org/multer/-/multer-2.2.0.tgz",
++      "integrity": "sha512-6rdyFg2kLrMh9Jee7/BMPuV9lEAd7lLW2YUpF9/YxR7njyoUwwQ0ZPh3TaIY50Sw6vlyD2HW3wGOkTS4P79xrQ==",
++      "license": "MIT",
++      "dependencies": {
++        "append-field": "^1.0.0",
++        "busboy": "^1.6.0",
++        "concat-stream": "^2.0.0",
++        "type-is": "^1.6.18"
++      },
++      "engines": {
++        "node": ">= 10.16.0"
++      },
++      "funding": {
++        "type": "opencollective",
++        "url": "https://opencollective.com/express"
++      }
++    },
++    "node_modules/multer/node_modules/media-typer": {
++      "version": "0.3.0",
++      "resolved": "https://registry.npmjs.org/media-typer/-/media-typer-0.3.0.tgz",
++      "integrity": "sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==",
++      "license": "MIT",
++      "engines": {
++        "node": ">= 0.6"
++      }
++    },
++    "node_modules/multer/node_modules/mime-db": {
++      "version": "1.52.0",
++      "resolved": "https://registry.npmjs.org/mime-db/-/mime-db-1.52.0.tgz",
++      "integrity": "sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==",
++      "license": "MIT",
++      "engines": {
++        "node": ">= 0.6"
++      }
++    },
++    "node_modules/multer/node_modules/mime-types": {
++      "version": "2.1.35",
++      "resolved": "https://registry.npmjs.org/mime-types/-/mime-types-2.1.35.tgz",
++      "integrity": "sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==",
++      "license": "MIT",
++      "dependencies": {
++        "mime-db": "1.52.0"
++      },
++      "engines": {
++        "node": ">= 0.6"
++      }
++    },
++    "node_modules/multer/node_modules/type-is": {
++      "version": "1.6.18",
++      "resolved": "https://registry.npmjs.org/type-is/-/type-is-1.6.18.tgz",
++      "integrity": "sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==",
++      "license": "MIT",
++      "dependencies": {
++        "media-typer": "0.3.0",
++        "mime-types": "~2.1.24"
++      },
++      "engines": {
++        "node": ">= 0.6"
++      }
++    },
+     "node_modules/negotiator": {
+       "version": "1.0.0",
+       "resolved": "https://registry.npmjs.org/negotiator/-/negotiator-1.0.0.tgz",
+@@ -1619,6 +2156,15 @@
+         "wrappy": "1"
+       }
+     },
++    "node_modules/parse-gitignore": {
++      "version": "2.0.0",
++      "resolved": "https://registry.npmjs.org/parse-gitignore/-/parse-gitignore-2.0.0.tgz",
++      "integrity": "sha512-RmVuCHWsfu0QPNW+mraxh/xjQVw/lhUCUru8Zni3Ctq3AoMhpDTq0OVdKS6iesd6Kqb7viCV3isAL43dciOSog==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=14"
++      }
++    },
+     "node_modules/parseurl": {
+       "version": "1.3.3",
+       "resolved": "https://registry.npmjs.org/parseurl/-/parseurl-1.3.3.tgz",
+@@ -1800,6 +2346,20 @@
+         "destr": "^2.0.3"
+       }
+     },
++    "node_modules/readable-stream": {
++      "version": "3.6.2",
++      "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-3.6.2.tgz",
++      "integrity": "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==",
++      "license": "MIT",
++      "dependencies": {
++        "inherits": "^2.0.3",
++        "string_decoder": "^1.1.1",
++        "util-deprecate": "^1.0.1"
++      },
++      "engines": {
++        "node": ">= 6"
++      }
++    },
+     "node_modules/readdirp": {
+       "version": "3.6.0",
+       "resolved": "https://registry.npmjs.org/readdirp/-/readdirp-3.6.0.tgz",
+@@ -1813,6 +2373,19 @@
+         "node": ">=8.10.0"
+       }
+     },
++    "node_modules/require-in-the-middle": {
++      "version": "8.0.1",
++      "resolved": "https://registry.npmjs.org/require-in-the-middle/-/require-in-the-middle-8.0.1.tgz",
++      "integrity": "sha512-QT7FVMXfWOYFbeRBF6nu+I6tr2Tf3u0q8RIEjNob/heKY/nh7drD/k7eeMFmSQgnTtCzLDcCu/XEnpW2wk4xCQ==",
++      "license": "MIT",
++      "dependencies": {
++        "debug": "^4.3.5",
++        "module-details-from-path": "^1.0.3"
++      },
++      "engines": {
++        "node": ">=9.3.0 || >=8.10.0 <9.0.0"
++      }
++    },
+     "node_modules/resolve": {
+       "version": "1.22.12",
+       "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.22.12.tgz",
+@@ -2065,6 +2638,23 @@
+         "node": ">= 0.8"
+       }
+     },
++    "node_modules/streamsearch": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/streamsearch/-/streamsearch-1.1.0.tgz",
++      "integrity": "sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==",
++      "engines": {
++        "node": ">=10.0.0"
++      }
++    },
++    "node_modules/string_decoder": {
++      "version": "1.3.0",
++      "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-1.3.0.tgz",
++      "integrity": "sha512-hkRX8U1WjJFd8LsDJ2yQ/wWWxaopEsABU1XfkM8A+j0+85JAGppt16cr1Whg6KIbb4okU6Mql6BOj+uup/wKeA==",
++      "license": "MIT",
++      "dependencies": {
++        "safe-buffer": "~5.2.0"
++      }
++    },
+     "node_modules/strip-bom": {
+       "version": "3.0.0",
+       "resolved": "https://registry.npmjs.org/strip-bom/-/strip-bom-3.0.0.tgz",
+@@ -2085,6 +2675,21 @@
+         "node": ">=0.10.0"
+       }
+     },
++    "node_modules/stubborn-fs": {
++      "version": "2.0.0",
++      "resolved": "https://registry.npmjs.org/stubborn-fs/-/stubborn-fs-2.0.0.tgz",
++      "integrity": "sha512-Y0AvSwDw8y+nlSNFXMm2g6L51rBGdAQT20J3YSOqxC53Lo3bjWRtr2BKcfYoAf352WYpsZSTURrA0tqhfgudPA==",
++      "license": "MIT",
++      "dependencies": {
++        "stubborn-utils": "^1.0.1"
++      }
++    },
++    "node_modules/stubborn-utils": {
++      "version": "1.0.2",
++      "resolved": "https://registry.npmjs.org/stubborn-utils/-/stubborn-utils-1.0.2.tgz",
++      "integrity": "sha512-zOh9jPYI+xrNOyisSelgym4tolKTJCQd5GBhK0+0xJvcYDcwlOoxF/rnFKQ2KRZknXSG9jWAp66fwP6AxN9STg==",
++      "license": "MIT"
++    },
+     "node_modules/supports-preserve-symlinks-flag": {
+       "version": "1.0.0",
+       "resolved": "https://registry.npmjs.org/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz",
+@@ -2108,6 +2713,24 @@
+         "node": ">=18"
+       }
+     },
++    "node_modules/tmp": {
++      "version": "0.2.7",
++      "resolved": "https://registry.npmjs.org/tmp/-/tmp-0.2.7.tgz",
++      "integrity": "sha512-e0votIpp4Uo2AJYSzVHV6xCcawuiez3DzqDAbrTc3YxBkplN6e+dM13ZeIcZnDg/QpSuU2zfZ3rzwY8ukEnaXw==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=14.14"
++      }
++    },
++    "node_modules/tmp-promise": {
++      "version": "3.0.3",
++      "resolved": "https://registry.npmjs.org/tmp-promise/-/tmp-promise-3.0.3.tgz",
++      "integrity": "sha512-RwM7MoPojPxsOBYnyd2hy0bxtIlVrihNs9pj5SUvY8Zz1sQcQG2tG1hSr8PDxfgEB8RNKDhqbIlroIarSNDNsQ==",
++      "license": "MIT",
++      "dependencies": {
++        "tmp": "^0.2.0"
++      }
++    },
+     "node_modules/to-regex-range": {
+       "version": "5.0.1",
+       "resolved": "https://registry.npmjs.org/to-regex-range/-/to-regex-range-5.0.1.tgz",
+@@ -2232,6 +2855,24 @@
+         "strip-json-comments": "^2.0.0"
+       }
+     },
++    "node_modules/tslib": {
++      "version": "2.8.1",
++      "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz",
++      "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==",
++      "license": "0BSD"
++    },
++    "node_modules/type-fest": {
++      "version": "4.41.0",
++      "resolved": "https://registry.npmjs.org/type-fest/-/type-fest-4.41.0.tgz",
++      "integrity": "sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==",
++      "license": "(MIT OR CC0-1.0)",
++      "engines": {
++        "node": ">=16"
++      },
++      "funding": {
++        "url": "https://github.com/sponsors/sindresorhus"
++      }
++    },
+     "node_modules/type-is": {
+       "version": "2.1.0",
+       "resolved": "https://registry.npmjs.org/type-is/-/type-is-2.1.0.tgz",
+@@ -2263,6 +2904,12 @@
+         "url": "https://opencollective.com/express"
+       }
+     },
++    "node_modules/typedarray": {
++      "version": "0.0.6",
++      "resolved": "https://registry.npmjs.org/typedarray/-/typedarray-0.0.6.tgz",
++      "integrity": "sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==",
++      "license": "MIT"
++    },
+     "node_modules/typescript": {
+       "version": "5.9.3",
+       "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+@@ -2293,6 +2940,18 @@
+         "node": ">= 0.8"
+       }
+     },
++    "node_modules/urlpattern-polyfill": {
++      "version": "10.1.0",
++      "resolved": "https://registry.npmjs.org/urlpattern-polyfill/-/urlpattern-polyfill-10.1.0.tgz",
++      "integrity": "sha512-IGjKp/o0NL3Bso1PymYURCJxMPNAf/ILOpendP9f5B6e1rTJgdgiOvgfoT8VxCAdY+Wisb9uhGaJJf3yZ2V9nw==",
++      "license": "MIT"
++    },
++    "node_modules/util-deprecate": {
++      "version": "1.0.2",
++      "resolved": "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz",
++      "integrity": "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==",
++      "license": "MIT"
++    },
+     "node_modules/v8-compile-cache-lib": {
+       "version": "3.0.1",
+       "resolved": "https://registry.npmjs.org/v8-compile-cache-lib/-/v8-compile-cache-lib-3.0.1.tgz",
+@@ -2309,6 +2968,12 @@
+         "node": ">= 0.8"
+       }
+     },
++    "node_modules/when-exit": {
++      "version": "2.1.5",
++      "resolved": "https://registry.npmjs.org/when-exit/-/when-exit-2.1.5.tgz",
++      "integrity": "sha512-VGkKJ564kzt6Ms1dbgPP/yuIoQCrsFAnRbptpC5wOEsDaNsbCB2bnfnaA8i/vRs5tjUSEOtIuvl9/MyVsvQZCg==",
++      "license": "MIT"
++    },
+     "node_modules/wrappy": {
+       "version": "1.0.2",
+       "resolved": "https://registry.npmjs.org/wrappy/-/wrappy-1.0.2.tgz",
+diff --git a/package.json b/package.json
+index a2641ad..6ceb553 100644
+--- a/package.json
++++ b/package.json
+@@ -22,17 +22,20 @@
+     "@types/cors": "^2.8.19",
+     "@types/express": "^5.0.6",
+     "@types/jsonwebtoken": "^9.0.10",
++    "@types/multer": "^2.2.0",
+     "@types/node": "^25.9.3",
+     "prisma": "^6.16.2",
+     "ts-node-dev": "^2.0.0",
+     "typescript": "^5.9.3"
+   },
+   "dependencies": {
++    "@netlify/blobs": "^10.7.9",
+     "@prisma/client": "^6.16.2",
+     "bcryptjs": "^3.0.3",
+     "cors": "^2.8.6",
+     "express": "^5.2.1",
+     "jsonwebtoken": "^9.0.3",
++    "multer": "^2.2.0",
+     "serverless-http": "^4.0.0",
+     "zod": "^4.4.3"
+   }
+diff --git a/sgcl-web/src/components/ui/ImageUpload/index.tsx b/sgcl-web/src/components/ui/ImageUpload/index.tsx
+index 540f166..84ff059 100644
+--- a/sgcl-web/src/components/ui/ImageUpload/index.tsx
++++ b/sgcl-web/src/components/ui/ImageUpload/index.tsx
+@@ -1,33 +1,78 @@
+-import { useState } from "react";
++import { useEffect, useState } from "react";
+ import type { ChangeEvent } from "react";
+ 
++import { UploadService } from "../../../shared/services/UploadService";
++import { getApiErrorMessage } from "../../../shared/utils/getApiErrorMessage";
++
+ import "./styles.css";
+ 
+ interface ImageUploadProps {
+   label: string;
+-  onChange?: (file: File | null) => void;
++  valorAtual?: string | null;
++  prefixo: "alunos" | "responsaveis";
++  onChange?: (url: string | undefined) => void;
+ }
+ 
+ export function ImageUpload({
+   label,
++  valorAtual,
++  prefixo,
+   onChange,
+ }: ImageUploadProps) {
+   const [preview, setPreview] = useState<string>();
++  const [enviando, setEnviando] = useState(false);
++  const [erro, setErro] = useState("");
++
++  useEffect(() => {
++    let ativo = true;
++    let objectUrl: string | null = null;
++
++    async function carregarPreviewAtual() {
++      if (!valorAtual) return;
++
++      try {
++        const blob = await UploadService.buscarImagemBlob(valorAtual);
++        if (!ativo) return;
++
++        objectUrl = URL.createObjectURL(blob);
++        setPreview(objectUrl);
++      } catch {
++        // preview é só cosmético — se falhar, mantém o placeholder
++      }
++    }
+ 
+-  function handleChange(
++    carregarPreviewAtual();
++
++    return () => {
++      ativo = false;
++      if (objectUrl) URL.revokeObjectURL(objectUrl);
++    };
++  }, [valorAtual]);
++
++  async function handleChange(
+     event: ChangeEvent<HTMLInputElement>
+   ) {
+     const file = event.target.files?.[0];
+ 
+     if (!file) {
+       setPreview(undefined);
+-      onChange?.(null);
++      onChange?.(undefined);
+       return;
+     }
+ 
+     setPreview(URL.createObjectURL(file));
+-
+-    onChange?.(file);
++    setErro("");
++
++    try {
++      setEnviando(true);
++      const { url } = await UploadService.enviarFoto(file, prefixo);
++      onChange?.(url);
++    } catch (error) {
++      setErro(getApiErrorMessage(error, "Erro ao enviar a imagem."));
++      onChange?.(undefined);
++    } finally {
++      setEnviando(false);
++    }
+   }
+ 
+   return (
+@@ -49,7 +94,7 @@ export function ImageUpload({
+         ) : (
+ 
+           <span>
+-            Clique para selecionar uma imagem
++            {enviando ? "Enviando..." : "Clique para selecionar uma imagem"}
+           </span>
+ 
+         )}
+@@ -57,11 +102,14 @@ export function ImageUpload({
+         <input
+           type="file"
+           accept="image/*"
++          disabled={enviando}
+           onChange={handleChange}
+         />
+ 
+       </label>
+ 
++      {erro && <p className="image-upload-erro">{erro}</p>}
++
+     </div>
+   );
+-}
+\ No newline at end of file
++}
+diff --git a/sgcl-web/src/components/ui/ImageUpload/styles.css b/sgcl-web/src/components/ui/ImageUpload/styles.css
+index d6294b1..c426059 100644
+--- a/sgcl-web/src/components/ui/ImageUpload/styles.css
++++ b/sgcl-web/src/components/ui/ImageUpload/styles.css
+@@ -70,4 +70,14 @@
+ 
+   display:none;
+ 
++}
++
++.image-upload-erro{
++
++  color: var(--color-danger, #B3261E);
++
++  font-size: 13px;
++
++  margin: 0;
++
+ }
+\ No newline at end of file
+diff --git a/sgcl-web/src/modules/alunos/components/AlunoForm/index.tsx b/sgcl-web/src/modules/alunos/components/AlunoForm/index.tsx
+index 6572d7e..bc4df37 100644
+--- a/sgcl-web/src/modules/alunos/components/AlunoForm/index.tsx
++++ b/sgcl-web/src/modules/alunos/components/AlunoForm/index.tsx
+@@ -1,6 +1,5 @@
+ import { FormProvider, useForm } from "react-hook-form";
+ import { zodResolver } from "@hookform/resolvers/zod";
+-import { useState } from "react";
+ 
+ import { Button } from "../../../../components/ui/Button";
+ import { ImageUpload } from "../../../../components/ui/ImageUpload";
+@@ -40,7 +39,6 @@ function TabLabel({ texto, comErro }: { texto: string; comErro: boolean }) {
+ }
+ 
+ export function AlunoForm({ aluno, loading, onSubmit }: AlunoFormProps) {
+-  const [, setFoto] = useState<File | null>(null);
+   const methods = useForm<AlunoFormData>({
+     resolver: zodResolver(alunoSchema),
+     defaultValues: alunoParaFormulario(aluno),
+@@ -83,7 +81,12 @@ export function AlunoForm({ aluno, loading, onSubmit }: AlunoFormProps) {
+                 <>
+                   <DadosPessoaisSection />
+                   <FormSection title="Foto" subtitle="Foto do aluno.">
+-                    <ImageUpload label="Foto" onChange={setFoto} />
++                    <ImageUpload
++                      label="Foto"
++                      prefixo="alunos"
++                      valorAtual={methods.watch("fotoUrl")}
++                      onChange={(url) => methods.setValue("fotoUrl", url)}
++                    />
+                   </FormSection>
+                 </>
+               ),
+diff --git a/sgcl-web/src/shared/services/UploadService.ts b/sgcl-web/src/shared/services/UploadService.ts
+new file mode 100644
+index 0000000..b2e8629
+--- /dev/null
++++ b/sgcl-web/src/shared/services/UploadService.ts
+@@ -0,0 +1,19 @@
++import { api } from "../../services/api";
++
++export class UploadService {
++  static async enviarFoto(file: File, prefixo: "alunos" | "responsaveis") {
++    const formData = new FormData();
++    formData.append("arquivo", file);
++    formData.append("prefixo", prefixo);
++
++    const response = await api.post<{ url: string }>("/uploads", formData);
++
++    return response.data;
++  }
++
++  static async buscarImagemBlob(caminho: string) {
++    const response = await api.get(caminho, { responseType: "blob" });
++
++    return response.data as Blob;
++  }
++}
+diff --git a/src/app.ts b/src/app.ts
+index 7edaa6b..9c6db83 100644
+--- a/src/app.ts
++++ b/src/app.ts
+@@ -21,6 +21,7 @@ import { tecnicasRoutes } from "./modules/tecnicas/routes";
+ import { curriculosRoutes } from "./modules/curriculos/routes";
+ import { planosRoutes } from "./modules/planos/routes";
+ import { mensagensRoutes } from "./modules/mensagens/routes";
++import { uploadsRoutes } from "./modules/uploads/routes";
+ 
+ const corsOrigin = process.env.CORS_ORIGIN
+   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
+@@ -63,6 +64,7 @@ app.use("/tecnicas", tecnicasRoutes);
+ app.use("/curriculos", curriculosRoutes);
+ app.use("/planos", planosRoutes);
+ app.use("/mensagens", mensagensRoutes);
++app.use("/uploads", uploadsRoutes);
+ 
+ app.use("/auth", authRoutes);
+ app.use(errorHandler);
+diff --git a/src/modules/uploads/controller.ts b/src/modules/uploads/controller.ts
+new file mode 100644
+index 0000000..52011c3
+--- /dev/null
++++ b/src/modules/uploads/controller.ts
+@@ -0,0 +1,44 @@
++import { Request, Response } from "express";
++
++import { AppError } from "../../shared/errors/AppError";
++import { UploadFotoService } from "./services/UploadFotoService";
++import { GetFotoService } from "./services/GetFotoService";
++
++export class UploadsController {
++  async uploadFoto(req: Request, res: Response) {
++    if (!req.file) {
++      throw new AppError("Nenhum arquivo enviado.");
++    }
++
++    const prefixo = req.body.prefixo === "responsaveis" ? "responsaveis" : "alunos";
++
++    const service = new UploadFotoService();
++
++    const resultado = await service.execute({
++      buffer: req.file.buffer,
++      mimetype: req.file.mimetype,
++      prefixo,
++    });
++
++    return res.status(201).json(resultado);
++  }
++
++  async getFoto(req: Request, res: Response) {
++    const prefixo = String(req.params.prefixo);
++
++    if (!["alunos", "responsaveis"].includes(prefixo)) {
++      throw new AppError("Imagem não encontrada.", 404);
++    }
++
++    const chave = `${prefixo}/${req.params.arquivo}`;
++
++    const service = new GetFotoService();
++
++    const foto = await service.execute(chave);
++
++    res.setHeader("Content-Type", foto.contentType);
++    res.setHeader("Cache-Control", "private, max-age=86400");
++
++    return res.send(foto.buffer);
++  }
++}
+diff --git a/src/modules/uploads/routes.ts b/src/modules/uploads/routes.ts
+new file mode 100644
+index 0000000..4c7e6d8
+--- /dev/null
++++ b/src/modules/uploads/routes.ts
+@@ -0,0 +1,31 @@
++import { Router } from "express";
++import multer from "multer";
++
++import { UploadsController } from "./controller";
++import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
++import { ensureRole } from "../../shared/middlewares/ensureRole";
++
++const uploadsRoutes = Router();
++
++const controller = new UploadsController();
++
++const upload = multer({
++  storage: multer.memoryStorage(),
++  limits: { fileSize: 5 * 1024 * 1024 },
++});
++
++uploadsRoutes.post(
++  "/",
++  ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
++  upload.single("arquivo"),
++  controller.uploadFoto
++);
++
++uploadsRoutes.get(
++  "/:prefixo/:arquivo",
++  ensureAuthenticated,
++  controller.getFoto
++);
++
++export { uploadsRoutes };
+diff --git a/src/modules/uploads/services/GetFotoService.ts b/src/modules/uploads/services/GetFotoService.ts
+new file mode 100644
+index 0000000..01b6252
+--- /dev/null
++++ b/src/modules/uploads/services/GetFotoService.ts
+@@ -0,0 +1,22 @@
++import { AppError } from "../../../shared/errors/AppError";
++import { getFotosStore } from "./blobStore";
++
++export class GetFotoService {
++  async execute(chave: string) {
++    const store = getFotosStore();
++
++    const resultado = await store.getWithMetadata(chave, { type: "arrayBuffer" });
++
++    if (!resultado) {
++      throw new AppError("Imagem não encontrada.", 404);
++    }
++
++    const contentType =
++      (resultado.metadata.contentType as string | undefined) ?? "application/octet-stream";
++
++    return {
++      buffer: Buffer.from(resultado.data),
++      contentType,
++    };
++  }
++}
+diff --git a/src/modules/uploads/services/UploadFotoService.ts b/src/modules/uploads/services/UploadFotoService.ts
+new file mode 100644
+index 0000000..a063dc0
+--- /dev/null
++++ b/src/modules/uploads/services/UploadFotoService.ts
+@@ -0,0 +1,40 @@
++import { randomUUID } from "crypto";
++
++import { AppError } from "../../../shared/errors/AppError";
++import { getFotosStore } from "./blobStore";
++
++const TIPOS_PERMITIDOS = ["image/jpeg", "image/png", "image/webp", "image/gif"];
++
++const EXTENSAO_POR_TIPO: Record<string, string> = {
++  "image/jpeg": "jpg",
++  "image/png": "png",
++  "image/webp": "webp",
++  "image/gif": "gif",
++};
++
++interface UploadFotoDTO {
++  buffer: Buffer;
++  mimetype: string;
++  prefixo: "alunos" | "responsaveis";
++}
++
++export class UploadFotoService {
++  async execute({ buffer, mimetype, prefixo }: UploadFotoDTO) {
++    if (!TIPOS_PERMITIDOS.includes(mimetype)) {
++      throw new AppError(
++        "Formato de imagem não suportado. Envie JPEG, PNG, WEBP ou GIF."
++      );
++    }
++
++    const extensao = EXTENSAO_POR_TIPO[mimetype];
++    const chave = `${prefixo}/${randomUUID()}.${extensao}`;
++
++    const store = getFotosStore();
++
++    await store.set(chave, new Blob([Uint8Array.from(buffer)], { type: mimetype }), {
++      metadata: { contentType: mimetype },
++    });
++
++    return { url: `/uploads/${chave}` };
++  }
++}
+diff --git a/src/modules/uploads/services/blobStore.ts b/src/modules/uploads/services/blobStore.ts
+new file mode 100644
+index 0000000..1456908
+--- /dev/null
++++ b/src/modules/uploads/services/blobStore.ts
+@@ -0,0 +1,12 @@
++import { getStore } from "@netlify/blobs";
++
++export function getFotosStore() {
++  const siteID = process.env.NETLIFY_BLOBS_SITE_ID;
++  const token = process.env.NETLIFY_BLOBS_TOKEN;
++
++  if (siteID && token) {
++    return getStore({ name: "fotos", siteID, token });
++  }
++
++  return getStore("fotos");
++}
+-- 
+2.43.0
+

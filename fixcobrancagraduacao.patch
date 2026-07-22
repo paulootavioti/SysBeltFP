@@ -1,0 +1,70 @@
+From 976432d2a3bf7d636d5fe7181ba1926570f0021d Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 22 Jul 2026 16:17:56 +0000
+Subject: [PATCH] =?UTF-8?q?fix:=20permite=20cobran=C3=A7a=20de=20gradua?=
+ =?UTF-8?q?=C3=A7=C3=A3o=20no=20mesmo=20m=C3=AAs=20de=20uma=20mensalidade?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+CreateGraduacaoService e IncrementarGrauService reutilizavam a guarda
+de "uma mensalidade por mês" (pensada para evitar lançar duas
+mensalidades regulares no mesmo mês) também na cobrança opcional de
+taxa de graduação/grau. Resultado: não dava para registrar a taxa de
+graduação de um aluno no mesmo mês em que a mensalidade normal dele já
+tinha sido lançada — mesmo sendo cobranças de tipos diferentes.
+
+Removida a checagem nesse caminho; a guarda continua valendo
+normalmente para CreateMensalidadeService (mensalidade regular).
+---
+ src/modules/graduacoes/services/CreateGraduacaoService.ts | 5 -----
+ src/modules/graduacoes/services/IncrementarGrauService.ts | 5 -----
+ 2 files changed, 10 deletions(-)
+
+diff --git a/src/modules/graduacoes/services/CreateGraduacaoService.ts b/src/modules/graduacoes/services/CreateGraduacaoService.ts
+index ec294f2..d2a0bc5 100644
+--- a/src/modules/graduacoes/services/CreateGraduacaoService.ts
++++ b/src/modules/graduacoes/services/CreateGraduacaoService.ts
+@@ -1,6 +1,5 @@
+ import { prisma } from "../../../shared/database/prisma";
+ import { AppError } from "../../../shared/errors/AppError";
+-import { garantirSemMensalidadeNoMes } from "../../mensalidades/utils/garantirSemMensalidadeNoMes";
+ import {
+   calcularIdade,
+   getTrilhaFaixa,
+@@ -77,10 +76,6 @@ export class CreateGraduacaoService {
+       }
+     }
+ 
+-    if (cobranca) {
+-      await garantirSemMensalidadeNoMes(alunoId, cobranca.vencimento);
+-    }
+-
+     const [graduacao] = await prisma.$transaction([
+       prisma.graduacao.create({
+         data: {
+diff --git a/src/modules/graduacoes/services/IncrementarGrauService.ts b/src/modules/graduacoes/services/IncrementarGrauService.ts
+index cd26685..8a3c339 100644
+--- a/src/modules/graduacoes/services/IncrementarGrauService.ts
++++ b/src/modules/graduacoes/services/IncrementarGrauService.ts
+@@ -1,6 +1,5 @@
+ import { prisma } from "../../../shared/database/prisma";
+ import { AppError } from "../../../shared/errors/AppError";
+-import { garantirSemMensalidadeNoMes } from "../../mensalidades/utils/garantirSemMensalidadeNoMes";
+ 
+ const GRAUS_MAXIMOS_POR_FAIXA = 4;
+ 
+@@ -30,10 +29,6 @@ export class IncrementarGrauService {
+       );
+     }
+ 
+-    if (cobranca) {
+-      await garantirSemMensalidadeNoMes(alunoId, cobranca.vencimento);
+-    }
+-
+     const [alunoAtualizado] = await prisma.$transaction([
+       prisma.aluno.update({
+         where: { id: alunoId },
+-- 
+2.43.0
+

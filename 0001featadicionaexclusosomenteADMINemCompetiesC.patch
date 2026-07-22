@@ -1,0 +1,698 @@
+From e83a842e4916fcc5536bddcbc8ef8b0f52aca77d Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 14 Jul 2026 00:12:43 +0000
+Subject: [PATCH] =?UTF-8?q?feat:=20adiciona=20exclus=C3=A3o=20(somente=20A?=
+ =?UTF-8?q?DMIN)=20em=20Competi=C3=A7=C3=B5es,=20Curr=C3=ADculo,=20Aulas?=
+ =?UTF-8?q?=20e=20Programa=C3=A7=C3=A3o=20de=20Aulas?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Botão "Excluir" restrito ao perfil ADMIN nas 4 telas, tanto na UI (oculto
+para outros perfis) quanto no backend (ensureRole em cada rota DELETE).
+
+- Competição: apaga também as inscrições (CompeticaoAluno) vinculadas.
+- Currículo: bloqueia a exclusão se houver turma, aula realizada ou aula
+  programada vinculada; caso contrário apaga módulos/aulas/técnicas em
+  cascata.
+- Aula: apaga os registros de chamada (AulaAluno) e desvincula a
+  programação de aula que a originou (volta para PENDENTE).
+- Programação de Aula: exclusão direta, não afeta a aula já realizada.
+---
+ .../src/modules/aulas/pages/Listar/index.tsx  | 19 +++++++
+ .../modules/aulas/pages/Programacao/index.tsx | 50 ++++++++++++++++---
+ .../aulas/pages/Programacao/styles.css        |  6 +++
+ .../src/modules/aulas/services/AulaService.ts |  8 +++
+ .../competicoes/pages/Listar/index.tsx        | 49 +++++++++++++++---
+ .../competicoes/pages/Listar/styles.css       |  6 +++
+ .../competicoes/services/CompeticaoService.ts |  4 ++
+ .../modules/curriculos/pages/Listar/index.tsx | 37 ++++++++++++++
+ .../curriculos/services/CurriculoService.ts   |  4 ++
+ src/modules/aulas/controller.ts               | 18 +++++++
+ src/modules/aulas/routes.ts                   | 14 ++++++
+ .../services/DeleteAulaProgramadaService.ts   |  7 +++
+ .../aulas/services/DeleteAulaService.ts       | 14 ++++++
+ src/modules/competicoes/controller.ts         |  9 ++++
+ src/modules/competicoes/routes.ts             |  7 +++
+ .../services/DeleteCompeticaoService.ts       | 10 ++++
+ src/modules/curriculos/controller.ts          |  9 ++++
+ src/modules/curriculos/routes.ts              |  8 +++
+ .../services/DeleteCurriculoService.ts        | 47 +++++++++++++++++
+ 19 files changed, 311 insertions(+), 15 deletions(-)
+ create mode 100644 src/modules/aulas/services/DeleteAulaProgramadaService.ts
+ create mode 100644 src/modules/aulas/services/DeleteAulaService.ts
+ create mode 100644 src/modules/competicoes/services/DeleteCompeticaoService.ts
+ create mode 100644 src/modules/curriculos/services/DeleteCurriculoService.ts
+
+diff --git a/sgcl-web/src/modules/aulas/pages/Listar/index.tsx b/sgcl-web/src/modules/aulas/pages/Listar/index.tsx
+index ce7e66d..8bd3f4e 100644
+--- a/sgcl-web/src/modules/aulas/pages/Listar/index.tsx
++++ b/sgcl-web/src/modules/aulas/pages/Listar/index.tsx
+@@ -8,6 +8,7 @@ import { Badge } from "../../../../components/ui/Badge";
+ import { Modal } from "../../../../components/ui/Modal";
+ import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
+ 
++import { useAuth } from "../../../../contexts/AuthContext";
+ import { AulaService } from "../../services/AulaService";
+ import { IniciarAulaForm, type IniciarAulaFormData } from "../../components/IniciarAulaForm";
+ import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+@@ -16,6 +17,7 @@ import type { Aula } from "../../types";
+ 
+ export function Aulas() {
+   const navigate = useNavigate();
++  const { usuario } = useAuth();
+ 
+   const [aulas, setAulas] = useState<Aula[]>([]);
+   const [loading, setLoading] = useState(true);
+@@ -23,6 +25,8 @@ export function Aulas() {
+   const [iniciando, setIniciando] = useState(false);
+   const [erro, setErro] = useState("");
+ 
++  const ehAdmin = usuario?.perfil === "ADMIN";
++
+   async function carregarAulas() {
+     try {
+       const data = await AulaService.listar();
+@@ -57,6 +61,20 @@ export function Aulas() {
+     }
+   }
+ 
++  async function handleExcluirAula(aula: Aula) {
++    if (!window.confirm("Excluir esta aula? Os registros de chamada dela também serão apagados. Essa ação não pode ser desfeita.")) {
++      return;
++    }
++
++    try {
++      setErro("");
++      await AulaService.excluir(aula.id);
++      await carregarAulas();
++    } catch (error) {
++      setErro(getApiErrorMessage(error, "Erro ao excluir aula."));
++    }
++  }
++
+   return (
+     <Layout>
+       <PageHeader title="Aulas" subtitle="Controle das aulas e chamadas." />
+@@ -76,6 +94,7 @@ export function Aulas() {
+         onEdit={(aula) => {
+           navigate(`/aulas/${aula.id}/chamada`);
+         }}
++        onDelete={ehAdmin ? handleExcluirAula : undefined}
+         columns={[
+           { header: "Turma", render: (aula) => aula.turma?.nome ?? "-" },
+           { header: "Professor", render: (aula) => aula.professor ?? "-" },
+diff --git a/sgcl-web/src/modules/aulas/pages/Programacao/index.tsx b/sgcl-web/src/modules/aulas/pages/Programacao/index.tsx
+index 93043be..cb7339c 100644
+--- a/sgcl-web/src/modules/aulas/pages/Programacao/index.tsx
++++ b/sgcl-web/src/modules/aulas/pages/Programacao/index.tsx
+@@ -11,6 +11,7 @@ import { Loading } from "../../../../components/ui/Loading";
+ import { Badge } from "../../../../components/ui/Badge";
+ import { Modal } from "../../../../components/ui/Modal";
+ 
++import { useAuth } from "../../../../contexts/AuthContext";
+ import { AulaService } from "../../services/AulaService";
+ import { ProgramarAulaForm, type ProgramarAulaFormData } from "../../components/ProgramarAulaForm";
+ import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+@@ -27,6 +28,7 @@ function formatarDataHora(data: string) {
+ 
+ export function ProgramacaoAulas() {
+   const navigate = useNavigate();
++  const { usuario } = useAuth();
+ 
+   const [programacoes, setProgramacoes] = useState<AulaProgramada[]>([]);
+   const [loading, setLoading] = useState(true);
+@@ -34,6 +36,9 @@ export function ProgramacaoAulas() {
+   const [modalAberto, setModalAberto] = useState(false);
+   const [salvando, setSalvando] = useState(false);
+   const [iniciandoId, setIniciandoId] = useState<number | null>(null);
++  const [excluindoId, setExcluindoId] = useState<number | null>(null);
++
++  const ehAdmin = usuario?.perfil === "ADMIN";
+ 
+   async function carregarProgramacoes() {
+     try {
+@@ -83,6 +88,23 @@ export function ProgramacaoAulas() {
+     }
+   }
+ 
++  async function handleExcluir(programacao: AulaProgramada) {
++    if (!window.confirm("Excluir esta programação de aula? Essa ação não pode ser desfeita.")) {
++      return;
++    }
++
++    try {
++      setExcluindoId(programacao.id);
++      setErro("");
++      await AulaService.excluirProgramada(programacao.id);
++      await carregarProgramacoes();
++    } catch (error) {
++      setErro(getApiErrorMessage(error, "Erro ao excluir programação."));
++    } finally {
++      setExcluindoId(null);
++    }
++  }
++
+   const columns = [
+     { header: "Turma", accessor: "turma" as const, render: (p: AulaProgramada) => p.turma.nome },
+     { header: "Data/Horário", accessor: "data" as const, render: (p: AulaProgramada) => formatarDataHora(p.data) },
+@@ -103,14 +125,26 @@ export function ProgramacaoAulas() {
+     {
+       header: "Ações",
+       accessor: "id" as const,
+-      render: (p: AulaProgramada) =>
+-        p.status === "PENDENTE" ? (
+-          <Button type="button" onClick={() => handleIniciar(p.id)} disabled={iniciandoId === p.id}>
+-            {iniciandoId === p.id ? "Iniciando..." : "Iniciar Aula"}
+-          </Button>
+-        ) : (
+-          "-"
+-        ),
++      render: (p: AulaProgramada) => (
++        <div className="programacao-acoes-linha">
++          {p.status === "PENDENTE" && (
++            <Button type="button" onClick={() => handleIniciar(p.id)} disabled={iniciandoId === p.id}>
++              {iniciandoId === p.id ? "Iniciando..." : "Iniciar Aula"}
++            </Button>
++          )}
++
++          {ehAdmin && (
++            <Button
++              type="button"
++              variant="danger"
++              disabled={excluindoId === p.id}
++              onClick={() => handleExcluir(p)}
++            >
++              {excluindoId === p.id ? "Excluindo..." : "Excluir"}
++            </Button>
++          )}
++        </div>
++      ),
+     },
+   ];
+ 
+diff --git a/sgcl-web/src/modules/aulas/pages/Programacao/styles.css b/sgcl-web/src/modules/aulas/pages/Programacao/styles.css
+index 03aab84..6b72f12 100644
+--- a/sgcl-web/src/modules/aulas/pages/Programacao/styles.css
++++ b/sgcl-web/src/modules/aulas/pages/Programacao/styles.css
+@@ -2,4 +2,10 @@
+   display: flex;
+   justify-content: flex-end;
+   margin-bottom: var(--space-4);
++}
++
++.programacao-acoes-linha {
++  display: flex;
++  gap: var(--space-2);
++  flex-wrap: wrap;
+ }
+\ No newline at end of file
+diff --git a/sgcl-web/src/modules/aulas/services/AulaService.ts b/sgcl-web/src/modules/aulas/services/AulaService.ts
+index f0e1911..473808e 100644
+--- a/sgcl-web/src/modules/aulas/services/AulaService.ts
++++ b/sgcl-web/src/modules/aulas/services/AulaService.ts
+@@ -89,4 +89,12 @@ export class AulaService {
+ 
+     return response.data;
+   }
++
++  static async excluir(id: number) {
++    await api.delete(`/aulas/${id}`);
++  }
++
++  static async excluirProgramada(id: number) {
++    await api.delete(`/aulas/programadas/${id}`);
++  }
+ }
+\ No newline at end of file
+diff --git a/sgcl-web/src/modules/competicoes/pages/Listar/index.tsx b/sgcl-web/src/modules/competicoes/pages/Listar/index.tsx
+index 9e270f6..0a34b32 100644
+--- a/sgcl-web/src/modules/competicoes/pages/Listar/index.tsx
++++ b/sgcl-web/src/modules/competicoes/pages/Listar/index.tsx
+@@ -10,6 +10,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
+ import { Loading } from "../../../../components/ui/Loading";
+ import { Modal } from "../../../../components/ui/Modal";
+ 
++import { useAuth } from "../../../../contexts/AuthContext";
+ import { useCompeticoes } from "../../hooks/useCompeticoes";
+ import { CompeticaoService } from "../../services/CompeticaoService";
+ import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+@@ -25,9 +26,13 @@ function formatarData(data: string): string {
+ 
+ export function Competicoes() {
+   const navigate = useNavigate();
++  const { usuario } = useAuth();
+   const { competicoes, loading, erro, setErro, carregarCompeticoes } = useCompeticoes();
+   const [modalAberto, setModalAberto] = useState(false);
+   const [salvando, setSalvando] = useState(false);
++  const [excluindoId, setExcluindoId] = useState<number | null>(null);
++
++  const ehAdmin = usuario?.perfil === "ADMIN";
+ 
+   async function handleCriarCompeticao(data: CompeticaoFormData) {
+     try {
+@@ -43,6 +48,23 @@ export function Competicoes() {
+     }
+   }
+ 
++  async function handleExcluirCompeticao(competicao: Competicao) {
++    if (!window.confirm(`Excluir a competição "${competicao.nome}"? Essa ação não pode ser desfeita.`)) {
++      return;
++    }
++
++    try {
++      setExcluindoId(competicao.id);
++      setErro("");
++      await CompeticaoService.excluir(competicao.id);
++      await carregarCompeticoes();
++    } catch (error) {
++      setErro(getApiErrorMessage(error, "Erro ao excluir competição."));
++    } finally {
++      setExcluindoId(null);
++    }
++  }
++
+   const columns = [
+     { header: "Nome", accessor: "nome" as const },
+     {
+@@ -55,13 +77,26 @@ export function Competicoes() {
+       header: "Ações",
+       accessor: "id" as const,
+       render: (competicao: Competicao) => (
+-        <Button
+-          type="button"
+-          variant="secondary"
+-          onClick={() => navigate(`/competicoes/${competicao.id}`)}
+-        >
+-          Ver atletas
+-        </Button>
++        <div className="competicoes-acoes-linha">
++          <Button
++            type="button"
++            variant="secondary"
++            onClick={() => navigate(`/competicoes/${competicao.id}`)}
++          >
++            Ver atletas
++          </Button>
++
++          {ehAdmin && (
++            <Button
++              type="button"
++              variant="danger"
++              disabled={excluindoId === competicao.id}
++              onClick={() => handleExcluirCompeticao(competicao)}
++            >
++              {excluindoId === competicao.id ? "Excluindo..." : "Excluir"}
++            </Button>
++          )}
++        </div>
+       ),
+     },
+   ];
+diff --git a/sgcl-web/src/modules/competicoes/pages/Listar/styles.css b/sgcl-web/src/modules/competicoes/pages/Listar/styles.css
+index e2bc24b..7df734f 100644
+--- a/sgcl-web/src/modules/competicoes/pages/Listar/styles.css
++++ b/sgcl-web/src/modules/competicoes/pages/Listar/styles.css
+@@ -2,4 +2,10 @@
+   display: flex;
+   justify-content: flex-end;
+   margin-bottom: var(--space-4);
++}
++
++.competicoes-acoes-linha {
++  display: flex;
++  gap: var(--space-2);
++  flex-wrap: wrap;
+ }
+\ No newline at end of file
+diff --git a/sgcl-web/src/modules/competicoes/services/CompeticaoService.ts b/sgcl-web/src/modules/competicoes/services/CompeticaoService.ts
+index 61030f8..e4ddb5b 100644
+--- a/sgcl-web/src/modules/competicoes/services/CompeticaoService.ts
++++ b/sgcl-web/src/modules/competicoes/services/CompeticaoService.ts
+@@ -27,4 +27,8 @@ export class CompeticaoService {
+       resultado,
+     });
+   }
++
++  static async excluir(id: number) {
++    return ApiClient.delete(`/competicoes/${id}`);
++  }
+ }
+\ No newline at end of file
+diff --git a/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx b/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx
+index 99cb946..53a692e 100644
+--- a/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx
++++ b/sgcl-web/src/modules/curriculos/pages/Listar/index.tsx
+@@ -9,6 +9,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
+ import { Modal } from "../../../../components/ui/Modal";
+ import { Badge } from "../../../../components/ui/Badge";
+ 
++import { useAuth } from "../../../../contexts/AuthContext";
+ import { useCurriculos } from "../../hooks/useCurriculos";
+ import { CurriculoService } from "../../services/CurriculoService";
+ import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+@@ -37,9 +38,13 @@ type ModalState =
+   | null;
+ 
+ export function Curriculos() {
++  const { usuario } = useAuth();
+   const { curriculos, loading, erro, setErro, carregarCurriculos } = useCurriculos();
+   const [modal, setModal] = useState<ModalState>(null);
+   const [salvando, setSalvando] = useState(false);
++  const [excluindoId, setExcluindoId] = useState<number | null>(null);
++
++  const ehAdmin = usuario?.perfil === "ADMIN";
+ 
+   async function handleSalvarCurriculo(data: CurriculoFormData, editando?: Curriculo) {
+     try {
+@@ -117,6 +122,27 @@ export function Curriculos() {
+     }
+   }
+ 
++  async function handleExcluirCurriculo(curriculo: Curriculo) {
++    if (
++      !window.confirm(
++        `Excluir o currículo "${curriculo.nome}"? Todos os módulos, aulas e técnicas dele também serão apagados. Essa ação não pode ser desfeita.`
++      )
++    ) {
++      return;
++    }
++
++    try {
++      setExcluindoId(curriculo.id);
++      setErro("");
++      await CurriculoService.excluir(curriculo.id);
++      await carregarCurriculos();
++    } catch (error) {
++      setErro(getApiErrorMessage(error, "Erro ao excluir currículo."));
++    } finally {
++      setExcluindoId(null);
++    }
++  }
++
+   if (loading) {
+     return (
+       <Layout>
+@@ -170,6 +196,17 @@ export function Curriculos() {
+                 >
+                   + Módulo
+                 </Button>
++
++                {ehAdmin && (
++                  <Button
++                    type="button"
++                    variant="danger"
++                    disabled={excluindoId === curriculo.id}
++                    onClick={() => handleExcluirCurriculo(curriculo)}
++                  >
++                    {excluindoId === curriculo.id ? "Excluindo..." : "Excluir"}
++                  </Button>
++                )}
+               </div>
+             </div>
+ 
+diff --git a/sgcl-web/src/modules/curriculos/services/CurriculoService.ts b/sgcl-web/src/modules/curriculos/services/CurriculoService.ts
+index 5430e58..3798dc1 100644
+--- a/sgcl-web/src/modules/curriculos/services/CurriculoService.ts
++++ b/sgcl-web/src/modules/curriculos/services/CurriculoService.ts
+@@ -51,4 +51,8 @@ export class CurriculoService {
+   static async atualizarTecnica(id: number, data: TecnicaCurriculoFormData) {
+     return ApiClient.put(`/curriculos/tecnicas/${id}`, data);
+   }
++
++  static async excluir(id: number) {
++    return ApiClient.delete(`/curriculos/${id}`);
++  }
+ }
+\ No newline at end of file
+diff --git a/src/modules/aulas/controller.ts b/src/modules/aulas/controller.ts
+index 1d66f47..cd483fc 100644
+--- a/src/modules/aulas/controller.ts
++++ b/src/modules/aulas/controller.ts
+@@ -9,6 +9,8 @@ import { UpdateAulaAlunoService } from "./services/UpdateAulaAlunoService";
+ import { CreateAulaProgramadaService } from "./services/CreateAulaProgramadaService";
+ import { ListAulasProgramadasService } from "./services/ListAulasProgramadasService";
+ import { IniciarAulaProgramadaService } from "./services/IniciarAulaProgramadaService";
++import { DeleteAulaService } from "./services/DeleteAulaService";
++import { DeleteAulaProgramadaService } from "./services/DeleteAulaProgramadaService";
+ 
+ export class AulasController {
+   async create(req: Request, res: Response) {
+@@ -79,4 +81,20 @@ export class AulasController {
+ 
+     return res.json(aula);
+   }
++
++  async delete(req: Request, res: Response) {
++    const service = new DeleteAulaService();
++
++    await service.execute(Number(req.params.id));
++
++    return res.status(204).send();
++  }
++
++  async deleteProgramada(req: Request, res: Response) {
++    const service = new DeleteAulaProgramadaService();
++
++    await service.execute(Number(req.params.id));
++
++    return res.status(204).send();
++  }
+ }
+\ No newline at end of file
+diff --git a/src/modules/aulas/routes.ts b/src/modules/aulas/routes.ts
+index 4df290c..d177cd3 100644
+--- a/src/modules/aulas/routes.ts
++++ b/src/modules/aulas/routes.ts
+@@ -2,6 +2,7 @@ import { Router } from "express";
+ 
+ import { AulasController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
++import { ensureRole } from "../../shared/middlewares/ensureRole";
+ 
+ const aulasRoutes = Router();
+ 
+@@ -49,11 +50,24 @@ aulasRoutes.patch(
+   controller.iniciarProgramada
+ );
+ 
++aulasRoutes.delete(
++  "/programadas/:id",
++  ensureAuthenticated,
++  ensureRole(["ADMIN"]),
++  controller.deleteProgramada
++);
++
+ aulasRoutes.get(
+   "/:id",
+   ensureAuthenticated,
+   controller.show
+ );
+ 
++aulasRoutes.delete(
++  "/:id",
++  ensureAuthenticated,
++  ensureRole(["ADMIN"]),
++  controller.delete
++);
+ 
+ export { aulasRoutes };
+\ No newline at end of file
+diff --git a/src/modules/aulas/services/DeleteAulaProgramadaService.ts b/src/modules/aulas/services/DeleteAulaProgramadaService.ts
+new file mode 100644
+index 0000000..de21013
+--- /dev/null
++++ b/src/modules/aulas/services/DeleteAulaProgramadaService.ts
+@@ -0,0 +1,7 @@
++import { prisma } from "../../../shared/database/prisma";
++
++export class DeleteAulaProgramadaService {
++  async execute(id: number) {
++    await prisma.aulaProgramada.delete({ where: { id } });
++  }
++}
+diff --git a/src/modules/aulas/services/DeleteAulaService.ts b/src/modules/aulas/services/DeleteAulaService.ts
+new file mode 100644
+index 0000000..85d321d
+--- /dev/null
++++ b/src/modules/aulas/services/DeleteAulaService.ts
+@@ -0,0 +1,14 @@
++import { prisma } from "../../../shared/database/prisma";
++
++export class DeleteAulaService {
++  async execute(id: number) {
++    await prisma.$transaction([
++      prisma.aulaProgramada.updateMany({
++        where: { aulaId: id },
++        data: { aulaId: null, status: "PENDENTE" },
++      }),
++      prisma.aulaAluno.deleteMany({ where: { aulaId: id } }),
++      prisma.aula.delete({ where: { id } }),
++    ]);
++  }
++}
+diff --git a/src/modules/competicoes/controller.ts b/src/modules/competicoes/controller.ts
+index b9c7729..a5a2c91 100644
+--- a/src/modules/competicoes/controller.ts
++++ b/src/modules/competicoes/controller.ts
+@@ -1,5 +1,6 @@
+ import { Request, Response } from "express";
+ import { prisma } from "../../shared/database/prisma";
++import { DeleteCompeticaoService } from "./services/DeleteCompeticaoService";
+ 
+ export class CompeticoesController {
+ 
+@@ -90,4 +91,12 @@ export class CompeticoesController {
+   
+     return res.json(inscricao);
+   }
++
++  async delete(req: Request, res: Response) {
++    const service = new DeleteCompeticaoService();
++
++    await service.execute(Number(req.params.id));
++
++    return res.status(204).send();
++  }
+ }
+\ No newline at end of file
+diff --git a/src/modules/competicoes/routes.ts b/src/modules/competicoes/routes.ts
+index 577a3c3..93df236 100644
+--- a/src/modules/competicoes/routes.ts
++++ b/src/modules/competicoes/routes.ts
+@@ -43,4 +43,11 @@ competicoesRoutes.patch(
+   competicoesController.resultado
+ );
+ 
++competicoesRoutes.delete(
++  "/:id",
++  ensureAuthenticated,
++  ensureRole(["ADMIN"]),
++  competicoesController.delete
++);
++
+ export { competicoesRoutes };
+\ No newline at end of file
+diff --git a/src/modules/competicoes/services/DeleteCompeticaoService.ts b/src/modules/competicoes/services/DeleteCompeticaoService.ts
+new file mode 100644
+index 0000000..6c35c3f
+--- /dev/null
++++ b/src/modules/competicoes/services/DeleteCompeticaoService.ts
+@@ -0,0 +1,10 @@
++import { prisma } from "../../../shared/database/prisma";
++
++export class DeleteCompeticaoService {
++  async execute(id: number) {
++    await prisma.$transaction([
++      prisma.competicaoAluno.deleteMany({ where: { competicaoId: id } }),
++      prisma.competicao.delete({ where: { id } }),
++    ]);
++  }
++}
+diff --git a/src/modules/curriculos/controller.ts b/src/modules/curriculos/controller.ts
+index 7541948..d9adc73 100644
+--- a/src/modules/curriculos/controller.ts
++++ b/src/modules/curriculos/controller.ts
+@@ -10,6 +10,7 @@ import { UpdateCurriculoService } from "./services/UpdateCurriculoService";
+ import { UpdateModuloCurriculoService } from "./services/UpdateModuloCurriculoService";
+ import { UpdateAulaCurriculoService } from "./services/UpdateAulaCurriculoService";
+ import { UpdateTecnicaCurriculoService } from "./services/UpdateTecnicaCurriculoService";
++import { DeleteCurriculoService } from "./services/DeleteCurriculoService";
+ 
+ export class CurriculosController {
+   async create(req: Request, res: Response) {
+@@ -91,4 +92,12 @@ export class CurriculosController {
+ 
+     return res.json(tecnica);
+   }
++
++  async delete(req: Request, res: Response) {
++    const service = new DeleteCurriculoService();
++
++    await service.execute(Number(req.params.id));
++
++    return res.status(204).send();
++  }
+ }
+\ No newline at end of file
+diff --git a/src/modules/curriculos/routes.ts b/src/modules/curriculos/routes.ts
+index cf8fa08..84da9b6 100644
+--- a/src/modules/curriculos/routes.ts
++++ b/src/modules/curriculos/routes.ts
+@@ -2,6 +2,7 @@ import { Router } from "express";
+ 
+ import { CurriculosController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
++import { ensureRole } from "../../shared/middlewares/ensureRole";
+ 
+ const curriculosRoutes = Router();
+ 
+@@ -67,4 +68,11 @@ curriculosRoutes.put(
+   controller.update
+ );
+ 
++curriculosRoutes.delete(
++  "/:id",
++  ensureAuthenticated,
++  ensureRole(["ADMIN"]),
++  controller.delete
++);
++
+ export { curriculosRoutes };
+\ No newline at end of file
+diff --git a/src/modules/curriculos/services/DeleteCurriculoService.ts b/src/modules/curriculos/services/DeleteCurriculoService.ts
+new file mode 100644
+index 0000000..1e99e78
+--- /dev/null
++++ b/src/modules/curriculos/services/DeleteCurriculoService.ts
+@@ -0,0 +1,47 @@
++import { prisma } from "../../../shared/database/prisma";
++import { AppError } from "../../../shared/errors/AppError";
++
++export class DeleteCurriculoService {
++  async execute(id: number) {
++    const turmasVinculadas = await prisma.turma.count({
++      where: { curriculoId: id },
++    });
++
++    if (turmasVinculadas > 0) {
++      throw new AppError(
++        "Não é possível excluir: existem turmas vinculadas a este currículo."
++      );
++    }
++
++    const aulasCurriculo = await prisma.aulaCurriculo.findMany({
++      where: { modulo: { curriculoId: id } },
++      select: { id: true },
++    });
++
++    const aulaCurriculoIds = aulasCurriculo.map((item) => item.id);
++
++    if (aulaCurriculoIds.length > 0) {
++      const [aulasRealizadas, aulasProgramadas] = await Promise.all([
++        prisma.aula.count({ where: { aulaCurriculoId: { in: aulaCurriculoIds } } }),
++        prisma.aulaProgramada.count({ where: { aulaCurriculoId: { in: aulaCurriculoIds } } }),
++      ]);
++
++      if (aulasRealizadas > 0 || aulasProgramadas > 0) {
++        throw new AppError(
++          "Não é possível excluir: há aulas realizadas ou programadas vinculadas a este currículo."
++        );
++      }
++    }
++
++    await prisma.$transaction([
++      prisma.tecnicaCurriculo.deleteMany({
++        where: { aulaCurriculo: { modulo: { curriculoId: id } } },
++      }),
++      prisma.aulaCurriculo.deleteMany({
++        where: { modulo: { curriculoId: id } },
++      }),
++      prisma.moduloCurriculo.deleteMany({ where: { curriculoId: id } }),
++      prisma.curriculo.delete({ where: { id } }),
++    ]);
++  }
++}
+-- 
+2.43.0
+

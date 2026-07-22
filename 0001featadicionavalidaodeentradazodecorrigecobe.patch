@@ -1,0 +1,991 @@
+From 9c8372f5832e4e792a43d0a1d52846b83a8e5da8 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 22 Jul 2026 01:08:00 +0000
+Subject: [PATCH 1/2] =?UTF-8?q?feat:=20adiciona=20valida=C3=A7=C3=A3o=20de?=
+ =?UTF-8?q?=20entrada=20(zod)=20e=20corrige=20cobertura=20de=20permiss?=
+ =?UTF-8?q?=C3=A3o=20no=20backend?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+O backend não validava nada no corpo das requisições — toda validação
+existia só no frontend e podia ser contornada chamando a API direto.
+Adiciona um middleware de validação (zod) e schemas para todos os
+endpoints de escrita (POST/PUT/PATCH) do sistema.
+
+No caminho, um levantamento de rotas mostrou que responsaveis (incluindo
+o DELETE), tecnicas e a maior parte de curriculos e aulas não tinham
+ensureRole nenhum — qualquer perfil autenticado podia fazer qualquer
+coisa nessas rotas, incluindo excluir um responsável. Alinha a cobertura
+de permissão com o padrão já usado em alunos/turmas/competições.
+
+Também corrige um bug real encontrado no processo: TurmaService (front)
+enviava professorId como Number("") = 0 quando o campo ficava vazio,
+o que geraria erro de chave estrangeira no Postgres.
+---
+ .../modules/turmas/services/TurmaService.ts   |  4 +-
+ src/modules/alunos/routes.ts                  |  4 ++
+ src/modules/alunos/validation.ts              | 51 +++++++++++++++++++
+ src/modules/aulas/routes.ts                   | 22 +++++++-
+ src/modules/aulas/validation.ts               | 30 +++++++++++
+ src/modules/auth/routes.ts                    |  7 ++-
+ src/modules/auth/validation.ts                | 16 ++++++
+ src/modules/competicoes/routes.ts             |  5 ++
+ src/modules/competicoes/validation.ts         | 16 ++++++
+ src/modules/comportamentos/routes.ts          |  3 ++
+ src/modules/comportamentos/validation.ts      | 11 ++++
+ src/modules/curriculos/routes.ts              | 27 +++++++++-
+ src/modules/curriculos/validation.ts          | 37 ++++++++++++++
+ src/modules/graduacoes/routes.ts              |  4 ++
+ src/modules/graduacoes/validation.ts          | 20 ++++++++
+ src/modules/mensalidades/routes.ts            |  3 ++
+ src/modules/mensalidades/validation.ts        |  7 +++
+ src/modules/planos/routes.ts                  |  4 ++
+ src/modules/planos/validation.ts              |  7 +++
+ src/modules/responsaveis/routes.ts            | 14 ++++-
+ src/modules/responsaveis/validation.ts        | 36 +++++++++++++
+ src/modules/tecnicas/routes.ts                |  8 ++-
+ src/modules/tecnicas/validation.ts            |  9 ++++
+ src/modules/turmas/routes.ts                  |  4 ++
+ src/modules/turmas/validation.ts              | 12 +++++
+ src/modules/usuarios/routes.ts                |  4 ++
+ src/modules/usuarios/validation.ts            |  5 ++
+ src/shared/middlewares/validateBody.ts        | 17 +++++++
+ 28 files changed, 379 insertions(+), 8 deletions(-)
+ create mode 100644 src/modules/alunos/validation.ts
+ create mode 100644 src/modules/aulas/validation.ts
+ create mode 100644 src/modules/auth/validation.ts
+ create mode 100644 src/modules/competicoes/validation.ts
+ create mode 100644 src/modules/comportamentos/validation.ts
+ create mode 100644 src/modules/curriculos/validation.ts
+ create mode 100644 src/modules/graduacoes/validation.ts
+ create mode 100644 src/modules/mensalidades/validation.ts
+ create mode 100644 src/modules/planos/validation.ts
+ create mode 100644 src/modules/responsaveis/validation.ts
+ create mode 100644 src/modules/tecnicas/validation.ts
+ create mode 100644 src/modules/turmas/validation.ts
+ create mode 100644 src/modules/usuarios/validation.ts
+ create mode 100644 src/shared/middlewares/validateBody.ts
+
+diff --git a/sgcl-web/src/modules/turmas/services/TurmaService.ts b/sgcl-web/src/modules/turmas/services/TurmaService.ts
+index e08396e..a8a3148 100644
+--- a/sgcl-web/src/modules/turmas/services/TurmaService.ts
++++ b/sgcl-web/src/modules/turmas/services/TurmaService.ts
+@@ -14,7 +14,7 @@ export class TurmaService {
+   static async criar(data: TurmaFormData) {
+     return ApiClient.post<Turma>("/turmas", {
+       ...data,
+-      professorId: Number(data.professorId),
++      professorId: data.professorId ? Number(data.professorId) : undefined,
+       curriculoId: data.curriculoId ? Number(data.curriculoId) : undefined,
+       limiteAlunos: data.limiteAlunos ? Number(data.limiteAlunos) : undefined,
+     });
+@@ -23,7 +23,7 @@ export class TurmaService {
+   static async editar(id: number, data: TurmaFormData) {
+     return ApiClient.put<Turma>(`/turmas/${id}`, {
+       ...data,
+-      professorId: Number(data.professorId),
++      professorId: data.professorId ? Number(data.professorId) : undefined,
+       curriculoId: data.curriculoId ? Number(data.curriculoId) : undefined,
+       limiteAlunos: data.limiteAlunos ? Number(data.limiteAlunos) : undefined,
+     });
+diff --git a/src/modules/alunos/routes.ts b/src/modules/alunos/routes.ts
+index 106f3ab..4f68dc2 100644
+--- a/src/modules/alunos/routes.ts
++++ b/src/modules/alunos/routes.ts
+@@ -2,6 +2,8 @@ import { Router } from "express";
+ import { AlunosController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+ import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import { alunoSchema } from "./validation";
+ 
+ const alunosRoutes = Router();
+ 
+@@ -13,6 +15,7 @@ const alunosController =
+     "/",
+     ensureAuthenticated,
+     ensureRole(["ADMIN", "RECEPCAO"]),
++    validateBody(alunoSchema),
+     alunosController.create
+   );
+   
+@@ -48,6 +51,7 @@ const alunosController =
+     "/:id",
+     ensureAuthenticated,
+     ensureRole(["ADMIN", "RECEPCAO"]),
++    validateBody(alunoSchema),
+     alunosController.update
+   );
+   
+diff --git a/src/modules/alunos/validation.ts b/src/modules/alunos/validation.ts
+new file mode 100644
+index 0000000..c1021ef
+--- /dev/null
++++ b/src/modules/alunos/validation.ts
+@@ -0,0 +1,51 @@
++import { z } from "zod";
++
++const numeroOuTexto = z.union([z.string(), z.number()]).nullish();
++
++export const alunoSchema = z.object({
++  nome: z.string().min(1, "Informe o nome."),
++  apelido: z.string().nullish(),
++  dataNascimento: z.string().min(1, "Informe a data de nascimento."),
++
++  sexo: z.string().nullish(),
++  cpf: z.string().nullish(),
++  rg: z.string().nullish(),
++
++  telefone: z.string().nullish(),
++  whatsapp: z.string().nullish(),
++  email: z.union([z.literal(""), z.string().email("E-mail inválido.")]).nullish(),
++
++  cep: z.string().nullish(),
++  logradouro: z.string().nullish(),
++  numero: z.string().nullish(),
++  complemento: z.string().nullish(),
++  bairro: z.string().nullish(),
++  cidade: z.string().nullish(),
++  uf: z.string().nullish(),
++
++  escola: z.string().nullish(),
++  serieEscolar: z.string().nullish(),
++  turnoEscolar: z.string().nullish(),
++
++  peso: numeroOuTexto,
++  altura: numeroOuTexto,
++
++  tamanhoKimono: z.string().nullish(),
++  marcaKimono: z.string().nullish(),
++
++  restricoesMedicas: z.string().nullish(),
++  alergias: z.string().nullish(),
++  medicamentos: z.string().nullish(),
++  observacoes: z.string().nullish(),
++
++  fotoUrl: z.string().nullish(),
++
++  faixa: z.string().nullish(),
++  grau: numeroOuTexto,
++  ativo: z.boolean().nullish(),
++
++  turmaId: numeroOuTexto,
++  formaPagamento: z.string().nullish(),
++  diaVencimento: numeroOuTexto,
++  planoId: numeroOuTexto,
++});
+diff --git a/src/modules/aulas/routes.ts b/src/modules/aulas/routes.ts
+index d6b2294..22a0446 100644
+--- a/src/modules/aulas/routes.ts
++++ b/src/modules/aulas/routes.ts
+@@ -3,6 +3,13 @@ import { Router } from "express";
+ import { AulasController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+ import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import {
++  iniciarAulaSchema,
++  updateAulaAlunoSchema,
++  criarAulaProgramadaSchema,
++  updateAulaSchema,
++} from "./validation";
+ 
+ const aulasRoutes = Router();
+ 
+@@ -11,42 +18,52 @@ const controller = new AulasController();
+ aulasRoutes.post(
+   "/",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(iniciarAulaSchema),
+   controller.create
+ );
+ 
+ aulasRoutes.get(
+   "/",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+   controller.list
+ );
+ 
+ aulasRoutes.put(
+   "/alunos/:id",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(updateAulaAlunoSchema),
+   controller.updateAluno
+ );
+ 
+ aulasRoutes.patch(
+   "/:id/finalizar",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
+   controller.finalizar
+ );
+ 
+ aulasRoutes.post(
+   "/programadas",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(criarAulaProgramadaSchema),
+   controller.criarProgramada
+ );
+ 
+ aulasRoutes.get(
+   "/programadas",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+   controller.listarProgramadas
+ );
+ 
+ aulasRoutes.patch(
+   "/programadas/:id/iniciar",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
+   controller.iniciarProgramada
+ );
+ 
+@@ -60,12 +77,15 @@ aulasRoutes.delete(
+ aulasRoutes.get(
+   "/:id",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+   controller.show
+ );
+ 
+ aulasRoutes.put(
+   "/:id",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(updateAulaSchema),
+   controller.update
+ );
+ 
+@@ -76,4 +96,4 @@ aulasRoutes.delete(
+   controller.delete
+ );
+ 
+-export { aulasRoutes };
+\ No newline at end of file
++export { aulasRoutes };
+diff --git a/src/modules/aulas/validation.ts b/src/modules/aulas/validation.ts
+new file mode 100644
+index 0000000..e5f691e
+--- /dev/null
++++ b/src/modules/aulas/validation.ts
+@@ -0,0 +1,30 @@
++import { z } from "zod";
++
++export const iniciarAulaSchema = z.object({
++  turmaId: z.coerce.number().int().positive("Informe a turma."),
++  aulaCurriculoId: z.coerce.number().int().positive().nullish(),
++  professor: z.string().nullish(),
++  observacoes: z.string().nullish(),
++});
++
++export const updateAulaAlunoSchema = z.object({
++  presente: z.boolean().nullish(),
++  respeito: z.boolean().nullish(),
++  valentia: z.boolean().nullish(),
++  esforco: z.boolean().nullish(),
++  atencao: z.boolean().nullish(),
++  disciplina: z.boolean().nullish(),
++  observacao: z.string().nullish(),
++});
++
++export const criarAulaProgramadaSchema = z.object({
++  turmaId: z.coerce.number().int().positive("Informe a turma."),
++  aulaCurriculoId: z.coerce.number().int().positive().nullish(),
++  data: z.string().min(1, "Informe a data."),
++  observacoes: z.string().nullish(),
++});
++
++export const updateAulaSchema = z.object({
++  jogosRealizados: z.array(z.string()).nullish(),
++  tecnicasRealizadasIds: z.array(z.coerce.number().int()).nullish(),
++});
+diff --git a/src/modules/auth/routes.ts b/src/modules/auth/routes.ts
+index 13c1ce1..488d984 100644
+--- a/src/modules/auth/routes.ts
++++ b/src/modules/auth/routes.ts
+@@ -2,13 +2,16 @@ import { Router } from "express";
+ import { AuthController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+ import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import { registerSchema, loginSchema } from "./validation";
+ const authRoutes = Router();
+ const authController = new AuthController();
+ authRoutes.post(
+   "/register",
+   ensureAuthenticated,
+   ensureRole(["ADMIN"]),
++  validateBody(registerSchema),
+   authController.register
+ );
+-authRoutes.post("/login", authController.login);
+-export { authRoutes };
+\ No newline at end of file
++authRoutes.post("/login", validateBody(loginSchema), authController.login);
++export { authRoutes };
+diff --git a/src/modules/auth/validation.ts b/src/modules/auth/validation.ts
+new file mode 100644
+index 0000000..30db233
+--- /dev/null
++++ b/src/modules/auth/validation.ts
+@@ -0,0 +1,16 @@
++import { z } from "zod";
++
++export const registerSchema = z.object({
++  nome: z.string().min(1, "Informe o nome."),
++  apelido: z.string().nullish(),
++  email: z.string().min(1, "Informe o e-mail.").email("E-mail inválido."),
++  senha: z.string().min(6, "A senha precisa ter pelo menos 6 caracteres."),
++  perfil: z.enum(["ADMIN", "PROFESSOR", "RECEPCAO"]),
++  nivelGraduacao: z.string().nullish(),
++  outrasGraduacoes: z.string().nullish(),
++});
++
++export const loginSchema = z.object({
++  email: z.string().min(1, "Informe o e-mail."),
++  senha: z.string().min(1, "Informe a senha."),
++});
+diff --git a/src/modules/competicoes/routes.ts b/src/modules/competicoes/routes.ts
+index 93df236..e9b4911 100644
+--- a/src/modules/competicoes/routes.ts
++++ b/src/modules/competicoes/routes.ts
+@@ -2,6 +2,8 @@ import { Router } from "express";
+ import { CompeticoesController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+ import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import { competicaoSchema, inscricaoSchema, resultadoSchema } from "./validation";
+ 
+ const competicoesRoutes = Router();
+ 
+@@ -12,6 +14,7 @@ competicoesRoutes.post(
+   "/",
+   ensureAuthenticated,
+   ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(competicaoSchema),
+   competicoesController.create
+ );
+ 
+@@ -26,6 +29,7 @@ competicoesRoutes.post(
+   "/inscricao",
+   ensureAuthenticated,
+   ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(inscricaoSchema),
+   competicoesController.inscrever
+ );
+ 
+@@ -40,6 +44,7 @@ competicoesRoutes.patch(
+   "/inscricao/:id",
+   ensureAuthenticated,
+   ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(resultadoSchema),
+   competicoesController.resultado
+ );
+ 
+diff --git a/src/modules/competicoes/validation.ts b/src/modules/competicoes/validation.ts
+new file mode 100644
+index 0000000..d69feef
+--- /dev/null
++++ b/src/modules/competicoes/validation.ts
+@@ -0,0 +1,16 @@
++import { z } from "zod";
++
++export const competicaoSchema = z.object({
++  nome: z.string().min(1, "Informe o nome da competição."),
++  data: z.string().min(1, "Informe a data da competição."),
++  local: z.string().min(1, "Informe o local da competição."),
++});
++
++export const inscricaoSchema = z.object({
++  competicaoId: z.coerce.number().int().positive("Informe a competição."),
++  alunoId: z.coerce.number().int().positive("Informe o aluno."),
++});
++
++export const resultadoSchema = z.object({
++  resultado: z.string().min(1, "Informe o resultado."),
++});
+diff --git a/src/modules/comportamentos/routes.ts b/src/modules/comportamentos/routes.ts
+index 727789d..f2dc198 100644
+--- a/src/modules/comportamentos/routes.ts
++++ b/src/modules/comportamentos/routes.ts
+@@ -2,6 +2,8 @@ import { Router } from "express";
+ import { ComportamentosController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+ import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import { comportamentoSchema } from "./validation";
+ 
+ const comportamentosRoutes =
+   Router();
+@@ -16,6 +18,7 @@ comportamentosRoutes.post(
+     "ADMIN",
+     "PROFESSOR"
+   ]),
++  validateBody(comportamentoSchema),
+   comportamentosController.create
+ );
+ 
+diff --git a/src/modules/comportamentos/validation.ts b/src/modules/comportamentos/validation.ts
+new file mode 100644
+index 0000000..29764aa
+--- /dev/null
++++ b/src/modules/comportamentos/validation.ts
+@@ -0,0 +1,11 @@
++import { z } from "zod";
++
++export const comportamentoSchema = z.object({
++  alunoId: z.coerce.number().int().positive("Informe o aluno."),
++  respeito: z.coerce.number().int(),
++  valentia: z.coerce.number().int(),
++  esforco: z.coerce.number().int(),
++  atencao: z.coerce.number().int(),
++  disciplina: z.coerce.number().int(),
++  observacao: z.string().nullish(),
++});
+diff --git a/src/modules/curriculos/routes.ts b/src/modules/curriculos/routes.ts
+index 84da9b6..63ca8e6 100644
+--- a/src/modules/curriculos/routes.ts
++++ b/src/modules/curriculos/routes.ts
+@@ -3,6 +3,13 @@ import { Router } from "express";
+ import { CurriculosController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+ import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import {
++  curriculoSchema,
++  moduloCurriculoSchema,
++  aulaCurriculoSchema,
++  tecnicaCurriculoSchema,
++} from "./validation";
+ 
+ const curriculosRoutes = Router();
+ 
+@@ -11,60 +18,78 @@ const controller = new CurriculosController();
+ curriculosRoutes.post(
+   "/",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(curriculoSchema),
+   controller.create
+ );
+ 
+ curriculosRoutes.get(
+   "/",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+   controller.list
+ );
+ 
+ curriculosRoutes.get(
+   "/:id",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+   controller.show
+ );
+ 
+ curriculosRoutes.post(
+   "/modulos",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(moduloCurriculoSchema),
+   controller.createModulo
+ );
+ 
+ curriculosRoutes.post(
+   "/aulas",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(aulaCurriculoSchema),
+   controller.createAula
+ );
+ 
+ curriculosRoutes.post(
+   "/tecnicas",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(tecnicaCurriculoSchema),
+   controller.createTecnica
+ );
+ 
+ curriculosRoutes.put(
+   "/modulos/:id",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(moduloCurriculoSchema),
+   controller.updateModulo
+ );
+ 
+ curriculosRoutes.put(
+   "/aulas/:id",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(aulaCurriculoSchema),
+   controller.updateAula
+ );
+ 
+ curriculosRoutes.put(
+   "/tecnicas/:id",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(tecnicaCurriculoSchema),
+   controller.updateTecnica
+ );
+ 
+ curriculosRoutes.put(
+   "/:id",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(curriculoSchema),
+   controller.update
+ );
+ 
+@@ -75,4 +100,4 @@ curriculosRoutes.delete(
+   controller.delete
+ );
+ 
+-export { curriculosRoutes };
+\ No newline at end of file
++export { curriculosRoutes };
+diff --git a/src/modules/curriculos/validation.ts b/src/modules/curriculos/validation.ts
+new file mode 100644
+index 0000000..1ff9657
+--- /dev/null
++++ b/src/modules/curriculos/validation.ts
+@@ -0,0 +1,37 @@
++import { z } from "zod";
++
++export const curriculoSchema = z.object({
++  nome: z.string().min(1, "Informe o nome do currículo."),
++  descricao: z.string().nullish(),
++  modalidade: z.string().nullish(),
++  publico: z.string().nullish(),
++});
++
++export const moduloCurriculoSchema = z.object({
++  nome: z.string().min(1, "Informe o nome do módulo."),
++  descricao: z.string().nullish(),
++  faixa: z.string().nullish(),
++  idadeMinima: z.coerce.number().int().nullish(),
++  idadeMaxima: z.coerce.number().int().nullish(),
++  ordem: z.coerce.number().int().nullish(),
++  curriculoId: z.coerce.number().int().positive().optional(),
++});
++
++export const aulaCurriculoSchema = z.object({
++  titulo: z.string().min(1, "Informe o título da aula."),
++  objetivo: z.string().nullish(),
++  descricao: z.string().nullish(),
++  duracaoMinutos: z.coerce.number().int().nullish(),
++  jogosSugeridos: z.string().nullish(),
++  ordem: z.coerce.number().int().nullish(),
++  moduloId: z.coerce.number().int().positive().optional(),
++});
++
++export const tecnicaCurriculoSchema = z.object({
++  nome: z.string().min(1, "Informe o nome da técnica."),
++  categoria: z.string().nullish(),
++  descricao: z.string().nullish(),
++  obrigatoria: z.boolean().nullish(),
++  ordem: z.coerce.number().int().nullish(),
++  aulaCurriculoId: z.coerce.number().int().positive().optional(),
++});
+diff --git a/src/modules/graduacoes/routes.ts b/src/modules/graduacoes/routes.ts
+index e76f5bc..65234bc 100644
+--- a/src/modules/graduacoes/routes.ts
++++ b/src/modules/graduacoes/routes.ts
+@@ -2,6 +2,8 @@ import { Router } from "express";
+ import { GraduacoesController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+ import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import { graduacaoSchema, incrementarGrauSchema } from "./validation";
+ 
+ const graduacoesRoutes = Router();
+ 
+@@ -11,11 +13,13 @@ const graduacoesController =
+ graduacoesRoutes.post("/",
+ ensureAuthenticated,
+ ensureRole(["ADMIN", "PROFESSOR"]),
++validateBody(graduacaoSchema),
+  graduacoesController.create);
+ 
+ graduacoesRoutes.post("/grau",
+ ensureAuthenticated,
+ ensureRole(["ADMIN", "PROFESSOR"]),
++validateBody(incrementarGrauSchema),
+  graduacoesController.incrementarGrau);
+ 
+ graduacoesRoutes.get("/",
+diff --git a/src/modules/graduacoes/validation.ts b/src/modules/graduacoes/validation.ts
+new file mode 100644
+index 0000000..94051f2
+--- /dev/null
++++ b/src/modules/graduacoes/validation.ts
+@@ -0,0 +1,20 @@
++import { z } from "zod";
++
++const cobrancaSchema = z
++  .object({
++    valor: z.coerce.number().positive("Informe um valor válido para a cobrança."),
++    vencimento: z.string().min(1, "Informe o vencimento da cobrança."),
++  })
++  .nullish();
++
++export const graduacaoSchema = z.object({
++  faixa: z.string().min(1, "Informe a faixa."),
++  data: z.string().min(1, "Informe a data da graduação."),
++  alunoId: z.coerce.number().int().positive("Informe o aluno."),
++  cobranca: cobrancaSchema,
++});
++
++export const incrementarGrauSchema = z.object({
++  alunoId: z.coerce.number().int().positive("Informe o aluno."),
++  cobranca: cobrancaSchema,
++});
+diff --git a/src/modules/mensalidades/routes.ts b/src/modules/mensalidades/routes.ts
+index c94dd6a..e167440 100644
+--- a/src/modules/mensalidades/routes.ts
++++ b/src/modules/mensalidades/routes.ts
+@@ -2,6 +2,8 @@ import { Router } from "express";
+ import { MensalidadesController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+ import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import { mensalidadeSchema } from "./validation";
+ 
+ const mensalidadesRoutes = Router();
+ 
+@@ -12,6 +14,7 @@ mensalidadesRoutes.post(
+   "/",
+   ensureAuthenticated,
+   ensureRole(["ADMIN", "RECEPCAO"]),
++  validateBody(mensalidadeSchema),
+   mensalidadesController.create
+ );
+ 
+diff --git a/src/modules/mensalidades/validation.ts b/src/modules/mensalidades/validation.ts
+new file mode 100644
+index 0000000..5876f01
+--- /dev/null
++++ b/src/modules/mensalidades/validation.ts
+@@ -0,0 +1,7 @@
++import { z } from "zod";
++
++export const mensalidadeSchema = z.object({
++  valor: z.coerce.number().positive("Informe um valor válido."),
++  vencimento: z.string().min(1, "Informe a data de vencimento."),
++  alunoId: z.coerce.number().int().positive("Informe o aluno."),
++});
+diff --git a/src/modules/planos/routes.ts b/src/modules/planos/routes.ts
+index 03a7e81..5d1fedd 100644
+--- a/src/modules/planos/routes.ts
++++ b/src/modules/planos/routes.ts
+@@ -2,6 +2,8 @@ import { Router } from "express";
+ import { PlanosController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+ import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import { planoSchema } from "./validation";
+ 
+ const planosRoutes = Router();
+ 
+@@ -11,6 +13,7 @@ planosRoutes.post(
+   "/",
+   ensureAuthenticated,
+   ensureRole(["ADMIN"]),
++  validateBody(planoSchema),
+   planosController.create
+ );
+ 
+@@ -25,6 +28,7 @@ planosRoutes.put(
+   "/:id",
+   ensureAuthenticated,
+   ensureRole(["ADMIN"]),
++  validateBody(planoSchema),
+   planosController.update
+ );
+ 
+diff --git a/src/modules/planos/validation.ts b/src/modules/planos/validation.ts
+new file mode 100644
+index 0000000..35b8afb
+--- /dev/null
++++ b/src/modules/planos/validation.ts
+@@ -0,0 +1,7 @@
++import { z } from "zod";
++
++export const planoSchema = z.object({
++  nome: z.string().min(1, "Informe o nome do plano."),
++  valor: z.coerce.number().nonnegative("Informe um valor válido."),
++  periodicidade: z.string().min(1, "Informe a periodicidade."),
++});
+diff --git a/src/modules/responsaveis/routes.ts b/src/modules/responsaveis/routes.ts
+index 2d8e869..1089218 100644
+--- a/src/modules/responsaveis/routes.ts
++++ b/src/modules/responsaveis/routes.ts
+@@ -2,6 +2,9 @@ import { Router } from "express";
+ 
+ import { ResponsaveisController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
++import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import { responsavelSchema } from "./validation";
+ 
+ const responsaveisRoutes = Router();
+ 
+@@ -10,43 +13,52 @@ const controller = new ResponsaveisController();
+ responsaveisRoutes.post(
+   "/",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "RECEPCAO"]),
++  validateBody(responsavelSchema),
+   controller.create
+ );
+ 
+ responsaveisRoutes.get(
+   "/",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+   controller.list
+ );
+ 
+ responsaveisRoutes.get(
+   "/:id",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+   controller.show
+ );
+ 
+ responsaveisRoutes.put(
+   "/:id",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "RECEPCAO"]),
++  validateBody(responsavelSchema),
+   controller.update
+ );
+ 
+ responsaveisRoutes.patch(
+   "/:id/ativo",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "RECEPCAO"]),
+   controller.toggleAtivo
+ );
+ 
+ responsaveisRoutes.delete(
+   "/:id",
+   ensureAuthenticated,
++  ensureRole(["ADMIN"]),
+   controller.delete
+ );
+ 
+ responsaveisRoutes.get(
+   "/aluno/:alunoId",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+   controller.listByAluno
+ );
+ 
+-export { responsaveisRoutes };
+\ No newline at end of file
++export { responsaveisRoutes };
+diff --git a/src/modules/responsaveis/validation.ts b/src/modules/responsaveis/validation.ts
+new file mode 100644
+index 0000000..9673c4e
+--- /dev/null
++++ b/src/modules/responsaveis/validation.ts
+@@ -0,0 +1,36 @@
++import { z } from "zod";
++
++export const responsavelSchema = z.object({
++  nome: z.string().min(1, "Informe o nome."),
++  apelido: z.string().nullish(),
++
++  cpf: z.string().nullish(),
++  rg: z.string().nullish(),
++
++  dataNascimento: z.string().nullish(),
++  sexo: z.string().nullish(),
++
++  telefone: z.string().nullish(),
++  whatsapp: z.string().nullish(),
++  email: z.union([z.literal(""), z.string().email("E-mail inválido.")]).nullish(),
++
++  cep: z.string().nullish(),
++  logradouro: z.string().nullish(),
++  numero: z.string().nullish(),
++  complemento: z.string().nullish(),
++  bairro: z.string().nullish(),
++  cidade: z.string().nullish(),
++  uf: z.string().nullish(),
++
++  parentesco: z.string().min(1, "Informe o parentesco."),
++
++  responsavelFinanceiro: z.boolean().nullish(),
++  podeBuscar: z.boolean().nullish(),
++  contatoEmergencia: z.boolean().nullish(),
++  recebeComunicados: z.boolean().nullish(),
++
++  observacoes: z.string().nullish(),
++  fotoUrl: z.string().nullish(),
++
++  alunoId: z.coerce.number().int("Informe o aluno."),
++});
+diff --git a/src/modules/tecnicas/routes.ts b/src/modules/tecnicas/routes.ts
+index f9a24a2..2524bdd 100644
+--- a/src/modules/tecnicas/routes.ts
++++ b/src/modules/tecnicas/routes.ts
+@@ -2,6 +2,9 @@ import { Router } from "express";
+ 
+ import { TecnicasController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
++import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import { tecnicaSchema } from "./validation";
+ 
+ const tecnicasRoutes = Router();
+ 
+@@ -10,13 +13,16 @@ const controller = new TecnicasController();
+ tecnicasRoutes.post(
+   "/",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR"]),
++  validateBody(tecnicaSchema),
+   controller.create
+ );
+ 
+ tecnicasRoutes.get(
+   "/",
+   ensureAuthenticated,
++  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+   controller.list
+ );
+ 
+-export { tecnicasRoutes };
+\ No newline at end of file
++export { tecnicasRoutes };
+diff --git a/src/modules/tecnicas/validation.ts b/src/modules/tecnicas/validation.ts
+new file mode 100644
+index 0000000..27a200c
+--- /dev/null
++++ b/src/modules/tecnicas/validation.ts
+@@ -0,0 +1,9 @@
++import { z } from "zod";
++
++export const tecnicaSchema = z.object({
++  nome: z.string().min(1, "Informe o nome da técnica."),
++  categoria: z.string().nullish(),
++  descricao: z.string().nullish(),
++  faixaMinima: z.string().nullish(),
++  idadeMinima: z.coerce.number().int().nullish(),
++});
+diff --git a/src/modules/turmas/routes.ts b/src/modules/turmas/routes.ts
+index 9e8ac9d..0220bc4 100644
+--- a/src/modules/turmas/routes.ts
++++ b/src/modules/turmas/routes.ts
+@@ -2,6 +2,8 @@ import { Router } from "express";
+ import { TurmasController } from "./controller";
+ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+ import { ensureRole } from "../../shared/middlewares/ensureRole";
++import { validateBody } from "../../shared/middlewares/validateBody";
++import { turmaSchema } from "./validation";
+ 
+ const turmasRoutes = Router();
+ 
+@@ -12,6 +14,7 @@ turmasRoutes.post(
+   "/",
+   ensureAuthenticated,
+   ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
++  validateBody(turmaSchema),
+   turmasController.create
+ );
+ 
+@@ -33,6 +36,7 @@ turmasRoutes.put(
+   "/:id",
+   ensureAuthenticated,
+   ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
++  validateBody(turmaSchema),
+   turmasController.update
+ );
+ 
+diff --git a/src/modules/turmas/validation.ts b/src/modules/turmas/validation.ts
+new file mode 100644
+index 0000000..8d7dbaf
+--- /dev/null
++++ b/src/modules/turmas/validation.ts
+@@ -0,0 +1,12 @@
++import { z } from "zod";
++
++export const turmaSchema = z.object({
++  nome: z.string().min(1, "Informe o nome da turma."),
++  faixaEtaria: z.string().min(1, "Informe a faixa etária."),
++  diasSemana: z.string().min(1, "Informe os dias da semana."),
++  horarioInicio: z.string().min(1, "Informe o horário de início."),
++  horarioFim: z.string().min(1, "Informe o horário de término."),
++  professorId: z.coerce.number().int().positive().nullish(),
++  limiteAlunos: z.coerce.number().int().positive().nullish(),
++  curriculoId: z.coerce.number().int().positive().nullish(),
++});
+diff --git a/src/modules/usuarios/routes.ts b/src/modules/usuarios/routes.ts
+index 33052cb..9fc0b31 100644
+--- a/src/modules/usuarios/routes.ts
++++ b/src/modules/usuarios/routes.ts
+@@ -8,6 +8,9 @@ from "../../shared/middlewares/ensureAuthenticated";
+ import { ensureRole }
+ from "../../shared/middlewares/ensureRole";
+ 
++import { validateBody } from "../../shared/middlewares/validateBody";
++import { updatePerfilSchema } from "./validation";
++
+ const usuariosRoutes =
+   Router();
+ 
+@@ -25,6 +28,7 @@ usuariosRoutes.patch(
+   "/:id/perfil",
+   ensureAuthenticated,
+   ensureRole(["ADMIN"]),
++  validateBody(updatePerfilSchema),
+   usuariosController.updatePerfil
+ );
+ 
+diff --git a/src/modules/usuarios/validation.ts b/src/modules/usuarios/validation.ts
+new file mode 100644
+index 0000000..6a6e5df
+--- /dev/null
++++ b/src/modules/usuarios/validation.ts
+@@ -0,0 +1,5 @@
++import { z } from "zod";
++
++export const updatePerfilSchema = z.object({
++  perfil: z.enum(["ADMIN", "PROFESSOR", "RECEPCAO"]),
++});
+diff --git a/src/shared/middlewares/validateBody.ts b/src/shared/middlewares/validateBody.ts
+new file mode 100644
+index 0000000..176ba4a
+--- /dev/null
++++ b/src/shared/middlewares/validateBody.ts
+@@ -0,0 +1,17 @@
++import { Request, Response, NextFunction } from "express";
++import { ZodType } from "zod";
++import { AppError } from "../errors/AppError";
++
++export function validateBody(schema: ZodType) {
++  return (req: Request, res: Response, next: NextFunction) => {
++    const resultado = schema.safeParse(req.body);
++
++    if (!resultado.success) {
++      const mensagem = resultado.error.issues[0]?.message ?? "Dados inválidos.";
++      throw new AppError(mensagem);
++    }
++
++    req.body = resultado.data;
++    next();
++  };
++}
+-- 
+2.43.0
+
