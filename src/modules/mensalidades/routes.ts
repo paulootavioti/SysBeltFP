@@ -32,6 +32,13 @@ mensalidadesRoutes.get(
   mensalidadesController.vencidas
 );
 
+mensalidadesRoutes.get(
+  "/:id",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "RECEPCAO"]),
+  mensalidadesController.get
+);
+
 mensalidadesRoutes.patch(
   "/:id/pagar",
   ensureAuthenticated,

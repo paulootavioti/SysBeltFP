@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../../shared/database/prisma";
 import { CreateMensalidadeService } from "./services/CreateMensalidadeService";
 import { ListMensalidadesService } from "./services/ListMensalidadesService";
+import { GetMensalidadeService } from "./services/GetMensalidadeService";
 import { GetMensalidadesVencidasService } from "./services/GetMensalidadesVencidasService";
 import { PagarMensalidadeService } from "./services/PagarMensalidadeService";
 
@@ -33,6 +34,21 @@ export class MensalidadesController {
       await service.execute();
   
     return res.json(mensalidades);
+  }
+
+  async get(req: Request, res: Response) {
+
+    const { id } = req.params;
+
+    const service =
+      new GetMensalidadeService();
+
+    const mensalidade =
+      await service.execute(
+        Number(id)
+      );
+
+    return res.json(mensalidade);
   }
 
   // Mensalidades Vencidas
