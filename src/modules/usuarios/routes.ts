@@ -9,7 +9,7 @@ import { ensureRole }
 from "../../shared/middlewares/ensureRole";
 
 import { validateBody } from "../../shared/middlewares/validateBody";
-import { updatePerfilSchema } from "./validation";
+import { updatePerfilSchema, updateUsuarioSchema } from "./validation";
 
 const usuariosRoutes =
   Router();
@@ -22,6 +22,14 @@ usuariosRoutes.get(
   ensureAuthenticated,
   ensureRole(["ADMIN"]),
   usuariosController.list
+);
+
+usuariosRoutes.put(
+  "/:id",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  validateBody(updateUsuarioSchema),
+  usuariosController.update
 );
 
 usuariosRoutes.patch(

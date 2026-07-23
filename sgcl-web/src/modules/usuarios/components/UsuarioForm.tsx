@@ -9,27 +9,32 @@ import { FormGrid } from "../../../components/ui/FormGrid";
 import { FormGridItem } from "../../../components/ui/FormGridItem";
 import { FormSection } from "../../../components/ui/FormSection";
 import { ImageUpload } from "../../../components/ui/ImageUpload";
-import { usuarioSchema, type UsuarioFormData } from "../schema/usuario.schema";
+import { usuarioSchema, usuarioUpdateSchema, type UsuarioUpdateFormData } from "../schema/usuario.schema";
+import type { Usuario } from "../types/usuario";
 interface UsuarioFormProps {
+  usuario?: Usuario;
   loading?: boolean;
-  onSubmit: (data: UsuarioFormData) => void;
+  onSubmit: (data: UsuarioUpdateFormData) => void;
 }
 const PERFIS = [
   { label: "Admin", value: "ADMIN" },
   { label: "Professor", value: "PROFESSOR" },
   { label: "Recepção", value: "RECEPCAO" },
 ];
-export function UsuarioForm({ loading = false, onSubmit }: UsuarioFormProps) {
-  const methods = useForm<UsuarioFormData>({
-    resolver: zodResolver(usuarioSchema),
+export function UsuarioForm({ usuario, loading = false, onSubmit }: UsuarioFormProps) {
+  const emEdicao = Boolean(usuario);
+
+  const methods = useForm<UsuarioUpdateFormData>({
+    resolver: zodResolver(emEdicao ? usuarioUpdateSchema : usuarioSchema),
     defaultValues: {
-      nome: "",
-      apelido: "",
-      email: "",
+      nome: usuario?.nome ?? "",
+      apelido: usuario?.apelido ?? "",
+      email: usuario?.email ?? "",
       senha: "",
-      perfil: "",
-      nivelGraduacao: "",
-      outrasGraduacoes: "",
+      perfil: usuario?.perfil ?? "",
+      nivelGraduacao: usuario?.nivelGraduacao ?? "",
+      outrasGraduacoes: usuario?.outrasGraduacoes ?? "",
+      fotoUrl: usuario?.fotoUrl ?? null,
     },
   });
   const { register, handleSubmit, watch, formState: { errors } } = methods;
@@ -51,7 +56,11 @@ export function UsuarioForm({ loading = false, onSubmit }: UsuarioFormProps) {
             <ErrorMessage message={errors.email?.message ?? ""} />
           </FormGridItem>
           <FormGridItem>
-            <Input label="Senha" type="password" {...register("senha")} />
+            <Input
+              label={emEdicao ? "Nova senha (deixe em branco para manter a atual)" : "Senha"}
+              type="password"
+              {...register("senha")}
+            />
             <ErrorMessage message={errors.senha?.message ?? ""} />
           </FormGridItem>
           <FormGridItem>
@@ -92,7 +101,7 @@ export function UsuarioForm({ loading = false, onSubmit }: UsuarioFormProps) {
           )}
         </FormGrid>
         <Button type="submit" disabled={loading}>
-          {loading ? "Salvando..." : "Cadastrar Usuário"}
+          {loading ? "Salvando..." : emEdicao ? "Salvar Alterações" : "Cadastrar Usuário"}
         </Button>
       </form>
     </FormProvider>

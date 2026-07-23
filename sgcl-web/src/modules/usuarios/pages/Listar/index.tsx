@@ -13,21 +13,42 @@ import { UsuarioService } from "../../services/UsuarioService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { UsuarioForm } from "../../components/UsuarioForm";
 import type { Usuario } from "../../types/usuario";
-import type { UsuarioFormData } from "../../schema/usuario.schema";
+import type { UsuarioUpdateFormData } from "../../schema/usuario.schema";
 import "./styles.css";
 export function Usuarios() {
   const { usuarios, loading, erro, setErro, carregarUsuarios } = useUsuarios();
   const [modalAberto, setModalAberto] = useState(false);
+  const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
   const [salvando, setSalvando] = useState(false);
-  async function handleCriarUsuario(data: UsuarioFormData) {
+
+  function fecharModal() {
+    setModalAberto(false);
+    setUsuarioEditando(null);
+  }
+
+  async function handleCriarUsuario(data: UsuarioUpdateFormData) {
     try {
       setSalvando(true);
       setErro("");
       await UsuarioService.criar(data);
       await carregarUsuarios();
-      setModalAberto(false);
+      fecharModal();
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao cadastrar usuário."));
+    } finally {
+      setSalvando(false);
+    }
+  }
+  async function handleEditarUsuario(data: UsuarioUpdateFormData) {
+    if (!usuarioEditando) return;
+    try {
+      setSalvando(true);
+      setErro("");
+      await UsuarioService.atualizar(usuarioEditando.id, data);
+      await carregarUsuarios();
+      fecharModal();
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao atualizar usuário."));
     } finally {
       setSalvando(false);
     }
@@ -79,13 +100,23 @@ export function Usuarios() {
       header: "Ações",
       accessor: "id" as const,
       render: (usuario: Usuario) => (
-        <Button
-          type="button"
-          variant={usuario.ativo ? "danger" : "primary"}
-          onClick={() => handleAlterarStatus(usuario.id)}
-        >
-          {usuario.ativo ? "Inativar" : "Ativar"}
-        </Button>
+        <div className="usuarios-table-actions">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setUsuarioEditando(usuario)}
+          >
+            Editar
+          </Button>
+
+          <Button
+            type="button"
+            variant={usuario.ativo ? "danger" : "primary"}
+            onClick={() => handleAlterarStatus(usuario.id)}
+          >
+            {usuario.ativo ? "Inativar" : "Ativar"}
+          </Button>
+        </div>
       ),
     },
   ];
@@ -111,9 +142,23 @@ export function Usuarios() {
       <Modal
         open={modalAberto}
         title="Novo Usuário"
-        onClose={() => setModalAberto(false)}
+        onClose={fecharModal}
       >
         <UsuarioForm loading={salvando} onSubmit={handleCriarUsuario} />
+      </Modal>
+
+      <Modal
+        open={usuarioEditando !== null}
+        title="Editar Usuário"
+        onClose={fecharModal}
+      >
+        {usuarioEditando && (
+          <UsuarioForm
+            usuario={usuarioEditando}
+            loading={salvando}
+            onSubmit={handleEditarUsuario}
+          />
+        )}
       </Modal>
     </Layout>
   );
