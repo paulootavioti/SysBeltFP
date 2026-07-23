@@ -16,7 +16,8 @@ export class AuthController {
       email: usuario.email,
       perfil: usuario.perfil,
       nivelGraduacao: usuario.nivelGraduacao,
-      outrasGraduacoes: usuario.outrasGraduacoes
+      outrasGraduacoes: usuario.outrasGraduacoes,
+      fotoUrl: usuario.fotoUrl
     });
   }
 

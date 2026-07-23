@@ -1,5 +1,6 @@
 import { calcularIdade } from "../../../../shared/formatters/data";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
+import { AuthenticatedImage } from "../../../../components/ui/AuthenticatedImage";
 import { calcularStatusFinanceiroAluno } from "../../utils/statusFinanceiro";
 
 import type { AlunoCompleto } from "../../types/alunoCompleto";
@@ -17,10 +18,9 @@ export function AlunoResumo({ aluno }: AlunoResumoProps) {
   return (
     <section className="aluno-resumo">
       <div className="aluno-resumo-avatar">
-        {aluno.fotoUrl ? (
-          <img src={aluno.fotoUrl} alt={aluno.nome} />
-        ) : (
-          <span>{aluno.nome.charAt(0)}</span>
+        <span>{aluno.nome.charAt(0)}</span>
+        {aluno.fotoUrl && (
+          <AuthenticatedImage src={aluno.fotoUrl} alt={aluno.nome} />
         )}
       </div>
 

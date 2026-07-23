@@ -251,6 +251,8 @@ model Usuario {
   nivelGraduacao    String?
   outrasGraduacoes  String?
 
+  fotoUrl           String?
+
   ativo             Boolean  @default(true)
 
   turmas            Turma[]

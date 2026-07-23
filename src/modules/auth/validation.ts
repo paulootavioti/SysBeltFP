@@ -8,6 +8,7 @@ export const registerSchema = z.object({
   perfil: z.enum(["ADMIN", "PROFESSOR", "RECEPCAO"]),
   nivelGraduacao: z.string().nullish(),
   outrasGraduacoes: z.string().nullish(),
+  fotoUrl: z.string().nullish(),
 });
 
 export const loginSchema = z.object({

@@ -7,6 +7,8 @@ import { Button } from "../../../components/ui/Button";
 import { ErrorMessage } from "../../../components/ui/ErrorMessage";
 import { FormGrid } from "../../../components/ui/FormGrid";
 import { FormGridItem } from "../../../components/ui/FormGridItem";
+import { FormSection } from "../../../components/ui/FormSection";
+import { ImageUpload } from "../../../components/ui/ImageUpload";
 import { usuarioSchema, type UsuarioFormData } from "../schema/usuario.schema";
 interface UsuarioFormProps {
   loading?: boolean;
@@ -55,6 +57,17 @@ export function UsuarioForm({ loading = false, onSubmit }: UsuarioFormProps) {
           <FormGridItem>
             <Select label="Perfil" options={PERFIS} {...register("perfil")} />
             <ErrorMessage message={errors.perfil?.message ?? ""} />
+          </FormGridItem>
+
+          <FormGridItem span={2}>
+            <FormSection title="Foto" subtitle="Foto do usuário.">
+              <ImageUpload
+                label="Foto"
+                prefixo="usuarios"
+                valorAtual={methods.watch("fotoUrl")}
+                onChange={(url) => methods.setValue("fotoUrl", url)}
+              />
+            </FormSection>
           </FormGridItem>
 
           {ehProfessor && (

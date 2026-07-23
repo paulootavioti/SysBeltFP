@@ -9,7 +9,7 @@ import "./styles.css";
 interface ImageUploadProps {
   label: string;
   valorAtual?: string | null;
-  prefixo: "alunos" | "responsaveis";
+  prefixo: "alunos" | "responsaveis" | "usuarios";
   onChange?: (url: string | undefined) => void;
 }
 

@@ -15,7 +15,7 @@ const EXTENSAO_POR_TIPO: Record<string, string> = {
 interface UploadFotoDTO {
   buffer: Buffer;
   mimetype: string;
-  prefixo: "alunos" | "responsaveis";
+  prefixo: "alunos" | "responsaveis" | "usuarios";
 }
 
 export class UploadFotoService {

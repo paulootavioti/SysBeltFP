@@ -4,13 +4,19 @@ import { AppError } from "../../shared/errors/AppError";
 import { UploadFotoService } from "./services/UploadFotoService";
 import { GetFotoService } from "./services/GetFotoService";
 
+const PREFIXOS_PERMITIDOS = ["alunos", "responsaveis", "usuarios"] as const;
+
 export class UploadsController {
   async uploadFoto(req: Request, res: Response) {
     if (!req.file) {
       throw new AppError("Nenhum arquivo enviado.");
     }
 
-    const prefixo = req.body.prefixo === "responsaveis" ? "responsaveis" : "alunos";
+    if (!PREFIXOS_PERMITIDOS.includes(req.body.prefixo)) {
+      throw new AppError("Prefixo de upload inválido.");
+    }
+
+    const prefixo = req.body.prefixo as (typeof PREFIXOS_PERMITIDOS)[number];
 
     const service = new UploadFotoService();
 
@@ -26,7 +32,7 @@ export class UploadsController {
   async getFoto(req: Request, res: Response) {
     const prefixo = String(req.params.prefixo);
 
-    if (!["alunos", "responsaveis"].includes(prefixo)) {
+    if (!PREFIXOS_PERMITIDOS.includes(prefixo as (typeof PREFIXOS_PERMITIDOS)[number])) {
       throw new AppError("Imagem não encontrada.", 404);
     }
 

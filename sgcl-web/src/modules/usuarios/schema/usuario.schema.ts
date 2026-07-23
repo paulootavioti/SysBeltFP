@@ -12,5 +12,6 @@ export const usuarioSchema = z.object({
     ),
   nivelGraduacao: z.string().optional(),
   outrasGraduacoes: z.string().optional(),
+  fotoUrl: z.string().nullish(),
 });
 export type UsuarioFormData = z.infer<typeof usuarioSchema>;

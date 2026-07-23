@@ -10,6 +10,7 @@ interface CreateUsuarioDTO {
   perfil: string;
   nivelGraduacao?: string;
   outrasGraduacoes?: string;
+  fotoUrl?: string | null;
 }
 
 export class CreateUsuarioService {
@@ -21,7 +22,8 @@ export class CreateUsuarioService {
     senha,
     perfil,
     nivelGraduacao,
-    outrasGraduacoes
+    outrasGraduacoes,
+    fotoUrl
   }: CreateUsuarioDTO) {
 
     const usuarioExistente =
@@ -48,7 +50,8 @@ export class CreateUsuarioService {
         senha: senhaHash,
         perfil,
         nivelGraduacao,
-        outrasGraduacoes
+        outrasGraduacoes,
+        fotoUrl
       }
     });
 

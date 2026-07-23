@@ -7,6 +7,7 @@ export interface Usuario {
   perfil: PerfilUsuario;
   nivelGraduacao?: string | null;
   outrasGraduacoes?: string | null;
+  fotoUrl?: string | null;
   ativo: boolean;
   createdAt: string;
 }

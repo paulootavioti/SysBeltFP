@@ -15,6 +15,7 @@ export class ListUsuariosService {
         perfil: true,
         nivelGraduacao: true,
         outrasGraduacoes: true,
+        fotoUrl: true,
         ativo: true,
         createdAt: true
       },
