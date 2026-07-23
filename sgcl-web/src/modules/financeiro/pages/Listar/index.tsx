@@ -94,7 +94,7 @@ export function Financeiro() {
       header: "Ações",
       accessor: "alunoId" as const,
       render: (mensalidade: MensalidadeComAluno) => (
-        <Button type="button" onClick={() => handleMarcarComoPago(mensalidade.id)}>
+        <Button type="button" size="sm" onClick={() => handleMarcarComoPago(mensalidade.id)}>
           Marcar como Pago
         </Button>
       ),

@@ -70,6 +70,7 @@ export function ListarGraduacoes() {
       render: (grad: Graduacao) => (
         <Button
           type="button"
+          size="sm"
           variant="secondary"
           onClick={() => navigate(`/alunos/${grad.alunoId}`)}
         >

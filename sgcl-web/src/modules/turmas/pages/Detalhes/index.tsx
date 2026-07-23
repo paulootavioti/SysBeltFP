@@ -86,7 +86,7 @@ export function DetalheTurma() {
       header: "Ações",
       accessor: "id" as const,
       render: (aluno: AlunoDaTurma) => (
-        <Button type="button" variant="secondary" onClick={() => navigate(`/alunos/${aluno.id}`)}>
+        <Button type="button" size="sm" variant="secondary" onClick={() => navigate(`/alunos/${aluno.id}`)}>
           Ver aluno
         </Button>
       ),

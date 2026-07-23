@@ -11,6 +11,7 @@ import { Table } from "../../../../components/ui/Table";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
+import { Tooltip } from "../../../../components/ui/Tooltip";
 
 import { calcularIdade } from "../../../../shared/formatters/data";
 import { calcularStatusFinanceiroAluno } from "../../utils/statusFinanceiro";
@@ -64,9 +65,20 @@ export function Alunos() {
 
   const columns = [
     {
-      header: "Apelido",
-      accessor: "apelido" as const,
-      render: (aluno: Aluno) => aluno.apelido || aluno.nome,
+      header: "Nome",
+      accessor: "nome" as const,
+      render: (aluno: Aluno) => (
+        <Tooltip
+          content={
+            <>
+              <div>Apelido: {aluno.apelido || "-"}</div>
+              <div>Turma: {aluno.turma?.nome || "Não vinculada"}</div>
+            </>
+          }
+        >
+          {aluno.nome}
+        </Tooltip>
+      ),
     },
     {
       header: "Idade",
@@ -109,6 +121,7 @@ export function Alunos() {
         <div className="alunos-table-actions">
           <Button
             type="button"
+            size="sm"
             onClick={() => navigate(`/alunos/${aluno.id}`)}
           >
             Detalhes
@@ -117,6 +130,7 @@ export function Alunos() {
           <Button
             variant="secondary"
             type="button"
+            size="sm"
             onClick={() => navigate(`/alunos/${aluno.id}/editar`)}
           >
             Editar
@@ -125,6 +139,7 @@ export function Alunos() {
           <Button
             variant={aluno.ativo ? "danger" : "primary"}
             type="button"
+            size="sm"
             onClick={() => alterarStatus(aluno.id)}
           >
             {aluno.ativo ? "Inativar" : "Ativar"}

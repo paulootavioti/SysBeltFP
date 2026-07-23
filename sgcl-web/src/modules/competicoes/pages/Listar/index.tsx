@@ -80,6 +80,7 @@ export function Competicoes() {
         <div className="competicoes-acoes-linha">
           <Button
             type="button"
+            size="sm"
             variant="secondary"
             onClick={() => navigate(`/competicoes/${competicao.id}`)}
           >
@@ -89,6 +90,7 @@ export function Competicoes() {
           {ehAdmin && (
             <Button
               type="button"
+              size="sm"
               variant="danger"
               disabled={excluindoId === competicao.id}
               onClick={() => handleExcluirCompeticao(competicao)}

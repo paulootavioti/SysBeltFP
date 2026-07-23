@@ -8,6 +8,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
 import { Modal } from "../../../../components/ui/Modal";
+import { Tooltip } from "../../../../components/ui/Tooltip";
 import { useUsuarios } from "../../hooks/useUsuarios";
 import { UsuarioService } from "../../services/UsuarioService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -72,7 +73,22 @@ export function Usuarios() {
     }
   }
   const columns = [
-    { header: "Nome", accessor: "nome" as const },
+    {
+      header: "Nome",
+      accessor: "nome" as const,
+      render: (usuario: Usuario) => (
+        <Tooltip
+          content={
+            <>
+              <div>Apelido: {usuario.apelido || "-"}</div>
+              {usuario.nivelGraduacao && <div>Graduação: {usuario.nivelGraduacao}</div>}
+            </>
+          }
+        >
+          {usuario.nome}
+        </Tooltip>
+      ),
+    },
     { header: "Email", accessor: "email" as const },
     {
       header: "Perfil",
@@ -103,6 +119,7 @@ export function Usuarios() {
         <div className="usuarios-table-actions">
           <Button
             type="button"
+            size="sm"
             variant="secondary"
             onClick={() => setUsuarioEditando(usuario)}
           >
@@ -111,6 +128,7 @@ export function Usuarios() {
 
           <Button
             type="button"
+            size="sm"
             variant={usuario.ativo ? "danger" : "primary"}
             onClick={() => handleAlterarStatus(usuario.id)}
           >

@@ -128,7 +128,7 @@ export function ProgramacaoAulas() {
       render: (p: AulaProgramada) => (
         <div className="programacao-acoes-linha">
           {p.status === "PENDENTE" && (
-            <Button type="button" onClick={() => handleIniciar(p.id)} disabled={iniciandoId === p.id}>
+            <Button type="button" size="sm" onClick={() => handleIniciar(p.id)} disabled={iniciandoId === p.id}>
               {iniciandoId === p.id ? "Iniciando..." : "Iniciar Aula"}
             </Button>
           )}
@@ -136,6 +136,7 @@ export function ProgramacaoAulas() {
           {ehAdmin && (
             <Button
               type="button"
+              size="sm"
               variant="danger"
               disabled={excluindoId === p.id}
               onClick={() => handleExcluir(p)}

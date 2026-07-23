@@ -87,11 +87,12 @@ export function Planos() {
       accessor: "id" as const,
       render: (plano: Plano) => (
         <div className="planos-table-actions">
-          <Button type="button" variant="secondary" onClick={() => handleEditarPlano(plano)}>
+          <Button type="button" size="sm" variant="secondary" onClick={() => handleEditarPlano(plano)}>
             Editar
           </Button>
           <Button
             type="button"
+            size="sm"
             variant={plano.ativo ? "danger" : "primary"}
             onClick={() => handleAlterarStatus(plano.id)}
           >

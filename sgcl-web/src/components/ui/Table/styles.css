@@ -33,9 +33,29 @@
   border-bottom: none;
 }
 
-@media (max-width: 640px) {
+.table tbody tr:nth-child(even) {
+  background: var(--color-background);
+}
+
+.table tbody tr:hover {
+  background: var(--color-accent-soft, var(--color-background));
+}
+
+@media (max-width: 900px) {
   .table th,
   .table td {
     padding: var(--space-2) var(--space-3);
+    font-size: var(--font-xs);
+  }
+}
+
+@media (max-width: 640px) {
+  .table {
+    min-width: 480px;
+  }
+
+  .table th,
+  .table td {
+    padding: var(--space-2);
   }
 }

@@ -107,16 +107,17 @@ export function Turmas() {
       accessor: "id" as const,
       render: (turma: Turma) => (
         <div className="turmas-acoes-linha">
-          <Button type="button" variant="secondary" onClick={() => navigate(`/turmas/${turma.id}`)}>
+          <Button type="button" size="sm" variant="secondary" onClick={() => navigate(`/turmas/${turma.id}`)}>
             Ver alunos
           </Button>
 
-          <Button type="button" variant="secondary" onClick={() => handleEditarTurma(turma)}>
+          <Button type="button" size="sm" variant="secondary" onClick={() => handleEditarTurma(turma)}>
             Editar
           </Button>
 
           <Button
             type="button"
+            size="sm"
             variant={turma.ativo ? "danger" : "primary"}
             onClick={() => handleAlterarStatus(turma.id)}
           >
