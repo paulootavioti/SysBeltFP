@@ -7,7 +7,22 @@
 .programacao-acoes {
   display: flex;
   justify-content: flex-end;
+  gap: var(--space-2);
+  flex-wrap: wrap;
   margin-bottom: var(--space-4);
+}
+
+.programacao-drill-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.programacao-drill-cabecalho h2 {
+  margin: 0;
+  font-size: var(--font-lg);
+  color: var(--color-text);
 }
 
 .programacao-acoes-linha {

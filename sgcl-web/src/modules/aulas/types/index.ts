@@ -95,3 +95,11 @@ export interface ItemGradeSemanal {
   horarioFim: string;
   status: "AGENDADA" | "CONCLUIDA" | "NAO_REALIZADA";
 }
+
+export type PeriodoContagem = "SEMANAL" | "MENSAL" | "SEMESTRAL" | "ANUAL";
+
+export interface ResumoTurmaAulas {
+  turmaId: number;
+  turmaNome: string;
+  quantidade: number;
+}

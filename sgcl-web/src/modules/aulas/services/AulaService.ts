@@ -1,6 +1,7 @@
 import { api } from "../../../services/api";
 
-import type { Aula, AulaAluno, AulaProgramada, ItemGradeSemanal } from "../types";
+import type { Aula, AulaAluno, AulaProgramada, ItemGradeSemanal, PeriodoContagem, ResumoTurmaAulas } from "../types";
+import type { MensagemGerada } from "../../mensagens/types/mensagem";
 
 interface StartAulaData {
   turmaId: number;
@@ -26,9 +27,46 @@ interface UpdateAulaData {
   tecnicasRealizadasIds?: number[];
 }
 
+interface UpdateAulaProgramadaData {
+  data?: string;
+  aulaCurriculoId?: number | null;
+  observacoes?: string | null;
+}
+
+interface ReplicarProgramacaoData {
+  turmaId: number;
+  aulaCurriculoId?: number;
+  dataInicio: string;
+  dataFim: string;
+  diasSemana: number[];
+  observacoes?: string;
+}
+
+interface ListaFiltros {
+  turmaId?: number;
+  periodo?: PeriodoContagem;
+}
+
+function montarQuery(filtros?: ListaFiltros) {
+  if (!filtros) return "";
+
+  const params = new URLSearchParams();
+  if (filtros.turmaId) params.set("turmaId", String(filtros.turmaId));
+  if (filtros.periodo) params.set("periodo", filtros.periodo);
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
 export class AulaService {
-  static async listar() {
-    const response = await api.get<Aula[]>("/aulas");
+  static async listar(filtros?: ListaFiltros) {
+    const response = await api.get<Aula[]>(`/aulas${montarQuery(filtros)}`);
+
+    return response.data;
+  }
+
+  static async resumoTurmas(periodo: PeriodoContagem) {
+    const response = await api.get<ResumoTurmaAulas[]>(`/aulas/resumo-turmas?periodo=${periodo}`);
 
     return response.data;
   }
@@ -79,9 +117,26 @@ export class AulaService {
     return response.data;
   }
 
-  static async listarProgramadas() {
+  static async replicarProgramada(data: ReplicarProgramacaoData) {
+    const response = await api.post<{ criadas: number; ignoradasPorDuplicidade: number }>(
+      "/aulas/programadas/replicar",
+      data
+    );
+
+    return response.data;
+  }
+
+  static async listarProgramadas(filtros?: ListaFiltros) {
     const response = await api.get<AulaProgramada[]>(
-      "/aulas/programadas"
+      `/aulas/programadas${montarQuery(filtros)}`
+    );
+
+    return response.data;
+  }
+
+  static async resumoTurmasProgramadas(periodo: PeriodoContagem) {
+    const response = await api.get<ResumoTurmaAulas[]>(
+      `/aulas/programadas/resumo-turmas?periodo=${periodo}`
     );
 
     return response.data;
@@ -90,6 +145,23 @@ export class AulaService {
   static async iniciarProgramada(id: number) {
     const response = await api.patch<Aula>(
       `/aulas/programadas/${id}/iniciar`
+    );
+
+    return response.data;
+  }
+
+  static async atualizarProgramada(id: number, data: UpdateAulaProgramadaData) {
+    const response = await api.put<AulaProgramada>(
+      `/aulas/programadas/${id}`,
+      data
+    );
+
+    return response.data;
+  }
+
+  static async cancelarProgramada(id: number) {
+    const response = await api.patch<{ programacao: AulaProgramada; avisos: MensagemGerada[] }>(
+      `/aulas/programadas/${id}/cancelar`
     );
 
     return response.data;

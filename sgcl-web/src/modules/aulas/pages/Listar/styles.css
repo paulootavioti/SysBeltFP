@@ -6,3 +6,22 @@
   flex-wrap: wrap;
   margin-bottom: var(--space-4);
 }
+
+.aulas-acoes-topo {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-4);
+}
+
+.aulas-drill-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.aulas-drill-cabecalho h2 {
+  margin: 0;
+  font-size: var(--font-lg);
+  color: var(--color-text);
+}

@@ -9,6 +9,8 @@ import {
   updateAulaAlunoSchema,
   criarAulaProgramadaSchema,
   updateAulaSchema,
+  updateAulaProgramadaSchema,
+  replicarProgramacaoSchema,
 } from "./validation";
 
 const aulasRoutes = Router();
@@ -28,6 +30,13 @@ aulasRoutes.get(
   ensureAuthenticated,
   ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
   controller.list
+);
+
+aulasRoutes.get(
+  "/resumo-turmas",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  controller.resumoTurmas
 );
 
 aulasRoutes.put(
@@ -53,6 +62,14 @@ aulasRoutes.post(
   controller.criarProgramada
 );
 
+aulasRoutes.post(
+  "/programadas/replicar",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR"]),
+  validateBody(replicarProgramacaoSchema),
+  controller.replicarProgramada
+);
+
 aulasRoutes.get(
   "/programadas",
   ensureAuthenticated,
@@ -60,11 +77,33 @@ aulasRoutes.get(
   controller.listarProgramadas
 );
 
+aulasRoutes.get(
+  "/programadas/resumo-turmas",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  controller.resumoTurmasProgramadas
+);
+
 aulasRoutes.patch(
   "/programadas/:id/iniciar",
   ensureAuthenticated,
   ensureRole(["ADMIN", "PROFESSOR"]),
   controller.iniciarProgramada
+);
+
+aulasRoutes.patch(
+  "/programadas/:id/cancelar",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR"]),
+  controller.cancelarProgramada
+);
+
+aulasRoutes.put(
+  "/programadas/:id",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR"]),
+  validateBody(updateAulaProgramadaSchema),
+  controller.updateProgramada
 );
 
 aulasRoutes.delete(

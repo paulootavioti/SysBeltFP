@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 
+import { AppError } from "../../shared/errors/AppError";
+
 import { StartAulaService } from "./services/StartAulaService";
 import { ListAulasService } from "./services/ListAulasService";
 import { GetAulaService } from "./services/GetAulaService";
@@ -13,6 +15,27 @@ import { DeleteAulaService } from "./services/DeleteAulaService";
 import { DeleteAulaProgramadaService } from "./services/DeleteAulaProgramadaService";
 import { UpdateAulaService } from "./services/UpdateAulaService";
 import { GetGradeSemanalService } from "./services/GetGradeSemanalService";
+import { UpdateAulaProgramadaService } from "./services/UpdateAulaProgramadaService";
+import { CancelarAulaProgramadaService } from "./services/CancelarAulaProgramadaService";
+import { ReplicarProgramacaoService } from "./services/ReplicarProgramacaoService";
+import { GetResumoTurmasProgramadasService } from "./services/GetResumoTurmasProgramadasService";
+import { GetResumoTurmasAulasService } from "./services/GetResumoTurmasAulasService";
+import { AvisoCancelamentoAulaService } from "../mensagens/services/AvisoCancelamentoAulaService";
+import { PERIODOS_CONTAGEM_VALIDOS, type PeriodoContagem } from "./utils/periodoContagem";
+
+function lerPeriodo(req: Request): PeriodoContagem | undefined {
+  if (!req.query.periodo) return undefined;
+
+  const periodo = String(req.query.periodo).toUpperCase();
+
+  if (!PERIODOS_CONTAGEM_VALIDOS.includes(periodo as PeriodoContagem)) {
+    throw new AppError(
+      `Período inválido. Use um dos seguintes: ${PERIODOS_CONTAGEM_VALIDOS.join(", ")}.`
+    );
+  }
+
+  return periodo as PeriodoContagem;
+}
 
 export class AulasController {
   async create(req: Request, res: Response) {
@@ -26,9 +49,22 @@ export class AulasController {
   async list(req: Request, res: Response) {
     const service = new ListAulasService();
 
-    const aulas = await service.execute();
+    const aulas = await service.execute({
+      turmaId: req.query.turmaId ? Number(req.query.turmaId) : undefined,
+      periodo: lerPeriodo(req),
+    });
 
     return res.json(aulas);
+  }
+
+  async resumoTurmas(req: Request, res: Response) {
+    const service = new GetResumoTurmasAulasService();
+
+    const periodo = lerPeriodo(req) ?? "SEMANAL";
+
+    const resumo = await service.execute(periodo);
+
+    return res.json(resumo);
   }
 
   async show(req: Request, res: Response) {
@@ -41,22 +77,22 @@ export class AulasController {
 
   async finalizar(req: Request, res: Response) {
     const service = new FinalizarAulaService();
-  
+
     const aula = await service.execute(
       Number(req.params.id)
     );
-  
+
     return res.json(aula);
   }
 
   async updateAluno(req: Request, res: Response) {
     const service = new UpdateAulaAlunoService();
-  
+
     const registro = await service.execute({
       id: Number(req.params.id),
       ...req.body,
     });
-  
+
     return res.json(registro);
   }
 
@@ -71,9 +107,22 @@ export class AulasController {
   async listarProgramadas(req: Request, res: Response) {
     const service = new ListAulasProgramadasService();
 
-    const programacoes = await service.execute();
+    const programacoes = await service.execute({
+      turmaId: req.query.turmaId ? Number(req.query.turmaId) : undefined,
+      periodo: lerPeriodo(req),
+    });
 
     return res.json(programacoes);
+  }
+
+  async resumoTurmasProgramadas(req: Request, res: Response) {
+    const service = new GetResumoTurmasProgramadasService();
+
+    const periodo = lerPeriodo(req) ?? "SEMANAL";
+
+    const resumo = await service.execute(periodo);
+
+    return res.json(resumo);
   }
 
   async iniciarProgramada(req: Request, res: Response) {
@@ -82,6 +131,34 @@ export class AulasController {
     const aula = await service.execute(Number(req.params.id));
 
     return res.json(aula);
+  }
+
+  async updateProgramada(req: Request, res: Response) {
+    const service = new UpdateAulaProgramadaService();
+
+    const programacao = await service.execute(Number(req.params.id), req.body);
+
+    return res.json(programacao);
+  }
+
+  async cancelarProgramada(req: Request, res: Response) {
+    const cancelarService = new CancelarAulaProgramadaService();
+
+    const programacao = await cancelarService.execute(Number(req.params.id));
+
+    const avisoService = new AvisoCancelamentoAulaService();
+
+    const avisos = await avisoService.execute(programacao.turmaId, programacao.data);
+
+    return res.json({ programacao, avisos });
+  }
+
+  async replicarProgramada(req: Request, res: Response) {
+    const service = new ReplicarProgramacaoService();
+
+    const resultado = await service.execute(req.body);
+
+    return res.status(201).json(resultado);
   }
 
   async delete(req: Request, res: Response) {

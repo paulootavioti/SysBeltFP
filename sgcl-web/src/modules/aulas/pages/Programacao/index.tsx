@@ -14,9 +14,14 @@ import { Modal } from "../../../../components/ui/Modal";
 import { useAuth } from "../../../../contexts/useAuth";
 import { AulaService } from "../../services/AulaService";
 import { ProgramarAulaForm, type ProgramarAulaFormData } from "../../components/ProgramarAulaForm";
+import { EditarProgramacaoForm, type EditarProgramacaoFormData } from "../../components/EditarProgramacaoForm";
+import { ReplicarProgramacaoForm, type ReplicarProgramacaoFormData } from "../../components/ReplicarProgramacaoForm";
+import { AvisoCancelamentoLista } from "../../components/AvisoCancelamentoLista";
 import { GradeHorariaSemanal } from "../../components/GradeHorariaSemanal";
+import { ResumoTurmas } from "../../components/ResumoTurmas";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
-import type { AulaProgramada } from "../../types";
+import type { AulaProgramada, PeriodoContagem } from "../../types";
+import type { MensagemGerada } from "../../../mensagens/types/mensagem";
 
 import "./styles.css";
 
@@ -31,21 +36,32 @@ export function ProgramacaoAulas() {
   const navigate = useNavigate();
   const { usuario } = useAuth();
 
+  const [turmaSelecionada, setTurmaSelecionada] = useState<{ id: number; nome: string } | null>(null);
+  const [periodo, setPeriodo] = useState<PeriodoContagem>("SEMANAL");
+
   const [programacoes, setProgramacoes] = useState<AulaProgramada[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
+
   const [modalAberto, setModalAberto] = useState(false);
+  const [modalReplicarAberto, setModalReplicarAberto] = useState(false);
+  const [programacaoEditando, setProgramacaoEditando] = useState<AulaProgramada | null>(null);
+  const [avisosCancelamento, setAvisosCancelamento] = useState<MensagemGerada[] | null>(null);
+
   const [salvando, setSalvando] = useState(false);
   const [iniciandoId, setIniciandoId] = useState<number | null>(null);
   const [excluindoId, setExcluindoId] = useState<number | null>(null);
+  const [cancelandoId, setCancelandoId] = useState<number | null>(null);
 
   const ehAdmin = usuario?.perfil === "ADMIN";
 
   async function carregarProgramacoes() {
+    if (!turmaSelecionada) return;
+
     try {
       setLoading(true);
       setErro("");
-      const data = await AulaService.listarProgramadas();
+      const data = await AulaService.listarProgramadas({ turmaId: turmaSelecionada.id, periodo });
       setProgramacoes(data);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao carregar programação."));
@@ -56,7 +72,8 @@ export function ProgramacaoAulas() {
 
   useEffect(() => {
     carregarProgramacoes();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [turmaSelecionada, periodo]);
 
   async function handleProgramar(data: ProgramarAulaFormData) {
     try {
@@ -68,10 +85,57 @@ export function ProgramacaoAulas() {
         data: data.data,
         observacoes: data.observacoes || undefined,
       });
-      await carregarProgramacoes();
+      if (turmaSelecionada) await carregarProgramacoes();
       setModalAberto(false);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao programar aula."));
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function handleReplicar(data: ReplicarProgramacaoFormData) {
+    try {
+      setSalvando(true);
+      setErro("");
+      const resultado = await AulaService.replicarProgramada({
+        turmaId: Number(data.turmaId),
+        aulaCurriculoId: data.aulaCurriculoId ? Number(data.aulaCurriculoId) : undefined,
+        dataInicio: data.dataInicio,
+        dataFim: data.dataFim,
+        diasSemana: data.diasSemana,
+        observacoes: data.observacoes || undefined,
+      });
+      if (turmaSelecionada) await carregarProgramacoes();
+      setModalReplicarAberto(false);
+      window.alert(
+        `${resultado.criadas} aula(s) programada(s) com sucesso.` +
+          (resultado.ignoradasPorDuplicidade > 0
+            ? ` ${resultado.ignoradasPorDuplicidade} data(s) já tinham programação e foram ignoradas.`
+            : "")
+      );
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao replicar programação."));
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function handleEditar(data: EditarProgramacaoFormData) {
+    if (!programacaoEditando) return;
+
+    try {
+      setSalvando(true);
+      setErro("");
+      await AulaService.atualizarProgramada(programacaoEditando.id, {
+        data: data.data,
+        aulaCurriculoId: data.aulaCurriculoId ? Number(data.aulaCurriculoId) : null,
+        observacoes: data.observacoes || null,
+      });
+      await carregarProgramacoes();
+      setProgramacaoEditando(null);
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao editar programação."));
     } finally {
       setSalvando(false);
     }
@@ -86,6 +150,24 @@ export function ProgramacaoAulas() {
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao iniciar aula programada."));
       setIniciandoId(null);
+    }
+  }
+
+  async function handleCancelar(programacao: AulaProgramada) {
+    if (!window.confirm(`Cancelar a aula de ${programacao.turma.nome} em ${formatarDataHora(programacao.data)}?`)) {
+      return;
+    }
+
+    try {
+      setCancelandoId(programacao.id);
+      setErro("");
+      const resultado = await AulaService.cancelarProgramada(programacao.id);
+      await carregarProgramacoes();
+      setAvisosCancelamento(resultado.avisos);
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao cancelar programação."));
+    } finally {
+      setCancelandoId(null);
     }
   }
 
@@ -129,9 +211,25 @@ export function ProgramacaoAulas() {
       render: (p: AulaProgramada) => (
         <div className="programacao-acoes-linha">
           {p.status === "PENDENTE" && (
-            <Button type="button" size="sm" onClick={() => handleIniciar(p.id)} disabled={iniciandoId === p.id}>
-              {iniciandoId === p.id ? "Iniciando..." : "Iniciar Aula"}
-            </Button>
+            <>
+              <Button type="button" size="sm" onClick={() => handleIniciar(p.id)} disabled={iniciandoId === p.id}>
+                {iniciandoId === p.id ? "Iniciando..." : "Iniciar Aula"}
+              </Button>
+
+              <Button type="button" size="sm" variant="secondary" onClick={() => setProgramacaoEditando(p)}>
+                Editar
+              </Button>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="danger"
+                disabled={cancelandoId === p.id}
+                onClick={() => handleCancelar(p)}
+              >
+                {cancelandoId === p.id ? "Cancelando..." : "Cancelar"}
+              </Button>
+            </>
           )}
 
           {ehAdmin && (
@@ -162,20 +260,79 @@ export function ProgramacaoAulas() {
         <Button type="button" onClick={() => setModalAberto(true)}>
           + Programar Aula
         </Button>
+        <Button type="button" variant="secondary" onClick={() => setModalReplicarAberto(true)}>
+          Replicar Programação
+        </Button>
       </div>
 
       <ErrorMessage message={erro} />
 
-      {loading ? (
-        <Loading />
-      ) : programacoes.length === 0 ? (
-        <EmptyState title="Nenhuma aula programada" description="Programe a próxima aula de uma turma." />
+      {!turmaSelecionada ? (
+        <ResumoTurmas
+          colunaQuantidade="Aulas Programadas"
+          periodo={periodo}
+          onPeriodoChange={setPeriodo}
+          carregarResumo={AulaService.resumoTurmasProgramadas}
+          onSelecionarTurma={(turmaId, turmaNome) => setTurmaSelecionada({ id: turmaId, nome: turmaNome })}
+        />
       ) : (
-        <Table columns={columns} data={programacoes} />
+        <>
+          <div className="programacao-drill-cabecalho">
+            <Button type="button" variant="secondary" onClick={() => setTurmaSelecionada(null)}>
+              ← Voltar para turmas
+            </Button>
+            <h2>{turmaSelecionada.nome}</h2>
+          </div>
+
+          {loading ? (
+            <Loading />
+          ) : programacoes.length === 0 ? (
+            <EmptyState
+              title="Nenhuma aula programada"
+              description="Programe a próxima aula desta turma ou ajuste o período."
+            />
+          ) : (
+            <Table columns={columns} data={programacoes} />
+          )}
+        </>
       )}
 
       <Modal open={modalAberto} title="Programar Aula" onClose={() => setModalAberto(false)}>
         <ProgramarAulaForm loading={salvando} onSubmit={handleProgramar} />
+      </Modal>
+
+      <Modal
+        open={modalReplicarAberto}
+        title="Replicar Programação"
+        onClose={() => setModalReplicarAberto(false)}
+      >
+        <ReplicarProgramacaoForm
+          turmaIdInicial={turmaSelecionada?.id}
+          loading={salvando}
+          onSubmit={handleReplicar}
+        />
+      </Modal>
+
+      <Modal
+        open={programacaoEditando !== null}
+        title="Editar Programação"
+        onClose={() => setProgramacaoEditando(null)}
+      >
+        {programacaoEditando && (
+          <EditarProgramacaoForm
+            programacao={programacaoEditando}
+            loading={salvando}
+            onSubmit={handleEditar}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        open={avisosCancelamento !== null}
+        title="Avisar alunos sobre o cancelamento"
+        onClose={() => setAvisosCancelamento(null)}
+      >
+        <AvisoCancelamentoLista avisos={avisosCancelamento ?? []} />
       </Modal>
     </Layout>
   );

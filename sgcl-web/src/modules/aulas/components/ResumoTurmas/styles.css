@@ -1,0 +1,33 @@
+.resumo-turmas {
+  margin-bottom: var(--space-5);
+}
+
+.resumo-turmas-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.resumo-turmas-cabecalho h2 {
+  margin: 0;
+  font-size: var(--font-lg);
+  color: var(--color-text);
+}
+
+.resumo-turmas-link {
+  border: none;
+  background: transparent;
+  padding: 0;
+
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.resumo-turmas-link:hover {
+  color: var(--color-accent);
+}
