@@ -75,6 +75,13 @@ aulasRoutes.delete(
 );
 
 aulasRoutes.get(
+  "/grade-semanal",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  controller.gradeSemanal
+);
+
+aulasRoutes.get(
   "/:id",
   ensureAuthenticated,
   ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),

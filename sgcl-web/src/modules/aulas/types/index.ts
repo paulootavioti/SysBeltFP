@@ -83,3 +83,15 @@ export interface AulaProgramada {
   status: "PENDENTE" | "INICIADA" | "CANCELADA";
   aulaId?: number | null;
 }
+
+export interface ItemGradeSemanal {
+  id: number;
+  turmaId: number;
+  turmaNome: string;
+  professorApelido?: string | null;
+  data: string;
+  diaSemana: number;
+  horarioInicio: string;
+  horarioFim: string;
+  status: "AGENDADA" | "CONCLUIDA" | "NAO_REALIZADA";
+}

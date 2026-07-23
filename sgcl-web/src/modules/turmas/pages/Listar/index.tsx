@@ -16,6 +16,7 @@ import { TurmaService } from "../../services/TurmaService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { useToast } from "../../../../contexts/toast/useToast";
 import { TurmaForm } from "../../components/TurmaForm";
+import { GradeHorariaSemanal } from "../../../aulas/components/GradeHorariaSemanal";
 import type { Turma } from "../../types/turma";
 import type { TurmaFormData } from "../../schema/turma.schema";
 
@@ -131,6 +132,10 @@ export function Turmas() {
   return (
     <Layout>
       <PageHeader title="Turmas" subtitle="Gestão de turmas e horários." />
+
+      <div className="turmas-grade-semanal">
+        <GradeHorariaSemanal />
+      </div>
 
       <div className="turmas-acoes">
         <Button type="button" onClick={handleNovaTurma}>

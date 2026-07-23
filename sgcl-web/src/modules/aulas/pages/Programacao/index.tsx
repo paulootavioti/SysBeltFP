@@ -14,6 +14,7 @@ import { Modal } from "../../../../components/ui/Modal";
 import { useAuth } from "../../../../contexts/useAuth";
 import { AulaService } from "../../services/AulaService";
 import { ProgramarAulaForm, type ProgramarAulaFormData } from "../../components/ProgramarAulaForm";
+import { GradeHorariaSemanal } from "../../components/GradeHorariaSemanal";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import type { AulaProgramada } from "../../types";
 
@@ -152,6 +153,10 @@ export function ProgramacaoAulas() {
   return (
     <Layout>
       <PageHeader title="Programação de Aulas" subtitle="Agenda prévia das próximas aulas por turma." />
+
+      <div className="programacao-grade-semanal">
+        <GradeHorariaSemanal />
+      </div>
 
       <div className="programacao-acoes">
         <Button type="button" onClick={() => setModalAberto(true)}>

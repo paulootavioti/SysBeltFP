@@ -11,9 +11,12 @@ import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { useAuth } from "../../../../contexts/useAuth";
 import { AulaService } from "../../services/AulaService";
 import { IniciarAulaForm, type IniciarAulaFormData } from "../../components/IniciarAulaForm";
+import { GradeHorariaSemanal } from "../../components/GradeHorariaSemanal";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 
 import type { Aula } from "../../types";
+
+import "./styles.css";
 
 export function Aulas() {
   const navigate = useNavigate();
@@ -77,7 +80,10 @@ export function Aulas() {
 
   return (
     <Layout>
-      <PageHeader title="Aulas" subtitle="Controle das aulas e chamadas." />
+      <div className="aulas-cabecalho">
+        <PageHeader title="Aulas" subtitle="Controle das aulas e chamadas." />
+        <GradeHorariaSemanal compacta />
+      </div>
 
       <ErrorMessage message={erro} />
 

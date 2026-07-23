@@ -1,0 +1,109 @@
+.grade-semanal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.grade-semanal h2 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-md);
+  color: var(--color-text);
+}
+
+.grade-semanal-vazio {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+  margin: 0;
+}
+
+.grade-semanal-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.grade-semanal-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+}
+
+.grade-semanal-table th,
+.grade-semanal-table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-xs);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.grade-semanal-table th {
+  font-weight: 700;
+  color: var(--color-text);
+  background: var(--color-background);
+}
+
+.grade-semanal-table tbody tr:nth-child(even) {
+  background: var(--color-background);
+}
+
+.grade-semanal-horario {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.grade-item {
+  display: block;
+  width: 100%;
+  margin: 2px 0;
+
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+
+  font-size: var(--font-xs);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.grade-item:hover {
+  filter: brightness(0.95);
+}
+
+.grade-item-agendada {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.grade-item-concluida {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.grade-item-nao-realizada {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.grade-semanal-compacta {
+  max-width: 480px;
+}
+
+.grade-semanal-compacta .grade-semanal-wrapper {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.grade-semanal-compacta .grade-semanal-table {
+  min-width: 460px;
+}
+
+@media (max-width: 640px) {
+  .grade-semanal-table {
+    min-width: 480px;
+  }
+}

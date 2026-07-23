@@ -12,6 +12,7 @@ import { IniciarAulaProgramadaService } from "./services/IniciarAulaProgramadaSe
 import { DeleteAulaService } from "./services/DeleteAulaService";
 import { DeleteAulaProgramadaService } from "./services/DeleteAulaProgramadaService";
 import { UpdateAulaService } from "./services/UpdateAulaService";
+import { GetGradeSemanalService } from "./services/GetGradeSemanalService";
 
 export class AulasController {
   async create(req: Request, res: Response) {
@@ -105,5 +106,15 @@ export class AulasController {
     const aula = await service.execute(Number(req.params.id), req.body);
 
     return res.json(aula);
+  }
+
+  async gradeSemanal(req: Request, res: Response) {
+    const service = new GetGradeSemanalService();
+
+    const referencia = req.query.data ? new Date(String(req.query.data)) : new Date();
+
+    const grade = await service.execute(referencia);
+
+    return res.json(grade);
   }
 }

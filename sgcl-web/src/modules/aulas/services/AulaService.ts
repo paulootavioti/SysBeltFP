@@ -1,6 +1,6 @@
 import { api } from "../../../services/api";
 
-import type { Aula, AulaAluno, AulaProgramada } from "../types";
+import type { Aula, AulaAluno, AulaProgramada, ItemGradeSemanal } from "../types";
 
 interface StartAulaData {
   turmaId: number;
@@ -107,5 +107,11 @@ export class AulaService {
 
   static async excluirProgramada(id: number) {
     await api.delete(`/aulas/programadas/${id}`);
+  }
+
+  static async gradeSemanal() {
+    const response = await api.get<ItemGradeSemanal[]>("/aulas/grade-semanal");
+
+    return response.data;
   }
 }

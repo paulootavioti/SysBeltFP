@@ -9,6 +9,7 @@ import { Loading } from "../../components/ui/Loading";
 import { ErrorMessage } from "../../components/ui/ErrorMessage";
 import { PeriodoSelector, type PeriodoOpcao } from "../../components/ui/PeriodoSelector";
 import { BarChart } from "../../components/ui/BarChart";
+import { GradeHorariaSemanal } from "../../modules/aulas/components/GradeHorariaSemanal";
 
 import { DashboardService, type DashboardResumo, type DashboardResumoPeriodo } from "./DashboardService";
 import { GraduacaoService } from "../../modules/graduacoes/services/GraduacaoService";
@@ -167,27 +168,31 @@ export function Dashboard() {
         </div>
       </section>
 
-      <section className="dashboard-secao">
-        <h2>Próximas Graduações</h2>
+      <div className="dashboard-linha-inferior">
+        <section className="dashboard-secao dashboard-secao-flex">
+          <h2>Próximas Graduações</h2>
 
-        {proximasGraduacoes.length === 0 ? (
-          <p className="dashboard-vazio">Nenhum aluno elegível no momento.</p>
-        ) : (
-          <div className="dashboard-lista">
-            {proximasGraduacoes.slice(0, 5).map((aluno) => (
-              <div key={aluno.alunoId} className="dashboard-lista-item">
-                <span>{aluno.nome}</span>
-                <span>{aluno.faixa}</span>
-                <span>{aluno.presencas} aulas</span>
-              </div>
-            ))}
-          </div>
-        )}
+          {proximasGraduacoes.length === 0 ? (
+            <p className="dashboard-vazio">Nenhum aluno elegível no momento.</p>
+          ) : (
+            <div className="dashboard-lista">
+              {proximasGraduacoes.slice(0, 5).map((aluno) => (
+                <div key={aluno.alunoId} className="dashboard-lista-item">
+                  <span>{aluno.nome}</span>
+                  <span>{aluno.faixa}</span>
+                  <span>{aluno.presencas} aulas</span>
+                </div>
+              ))}
+            </div>
+          )}
 
-        <Button type="button" variant="secondary" onClick={() => navigate("/graduacoes/proximas")}>
-          Ver todos
-        </Button>
-      </section>
+          <Button type="button" variant="secondary" onClick={() => navigate("/graduacoes/proximas")}>
+            Ver todos
+          </Button>
+        </section>
+
+        <GradeHorariaSemanal compacta />
+      </div>
     </Layout>
   );
 }
