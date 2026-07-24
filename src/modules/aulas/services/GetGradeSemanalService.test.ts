@@ -81,6 +81,29 @@ describe("GetGradeSemanalService", () => {
       },
     });
 
+    // quinta-feira desta semana, iniciada mas a chamada ainda está aberta -> CONCLUIDA
+    // (uma vez iniciada não é mais uma pendência, mesmo sem ter sido finalizada)
+    const diaEmAndamento = new Date(inicio);
+    diaEmAndamento.setDate(inicio.getDate() + 3);
+    const aulaAberta = await prisma.aula.create({
+      data: { turmaId: turma.id, data: diaEmAndamento, status: "ABERTA" },
+    });
+    await prisma.aulaProgramada.create({
+      data: {
+        turmaId: turma.id,
+        data: diaEmAndamento,
+        status: "INICIADA",
+        aulaId: aulaAberta.id,
+      },
+    });
+
+    // sábado desta semana, cancelada -> NAO_REALIZADA
+    const diaCancelado = new Date(inicio);
+    diaCancelado.setDate(inicio.getDate() + 5);
+    await prisma.aulaProgramada.create({
+      data: { turmaId: turma.id, data: diaCancelado, status: "CANCELADA" },
+    });
+
     // fora da semana -> não deve aparecer
     const foraDaSemana = new Date(inicio);
     foraDaSemana.setDate(inicio.getDate() - 10);
@@ -90,11 +113,11 @@ describe("GetGradeSemanalService", () => {
 
     const grade = await service.execute(AGORA_FIXO);
 
-    expect(grade).toHaveLength(3);
+    expect(grade).toHaveLength(5);
     expect(grade.every((item) => item.turmaNome === "TESTE_GRADE_TURMA")).toBe(true);
     expect(grade.every((item) => item.professorApelido === "Sensei Teste")).toBe(true);
 
     const statuses = grade.map((item) => item.status).sort();
-    expect(statuses).toEqual(["AGENDADA", "CONCLUIDA", "NAO_REALIZADA"]);
+    expect(statuses).toEqual(["AGENDADA", "CONCLUIDA", "CONCLUIDA", "NAO_REALIZADA", "NAO_REALIZADA"]);
   });
 });
