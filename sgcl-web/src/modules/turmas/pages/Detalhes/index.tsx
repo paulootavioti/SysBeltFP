@@ -131,11 +131,17 @@ export function DetalheTurma() {
 
       <ErrorMessage message={erro} />
 
-      <div className="turma-detalhe-acoes">
-        <Button type="button" onClick={handleAbrirModal}>
-          + Vincular Aluno
-        </Button>
-      </div>
+      {turma.ativo ? (
+        <div className="turma-detalhe-acoes">
+          <Button type="button" onClick={handleAbrirModal}>
+            + Vincular Aluno
+          </Button>
+        </div>
+      ) : (
+        <p className="turma-detalhe-inativa-aviso">
+          Esta turma está inativa — não é possível vincular novos alunos a ela.
+        </p>
+      )}
 
       {turma.alunos.length === 0 ? (
         <EmptyState title="Nenhum aluno vinculado" description="Vincule o primeiro aluno a esta turma." />

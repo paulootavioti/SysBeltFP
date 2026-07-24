@@ -91,6 +91,20 @@ export class CreateAlunoService {
       );
     }
 
+    const turmaId = toNumberOrNull(data.turmaId);
+
+    if (turmaId !== null) {
+      const turma = await prisma.turma.findUnique({ where: { id: turmaId } });
+
+      if (!turma) {
+        throw new AppError("Turma não encontrada.");
+      }
+
+      if (!turma.ativo) {
+        throw new AppError("Não é possível matricular o aluno em uma turma inativa.");
+      }
+    }
+
     const aluno = await prisma.aluno.create({
       data: {
         nome: data.nome,
@@ -131,7 +145,7 @@ export class CreateAlunoService {
         fotoUrl: data.fotoUrl,
 
         faixa: data.faixa ?? "Branca",
-        turmaId: toNumberOrNull(data.turmaId),
+        turmaId,
 
         formaPagamento: data.formaPagamento,
         diaVencimento: toNumberOrNull(data.diaVencimento),

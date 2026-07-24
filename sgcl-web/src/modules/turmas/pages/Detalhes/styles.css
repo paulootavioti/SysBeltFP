@@ -7,3 +7,10 @@
   justify-content: flex-end;
   margin-bottom: var(--space-4);
 }
+
+.turma-detalhe-inativa-aviso {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+  text-align: right;
+  margin-bottom: var(--space-4);
+}

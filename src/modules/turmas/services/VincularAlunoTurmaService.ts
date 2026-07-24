@@ -21,6 +21,12 @@ export class VincularAlunoTurmaService {
       );
     }
 
+    if (!turma.ativo) {
+      throw new AppError(
+        "Não é possível matricular o aluno em uma turma inativa."
+      );
+    }
+
     const aluno =
       await prisma.aluno.findUnique({
         where: {

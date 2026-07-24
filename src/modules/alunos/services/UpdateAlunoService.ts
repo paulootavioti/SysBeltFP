@@ -66,6 +66,20 @@ export class UpdateAlunoService {
       throw new AppError("Aluno não encontrado.");
     }
 
+    const turmaId = toNumberOrNull(data.turmaId);
+
+    if (turmaId !== null && turmaId !== aluno.turmaId) {
+      const turma = await prisma.turma.findUnique({ where: { id: turmaId } });
+
+      if (!turma) {
+        throw new AppError("Turma não encontrada.");
+      }
+
+      if (!turma.ativo) {
+        throw new AppError("Não é possível matricular o aluno em uma turma inativa.");
+      }
+    }
+
     return prisma.aluno.update({
       where: { id: data.id },
       data: {
