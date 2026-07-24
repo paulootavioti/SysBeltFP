@@ -5,23 +5,29 @@ type StatusExibicao = "AGENDADA" | "CONCLUIDA" | "NAO_REALIZADA";
 
 function calcularStatusExibicao(
   statusProgramacao: string,
-  statusAula: string | undefined,
   data: Date,
   horarioInicio: string
 ): StatusExibicao {
-  if (statusAula === "FINALIZADA") {
+  // uma vez iniciada (mesmo que a chamada ainda esteja em aberto), a
+  // programação deixa de ser uma pendência — não faz sentido oferecer
+  // "Iniciar Aula" de novo pra ela.
+  if (statusProgramacao === "INICIADA") {
     return "CONCLUIDA";
   }
 
-  if (statusProgramacao === "PENDENTE") {
-    const [horas, minutos] = horarioInicio.split(":").map(Number);
+  // cancelada também não vai mais acontecer, mesmo bucket visual de
+  // "não realizada".
+  if (statusProgramacao === "CANCELADA") {
+    return "NAO_REALIZADA";
+  }
 
-    const horarioDaAula = new Date(data);
-    horarioDaAula.setHours(horas || 0, minutos || 0, 0, 0);
+  const [horas, minutos] = horarioInicio.split(":").map(Number);
 
-    if (horarioDaAula.getTime() < Date.now()) {
-      return "NAO_REALIZADA";
-    }
+  const horarioDaAula = new Date(data);
+  horarioDaAula.setHours(horas || 0, minutos || 0, 0, 0);
+
+  if (horarioDaAula.getTime() < Date.now()) {
+    return "NAO_REALIZADA";
   }
 
   return "AGENDADA";
@@ -41,7 +47,6 @@ export class GetGradeSemanalService {
             professor: true,
           },
         },
-        aula: true,
       },
       orderBy: { data: "asc" },
     });
@@ -58,7 +63,6 @@ export class GetGradeSemanalService {
       horarioFim: programada.turma.horarioFim,
       status: calcularStatusExibicao(
         programada.status,
-        programada.aula?.status,
         programada.data,
         programada.turma.horarioInicio
       ),

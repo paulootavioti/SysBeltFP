@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Layout } from "../../../../components/layout/Layout";
-import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Button } from "../../../../components/ui/Button";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Table } from "../../../../components/ui/Table";
@@ -13,12 +11,11 @@ import { Modal } from "../../../../components/ui/Modal";
 
 import { useAuth } from "../../../../contexts/useAuth";
 import { AulaService } from "../../services/AulaService";
-import { ProgramarAulaForm, type ProgramarAulaFormData } from "../../components/ProgramarAulaForm";
-import { EditarProgramacaoForm, type EditarProgramacaoFormData } from "../../components/EditarProgramacaoForm";
-import { ReplicarProgramacaoForm, type ReplicarProgramacaoFormData } from "../../components/ReplicarProgramacaoForm";
-import { AvisoCancelamentoLista } from "../../components/AvisoCancelamentoLista";
-import { GradeHorariaSemanal } from "../../components/GradeHorariaSemanal";
-import { ResumoTurmas } from "../../components/ResumoTurmas";
+import { ProgramarAulaForm, type ProgramarAulaFormData } from "../ProgramarAulaForm";
+import { EditarProgramacaoForm, type EditarProgramacaoFormData } from "../EditarProgramacaoForm";
+import { ReplicarProgramacaoForm, type ReplicarProgramacaoFormData } from "../ReplicarProgramacaoForm";
+import { AvisoCancelamentoLista } from "../AvisoCancelamentoLista";
+import { ResumoTurmas } from "../ResumoTurmas";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import type { AulaProgramada, PeriodoContagem } from "../../types";
 import type { MensagemGerada } from "../../../mensagens/types/mensagem";
@@ -32,7 +29,7 @@ function formatarDataHora(data: string) {
   });
 }
 
-export function ProgramacaoAulas() {
+export function ProgramacaoTab() {
   const navigate = useNavigate();
   const { usuario } = useAuth();
 
@@ -249,13 +246,7 @@ export function ProgramacaoAulas() {
   ];
 
   return (
-    <Layout>
-      <PageHeader title="Programação de Aulas" subtitle="Agenda prévia das próximas aulas por turma." />
-
-      <div className="programacao-grade-semanal">
-        <GradeHorariaSemanal />
-      </div>
-
+    <div className="programacao-tab">
       <div className="programacao-acoes">
         <Button type="button" onClick={() => setModalAberto(true)}>
           + Programar Aula
@@ -334,6 +325,6 @@ export function ProgramacaoAulas() {
       >
         <AvisoCancelamentoLista avisos={avisosCancelamento ?? []} />
       </Modal>
-    </Layout>
+    </div>
   );
 }

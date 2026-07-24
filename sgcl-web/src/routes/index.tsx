@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import { Login } from "../pages/Login";
 import { Loading } from "../components/ui/Loading";
@@ -15,8 +15,6 @@ const EditarAluno = lazy(() => import("../modules/alunos/pages/Editar").then((m)
 const Aulas = lazy(() => import("../modules/aulas/pages/Listar").then((m) => ({ default: m.Aulas })));
 const ChamadaAula = lazy(() => import("../modules/aulas/pages/Chamada").then((m) => ({ default: m.ChamadaAula })));
 const ProntuarioAluno = lazy(() => import("../modules/alunos/pages/Prontuario").then((m) => ({ default: m.ProntuarioAluno })));
-
-const ProgramacaoAulas = lazy(() => import("../modules/aulas/pages/Programacao").then((m) => ({ default: m.ProgramacaoAulas })));
 
 const ListarMensalidades = lazy(() => import("../modules/mensalidades/pages/Listar").then((m) => ({ default: m.ListarMensalidades })));
 const DetalheMensalidade = lazy(() => import("../modules/mensalidades/pages/Detalhes").then((m) => ({ default: m.DetalheMensalidade })));
@@ -242,11 +240,7 @@ export function AppRoutes() {
 
         <Route
           path="/aulas/programacao"
-          element={
-            <PrivateRoute>
-              <ProgramacaoAulas />
-            </PrivateRoute>
-          }
+          element={<Navigate to="/aulas" replace />}
         />
 
         <Route
