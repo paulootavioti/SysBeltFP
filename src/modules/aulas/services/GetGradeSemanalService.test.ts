@@ -46,7 +46,7 @@ describe("GetGradeSemanalService", () => {
       data: {
         nome: "TESTE_GRADE_TURMA",
         faixaEtaria: "Adulto",
-        diasSemana: "Segunda",
+        diasSemana: [1],
         horarioInicio: "08:00",
         horarioFim: "09:00",
         professorId: professor.id,

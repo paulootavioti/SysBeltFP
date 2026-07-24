@@ -1,4 +1,4 @@
-.replicar-programacao-label {
+.dia-semana-selector-label {
   display: block;
   margin-bottom: var(--space-2);
   font-size: var(--font-sm);
@@ -6,13 +6,13 @@
   color: var(--color-text);
 }
 
-.replicar-programacao-dias {
+.dia-semana-selector-dias {
   display: flex;
   gap: var(--space-2);
   flex-wrap: wrap;
 }
 
-.replicar-programacao-dia {
+.dia-semana-selector-dia {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   border-radius: var(--radius-md);
@@ -25,11 +25,11 @@
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
-.replicar-programacao-dia:hover {
+.dia-semana-selector-dia:hover {
   border-color: var(--color-accent);
 }
 
-.replicar-programacao-dia.active {
+.dia-semana-selector-dia.active {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: var(--color-accent-light);

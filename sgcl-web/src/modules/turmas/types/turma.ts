@@ -8,7 +8,7 @@ export interface Turma {
   id: number;
   nome: string;
   faixaEtaria: string;
-  diasSemana: string;
+  diasSemana: number[];
   horarioInicio: string;
   horarioFim: string;
   professorId?: number | null;

@@ -20,7 +20,7 @@ async function criarTurma() {
     data: {
       nome: "TESTE_PROG_TURMA",
       faixaEtaria: "Adulto",
-      diasSemana: "Segunda",
+      diasSemana: [1],
       horarioInicio: "08:00",
       horarioFim: "09:00",
     },

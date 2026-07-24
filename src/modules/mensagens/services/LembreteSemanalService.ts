@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { calcularIdade, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
+import { formatarDiasSemana } from "../../../shared/utils/diasSemana";
 
 export class LembreteSemanalService {
   async execute(): Promise<MensagemGerada[]> {
@@ -25,7 +26,7 @@ export class LembreteSemanalService {
 
       const texto =
         `Olá! Passando para lembrar que essa semana ${nomeExibicao} tem treino de Jiu-Jitsu ` +
-        `${aluno.turma.diasSemana}, das ${aluno.turma.horarioInicio} às ${aluno.turma.horarioFim}. ` +
+        `${formatarDiasSemana(aluno.turma.diasSemana)}, das ${aluno.turma.horarioInicio} às ${aluno.turma.horarioFim}. ` +
         `Contamos com a presença! 🥋`;
 
       const idade = calcularIdade(aluno.dataNascimento);

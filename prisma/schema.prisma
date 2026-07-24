@@ -215,7 +215,7 @@ model Turma {
   nome          String
   faixaEtaria   String
 
-  diasSemana    String
+  diasSemana    Int[]
   horarioInicio String
   horarioFim    String
 

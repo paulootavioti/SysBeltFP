@@ -17,6 +17,7 @@ import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage"
 import { useToast } from "../../../../contexts/toast/useToast";
 import { TurmaForm } from "../../components/TurmaForm";
 import { GradeHorariaSemanal } from "../../../aulas/components/GradeHorariaSemanal";
+import { formatarDiasSemana } from "../../../../shared/constants/diasSemana";
 import type { Turma } from "../../types/turma";
 import type { TurmaFormData } from "../../schema/turma.schema";
 
@@ -82,7 +83,11 @@ export function Turmas() {
       accessor: "professor" as const,
       render: (turma: Turma) => turma.professor?.apelido || turma.professor?.nome || "-",
     },
-    { header: "Dias", accessor: "diasSemana" as const },
+    {
+      header: "Dias",
+      accessor: "diasSemana" as const,
+      render: (turma: Turma) => formatarDiasSemana(turma.diasSemana),
+    },
     {
       header: "Horário",
       accessor: "horarioInicio" as const,

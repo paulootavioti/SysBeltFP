@@ -19,7 +19,7 @@ async function criarTurmaInativa() {
     data: {
       nome: "TESTE_RN020_TURMA",
       faixaEtaria: "Adulto",
-      diasSemana: "Segunda",
+      diasSemana: [1],
       horarioInicio: "08:00",
       horarioFim: "09:00",
     },
@@ -117,7 +117,7 @@ describe("RN-022: inativar turma não desvincula os alunos", () => {
       data: {
         nome: "TESTE_RN020_TURMA",
         faixaEtaria: "Adulto",
-        diasSemana: "Segunda",
+        diasSemana: [1],
         horarioInicio: "08:00",
         horarioFim: "09:00",
       },

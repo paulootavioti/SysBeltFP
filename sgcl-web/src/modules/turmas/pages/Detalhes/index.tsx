@@ -14,6 +14,7 @@ import { Modal } from "../../../../components/ui/Modal";
 
 import { TurmaService } from "../../services/TurmaService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+import { formatarDiasSemana } from "../../../../shared/constants/diasSemana";
 import type { TurmaDetalhada, AlunoDaTurma } from "../../types/turma";
 import type { Aluno } from "../../../alunos/types";
 import { AlunoService } from "../../../alunos/services/AlunoService";
@@ -122,7 +123,7 @@ export function DetalheTurma() {
 
       <PageHeader
         title={turma.nome}
-        subtitle={`${turma.professor?.apelido || turma.professor?.nome || "Sem professor"} — ${turma.diasSemana} — ${turma.horarioInicio} às ${turma.horarioFim}${
+        subtitle={`${turma.professor?.apelido || turma.professor?.nome || "Sem professor"} — ${formatarDiasSemana(turma.diasSemana)} — ${turma.horarioInicio} às ${turma.horarioFim}${
           turma.limiteAlunos
             ? ` — ${turma.alunos.filter((a) => a.ativo).length}/${turma.limiteAlunos} vagas`
             : ""

@@ -9,13 +9,12 @@ import { Button } from "../../../components/ui/Button";
 import { ErrorMessage } from "../../../components/ui/ErrorMessage";
 import { FormGrid } from "../../../components/ui/FormGrid";
 import { FormGridItem } from "../../../components/ui/FormGridItem";
+import { DiaSemanaSelector } from "../../../components/ui/DiaSemanaSelector";
 
 import type { Turma } from "../../turmas/types/turma";
 import { TurmaService } from "../../turmas/services/TurmaService";
 import type { Curriculo } from "../../curriculos/types/curriculo";
 import { CurriculoService } from "../../curriculos/services/CurriculoService";
-
-import "./ReplicarProgramacaoForm.css";
 
 const replicarProgramacaoSchema = z.object({
   turmaId: z.string().min(1, "Selecione uma turma."),
@@ -33,16 +32,6 @@ interface ReplicarProgramacaoFormProps {
   loading?: boolean;
   onSubmit: (data: ReplicarProgramacaoFormData) => void;
 }
-
-const DIAS_SEMANA = [
-  { indice: 1, label: "Seg" },
-  { indice: 2, label: "Ter" },
-  { indice: 3, label: "Qua" },
-  { indice: 4, label: "Qui" },
-  { indice: 5, label: "Sex" },
-  { indice: 6, label: "Sáb" },
-  { indice: 0, label: "Dom" },
-];
 
 export function ReplicarProgramacaoForm({
   turmaIdInicial,
@@ -89,11 +78,16 @@ export function ReplicarProgramacaoForm({
 
   const diasSelecionados = watch("diasSemana");
 
-  function alternarDia(indice: number) {
-    const atual = diasSelecionados || [];
-    const novo = atual.includes(indice) ? atual.filter((d) => d !== indice) : [...atual, indice];
-    setValue("diasSemana", novo, { shouldValidate: true });
-  }
+  // sugere os dias da própria turma ao selecioná-la — dados de agendamento
+  // (dias da semana) e de turma estão diretamente relacionados, então não
+  // faz sentido pedir pro usuário escolher de novo algo que já está
+  // cadastrado. O usuário ainda pode ajustar manualmente depois.
+  useEffect(() => {
+    if (turmaSelecionada) {
+      setValue("diasSemana", turmaSelecionada.diasSemana, { shouldValidate: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [turmaSelecionada?.id]);
 
   return (
     <FormProvider {...methods}>
@@ -119,23 +113,10 @@ export function ReplicarProgramacaoForm({
           )}
 
           <FormGridItem>
-            <label className="replicar-programacao-label">Dias da semana</label>
-            <div className="replicar-programacao-dias">
-              {DIAS_SEMANA.map((dia) => (
-                <button
-                  key={dia.indice}
-                  type="button"
-                  className={
-                    diasSelecionados?.includes(dia.indice)
-                      ? "replicar-programacao-dia active"
-                      : "replicar-programacao-dia"
-                  }
-                  onClick={() => alternarDia(dia.indice)}
-                >
-                  {dia.label}
-                </button>
-              ))}
-            </div>
+            <DiaSemanaSelector
+              value={diasSelecionados || []}
+              onChange={(dias) => setValue("diasSemana", dias, { shouldValidate: true })}
+            />
             <ErrorMessage message={errors.diasSemana?.message ?? ""} />
           </FormGridItem>
 

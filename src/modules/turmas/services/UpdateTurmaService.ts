@@ -4,7 +4,7 @@ import { AppError } from "../../../shared/errors/AppError";
 interface UpdateTurmaDTO {
   nome: string;
   faixaEtaria: string;
-  diasSemana: string;
+  diasSemana: number[];
   horarioInicio: string;
   horarioFim: string;
   professorId?: number;

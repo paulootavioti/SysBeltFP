@@ -8,6 +8,7 @@ import { Button } from "../../../components/ui/Button";
 import { ErrorMessage } from "../../../components/ui/ErrorMessage";
 import { FormGrid } from "../../../components/ui/FormGrid";
 import { FormGridItem } from "../../../components/ui/FormGridItem";
+import { DiaSemanaSelector } from "../../../components/ui/DiaSemanaSelector";
 
 import type { Curriculo } from "../../curriculos/types/curriculo";
 import { CurriculoService } from "../../curriculos/services/CurriculoService";
@@ -33,7 +34,7 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
     defaultValues: {
       nome: turma?.nome ?? "",
       faixaEtaria: turma?.faixaEtaria ?? "",
-      diasSemana: turma?.diasSemana ?? "",
+      diasSemana: turma?.diasSemana ?? [],
       horarioInicio: turma?.horarioInicio ?? "",
       horarioFim: turma?.horarioFim ?? "",
       professorId: turma?.professorId ? String(turma.professorId) : "",
@@ -42,7 +43,9 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
     },
   });
 
-  const { register, handleSubmit, formState: { errors } } = methods;
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = methods;
+
+  const diasSelecionados = watch("diasSemana");
 
   useEffect(() => {
     CurriculoService.listar().then(setCurriculos);
@@ -78,7 +81,10 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <Input label="Dias da Semana" placeholder="Ex: Segunda, Quarta, Sexta" {...register("diasSemana")} />
+            <DiaSemanaSelector
+              value={diasSelecionados || []}
+              onChange={(dias) => setValue("diasSemana", dias, { shouldValidate: true })}
+            />
             <ErrorMessage message={errors.diasSemana?.message ?? ""} />
           </FormGridItem>
 
