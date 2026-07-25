@@ -47,10 +47,18 @@ describe("GetGradeSemanalService", () => {
         nome: "TESTE_GRADE_TURMA",
         faixaEtaria: "Adulto",
         diasSemana: [1],
-        horarioInicio: "08:00",
-        horarioFim: "09:00",
+        horarioInicio: "10:00",
+        horarioFim: "11:00",
         professorId: professor.id,
       },
+    });
+
+    // hoje (quarta-feira), pendente, horário em Brasília ainda não chegou
+    // -> AGENDADA. Regressão para o bug de fuso: comparar em UTC "puro"
+    // (sem somar o offset de Brasília) diria erradamente NAO_REALIZADA aqui,
+    // já que 10h de Brasília só vira passado às 13h UTC, não às 10h UTC.
+    await prisma.aulaProgramada.create({
+      data: { turmaId: turma.id, data: AGORA_FIXO, status: "PENDENTE" },
     });
 
     // sexta-feira desta semana, pendente -> AGENDADA (ainda não chegou)
@@ -113,11 +121,18 @@ describe("GetGradeSemanalService", () => {
 
     const grade = await service.execute(AGORA_FIXO);
 
-    expect(grade).toHaveLength(5);
+    expect(grade).toHaveLength(6);
     expect(grade.every((item) => item.turmaNome === "TESTE_GRADE_TURMA")).toBe(true);
     expect(grade.every((item) => item.professorApelido === "Sensei Teste")).toBe(true);
 
     const statuses = grade.map((item) => item.status).sort();
-    expect(statuses).toEqual(["AGENDADA", "CONCLUIDA", "CONCLUIDA", "NAO_REALIZADA", "NAO_REALIZADA"]);
+    expect(statuses).toEqual([
+      "AGENDADA",
+      "AGENDADA",
+      "CONCLUIDA",
+      "CONCLUIDA",
+      "NAO_REALIZADA",
+      "NAO_REALIZADA",
+    ]);
   });
 });

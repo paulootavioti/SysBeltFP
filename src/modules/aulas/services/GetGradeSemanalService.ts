@@ -3,6 +3,9 @@ import { calcularSemana } from "../utils/semana";
 
 type StatusExibicao = "AGENDADA" | "CONCLUIDA" | "NAO_REALIZADA";
 
+// Brasília não tem mais horário de verão desde 2019, então o offset é fixo.
+const BRASIL_UTC_OFFSET_HORAS = 3;
+
 function calcularStatusExibicao(
   statusProgramacao: string,
   data: Date,
@@ -23,8 +26,22 @@ function calcularStatusExibicao(
 
   const [horas, minutos] = horarioInicio.split(":").map(Number);
 
-  const horarioDaAula = new Date(data);
-  horarioDaAula.setHours(horas || 0, minutos || 0, 0, 0);
+  // `data` guarda a meia-noite UTC do dia pretendido e horarioInicio é
+  // sempre horário local de Brasília. setHours()/getHours() operam no fuso
+  // do processo Node (UTC no Netlify), não no de Brasília — usá-los aqui
+  // fazia aulas à noite serem dadas como "NAO_REALIZADA" até 3h antes de
+  // realmente começarem. Por isso o cálculo é feito manualmente em UTC.
+  const horarioDaAula = new Date(
+    Date.UTC(
+      data.getUTCFullYear(),
+      data.getUTCMonth(),
+      data.getUTCDate(),
+      (horas || 0) + BRASIL_UTC_OFFSET_HORAS,
+      minutos || 0,
+      0,
+      0
+    )
+  );
 
   if (horarioDaAula.getTime() < Date.now()) {
     return "NAO_REALIZADA";
@@ -58,7 +75,7 @@ export class GetGradeSemanalService {
       professorApelido:
         programada.turma.professor?.apelido || programada.turma.professor?.nome || null,
       data: programada.data,
-      diaSemana: programada.data.getDay(),
+      diaSemana: programada.data.getUTCDay(),
       horarioInicio: programada.turma.horarioInicio,
       horarioFim: programada.turma.horarioFim,
       status: calcularStatusExibicao(
