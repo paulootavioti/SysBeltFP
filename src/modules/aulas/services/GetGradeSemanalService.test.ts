@@ -53,10 +53,11 @@ describe("GetGradeSemanalService", () => {
       },
     });
 
-    // hoje (quarta-feira), pendente, horário em Brasília ainda não chegou
-    // -> AGENDADA. Regressão para o bug de fuso: comparar em UTC "puro"
-    // (sem somar o offset de Brasília) diria erradamente NAO_REALIZADA aqui,
-    // já que 10h de Brasília só vira passado às 13h UTC, não às 10h UTC.
+    // hoje (quarta-feira), pendente, mesmo que o horário de início já tenha
+    // passado -> AGENDADA. Uma pendência só vira NAO_REALIZADA quando o DIA
+    // dela já passou por completo, não só o horário — senão a aula some de
+    // "Aulas de Hoje" assim que bate o horário, mesmo que ninguém tenha
+    // esquecido de iniciar a chamada (regressão do bug real em produção).
     await prisma.aulaProgramada.create({
       data: { turmaId: turma.id, data: AGORA_FIXO, status: "PENDENTE" },
     });
