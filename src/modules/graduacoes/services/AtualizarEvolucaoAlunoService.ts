@@ -59,6 +59,7 @@ export class AtualizarEvolucaoAlunoService {
 
         await prisma.graduacao.create({
           data: {
+            unidadeId: aluno.unidadeId,
             alunoId,
             faixa: novaFaixa,
             data: new Date()

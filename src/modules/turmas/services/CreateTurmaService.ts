@@ -1,6 +1,7 @@
 import { prisma } from "../../../shared/database/prisma";
 
 interface CreateTurmaDTO {
+  unidadeId: number;
   nome: string;
   faixaEtaria: string;
   diasSemana: number[];

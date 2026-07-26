@@ -30,6 +30,7 @@ export class CreateAulaProgramadaService {
 
     return prisma.aulaProgramada.create({
       data: {
+        unidadeId: turma.unidadeId,
         turmaId: data.turmaId,
         aulaCurriculoId: data.aulaCurriculoId,
         data: new Date(data.data),

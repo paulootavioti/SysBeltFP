@@ -61,6 +61,7 @@ export class StartAulaService {
 
     const aula = await prisma.aula.create({
       data: {
+        unidadeId: turma.unidadeId,
         data: new Date(),
         turmaId: data.turmaId,
         aulaCurriculoId: data.aulaCurriculoId,

@@ -38,6 +38,7 @@ export class IncrementarGrauService {
         ? [
             prisma.mensalidade.create({
               data: {
+                unidadeId: aluno.unidadeId,
                 valor: cobranca.valor,
                 vencimento: new Date(cobranca.vencimento),
                 alunoId,

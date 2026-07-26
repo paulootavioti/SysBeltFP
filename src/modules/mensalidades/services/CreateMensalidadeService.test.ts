@@ -6,9 +6,12 @@ import { CreateMensalidadeService } from "./CreateMensalidadeService";
 
 const service = new CreateMensalidadeService();
 
+let unidadeId: number;
+
 async function criarAluno() {
   return prisma.aluno.create({
     data: {
+      unidadeId,
       nome: "TESTE_VITEST_ALUNO_MENSALIDADE",
       dataNascimento: new Date("2000-01-01"),
     },
@@ -18,9 +21,14 @@ async function criarAluno() {
 async function limpar() {
   await prisma.mensalidade.deleteMany({ where: { aluno: { nome: "TESTE_VITEST_ALUNO_MENSALIDADE" } } });
   await prisma.aluno.deleteMany({ where: { nome: "TESTE_VITEST_ALUNO_MENSALIDADE" } });
+  await prisma.unidade.deleteMany({ where: { nome: "TESTE_MENSALIDADE_UNIDADE" } });
 }
 
-beforeEach(limpar);
+beforeEach(async () => {
+  await limpar();
+  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_MENSALIDADE_UNIDADE" } });
+  unidadeId = unidade.id;
+});
 afterAll(limpar);
 
 describe("CreateMensalidadeService", () => {

@@ -11,12 +11,13 @@ import { UpdateModuloCurriculoService } from "./services/UpdateModuloCurriculoSe
 import { UpdateAulaCurriculoService } from "./services/UpdateAulaCurriculoService";
 import { UpdateTecnicaCurriculoService } from "./services/UpdateTecnicaCurriculoService";
 import { DeleteCurriculoService } from "./services/DeleteCurriculoService";
+import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 
 export class CurriculosController {
   async create(req: Request, res: Response) {
     const service = new CreateCurriculoService();
 
-    const curriculo = await service.execute(req.body);
+    const curriculo = await service.execute({ ...req.body, unidadeId: requireUnidadeId(req) });
 
     return res.status(201).json(curriculo);
   }

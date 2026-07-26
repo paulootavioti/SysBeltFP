@@ -2,12 +2,22 @@ import { Request, Response } from "express";
 
 import { CreateUsuarioService } from "./services/CreateUsuarioService";
 import { LoginService } from "./services/LoginService";
+import { AppError } from "../../shared/errors/AppError";
 
 export class AuthController {
   async register(req: Request, res: Response) {
+    // um ADMIN sempre cadastra dentro da própria unidade; só um SUPERADMIN
+    // (sem unidade fixa) pode e precisa informar em qual unidade o novo
+    // usuário entra.
+    const unidadeId = req.user.unidadeId ?? req.body.unidadeId ?? null;
+
+    if (!unidadeId) {
+      throw new AppError("Informe a unidade para este usuário.");
+    }
+
     const service = new CreateUsuarioService();
 
-    const usuario = await service.execute(req.body);
+    const usuario = await service.execute({ ...req.body, unidadeId });
 
     return res.status(201).json({
       id: usuario.id,

@@ -7,22 +7,24 @@ import { ReconhecerAvisosService } from "./ReconhecerAvisosService";
 const listService = new ListAvisosService();
 const reconhecerService = new ReconhecerAvisosService();
 
+let unidadeId: number;
+
 async function criarUsuario(email: string) {
   return prisma.usuario.create({
-    data: { nome: "TESTE_GESTOR", email, senha: "hash", perfil: "ADMIN" },
+    data: { unidadeId, nome: "TESTE_GESTOR", email, senha: "hash", perfil: "ADMIN" },
   });
 }
 
 async function criarAlunoComMensalidadeVencida(diasAtras: number) {
   const aluno = await prisma.aluno.create({
-    data: { nome: "TESTE_AVISO_ALUNO", dataNascimento: new Date("2000-01-01") },
+    data: { unidadeId, nome: "TESTE_AVISO_ALUNO", dataNascimento: new Date("2000-01-01") },
   });
 
   const vencimento = new Date();
   vencimento.setDate(vencimento.getDate() - diasAtras);
 
   const mensalidade = await prisma.mensalidade.create({
-    data: { alunoId: aluno.id, valor: 150, vencimento, pago: false },
+    data: { unidadeId, alunoId: aluno.id, valor: 150, vencimento, pago: false },
   });
 
   return { aluno, mensalidade };
@@ -33,9 +35,14 @@ async function limpar() {
   await prisma.usuario.deleteMany({ where: { nome: "TESTE_GESTOR" } });
   await prisma.mensalidade.deleteMany({ where: { aluno: { nome: "TESTE_AVISO_ALUNO" } } });
   await prisma.aluno.deleteMany({ where: { nome: "TESTE_AVISO_ALUNO" } });
+  await prisma.unidade.deleteMany({ where: { nome: "TESTE_AVISOS_UNIDADE" } });
 }
 
-beforeEach(limpar);
+beforeEach(async () => {
+  await limpar();
+  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_AVISOS_UNIDADE" } });
+  unidadeId = unidade.id;
+});
 afterAll(limpar);
 
 describe("ListAvisosService + ReconhecerAvisosService", () => {
@@ -55,12 +62,12 @@ describe("ListAvisosService + ReconhecerAvisosService", () => {
   it("não lista mensalidade em dia (vencimento futuro)", async () => {
     const usuario = await criarUsuario("gestor-avisos-2@teste.com");
     const aluno = await prisma.aluno.create({
-      data: { nome: "TESTE_AVISO_ALUNO", dataNascimento: new Date("2000-01-01") },
+      data: { unidadeId, nome: "TESTE_AVISO_ALUNO", dataNascimento: new Date("2000-01-01") },
     });
     const vencimentoFuturo = new Date();
     vencimentoFuturo.setDate(vencimentoFuturo.getDate() + 10);
     await prisma.mensalidade.create({
-      data: { alunoId: aluno.id, valor: 150, vencimento: vencimentoFuturo, pago: false },
+      data: { unidadeId, alunoId: aluno.id, valor: 150, vencimento: vencimentoFuturo, pago: false },
     });
 
     const avisos = await listService.execute(usuario.id);

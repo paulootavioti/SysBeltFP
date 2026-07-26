@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const updatePerfilSchema = z.object({
-  perfil: z.enum(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  perfil: z.enum(["SUPERADMIN", "ADMIN", "PROFESSOR", "RECEPCAO"]),
 });
 
 export const updateUsuarioSchema = z.object({
@@ -11,7 +11,7 @@ export const updateUsuarioSchema = z.object({
   senha: z
     .union([z.literal(""), z.string().min(6, "A senha precisa ter pelo menos 6 caracteres.")])
     .nullish(),
-  perfil: z.enum(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  perfil: z.enum(["SUPERADMIN", "ADMIN", "PROFESSOR", "RECEPCAO"]),
   nivelGraduacao: z.string().nullish(),
   outrasGraduacoes: z.string().nullish(),
   fotoUrl: z.string().nullish(),

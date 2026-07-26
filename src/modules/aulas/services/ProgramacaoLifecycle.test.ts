@@ -10,14 +10,18 @@ async function limpar() {
   await prisma.aulaProgramada.deleteMany({ where: { turma: { nome: "TESTE_PROG_TURMA" } } });
   await prisma.aluno.deleteMany({ where: { nome: "TESTE_PROG_ALUNO" } });
   await prisma.turma.deleteMany({ where: { nome: "TESTE_PROG_TURMA" } });
+  await prisma.unidade.deleteMany({ where: { nome: "TESTE_PROG_UNIDADE" } });
 }
 
 beforeEach(limpar);
 afterAll(limpar);
 
 async function criarTurma() {
+  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_PROG_UNIDADE" } });
+
   return prisma.turma.create({
     data: {
+      unidadeId: unidade.id,
       nome: "TESTE_PROG_TURMA",
       faixaEtaria: "Adulto",
       diasSemana: [1],
@@ -31,7 +35,7 @@ describe("edição e cancelamento de programação", () => {
   it("edita uma programação pendente", async () => {
     const turma = await criarTurma();
     const programacao = await prisma.aulaProgramada.create({
-      data: { turmaId: turma.id, data: new Date("2026-08-03T08:00:00"), status: "PENDENTE" },
+      data: { unidadeId: turma.unidadeId, turmaId: turma.id, data: new Date("2026-08-03T08:00:00"), status: "PENDENTE" },
     });
 
     const service = new UpdateAulaProgramadaService();
@@ -43,7 +47,7 @@ describe("edição e cancelamento de programação", () => {
   it("não permite editar uma programação já cancelada", async () => {
     const turma = await criarTurma();
     const programacao = await prisma.aulaProgramada.create({
-      data: { turmaId: turma.id, data: new Date("2026-08-03T08:00:00"), status: "CANCELADA" },
+      data: { unidadeId: turma.unidadeId, turmaId: turma.id, data: new Date("2026-08-03T08:00:00"), status: "CANCELADA" },
     });
 
     const service = new UpdateAulaProgramadaService();
@@ -53,7 +57,7 @@ describe("edição e cancelamento de programação", () => {
   it("cancela uma programação pendente e não permite cancelar duas vezes", async () => {
     const turma = await criarTurma();
     const programacao = await prisma.aulaProgramada.create({
-      data: { turmaId: turma.id, data: new Date("2026-08-03T08:00:00"), status: "PENDENTE" },
+      data: { unidadeId: turma.unidadeId, turmaId: turma.id, data: new Date("2026-08-03T08:00:00"), status: "PENDENTE" },
     });
 
     const service = new CancelarAulaProgramadaService();
@@ -70,6 +74,7 @@ describe("AvisoCancelamentoAulaService", () => {
     const turma = await criarTurma();
     await prisma.aluno.create({
       data: {
+        unidadeId: turma.unidadeId,
         nome: "TESTE_PROG_ALUNO",
         dataNascimento: new Date("1995-01-01"),
         turmaId: turma.id,

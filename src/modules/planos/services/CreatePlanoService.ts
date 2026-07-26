@@ -1,6 +1,7 @@
 import { prisma } from "../../../shared/database/prisma";
 
 interface CreatePlanoDTO {
+  unidadeId: number;
   nome: string;
   valor: number;
   periodicidade: string;

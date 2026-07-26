@@ -4,13 +4,14 @@ import { CreatePlanoService } from "./services/CreatePlanoService";
 import { UpdatePlanoService } from "./services/UpdatePlanoService";
 import { ListPlanosService } from "./services/ListPlanosService";
 import { ToggleAtivoPlanoService } from "./services/ToggleAtivoPlanoService";
+import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 
 export class PlanosController {
 
   async create(req: Request, res: Response) {
     const service = new CreatePlanoService();
 
-    const plano = await service.execute(req.body);
+    const plano = await service.execute({ ...req.body, unidadeId: requireUnidadeId(req) });
 
     return res.status(201).json(plano);
   }

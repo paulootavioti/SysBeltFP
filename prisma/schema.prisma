@@ -18,8 +18,48 @@ enum AulaStatus {
   FINALIZADA
 }
 
+model Unidade {
+  id        Int      @id @default(autoincrement())
+
+  nome      String
+  ativo     Boolean  @default(true)
+
+  salas         Sala[]
+  usuarios      Usuario[]
+  alunos        Aluno[]
+  responsaveis  Responsavel[]
+  turmas        Turma[]
+  planos        Plano[]
+  curriculos    Curriculo[]
+  tecnicas      Tecnica[]
+  competicoes   Competicao[]
+  mensalidades  Mensalidade[]
+  graduacoes    Graduacao[]
+  aulasProgramadas AulaProgramada[]
+  aulas         Aula[]
+
+  createdAt DateTime @default(now())
+}
+
+model Sala {
+  id        Int      @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade  @relation(fields: [unidadeId], references: [id])
+
+  nome      String
+  ativo     Boolean  @default(true)
+
+  turmas    Turma[]
+
+  createdAt DateTime @default(now())
+}
+
 model Aluno {
   id                Int              @id @default(autoincrement())
+
+  unidadeId         Int
+  unidade           Unidade          @relation(fields: [unidadeId], references: [id])
 
   nome              String
   apelido           String?
@@ -86,6 +126,9 @@ model Aluno {
 model Responsavel {
   id                     Int      @id @default(autoincrement())
 
+  unidadeId              Int
+  unidade                Unidade  @relation(fields: [unidadeId], references: [id])
+
   nome                   String
   apelido                String?
 
@@ -127,6 +170,10 @@ model Responsavel {
 
 model Mensalidade {
   id             Int       @id @default(autoincrement())
+
+  unidadeId      Int
+  unidade        Unidade   @relation(fields: [unidadeId], references: [id])
+
   valor          Float
   vencimento     DateTime
   dataPagamento  DateTime?
@@ -139,6 +186,10 @@ model Mensalidade {
 
 model Graduacao {
   id          Int       @id @default(autoincrement())
+
+  unidadeId   Int
+  unidade     Unidade   @relation(fields: [unidadeId], references: [id])
+
   faixa       String
   data        DateTime
 
@@ -173,6 +224,10 @@ model AulaAluno {
 
 model Competicao {
   id          Int                 @id @default(autoincrement())
+
+  unidadeId   Int
+  unidade     Unidade             @relation(fields: [unidadeId], references: [id])
+
   nome        String
   data        DateTime
   local       String
@@ -212,6 +267,14 @@ model Comportamento {
 model Turma {
   id            Int      @id @default(autoincrement())
 
+  unidadeId     Int
+  unidade       Unidade  @relation(fields: [unidadeId], references: [id])
+
+  // ainda não usado pra checagem de conflito (Fase 3) — só preparando o
+  // schema pra não precisar de outra migration quando Sala entrar em uso.
+  salaId        Int?
+  sala          Sala?    @relation(fields: [salaId], references: [id])
+
   nome          String
   faixaEtaria   String
 
@@ -240,6 +303,10 @@ model Turma {
 
 model Usuario {
   id                Int      @id @default(autoincrement())
+
+  // nulo só pra SUPERADMIN — todo outro perfil pertence a uma unidade.
+  unidadeId         Int?
+  unidade           Unidade? @relation(fields: [unidadeId], references: [id])
 
   nome              String
   apelido           String?
@@ -278,6 +345,9 @@ model AvisoReconhecido {
 model Plano {
   id            Int      @id @default(autoincrement())
 
+  unidadeId     Int
+  unidade       Unidade  @relation(fields: [unidadeId], references: [id])
+
   nome          String
   valor         Float
   periodicidade String
@@ -291,6 +361,9 @@ model Plano {
 
 model Aula {
   id          Int       @id @default(autoincrement())
+
+  unidadeId   Int
+  unidade     Unidade   @relation(fields: [unidadeId], references: [id])
 
   data        DateTime
   professor   String?
@@ -317,6 +390,9 @@ model Aula {
 model Tecnica {
   id              Int      @id @default(autoincrement())
 
+  unidadeId       Int
+  unidade         Unidade  @relation(fields: [unidadeId], references: [id])
+
   nome            String
 
   categoria       String
@@ -339,6 +415,9 @@ model Tecnica {
 
 model Curriculo {
   id          Int      @id @default(autoincrement())
+
+  unidadeId   Int
+  unidade     Unidade  @relation(fields: [unidadeId], references: [id])
 
   nome        String
   descricao   String?
@@ -418,6 +497,9 @@ model TecnicaCurriculo {
 
 model AulaProgramada {
   id              Int      @id @default(autoincrement())
+
+  unidadeId       Int
+  unidade         Unidade  @relation(fields: [unidadeId], references: [id])
 
   turmaId         Int
   turma           Turma    @relation(fields: [turmaId], references: [id])

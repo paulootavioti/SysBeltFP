@@ -13,13 +13,14 @@ import { UpdateAlunoService } from "./services/UpdateAlunoService";
 import { ToggleAlunoAtivoService } from "./services/ToggleAlunoAtivoService";
 
 import { GetAlunoCompletoService } from "./services/GetAlunoCompletoService";
+import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 
 
 export class AlunosController {
   async create(req: Request, res: Response) {
     const service = new CreateAlunoService();
 
-    const aluno = await service.execute(req.body);
+    const aluno = await service.execute({ ...req.body, unidadeId: requireUnidadeId(req) });
 
     return res.status(201).json(aluno);
   }

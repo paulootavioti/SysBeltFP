@@ -21,6 +21,7 @@ import {
   LuLogOut,
   LuMenu,
   LuX,
+  LuBuilding2,
 } from "react-icons/lu";
 import { perfilTemAcesso } from "../../../shared/constants/acessoPorPerfil";
 import { NotificationBell } from "../../ui/NotificationBell";
@@ -31,6 +32,7 @@ interface LayoutProps {
 }
 
 const NAV_ITEMS = [
+  { to: "/unidades", label: "Unidades", icon: LuBuilding2 },
   { to: "/dashboard", label: "Dashboard", icon: LuLayoutDashboard },
   { to: "/alunos", label: "Alunos", icon: LuUsers },
   { to: "/turmas", label: "Turmas", icon: LuSchool },

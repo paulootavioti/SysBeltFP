@@ -14,6 +14,7 @@ async function limpar() {
   await prisma.aula.deleteMany({ where: { turma: { nome: "TESTE_GRADE_TURMA" } } });
   await prisma.turma.deleteMany({ where: { nome: "TESTE_GRADE_TURMA" } });
   await prisma.usuario.deleteMany({ where: { nome: "TESTE_GRADE_PROFESSOR" } });
+  await prisma.unidade.deleteMany({ where: { nome: "TESTE_GRADE_UNIDADE" } });
 }
 
 beforeEach(async () => {
@@ -32,8 +33,13 @@ describe("GetGradeSemanalService", () => {
   it("lista programações da semana com o status de exibição correto", async () => {
     const { inicio } = calcularSemana(AGORA_FIXO);
 
+    const unidade = await prisma.unidade.create({
+      data: { nome: "TESTE_GRADE_UNIDADE" },
+    });
+
     const professor = await prisma.usuario.create({
       data: {
+        unidadeId: unidade.id,
         nome: "TESTE_GRADE_PROFESSOR",
         apelido: "Sensei Teste",
         email: `sensei-grade-${Date.now()}@teste.com`,
@@ -44,6 +50,7 @@ describe("GetGradeSemanalService", () => {
 
     const turma = await prisma.turma.create({
       data: {
+        unidadeId: unidade.id,
         nome: "TESTE_GRADE_TURMA",
         faixaEtaria: "Adulto",
         diasSemana: [1],
@@ -59,31 +66,31 @@ describe("GetGradeSemanalService", () => {
     // "Aulas de Hoje" assim que bate o horário, mesmo que ninguém tenha
     // esquecido de iniciar a chamada (regressão do bug real em produção).
     await prisma.aulaProgramada.create({
-      data: { turmaId: turma.id, data: AGORA_FIXO, status: "PENDENTE" },
+      data: { unidadeId: unidade.id, turmaId: turma.id, data: AGORA_FIXO, status: "PENDENTE" },
     });
 
     // sexta-feira desta semana, pendente -> AGENDADA (ainda não chegou)
     const diaFuturo = new Date(inicio);
     diaFuturo.setDate(inicio.getDate() + 4);
     await prisma.aulaProgramada.create({
-      data: { turmaId: turma.id, data: diaFuturo, status: "PENDENTE" },
+      data: { unidadeId: unidade.id, turmaId: turma.id, data: diaFuturo, status: "PENDENTE" },
     });
 
     // segunda-feira desta semana, pendente -> NAO_REALIZADA (já passou)
     const diaPassado = new Date(inicio);
     await prisma.aulaProgramada.create({
-      data: { turmaId: turma.id, data: diaPassado, status: "PENDENTE" },
+      data: { unidadeId: unidade.id, turmaId: turma.id, data: diaPassado, status: "PENDENTE" },
     });
 
     // terça-feira desta semana, iniciada e finalizada -> CONCLUIDA
     const diaConcluido = new Date(inicio);
     diaConcluido.setDate(inicio.getDate() + 1);
     const aulaFinalizada = await prisma.aula.create({
-      data: { turmaId: turma.id, data: diaConcluido, status: "FINALIZADA" },
+      data: { unidadeId: unidade.id, turmaId: turma.id, data: diaConcluido, status: "FINALIZADA" },
     });
     await prisma.aulaProgramada.create({
       data: {
-        turmaId: turma.id,
+        unidadeId: unidade.id, turmaId: turma.id,
         data: diaConcluido,
         status: "INICIADA",
         aulaId: aulaFinalizada.id,
@@ -95,11 +102,11 @@ describe("GetGradeSemanalService", () => {
     const diaEmAndamento = new Date(inicio);
     diaEmAndamento.setDate(inicio.getDate() + 3);
     const aulaAberta = await prisma.aula.create({
-      data: { turmaId: turma.id, data: diaEmAndamento, status: "ABERTA" },
+      data: { unidadeId: unidade.id, turmaId: turma.id, data: diaEmAndamento, status: "ABERTA" },
     });
     await prisma.aulaProgramada.create({
       data: {
-        turmaId: turma.id,
+        unidadeId: unidade.id, turmaId: turma.id,
         data: diaEmAndamento,
         status: "INICIADA",
         aulaId: aulaAberta.id,
@@ -110,14 +117,14 @@ describe("GetGradeSemanalService", () => {
     const diaCancelado = new Date(inicio);
     diaCancelado.setDate(inicio.getDate() + 5);
     await prisma.aulaProgramada.create({
-      data: { turmaId: turma.id, data: diaCancelado, status: "CANCELADA" },
+      data: { unidadeId: unidade.id, turmaId: turma.id, data: diaCancelado, status: "CANCELADA" },
     });
 
     // fora da semana -> não deve aparecer
     const foraDaSemana = new Date(inicio);
     foraDaSemana.setDate(inicio.getDate() - 10);
     await prisma.aulaProgramada.create({
-      data: { turmaId: turma.id, data: foraDaSemana, status: "PENDENTE" },
+      data: { unidadeId: unidade.id, turmaId: turma.id, data: foraDaSemana, status: "PENDENTE" },
     });
 
     const grade = await service.execute(AGORA_FIXO);

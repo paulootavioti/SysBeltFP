@@ -5,6 +5,7 @@ declare namespace Express {
     user: {
       id: number;
       perfil: string;
+      unidadeId: number | null;
     };
 
   }

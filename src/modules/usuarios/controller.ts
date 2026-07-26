@@ -4,6 +4,7 @@ import { ListUsuariosService } from "./services/ListUsuariosService";
 import { UpdatePerfilUsuarioService } from "./services/UpdatePerfilUsuarioService";
 import { ToggleUsuarioAtivoService } from "./services/ToggleUsuarioAtivoService";
 import { UpdateUsuarioService } from "./services/UpdateUsuarioService";
+import { AppError } from "../../shared/errors/AppError";
 
 export class UsuariosController {
 
@@ -33,6 +34,10 @@ export class UsuariosController {
     const { perfil } =
       req.body;
 
+    if (perfil === "SUPERADMIN" && req.user.perfil !== "SUPERADMIN") {
+      throw new AppError("Apenas um superadmin pode conceder esse perfil.", 403);
+    }
+
     const service =
       new UpdatePerfilUsuarioService();
 
@@ -53,6 +58,10 @@ export class UsuariosController {
 
     const { id } =
       req.params;
+
+    if (req.body.perfil === "SUPERADMIN" && req.user.perfil !== "SUPERADMIN") {
+      throw new AppError("Apenas um superadmin pode conceder esse perfil.", 403);
+    }
 
     const service =
       new UpdateUsuarioService();

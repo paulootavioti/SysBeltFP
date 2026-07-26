@@ -19,6 +19,9 @@ export class LoginService {
       await prisma.usuario.findUnique({
         where: {
           email
+        },
+        include: {
+          unidade: true
         }
       });
 
@@ -80,7 +83,9 @@ export class LoginService {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
-        perfil: usuario.perfil
+        perfil: usuario.perfil,
+        unidadeId: usuario.unidadeId,
+        unidadeNome: usuario.unidade?.nome ?? null
       },
       token
     };

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../../shared/database/prisma";
 import { DeleteCompeticaoService } from "./services/DeleteCompeticaoService";
 import { LIMITE_PADRAO_LISTAGEM } from "../../shared/constants/pagination";
+import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 
 export class CompeticoesController {
 
@@ -15,6 +16,7 @@ export class CompeticoesController {
 
     const competicao = await prisma.competicao.create({
       data: {
+        unidadeId: requireUnidadeId(req),
         nome,
         data: new Date(data),
         local

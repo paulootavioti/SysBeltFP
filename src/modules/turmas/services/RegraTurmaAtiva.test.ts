@@ -6,17 +6,25 @@ import { UpdateAlunoService } from "../../alunos/services/UpdateAlunoService";
 import { VincularAlunoTurmaService } from "./VincularAlunoTurmaService";
 import { ToggleTurmaAtivoService } from "./ToggleTurmaAtivoService";
 
+let unidadeId: number;
+
 async function limpar() {
   await prisma.aluno.deleteMany({ where: { nome: { startsWith: "TESTE_RN020_" } } });
   await prisma.turma.deleteMany({ where: { nome: { startsWith: "TESTE_RN020_" } } });
+  await prisma.unidade.deleteMany({ where: { nome: "TESTE_RN020_UNIDADE" } });
 }
 
-beforeEach(limpar);
+beforeEach(async () => {
+  await limpar();
+  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_RN020_UNIDADE" } });
+  unidadeId = unidade.id;
+});
 afterAll(limpar);
 
 async function criarTurmaInativa() {
   const turma = await prisma.turma.create({
     data: {
+      unidadeId,
       nome: "TESTE_RN020_TURMA",
       faixaEtaria: "Adulto",
       diasSemana: [1],
@@ -38,6 +46,7 @@ describe("RN-020: aluno só pode ser vinculado a turma ativa", () => {
 
     await expect(
       service.execute({
+        unidadeId,
         nome: "TESTE_RN020_ALUNO",
         dataNascimento: "2000-01-01",
         turmaId: turmaInativa.id,
@@ -49,6 +58,7 @@ describe("RN-020: aluno só pode ser vinculado a turma ativa", () => {
     const service = new CreateAlunoService();
 
     const aluno = await service.execute({
+      unidadeId,
       nome: "TESTE_RN020_ALUNO",
       dataNascimento: "2000-01-01",
       turmaId: null,
@@ -63,7 +73,7 @@ describe("RN-020: aluno só pode ser vinculado a turma ativa", () => {
     const turmaInativa = await criarTurmaInativa();
 
     const aluno = await prisma.aluno.create({
-      data: { nome: "TESTE_RN020_ALUNO", dataNascimento: new Date("2000-01-01") },
+      data: { unidadeId, nome: "TESTE_RN020_ALUNO", dataNascimento: new Date("2000-01-01") },
     });
 
     const service = new UpdateAlunoService();
@@ -82,7 +92,7 @@ describe("RN-020: aluno só pode ser vinculado a turma ativa", () => {
     const turmaInativa = await criarTurmaInativa();
 
     const aluno = await prisma.aluno.create({
-      data: { nome: "TESTE_RN020_ALUNO", dataNascimento: new Date("2000-01-01"), turmaId: turmaInativa.id },
+      data: { unidadeId, nome: "TESTE_RN020_ALUNO", dataNascimento: new Date("2000-01-01"), turmaId: turmaInativa.id },
     });
 
     const service = new UpdateAlunoService();
@@ -102,7 +112,7 @@ describe("RN-020: aluno só pode ser vinculado a turma ativa", () => {
     const turmaInativa = await criarTurmaInativa();
 
     const aluno = await prisma.aluno.create({
-      data: { nome: "TESTE_RN020_ALUNO", dataNascimento: new Date("2000-01-01") },
+      data: { unidadeId, nome: "TESTE_RN020_ALUNO", dataNascimento: new Date("2000-01-01") },
     });
 
     const service = new VincularAlunoTurmaService();
@@ -115,6 +125,7 @@ describe("RN-022: inativar turma não desvincula os alunos", () => {
   it("mantém o aluno vinculado após a turma ser inativada", async () => {
     const turma = await prisma.turma.create({
       data: {
+        unidadeId,
         nome: "TESTE_RN020_TURMA",
         faixaEtaria: "Adulto",
         diasSemana: [1],
@@ -124,7 +135,7 @@ describe("RN-022: inativar turma não desvincula os alunos", () => {
     });
 
     const aluno = await prisma.aluno.create({
-      data: { nome: "TESTE_RN020_ALUNO", dataNascimento: new Date("2000-01-01"), turmaId: turma.id },
+      data: { unidadeId, nome: "TESTE_RN020_ALUNO", dataNascimento: new Date("2000-01-01"), turmaId: turma.id },
     });
 
     await new ToggleTurmaAtivoService().execute(turma.id);

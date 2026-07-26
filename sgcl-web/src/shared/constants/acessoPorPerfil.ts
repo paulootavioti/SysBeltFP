@@ -1,4 +1,4 @@
-export type Perfil = "ADMIN" | "PROFESSOR" | "RECEPCAO";
+export type Perfil = "SUPERADMIN" | "ADMIN" | "PROFESSOR" | "RECEPCAO";
 
 interface RegraAcesso {
   prefixo: string;
@@ -8,6 +8,7 @@ interface RegraAcesso {
 // Espelha as permissões (ensureRole) já aplicadas no backend, módulo a
 // módulo, pra que o menu e as rotas nunca ofereçam algo que a API recusaria.
 const REGRAS_ACESSO: RegraAcesso[] = [
+  { prefixo: "/unidades", perfis: ["SUPERADMIN"] },
   { prefixo: "/dashboard", perfis: ["ADMIN"] },
   { prefixo: "/alunos", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
   { prefixo: "/turmas", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
@@ -26,12 +27,17 @@ const REGRAS_ACESSO: RegraAcesso[] = [
 // Página segura para qualquer perfil autenticado — usada como destino
 // depois do login e como fallback quando o perfil não tem acesso à rota atual.
 export const ROTA_PADRAO_POR_PERFIL: Record<Perfil, string> = {
+  SUPERADMIN: "/unidades",
   ADMIN: "/dashboard",
   PROFESSOR: "/alunos",
   RECEPCAO: "/alunos",
 };
 
 export function perfilTemAcesso(perfil: string | undefined, caminho: string): boolean {
+  // superadmin administra todas as unidades — enxerga tudo que um ADMIN
+  // enxergaria, sem precisar listar "SUPERADMIN" em toda regra abaixo.
+  if (perfil === "SUPERADMIN") return true;
+
   const regra = REGRAS_ACESSO.find(
     (r) => caminho === r.prefixo || caminho.startsWith(`${r.prefixo}/`)
   );

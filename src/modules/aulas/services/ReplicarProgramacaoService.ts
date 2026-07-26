@@ -69,6 +69,7 @@ export class ReplicarProgramacaoService {
 
     await prisma.aulaProgramada.createMany({
       data: novasDatas.map((data) => ({
+        unidadeId: turma.unidadeId,
         turmaId: dto.turmaId,
         aulaCurriculoId: dto.aulaCurriculoId ?? undefined,
         data,

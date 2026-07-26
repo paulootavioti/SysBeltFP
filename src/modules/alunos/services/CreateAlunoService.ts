@@ -2,6 +2,7 @@ import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 
 interface CreateAlunoDTO {
+  unidadeId: number;
   nome: string;
   apelido?: string | null;
   dataNascimento: string;
@@ -107,6 +108,7 @@ export class CreateAlunoService {
 
     const aluno = await prisma.aluno.create({
       data: {
+        unidadeId: data.unidadeId,
         nome: data.nome,
         apelido: data.apelido,
         dataNascimento: dataNascimentoFormatada,

@@ -79,6 +79,7 @@ export class CreateGraduacaoService {
     const [graduacao] = await prisma.$transaction([
       prisma.graduacao.create({
         data: {
+          unidadeId: aluno.unidadeId,
           faixa,
           data: new Date(data),
           alunoId,
@@ -92,6 +93,7 @@ export class CreateGraduacaoService {
         ? [
             prisma.mensalidade.create({
               data: {
+                unidadeId: aluno.unidadeId,
                 valor: cobranca.valor,
                 vencimento: new Date(cobranca.vencimento),
                 alunoId,

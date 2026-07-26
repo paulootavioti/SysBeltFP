@@ -6,6 +6,8 @@ import { CreateGraduacaoService } from "./CreateGraduacaoService";
 
 const service = new CreateGraduacaoService();
 
+let unidadeId: number;
+
 function dataHaAnosAtras(anos: number): Date {
   const data = new Date();
   data.setFullYear(data.getFullYear() - anos);
@@ -15,6 +17,7 @@ function dataHaAnosAtras(anos: number): Date {
 async function criarAluno(opts: { idade: number; faixa: string; faixaDesdeAnos?: number }) {
   const aluno = await prisma.aluno.create({
     data: {
+      unidadeId,
       nome: "TESTE_VITEST_ALUNO",
       dataNascimento: dataHaAnosAtras(opts.idade),
       faixa: opts.faixa,
@@ -25,6 +28,7 @@ async function criarAluno(opts: { idade: number; faixa: string; faixaDesdeAnos?:
   if (opts.faixaDesdeAnos) {
     await prisma.graduacao.create({
       data: {
+        unidadeId,
         alunoId: aluno.id,
         faixa: opts.faixa,
         data: dataHaAnosAtras(opts.faixaDesdeAnos),
@@ -38,9 +42,14 @@ async function criarAluno(opts: { idade: number; faixa: string; faixaDesdeAnos?:
 async function limparAlunosDeTeste() {
   await prisma.graduacao.deleteMany({ where: { aluno: { nome: "TESTE_VITEST_ALUNO" } } });
   await prisma.aluno.deleteMany({ where: { nome: "TESTE_VITEST_ALUNO" } });
+  await prisma.unidade.deleteMany({ where: { nome: "TESTE_GRADUACAO_UNIDADE" } });
 }
 
-beforeEach(limparAlunosDeTeste);
+beforeEach(async () => {
+  await limparAlunosDeTeste();
+  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_GRADUACAO_UNIDADE" } });
+  unidadeId = unidade.id;
+});
 afterAll(limparAlunosDeTeste);
 
 describe("CreateGraduacaoService", () => {

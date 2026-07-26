@@ -8,6 +8,7 @@ interface CreateUsuarioDTO {
   email: string;
   senha: string;
   perfil: string;
+  unidadeId: number;
   nivelGraduacao?: string;
   outrasGraduacoes?: string;
   fotoUrl?: string | null;
@@ -21,6 +22,7 @@ export class CreateUsuarioService {
     email,
     senha,
     perfil,
+    unidadeId,
     nivelGraduacao,
     outrasGraduacoes,
     fotoUrl
@@ -49,6 +51,7 @@ export class CreateUsuarioService {
         email,
         senha: senhaHash,
         perfil,
+        unidadeId,
         nivelGraduacao,
         outrasGraduacoes,
         fotoUrl

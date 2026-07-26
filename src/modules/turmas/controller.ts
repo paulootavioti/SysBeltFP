@@ -7,6 +7,7 @@ import { VincularAlunoTurmaService } from "./services/VincularAlunoTurmaService"
 import { GetTurmaDetalhadaService } from "./services/GetTurmaDetalhadaService";
 
 import { ToggleTurmaAtivoService } from "./services/ToggleTurmaAtivoService";
+import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 
 export class TurmasController {
 
@@ -19,7 +20,7 @@ export class TurmasController {
       new CreateTurmaService();
 
     const turma =
-      await service.execute(req.body);
+      await service.execute({ ...req.body, unidadeId: requireUnidadeId(req) });
 
     return res.status(201).json(turma);
 

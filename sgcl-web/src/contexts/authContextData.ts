@@ -5,6 +5,8 @@ export type Usuario = {
   nome: string;
   email: string;
   perfil: string;
+  unidadeId: number | null;
+  unidadeNome: string | null;
 };
 
 export type AuthContextData = {

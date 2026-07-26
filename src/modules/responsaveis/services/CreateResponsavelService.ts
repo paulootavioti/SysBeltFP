@@ -64,6 +64,7 @@ export class CreateResponsavelService {
 
     return prisma.responsavel.create({
       data: {
+        unidadeId: aluno.unidadeId,
         nome: data.nome,
         apelido: data.apelido,
 
