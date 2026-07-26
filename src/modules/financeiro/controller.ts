@@ -1,14 +1,18 @@
 import { Request, Response } from "express";
 import { prisma } from "../../shared/database/prisma";
+import { escopoUnidade } from "../../shared/utils/escopoUnidade";
 
 export class FinanceiroController {
 
   async resumo(req: Request, res: Response) {
 
+    const unidade = escopoUnidade(req.user.unidadeId);
+
     const recebidas =
       await prisma.mensalidade.aggregate({
         where: {
-          pago: true
+          pago: true,
+          ...unidade
         },
         _sum: {
           valor: true
@@ -18,7 +22,8 @@ export class FinanceiroController {
     const pendentes =
       await prisma.mensalidade.aggregate({
         where: {
-          pago: false
+          pago: false,
+          ...unidade
         },
         _sum: {
           valor: true
@@ -31,7 +36,8 @@ export class FinanceiroController {
           pago: false,
           vencimento: {
             lt: new Date()
-          }
+          },
+          ...unidade
         }
       });
 

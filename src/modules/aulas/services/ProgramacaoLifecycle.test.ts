@@ -39,7 +39,7 @@ describe("edição e cancelamento de programação", () => {
     });
 
     const service = new UpdateAulaProgramadaService();
-    const atualizada = await service.execute(programacao.id, { observacoes: "Levar kimono extra" });
+    const atualizada = await service.execute(programacao.id, { observacoes: "Levar kimono extra" }, turma.unidadeId);
 
     expect(atualizada.observacoes).toBe("Levar kimono extra");
   });
@@ -51,7 +51,7 @@ describe("edição e cancelamento de programação", () => {
     });
 
     const service = new UpdateAulaProgramadaService();
-    await expect(service.execute(programacao.id, { observacoes: "x" })).rejects.toThrow();
+    await expect(service.execute(programacao.id, { observacoes: "x" }, turma.unidadeId)).rejects.toThrow();
   });
 
   it("cancela uma programação pendente e não permite cancelar duas vezes", async () => {
@@ -61,11 +61,11 @@ describe("edição e cancelamento de programação", () => {
     });
 
     const service = new CancelarAulaProgramadaService();
-    const cancelada = await service.execute(programacao.id);
+    const cancelada = await service.execute(programacao.id, turma.unidadeId);
 
     expect(cancelada.status).toBe("CANCELADA");
 
-    await expect(service.execute(programacao.id)).rejects.toThrow();
+    await expect(service.execute(programacao.id, turma.unidadeId)).rejects.toThrow();
   });
 });
 
@@ -100,12 +100,15 @@ describe("ReplicarProgramacaoService", () => {
     const service = new ReplicarProgramacaoService();
 
     // segundas de agosto/2026: 03, 10, 17, 24, 31
-    const resultado = await service.execute({
-      turmaId: turma.id,
-      dataInicio: "2026-08-01",
-      dataFim: "2026-08-31",
-      diasSemana: [1],
-    });
+    const resultado = await service.execute(
+      {
+        turmaId: turma.id,
+        dataInicio: "2026-08-01",
+        dataFim: "2026-08-31",
+        diasSemana: [1],
+      },
+      turma.unidadeId
+    );
 
     expect(resultado.criadas).toBe(5);
 
@@ -114,7 +117,10 @@ describe("ReplicarProgramacaoService", () => {
 
     // replicar de novo no mesmo período deve ignorar tudo por duplicidade
     await expect(
-      service.execute({ turmaId: turma.id, dataInicio: "2026-08-01", dataFim: "2026-08-31", diasSemana: [1] })
+      service.execute(
+        { turmaId: turma.id, dataInicio: "2026-08-01", dataFim: "2026-08-31", diasSemana: [1] },
+        turma.unidadeId
+      )
     ).rejects.toThrow();
   });
 
@@ -123,7 +129,10 @@ describe("ReplicarProgramacaoService", () => {
     const service = new ReplicarProgramacaoService();
 
     await expect(
-      service.execute({ turmaId: turma.id, dataInicio: "2026-08-31", dataFim: "2026-08-01", diasSemana: [1] })
+      service.execute(
+        { turmaId: turma.id, dataInicio: "2026-08-31", dataFim: "2026-08-01", diasSemana: [1] },
+        turma.unidadeId
+      )
     ).rejects.toThrow();
   });
 });

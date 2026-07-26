@@ -1,11 +1,13 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class VincularAlunoTurmaService {
 
   async execute(
     turmaId: number,
-    alunoId: number
+    alunoId: number,
+    unidadeId: number | null
   ) {
 
     const turma =
@@ -21,6 +23,8 @@ export class VincularAlunoTurmaService {
       );
     }
 
+    garantirAcessoUnidade(unidadeId, turma.unidadeId, "Turma não encontrada.");
+
     if (!turma.ativo) {
       throw new AppError(
         "Não é possível matricular o aluno em uma turma inativa."
@@ -34,7 +38,7 @@ export class VincularAlunoTurmaService {
         }
       });
 
-    if (!aluno) {
+    if (!aluno || aluno.unidadeId !== turma.unidadeId) {
       throw new AppError(
         "Aluno não encontrado."
       );

@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface UpdateAlunoDTO {
   id: number;
@@ -57,7 +58,7 @@ function toNumberOrNull(value: unknown) {
 }
 
 export class UpdateAlunoService {
-  async execute(data: UpdateAlunoDTO) {
+  async execute(data: UpdateAlunoDTO, unidadeId: number | null) {
     const aluno = await prisma.aluno.findUnique({
       where: { id: data.id },
     });
@@ -66,12 +67,14 @@ export class UpdateAlunoService {
       throw new AppError("Aluno não encontrado.");
     }
 
+    garantirAcessoUnidade(unidadeId, aluno.unidadeId, "Aluno não encontrado.");
+
     const turmaId = toNumberOrNull(data.turmaId);
 
     if (turmaId !== null && turmaId !== aluno.turmaId) {
       const turma = await prisma.turma.findUnique({ where: { id: turmaId } });
 
-      if (!turma) {
+      if (!turma || turma.unidadeId !== aluno.unidadeId) {
         throw new AppError("Turma não encontrada.");
       }
 

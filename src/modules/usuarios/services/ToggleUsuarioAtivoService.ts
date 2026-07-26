@@ -1,9 +1,10 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class ToggleUsuarioAtivoService {
 
-  async execute(id: number) {
+  async execute(id: number, unidadeId: number | null) {
 
     const usuario =
       await prisma.usuario.findUnique({
@@ -17,6 +18,8 @@ export class ToggleUsuarioAtivoService {
         "Usuário não encontrado."
       );
     }
+
+    garantirAcessoUnidade(unidadeId, usuario.unidadeId, "Usuário não encontrado.");
 
     return prisma.usuario.update({
       where: {

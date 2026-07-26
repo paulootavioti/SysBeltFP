@@ -1,12 +1,14 @@
 import { prisma } from "../../../shared/database/prisma";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class ListCurriculosService {
-  async execute() {
+  async execute(unidadeId: number | null) {
     return prisma.curriculo.findMany({
       take: LIMITE_PADRAO_LISTAGEM,
       where: {
         ativo: true,
+        ...escopoUnidade(unidadeId),
       },
       include: {
         modulos: {

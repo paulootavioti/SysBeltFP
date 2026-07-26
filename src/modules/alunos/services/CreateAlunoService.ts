@@ -97,7 +97,7 @@ export class CreateAlunoService {
     if (turmaId !== null) {
       const turma = await prisma.turma.findUnique({ where: { id: turmaId } });
 
-      if (!turma) {
+      if (!turma || turma.unidadeId !== data.unidadeId) {
         throw new AppError("Turma não encontrada.");
       }
 

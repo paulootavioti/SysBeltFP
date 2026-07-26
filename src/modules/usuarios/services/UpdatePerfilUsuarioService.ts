@@ -1,11 +1,13 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class UpdatePerfilUsuarioService {
 
   async execute(
     id: number,
-    perfil: string
+    perfil: string,
+    unidadeId: number | null
   ) {
 
     const usuario =
@@ -20,6 +22,8 @@ export class UpdatePerfilUsuarioService {
         "Usuário não encontrado."
       );
     }
+
+    garantirAcessoUnidade(unidadeId, usuario.unidadeId, "Usuário não encontrado.");
 
     return prisma.usuario.update({
       where: {

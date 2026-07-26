@@ -31,8 +31,8 @@ export class MensalidadesController {
       new ListMensalidadesService();
   
     const mensalidades =
-      await service.execute();
-  
+      await service.execute(req.user.unidadeId);
+
     return res.json(mensalidades);
   }
 
@@ -45,7 +45,8 @@ export class MensalidadesController {
 
     const mensalidade =
       await service.execute(
-        Number(id)
+        Number(id),
+        req.user.unidadeId
       );
 
     return res.json(mensalidade);
@@ -56,10 +57,10 @@ export class MensalidadesController {
 
     const service =
       new GetMensalidadesVencidasService();
-  
+
     const mensalidades =
-      await service.execute();
-  
+      await service.execute(req.user.unidadeId);
+
     return res.json(mensalidades);
   }
 
@@ -67,13 +68,14 @@ export class MensalidadesController {
   async pagar(req: Request, res: Response) {
 
     const { id } = req.params;
-  
+
     const service =
       new PagarMensalidadeService();
-  
+
     const mensalidade =
       await service.execute(
-        Number(id)
+        Number(id),
+        req.user.unidadeId
       );
   
     return res.json(mensalidade);

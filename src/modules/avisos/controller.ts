@@ -7,7 +7,7 @@ export class AvisosController {
   async list(req: Request, res: Response) {
     const service = new ListAvisosService();
 
-    const avisos = await service.execute(req.user.id);
+    const avisos = await service.execute(req.user.id, req.user.unidadeId);
 
     return res.json({
       total: avisos.length,

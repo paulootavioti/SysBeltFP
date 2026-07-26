@@ -4,6 +4,7 @@ import { CreateGraduacaoService } from "./services/CreateGraduacaoService";
 import { GetEvolucaoAlunoService } from "./services/GetEvolucaoAlunoService";
 import { IncrementarGrauService } from "./services/IncrementarGrauService";
 import { LIMITE_PADRAO_LISTAGEM } from "../../shared/constants/pagination";
+import { escopoUnidade } from "../../shared/utils/escopoUnidade";
 
 export class GraduacoesController {
 
@@ -43,6 +44,7 @@ export class GraduacoesController {
   async list(req: Request, res: Response) {
 
     const graduacoes = await prisma.graduacao.findMany({
+      where: escopoUnidade(req.user.unidadeId),
       take: LIMITE_PADRAO_LISTAGEM,
       include: {
         aluno: true
@@ -59,65 +61,31 @@ export class GraduacoesController {
   async aluno(req: Request, res: Response) {
 
     const { id } = req.params;
-  
+
     const graduacoes = await prisma.graduacao.findMany({
       where: {
-        alunoId: Number(id)
+        alunoId: Number(id),
+        ...escopoUnidade(req.user.unidadeId)
       },
       orderBy: {
         data: "desc"
       }
     });
-  
+
     return res.json(graduacoes);
   }
-
-  // Proximas Graduacoes
-  // async proximas(req: Request, res: Response) {
-
-  //   const alunos = await prisma.aluno.findMany({
-  //     where: {
-  //       ativo: true
-  //     }
-  //   });
-  
-  //   const resultado = await Promise.all(
-  //     alunos.map(async (aluno) => {
-  
-  //       const presencas =
-  //         await prisma.presenca.count({
-  //           where: {
-  //             alunoId: aluno.id
-  //           }
-  //         });
-  
-  //       return {
-  //         alunoId: aluno.id,
-  //         nome: aluno.nome,
-  //         faixa: aluno.faixa,
-  //         presencas,
-  //         aptoGraduacao: presencas >= 20
-  //       };
-  //     })
-  //   );
-  
-  //   const aptos = resultado.filter(
-  //     aluno => aluno.aptoGraduacao
-  //   );
-  
-  //   return res.json(aptos);
-  // }
 
   //evolucao
   async evolucao(req: Request, res: Response) {
     const { alunoId } = req.params;
-  
+
     const service = new GetEvolucaoAlunoService();
-  
+
     const evolucao = await service.execute(
-      Number(alunoId)
+      Number(alunoId),
+      req.user.unidadeId
     );
-  
+
     return res.json(evolucao);
   }
 
@@ -126,7 +94,8 @@ export class GraduacoesController {
 
     const alunos = await prisma.aluno.findMany({
       where: {
-        ativo: true
+        ativo: true,
+        ...escopoUnidade(req.user.unidadeId)
       }
     });
 

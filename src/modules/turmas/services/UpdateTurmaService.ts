@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface UpdateTurmaDTO {
   nome: string;
@@ -13,12 +14,14 @@ interface UpdateTurmaDTO {
 }
 
 export class UpdateTurmaService {
-  async execute(id: number, data: UpdateTurmaDTO) {
+  async execute(id: number, data: UpdateTurmaDTO, unidadeId: number | null) {
     const turmaExistente = await prisma.turma.findUnique({ where: { id } });
 
     if (!turmaExistente) {
       throw new AppError("Turma não encontrada.");
     }
+
+    garantirAcessoUnidade(unidadeId, turmaExistente.unidadeId, "Turma não encontrada.");
 
     return prisma.turma.update({
       where: { id },

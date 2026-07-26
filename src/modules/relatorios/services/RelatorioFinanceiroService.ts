@@ -1,14 +1,16 @@
 import { prisma } from "../../../shared/database/prisma";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class RelatorioFinanceiroService {
-  async execute() {
+  async execute(unidadeId: number | null) {
     const mensalidadesVencidas =
       await prisma.mensalidade.findMany({
         where: {
           pago: false,
           vencimento: {
             lt: new Date()
-          }
+          },
+          ...escopoUnidade(unidadeId)
         },
         include: {
           aluno: true

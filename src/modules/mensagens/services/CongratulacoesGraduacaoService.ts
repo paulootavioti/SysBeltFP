@@ -1,8 +1,9 @@
 import { prisma } from "../../../shared/database/prisma";
 import { calcularIdade, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class CongratulacoesGraduacaoService {
-  async execute(): Promise<MensagemGerada[]> {
+  async execute(unidadeId: number | null): Promise<MensagemGerada[]> {
     const seteDiasAtras = new Date();
     seteDiasAtras.setUTCDate(seteDiasAtras.getUTCDate() - 7);
     seteDiasAtras.setUTCHours(0, 0, 0, 0);
@@ -10,6 +11,7 @@ export class CongratulacoesGraduacaoService {
     const graduacoes = await prisma.graduacao.findMany({
       where: {
         data: { gte: seteDiasAtras },
+        ...escopoUnidade(unidadeId),
       },
       include: {
         aluno: {

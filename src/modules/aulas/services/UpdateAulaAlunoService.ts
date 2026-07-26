@@ -1,6 +1,7 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { calcularIdade } from "../../../shared/constants/faixas";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface UpdateAulaAlunoDTO {
   id: number;
@@ -25,7 +26,7 @@ const CAMPOS_COMPORTAMENTO = [
 ] as const;
 
 export class UpdateAulaAlunoService {
-  async execute(data: UpdateAulaAlunoDTO) {
+  async execute(data: UpdateAulaAlunoDTO, unidadeId: number | null) {
     const registro = await prisma.aulaAluno.findUnique({
       where: {
         id: data.id,
@@ -39,6 +40,8 @@ export class UpdateAulaAlunoService {
     if (!registro) {
       throw new AppError("Registro da aula não encontrado.");
     }
+
+    garantirAcessoUnidade(unidadeId, registro.aula.unidadeId, "Registro da aula não encontrado.");
 
     if (registro.aula.status === "FINALIZADA") {
       throw new AppError(

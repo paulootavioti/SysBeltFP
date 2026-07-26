@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface CreateAulaProgramadaDTO {
   turmaId: number;
@@ -9,7 +10,7 @@ interface CreateAulaProgramadaDTO {
 }
 
 export class CreateAulaProgramadaService {
-  async execute(data: CreateAulaProgramadaDTO) {
+  async execute(data: CreateAulaProgramadaDTO, unidadeId: number | null) {
     const turma = await prisma.turma.findUnique({
       where: { id: data.turmaId },
     });
@@ -17,6 +18,8 @@ export class CreateAulaProgramadaService {
     if (!turma) {
       throw new AppError("Turma não encontrada.");
     }
+
+    garantirAcessoUnidade(unidadeId, turma.unidadeId, "Turma não encontrada.");
 
     if (data.aulaCurriculoId) {
       const aulaCurriculo = await prisma.aulaCurriculo.findUnique({

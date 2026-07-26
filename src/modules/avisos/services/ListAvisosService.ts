@@ -1,4 +1,5 @@
 import { prisma } from "../../../shared/database/prisma";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export interface Aviso {
   tipo: string;
@@ -17,12 +18,13 @@ function formatarValorBr(valor: number): string {
 }
 
 export class ListAvisosService {
-  async execute(usuarioId: number): Promise<Aviso[]> {
+  async execute(usuarioId: number, unidadeId: number | null): Promise<Aviso[]> {
     const [mensalidadesVencidas, reconhecidos] = await Promise.all([
       prisma.mensalidade.findMany({
         where: {
           pago: false,
           vencimento: { lt: new Date() },
+          ...escopoUnidade(unidadeId),
         },
         include: { aluno: true },
         orderBy: { vencimento: "asc" },

@@ -1,25 +1,33 @@
 import { prisma } from "../../../shared/database/prisma";
 import { calcularRangePeriodo, montarSerie, type Periodo } from "../utils/periodo";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class GetResumoPeriodoService {
-  async execute(periodo: Periodo) {
+  async execute(periodo: Periodo, unidadeId: number | null) {
     const range = calcularRangePeriodo(periodo);
 
     const [presencas, mensalidadesPagas, alunosNovos, graduacoesNoPeriodo] = await Promise.all([
       prisma.aulaAluno.findMany({
-        where: { presente: true, aula: { data: { gte: range.inicio, lt: range.fim } } },
+        where: {
+          presente: true,
+          aula: { data: { gte: range.inicio, lt: range.fim }, ...escopoUnidade(unidadeId) },
+        },
         select: { aula: { select: { data: true } } },
       }),
       prisma.mensalidade.findMany({
-        where: { pago: true, dataPagamento: { gte: range.inicio, lt: range.fim } },
+        where: {
+          pago: true,
+          dataPagamento: { gte: range.inicio, lt: range.fim },
+          ...escopoUnidade(unidadeId),
+        },
         select: { valor: true, dataPagamento: true },
       }),
       prisma.aluno.findMany({
-        where: { createdAt: { gte: range.inicio, lt: range.fim } },
+        where: { createdAt: { gte: range.inicio, lt: range.fim }, ...escopoUnidade(unidadeId) },
         select: { createdAt: true },
       }),
       prisma.graduacao.count({
-        where: { data: { gte: range.inicio, lt: range.fim } },
+        where: { data: { gte: range.inicio, lt: range.fim }, ...escopoUnidade(unidadeId) },
       }),
     ]);
 

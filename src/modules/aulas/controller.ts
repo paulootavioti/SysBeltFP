@@ -41,7 +41,7 @@ export class AulasController {
   async create(req: Request, res: Response) {
     const service = new StartAulaService();
 
-    const aula = await service.execute(req.body);
+    const aula = await service.execute(req.body, req.user.unidadeId);
 
     return res.status(201).json(aula);
   }
@@ -49,10 +49,13 @@ export class AulasController {
   async list(req: Request, res: Response) {
     const service = new ListAulasService();
 
-    const aulas = await service.execute({
-      turmaId: req.query.turmaId ? Number(req.query.turmaId) : undefined,
-      periodo: lerPeriodo(req),
-    });
+    const aulas = await service.execute(
+      {
+        turmaId: req.query.turmaId ? Number(req.query.turmaId) : undefined,
+        periodo: lerPeriodo(req),
+      },
+      req.user.unidadeId
+    );
 
     return res.json(aulas);
   }
@@ -62,7 +65,7 @@ export class AulasController {
 
     const periodo = lerPeriodo(req) ?? "SEMANAL";
 
-    const resumo = await service.execute(periodo);
+    const resumo = await service.execute(periodo, req.user.unidadeId);
 
     return res.json(resumo);
   }
@@ -70,7 +73,7 @@ export class AulasController {
   async show(req: Request, res: Response) {
     const service = new GetAulaService();
 
-    const aula = await service.execute(Number(req.params.id));
+    const aula = await service.execute(Number(req.params.id), req.user.unidadeId);
 
     return res.json(aula);
   }
@@ -79,7 +82,8 @@ export class AulasController {
     const service = new FinalizarAulaService();
 
     const aula = await service.execute(
-      Number(req.params.id)
+      Number(req.params.id),
+      req.user.unidadeId
     );
 
     return res.json(aula);
@@ -88,10 +92,13 @@ export class AulasController {
   async updateAluno(req: Request, res: Response) {
     const service = new UpdateAulaAlunoService();
 
-    const registro = await service.execute({
-      id: Number(req.params.id),
-      ...req.body,
-    });
+    const registro = await service.execute(
+      {
+        id: Number(req.params.id),
+        ...req.body,
+      },
+      req.user.unidadeId
+    );
 
     return res.json(registro);
   }
@@ -99,7 +106,7 @@ export class AulasController {
   async criarProgramada(req: Request, res: Response) {
     const service = new CreateAulaProgramadaService();
 
-    const programacao = await service.execute(req.body);
+    const programacao = await service.execute(req.body, req.user.unidadeId);
 
     return res.status(201).json(programacao);
   }
@@ -107,10 +114,13 @@ export class AulasController {
   async listarProgramadas(req: Request, res: Response) {
     const service = new ListAulasProgramadasService();
 
-    const programacoes = await service.execute({
-      turmaId: req.query.turmaId ? Number(req.query.turmaId) : undefined,
-      periodo: lerPeriodo(req),
-    });
+    const programacoes = await service.execute(
+      {
+        turmaId: req.query.turmaId ? Number(req.query.turmaId) : undefined,
+        periodo: lerPeriodo(req),
+      },
+      req.user.unidadeId
+    );
 
     return res.json(programacoes);
   }
@@ -120,7 +130,7 @@ export class AulasController {
 
     const periodo = lerPeriodo(req) ?? "SEMANAL";
 
-    const resumo = await service.execute(periodo);
+    const resumo = await service.execute(periodo, req.user.unidadeId);
 
     return res.json(resumo);
   }
@@ -128,7 +138,7 @@ export class AulasController {
   async iniciarProgramada(req: Request, res: Response) {
     const service = new IniciarAulaProgramadaService();
 
-    const aula = await service.execute(Number(req.params.id));
+    const aula = await service.execute(Number(req.params.id), req.user.unidadeId);
 
     return res.json(aula);
   }
@@ -136,7 +146,11 @@ export class AulasController {
   async updateProgramada(req: Request, res: Response) {
     const service = new UpdateAulaProgramadaService();
 
-    const programacao = await service.execute(Number(req.params.id), req.body);
+    const programacao = await service.execute(
+      Number(req.params.id),
+      req.body,
+      req.user.unidadeId
+    );
 
     return res.json(programacao);
   }
@@ -144,7 +158,7 @@ export class AulasController {
   async cancelarProgramada(req: Request, res: Response) {
     const cancelarService = new CancelarAulaProgramadaService();
 
-    const programacao = await cancelarService.execute(Number(req.params.id));
+    const programacao = await cancelarService.execute(Number(req.params.id), req.user.unidadeId);
 
     const avisoService = new AvisoCancelamentoAulaService();
 
@@ -156,7 +170,7 @@ export class AulasController {
   async replicarProgramada(req: Request, res: Response) {
     const service = new ReplicarProgramacaoService();
 
-    const resultado = await service.execute(req.body);
+    const resultado = await service.execute(req.body, req.user.unidadeId);
 
     return res.status(201).json(resultado);
   }
@@ -164,7 +178,7 @@ export class AulasController {
   async delete(req: Request, res: Response) {
     const service = new DeleteAulaService();
 
-    await service.execute(Number(req.params.id));
+    await service.execute(Number(req.params.id), req.user.unidadeId);
 
     return res.status(204).send();
   }
@@ -172,7 +186,7 @@ export class AulasController {
   async deleteProgramada(req: Request, res: Response) {
     const service = new DeleteAulaProgramadaService();
 
-    await service.execute(Number(req.params.id));
+    await service.execute(Number(req.params.id), req.user.unidadeId);
 
     return res.status(204).send();
   }
@@ -180,7 +194,7 @@ export class AulasController {
   async update(req: Request, res: Response) {
     const service = new UpdateAulaService();
 
-    const aula = await service.execute(Number(req.params.id), req.body);
+    const aula = await service.execute(Number(req.params.id), req.body, req.user.unidadeId);
 
     return res.json(aula);
   }
@@ -190,7 +204,7 @@ export class AulasController {
 
     const referencia = req.query.data ? new Date(String(req.query.data)) : new Date();
 
-    const grade = await service.execute(referencia);
+    const grade = await service.execute(req.user.unidadeId, referencia);
 
     return res.json(grade);
   }

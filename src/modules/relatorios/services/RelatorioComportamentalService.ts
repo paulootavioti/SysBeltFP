@@ -1,9 +1,10 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class RelatorioComportamentalService {
 
-  async execute(alunoId: number) {
+  async execute(alunoId: number, unidadeId: number | null) {
 
     const aluno =
       await prisma.aluno.findUnique({
@@ -17,6 +18,8 @@ export class RelatorioComportamentalService {
         "Aluno não encontrado."
       );
     }
+
+    garantirAcessoUnidade(unidadeId, aluno.unidadeId, "Aluno não encontrado.");
 
     const registros =
       await prisma.aulaAluno.findMany({

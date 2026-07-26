@@ -33,7 +33,7 @@ async function criarTurmaInativa() {
     },
   });
 
-  await new ToggleTurmaAtivoService().execute(turma.id);
+  await new ToggleTurmaAtivoService().execute(turma.id, unidadeId);
 
   return turma;
 }
@@ -79,12 +79,15 @@ describe("RN-020: aluno só pode ser vinculado a turma ativa", () => {
     const service = new UpdateAlunoService();
 
     await expect(
-      service.execute({
-        id: aluno.id,
-        nome: aluno.nome,
-        dataNascimento: "2000-01-01",
-        turmaId: turmaInativa.id,
-      })
+      service.execute(
+        {
+          id: aluno.id,
+          nome: aluno.nome,
+          dataNascimento: "2000-01-01",
+          turmaId: turmaInativa.id,
+        },
+        unidadeId
+      )
     ).rejects.toThrow("turma inativa");
   });
 
@@ -97,12 +100,15 @@ describe("RN-020: aluno só pode ser vinculado a turma ativa", () => {
 
     const service = new UpdateAlunoService();
 
-    const atualizado = await service.execute({
-      id: aluno.id,
-      nome: "TESTE_RN020_ALUNO_EDITADO",
-      dataNascimento: "2000-01-01",
-      turmaId: turmaInativa.id,
-    });
+    const atualizado = await service.execute(
+      {
+        id: aluno.id,
+        nome: "TESTE_RN020_ALUNO_EDITADO",
+        dataNascimento: "2000-01-01",
+        turmaId: turmaInativa.id,
+      },
+      unidadeId
+    );
 
     expect(atualizado.nome).toBe("TESTE_RN020_ALUNO_EDITADO");
     expect(atualizado.turmaId).toBe(turmaInativa.id);
@@ -117,7 +123,7 @@ describe("RN-020: aluno só pode ser vinculado a turma ativa", () => {
 
     const service = new VincularAlunoTurmaService();
 
-    await expect(service.execute(turmaInativa.id, aluno.id)).rejects.toThrow("turma inativa");
+    await expect(service.execute(turmaInativa.id, aluno.id, unidadeId)).rejects.toThrow("turma inativa");
   });
 });
 
@@ -138,7 +144,7 @@ describe("RN-022: inativar turma não desvincula os alunos", () => {
       data: { unidadeId, nome: "TESTE_RN020_ALUNO", dataNascimento: new Date("2000-01-01"), turmaId: turma.id },
     });
 
-    await new ToggleTurmaAtivoService().execute(turma.id);
+    await new ToggleTurmaAtivoService().execute(turma.id, unidadeId);
 
     const alunoAtualizado = await prisma.aluno.findUnique({ where: { id: aluno.id } });
 

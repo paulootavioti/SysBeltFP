@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 const MAXIMO_AULAS_POR_REPLICACAO = 400;
 
@@ -13,12 +14,14 @@ interface ReplicarProgramacaoDTO {
 }
 
 export class ReplicarProgramacaoService {
-  async execute(dto: ReplicarProgramacaoDTO) {
+  async execute(dto: ReplicarProgramacaoDTO, unidadeId: number | null) {
     const turma = await prisma.turma.findUnique({ where: { id: dto.turmaId } });
 
     if (!turma) {
       throw new AppError("Turma não encontrada.");
     }
+
+    garantirAcessoUnidade(unidadeId, turma.unidadeId, "Turma não encontrada.");
 
     const [horas, minutos] = turma.horarioInicio.split(":").map(Number);
 

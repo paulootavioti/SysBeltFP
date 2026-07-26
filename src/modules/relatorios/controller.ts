@@ -21,7 +21,8 @@ export class RelatoriosController {
 
     const relatorio =
       await service.execute(
-        Number(alunoId)
+        Number(alunoId),
+        req.user.unidadeId
       );
 
     return res.json(relatorio);
@@ -31,18 +32,18 @@ export class RelatoriosController {
   async financeiro(req: Request, res: Response) {
     const service =
       new RelatorioFinanceiroService();
-  
+
     const relatorio =
-      await service.execute();
-  
+      await service.execute(req.user.unidadeId);
+
     return res.json(relatorio);
   }
 
   async ranking(req: Request, res: Response) {
     const service = new RelatorioRankingService();
-  
-    const relatorio = await service.execute();
-  
+
+    const relatorio = await service.execute(req.user.unidadeId);
+
     return res.json(relatorio);
   }
 
@@ -50,34 +51,35 @@ export class RelatoriosController {
     req: Request,
     res: Response
   ) {
-  
+
     const service =
       new RelatorioAniversariantesService();
-  
+
     const relatorio =
-      await service.execute();
-  
+      await service.execute(req.user.unidadeId);
+
     return res.json(relatorio);
-  
+
   }
 
   async comportamental(
     req: Request,
     res: Response
   ) {
-  
+
     const { alunoId } =
       req.params;
-  
+
     const service =
       new RelatorioComportamentalService();
-  
+
     const relatorio =
       await service.execute(
-        Number(alunoId)
+        Number(alunoId),
+        req.user.unidadeId
       );
-  
+
     return res.json(relatorio);
-  
+
   }
 }

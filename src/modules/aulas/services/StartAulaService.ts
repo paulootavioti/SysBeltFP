@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface StartAulaDTO {
   turmaId: number;
@@ -9,7 +10,7 @@ interface StartAulaDTO {
 }
 
 export class StartAulaService {
-  async execute(data: StartAulaDTO) {
+  async execute(data: StartAulaDTO, unidadeId: number | null) {
     const turma = await prisma.turma.findUnique({
       where: {
         id: data.turmaId,
@@ -29,6 +30,8 @@ export class StartAulaService {
     if (!turma) {
       throw new AppError("Turma não encontrada.");
     }
+
+    garantirAcessoUnidade(unidadeId, turma.unidadeId, "Turma não encontrada.");
 
     if (turma.alunos.length === 0) {
       throw new AppError(

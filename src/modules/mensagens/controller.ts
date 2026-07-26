@@ -11,37 +11,37 @@ export class MensagensController {
 
   async lembreteSemanal(req: Request, res: Response) {
     const service = new LembreteSemanalService();
-    const mensagens = await service.execute();
+    const mensagens = await service.execute(req.user.unidadeId);
     return res.json(mensagens);
   }
 
   async lembreteVencimento(req: Request, res: Response) {
     const service = new LembreteVencimentoService();
-    const mensagens = await service.execute();
+    const mensagens = await service.execute(req.user.unidadeId);
     return res.json(mensagens);
   }
 
   async lembreteAtraso(req: Request, res: Response) {
     const service = new LembreteAtrasoService();
-    const mensagens = await service.execute();
+    const mensagens = await service.execute(req.user.unidadeId);
     return res.json(mensagens);
   }
 
   async relatorioMensal(req: Request, res: Response) {
     const service = new RelatorioMensalService();
-    const mensagens = await service.execute();
+    const mensagens = await service.execute(req.user.unidadeId);
     return res.json(mensagens);
   }
 
   async congratulacoesGraduacao(req: Request, res: Response) {
     const service = new CongratulacoesGraduacaoService();
-    const mensagens = await service.execute();
+    const mensagens = await service.execute(req.user.unidadeId);
     return res.json(mensagens);
   }
 
   async ausencia(req: Request, res: Response) {
     const service = new AusenciaService();
-    const mensagens = await service.execute();
+    const mensagens = await service.execute(req.user.unidadeId);
     return res.json(mensagens);
   }
 

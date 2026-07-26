@@ -16,7 +16,7 @@ export class TecnicasController {
   async list(req: Request, res: Response) {
     const service = new ListTecnicasService();
 
-    const tecnicas = await service.execute();
+    const tecnicas = await service.execute(req.user.unidadeId);
 
     return res.json(tecnicas);
   }

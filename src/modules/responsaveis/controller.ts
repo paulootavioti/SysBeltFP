@@ -14,7 +14,7 @@ export class ResponsaveisController {
   async create(req: Request, res: Response) {
     const service = new CreateResponsavelService();
 
-    const responsavel = await service.execute(req.body);
+    const responsavel = await service.execute(req.body, req.user.unidadeId);
 
     return res.status(201).json(responsavel);
   }
@@ -22,7 +22,7 @@ export class ResponsaveisController {
   async list(req: Request, res: Response) {
     const service = new ListResponsaveisService();
 
-    const responsaveis = await service.execute();
+    const responsaveis = await service.execute(req.user.unidadeId);
 
     return res.json(responsaveis);
   }
@@ -32,7 +32,7 @@ export class ResponsaveisController {
 
     const service = new GetResponsavelService();
 
-    const responsavel = await service.execute(Number(id));
+    const responsavel = await service.execute(Number(id), req.user.unidadeId);
 
     return res.json(responsavel);
   }
@@ -42,10 +42,13 @@ export class ResponsaveisController {
 
     const service = new UpdateResponsavelService();
 
-    const responsavel = await service.execute({
-      id: Number(id),
-      ...req.body,
-    });
+    const responsavel = await service.execute(
+      {
+        id: Number(id),
+        ...req.body,
+      },
+      req.user.unidadeId
+    );
 
     return res.json(responsavel);
   }
@@ -55,7 +58,7 @@ export class ResponsaveisController {
 
     const service = new ToggleResponsavelAtivoService();
 
-    const responsavel = await service.execute(Number(id));
+    const responsavel = await service.execute(Number(id), req.user.unidadeId);
 
     return res.json(responsavel);
   }
@@ -65,18 +68,18 @@ export class ResponsaveisController {
 
     const service = new DeleteResponsavelService();
 
-    await service.execute(Number(id));
+    await service.execute(Number(id), req.user.unidadeId);
 
     return res.status(204).send();
   }
 
   async listByAluno(req: Request, res: Response) {
     const { alunoId } = req.params;
-  
+
     const service = new ListResponsaveisByAlunoService();
-  
-    const responsaveis = await service.execute(Number(alunoId));
-  
+
+    const responsaveis = await service.execute(Number(alunoId), req.user.unidadeId);
+
     return res.json(responsaveis);
   }
 }

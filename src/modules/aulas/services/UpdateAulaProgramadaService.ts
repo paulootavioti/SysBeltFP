@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface UpdateAulaProgramadaDTO {
   data?: string | null;
@@ -8,12 +9,14 @@ interface UpdateAulaProgramadaDTO {
 }
 
 export class UpdateAulaProgramadaService {
-  async execute(id: number, dto: UpdateAulaProgramadaDTO) {
+  async execute(id: number, dto: UpdateAulaProgramadaDTO, unidadeId: number | null) {
     const programacao = await prisma.aulaProgramada.findUnique({ where: { id } });
 
     if (!programacao) {
       throw new AppError("Programação não encontrada.", 404);
     }
+
+    garantirAcessoUnidade(unidadeId, programacao.unidadeId, "Programação não encontrada.");
 
     if (programacao.status !== "PENDENTE") {
       throw new AppError("Só é possível editar uma programação pendente.");

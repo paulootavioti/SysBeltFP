@@ -1,4 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
+import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface CreateModuloCurriculoDTO {
   nome: string;
@@ -11,7 +13,15 @@ interface CreateModuloCurriculoDTO {
 }
 
 export class CreateModuloCurriculoService {
-  async execute(data: CreateModuloCurriculoDTO) {
+  async execute(data: CreateModuloCurriculoDTO, unidadeId: number | null) {
+    const curriculo = await prisma.curriculo.findUnique({ where: { id: data.curriculoId } });
+
+    if (!curriculo) {
+      throw new AppError("Currículo não encontrado.");
+    }
+
+    garantirAcessoUnidade(unidadeId, curriculo.unidadeId, "Currículo não encontrado.");
+
     return prisma.moduloCurriculo.create({
       data: {
         nome: data.nome,

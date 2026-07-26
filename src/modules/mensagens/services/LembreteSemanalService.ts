@@ -1,13 +1,15 @@
 import { prisma } from "../../../shared/database/prisma";
 import { calcularIdade, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
 import { formatarDiasSemana } from "../../../shared/utils/diasSemana";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class LembreteSemanalService {
-  async execute(): Promise<MensagemGerada[]> {
+  async execute(unidadeId: number | null): Promise<MensagemGerada[]> {
     const alunos = await prisma.aluno.findMany({
       where: {
         ativo: true,
         turmaId: { not: null },
+        ...escopoUnidade(unidadeId),
       },
       include: {
         turma: true,

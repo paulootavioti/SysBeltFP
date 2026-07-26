@@ -1,4 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
+import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface UpdateAulaCurriculoDTO {
   titulo: string;
@@ -10,7 +12,22 @@ interface UpdateAulaCurriculoDTO {
 }
 
 export class UpdateAulaCurriculoService {
-  async execute(id: number, data: UpdateAulaCurriculoDTO) {
+  async execute(id: number, data: UpdateAulaCurriculoDTO, unidadeId: number | null) {
+    const aulaCurriculo = await prisma.aulaCurriculo.findUnique({
+      where: { id },
+      include: { modulo: { include: { curriculo: true } } },
+    });
+
+    if (!aulaCurriculo) {
+      throw new AppError("Aula do currículo não encontrada.");
+    }
+
+    garantirAcessoUnidade(
+      unidadeId,
+      aulaCurriculo.modulo.curriculo.unidadeId,
+      "Aula do currículo não encontrada."
+    );
+
     return prisma.aulaCurriculo.update({
       where: { id },
       data: {

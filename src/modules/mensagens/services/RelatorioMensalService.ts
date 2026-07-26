@@ -1,8 +1,9 @@
 import { prisma } from "../../../shared/database/prisma";
 import { calcularIdade, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class RelatorioMensalService {
-  async execute(): Promise<MensagemGerada[]> {
+  async execute(unidadeId: number | null): Promise<MensagemGerada[]> {
     const hoje = new Date();
     const inicioMes = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), 1));
     const inicioProximoMes = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth() + 1, 1));
@@ -11,6 +12,7 @@ export class RelatorioMensalService {
       where: {
         ativo: true,
         turmaId: { not: null },
+        ...escopoUnidade(unidadeId),
       },
       include: {
         responsaveis: { where: { ativo: true, recebeComunicados: true } },

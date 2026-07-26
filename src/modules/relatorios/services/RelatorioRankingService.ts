@@ -1,11 +1,13 @@
 import { prisma } from "../../../shared/database/prisma";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class RelatorioRankingService {
-  async execute() {
+  async execute(unidadeId: number | null) {
     const ranking = await prisma.aulaAluno.groupBy({
       by: ["alunoId"],
       where: {
         presente: true,
+        aluno: escopoUnidade(unidadeId),
       },
       _count: {
         alunoId: true,

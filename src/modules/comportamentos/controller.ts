@@ -12,10 +12,13 @@ export class ComportamentosController {
       new CreateComportamentoService();
 
     const comportamento =
-      await service.execute({
-        ...req.body,
-        alunoId: Number(req.body.alunoId)
-      });
+      await service.execute(
+        {
+          ...req.body,
+          alunoId: Number(req.body.alunoId)
+        },
+        req.user.unidadeId
+      );
 
     return res.status(201).json(comportamento);
   }
@@ -26,7 +29,7 @@ export class ComportamentosController {
       new ListComportamentosService();
 
     const comportamentos =
-      await service.execute();
+      await service.execute(req.user.unidadeId);
 
     return res.json(comportamentos);
   }
@@ -41,7 +44,8 @@ export class ComportamentosController {
 
     const resumo =
       await service.execute(
-        Number(alunoId)
+        Number(alunoId),
+        req.user.unidadeId
       );
 
     return res.json(resumo);

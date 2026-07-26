@@ -25,7 +25,7 @@ export class CurriculosController {
   async list(req: Request, res: Response) {
     const service = new ListCurriculosService();
 
-    const curriculos = await service.execute();
+    const curriculos = await service.execute(req.user.unidadeId);
 
     return res.json(curriculos);
   }
@@ -33,7 +33,7 @@ export class CurriculosController {
   async show(req: Request, res: Response) {
     const service = new GetCurriculoService();
 
-    const curriculo = await service.execute(Number(req.params.id));
+    const curriculo = await service.execute(Number(req.params.id), req.user.unidadeId);
 
     return res.json(curriculo);
   }
@@ -41,7 +41,7 @@ export class CurriculosController {
   async createModulo(req: Request, res: Response) {
     const service = new CreateModuloCurriculoService();
 
-    const modulo = await service.execute(req.body);
+    const modulo = await service.execute(req.body, req.user.unidadeId);
 
     return res.status(201).json(modulo);
   }
@@ -49,7 +49,7 @@ export class CurriculosController {
   async createAula(req: Request, res: Response) {
     const service = new CreateAulaCurriculoService();
 
-    const aula = await service.execute(req.body);
+    const aula = await service.execute(req.body, req.user.unidadeId);
 
     return res.status(201).json(aula);
   }
@@ -57,7 +57,7 @@ export class CurriculosController {
   async createTecnica(req: Request, res: Response) {
     const service = new CreateTecnicaCurriculoService();
 
-    const tecnica = await service.execute(req.body);
+    const tecnica = await service.execute(req.body, req.user.unidadeId);
 
     return res.status(201).json(tecnica);
   }
@@ -65,7 +65,7 @@ export class CurriculosController {
   async update(req: Request, res: Response) {
     const service = new UpdateCurriculoService();
 
-    const curriculo = await service.execute(Number(req.params.id), req.body);
+    const curriculo = await service.execute(Number(req.params.id), req.body, req.user.unidadeId);
 
     return res.json(curriculo);
   }
@@ -73,7 +73,7 @@ export class CurriculosController {
   async updateModulo(req: Request, res: Response) {
     const service = new UpdateModuloCurriculoService();
 
-    const modulo = await service.execute(Number(req.params.id), req.body);
+    const modulo = await service.execute(Number(req.params.id), req.body, req.user.unidadeId);
 
     return res.json(modulo);
   }
@@ -81,7 +81,7 @@ export class CurriculosController {
   async updateAula(req: Request, res: Response) {
     const service = new UpdateAulaCurriculoService();
 
-    const aula = await service.execute(Number(req.params.id), req.body);
+    const aula = await service.execute(Number(req.params.id), req.body, req.user.unidadeId);
 
     return res.json(aula);
   }
@@ -89,7 +89,7 @@ export class CurriculosController {
   async updateTecnica(req: Request, res: Response) {
     const service = new UpdateTecnicaCurriculoService();
 
-    const tecnica = await service.execute(Number(req.params.id), req.body);
+    const tecnica = await service.execute(Number(req.params.id), req.body, req.user.unidadeId);
 
     return res.json(tecnica);
   }
@@ -97,7 +97,7 @@ export class CurriculosController {
   async delete(req: Request, res: Response) {
     const service = new DeleteCurriculoService();
 
-    await service.execute(Number(req.params.id));
+    await service.execute(Number(req.params.id), req.user.unidadeId);
 
     return res.status(204).send();
   }

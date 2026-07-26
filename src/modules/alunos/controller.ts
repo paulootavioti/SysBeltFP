@@ -28,7 +28,7 @@ export class AlunosController {
   async list(req: Request, res: Response) {
     const service = new ListAlunosService();
 
-    const alunos = await service.execute();
+    const alunos = await service.execute(req.user.unidadeId);
 
     return res.json(alunos);
   }
@@ -37,7 +37,7 @@ export class AlunosController {
   async aniversariantes(req: Request, res: Response) {
     const service = new ListAniversariantesService();
 
-    const alunos = await service.execute();
+    const alunos = await service.execute(req.user.unidadeId);
 
     return res.json(alunos);
   }
@@ -47,7 +47,7 @@ export class AlunosController {
 
     const service = new GetProntuarioAlunoService();
 
-    const prontuario = await service.execute(Number(id));
+    const prontuario = await service.execute(Number(id), req.user.unidadeId);
 
     return res.json(prontuario);
   }
@@ -57,10 +57,13 @@ export class AlunosController {
 
     const service = new UpdateAlunoService();
 
-    const aluno = await service.execute({
-      id: Number(id),
-      ...req.body,
-    });
+    const aluno = await service.execute(
+      {
+        id: Number(id),
+        ...req.body,
+      },
+      req.user.unidadeId
+    );
 
     return res.json(aluno);
   }
@@ -70,7 +73,7 @@ export class AlunosController {
 
     const service = new ToggleAlunoAtivoService();
 
-    const aluno = await service.execute(Number(id));
+    const aluno = await service.execute(Number(id), req.user.unidadeId);
 
     return res.json(aluno);
   }
@@ -80,7 +83,7 @@ export class AlunosController {
 
     const service = new GetAlunoCompletoService();
 
-    const aluno = await service.execute(Number(id));
+    const aluno = await service.execute(Number(id), req.user.unidadeId);
 
     return res.json(aluno);
   }

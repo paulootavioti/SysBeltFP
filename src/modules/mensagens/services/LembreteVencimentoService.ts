@@ -6,9 +6,10 @@ import {
   formatarValorBr,
   type MensagemGerada,
 } from "../utils";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class LembreteVencimentoService {
-  async execute(): Promise<MensagemGerada[]> {
+  async execute(unidadeId: number | null): Promise<MensagemGerada[]> {
     const hoje = new Date();
     hoje.setUTCHours(0, 0, 0, 0);
 
@@ -22,6 +23,7 @@ export class LembreteVencimentoService {
       where: {
         pago: false,
         vencimento: { gte: dataAlvo, lt: proximoDia },
+        ...escopoUnidade(unidadeId),
       },
       include: {
         aluno: {

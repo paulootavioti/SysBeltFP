@@ -1,8 +1,17 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class DeleteCurriculoService {
-  async execute(id: number) {
+  async execute(id: number, unidadeId: number | null) {
+    const curriculo = await prisma.curriculo.findUnique({ where: { id } });
+
+    if (!curriculo) {
+      throw new AppError("Currículo não encontrado.");
+    }
+
+    garantirAcessoUnidade(unidadeId, curriculo.unidadeId, "Currículo não encontrado.");
+
     const turmasVinculadas = await prisma.turma.count({
       where: { curriculoId: id },
     });

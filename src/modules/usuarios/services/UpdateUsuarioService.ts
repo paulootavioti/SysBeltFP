@@ -2,6 +2,7 @@ import { hash } from "bcryptjs";
 
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface UpdateUsuarioDTO {
   nome: string;
@@ -16,13 +17,15 @@ interface UpdateUsuarioDTO {
 
 export class UpdateUsuarioService {
 
-  async execute(id: number, data: UpdateUsuarioDTO) {
+  async execute(id: number, data: UpdateUsuarioDTO, unidadeId: number | null) {
 
     const usuario = await prisma.usuario.findUnique({ where: { id } });
 
     if (!usuario) {
       throw new AppError("Usuário não encontrado.", 404);
     }
+
+    garantirAcessoUnidade(unidadeId, usuario.unidadeId, "Usuário não encontrado.");
 
     if (data.email !== usuario.email) {
       const emailEmUso = await prisma.usuario.findUnique({ where: { email: data.email } });

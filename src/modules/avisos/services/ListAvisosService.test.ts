@@ -50,7 +50,7 @@ describe("ListAvisosService + ReconhecerAvisosService", () => {
     const usuario = await criarUsuario("gestor-avisos-1@teste.com");
     const { mensalidade } = await criarAlunoComMensalidadeVencida(5);
 
-    const avisos = await listService.execute(usuario.id);
+    const avisos = await listService.execute(usuario.id, unidadeId);
 
     expect(avisos).toHaveLength(1);
     expect(avisos[0]).toMatchObject({
@@ -70,7 +70,7 @@ describe("ListAvisosService + ReconhecerAvisosService", () => {
       data: { unidadeId, alunoId: aluno.id, valor: 150, vencimento: vencimentoFuturo, pago: false },
     });
 
-    const avisos = await listService.execute(usuario.id);
+    const avisos = await listService.execute(usuario.id, unidadeId);
     expect(avisos).toHaveLength(0);
   });
 
@@ -83,8 +83,8 @@ describe("ListAvisosService + ReconhecerAvisosService", () => {
       { tipo: "MENSALIDADE_VENCIDA", referenciaId: mensalidade.id },
     ]);
 
-    const avisosGestor1 = await listService.execute(gestor1.id);
-    const avisosGestor2 = await listService.execute(gestor2.id);
+    const avisosGestor1 = await listService.execute(gestor1.id, unidadeId);
+    const avisosGestor2 = await listService.execute(gestor2.id, unidadeId);
 
     expect(avisosGestor1).toHaveLength(0);
     expect(avisosGestor2).toHaveLength(1);
@@ -99,7 +99,7 @@ describe("ListAvisosService + ReconhecerAvisosService", () => {
     await reconhecerService.execute(usuario.id, [aviso]);
     await expect(reconhecerService.execute(usuario.id, [aviso])).resolves.not.toThrow();
 
-    const avisos = await listService.execute(usuario.id);
+    const avisos = await listService.execute(usuario.id, unidadeId);
     expect(avisos).toHaveLength(0);
   });
 });

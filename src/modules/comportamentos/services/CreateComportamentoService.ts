@@ -1,4 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
+import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface CreateComportamentoDTO {
   alunoId: number;
@@ -11,7 +13,15 @@ interface CreateComportamentoDTO {
 }
 
 export class CreateComportamentoService {
-  async execute(data: CreateComportamentoDTO) {
+  async execute(data: CreateComportamentoDTO, unidadeId: number | null) {
+    const aluno = await prisma.aluno.findUnique({ where: { id: data.alunoId } });
+
+    if (!aluno) {
+      throw new AppError("Aluno não encontrado.");
+    }
+
+    garantirAcessoUnidade(unidadeId, aluno.unidadeId, "Aluno não encontrado.");
+
     return prisma.comportamento.create({
       data
     });

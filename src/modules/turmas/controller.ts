@@ -40,7 +40,8 @@ export class TurmasController {
     const turma =
       await service.execute(
         Number(id),
-        req.body
+        req.body,
+        req.user.unidadeId
       );
 
     return res.json(turma);
@@ -56,7 +57,7 @@ export class TurmasController {
       new ListTurmasService();
 
     const turmas =
-      await service.execute();
+      await service.execute(req.user.unidadeId);
 
     return res.json(turmas);
 
@@ -75,7 +76,8 @@ export class TurmasController {
 
     const turma =
       await service.execute(
-        Number(id)
+        Number(id),
+        req.user.unidadeId
       );
 
     return res.json(turma);
@@ -96,7 +98,8 @@ export class TurmasController {
     const aluno =
       await service.execute(
         Number(turmaId),
-        Number(alunoId)
+        Number(alunoId),
+        req.user.unidadeId
       );
 
     return res.json(aluno);
@@ -108,7 +111,7 @@ export class TurmasController {
 
     const service = new ToggleTurmaAtivoService();
 
-    const turma = await service.execute(Number(id));
+    const turma = await service.execute(Number(id), req.user.unidadeId);
 
     return res.json(turma);
   }

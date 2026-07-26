@@ -17,7 +17,7 @@ export class UsuariosController {
       new ListUsuariosService();
 
     const usuarios =
-      await service.execute();
+      await service.execute(req.user.unidadeId);
 
     return res.json(usuarios);
 
@@ -44,7 +44,8 @@ export class UsuariosController {
     const usuario =
       await service.execute(
         Number(id),
-        perfil
+        perfil,
+        req.user.unidadeId
       );
 
     return res.json(usuario);
@@ -69,7 +70,8 @@ export class UsuariosController {
     const usuario =
       await service.execute(
         Number(id),
-        req.body
+        req.body,
+        req.user.unidadeId
       );
 
     return res.json({
@@ -99,7 +101,8 @@ export class UsuariosController {
 
     const usuario =
       await service.execute(
-        Number(id)
+        Number(id),
+        req.user.unidadeId
       );
 
     return res.json(usuario);

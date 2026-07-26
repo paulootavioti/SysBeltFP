@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface CreateResponsavelDTO {
   nome: string;
@@ -37,7 +38,7 @@ interface CreateResponsavelDTO {
 }
 
 export class CreateResponsavelService {
-  async execute(data: CreateResponsavelDTO) {
+  async execute(data: CreateResponsavelDTO, unidadeId: number | null) {
     const aluno = await prisma.aluno.findUnique({
       where: {
         id: data.alunoId,
@@ -48,10 +49,13 @@ export class CreateResponsavelService {
       throw new AppError("Aluno não encontrado.");
     }
 
+    garantirAcessoUnidade(unidadeId, aluno.unidadeId, "Aluno não encontrado.");
+
     if (data.cpf) {
       const cpfExistente = await prisma.responsavel.findFirst({
         where: {
           cpf: data.cpf,
+          unidadeId: aluno.unidadeId,
         },
       });
 

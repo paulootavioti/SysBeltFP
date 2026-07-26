@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { prisma } from "../../shared/database/prisma";
 import { AppError } from "../../shared/errors/AppError";
 import { GetResumoPeriodoService } from "./services/GetResumoPeriodoService";
+import { escopoUnidade } from "../../shared/utils/escopoUnidade";
 import type { Periodo } from "./utils/periodo";
 
 const PERIODOS_VALIDOS: Periodo[] = ["DIARIO", "SEMANAL", "MENSAL", "ANUAL"];
@@ -11,20 +12,26 @@ export class DashboardController {
 
   async resumo(req: Request, res: Response) {
 
+    const unidade = escopoUnidade(req.user.unidadeId);
+
     const alunosAtivos =
       await prisma.aluno.count({
         where: {
-          ativo: true
+          ativo: true,
+          ...unidade
         }
       });
 
     const responsaveis =
-      await prisma.responsavel.count();
+      await prisma.responsavel.count({
+        where: unidade
+      });
 
     const mensalidadesPendentes =
       await prisma.mensalidade.count({
         where: {
-          pago: false
+          pago: false,
+          ...unidade
         }
       });
 
@@ -34,14 +41,16 @@ export class DashboardController {
           pago: false,
           vencimento: {
             lt: new Date()
-          }
+          },
+          ...unidade
         }
       });
 
     const recebido =
       await prisma.mensalidade.aggregate({
         where: {
-          pago: true
+          pago: true,
+          ...unidade
         },
         _sum: {
           valor: true
@@ -51,7 +60,8 @@ export class DashboardController {
     const pendente =
       await prisma.mensalidade.aggregate({
         where: {
-          pago: false
+          pago: false,
+          ...unidade
         },
         _sum: {
           valor: true
@@ -72,15 +82,20 @@ export class DashboardController {
           createdAt: {
             gte: hoje,
             lt: amanha
-          }
+          },
+          aula: unidade
         }
       });
 
     const graduacoes =
-      await prisma.graduacao.count();
+      await prisma.graduacao.count({
+        where: unidade
+      });
 
     const competicoes =
-      await prisma.competicao.count();
+      await prisma.competicao.count({
+        where: unidade
+      });
 
     return res.json({
       alunosAtivos,
@@ -109,7 +124,7 @@ export class DashboardController {
 
     const service = new GetResumoPeriodoService();
 
-    const resumo = await service.execute(periodo as Periodo);
+    const resumo = await service.execute(periodo as Periodo, req.user.unidadeId);
 
     return res.json(resumo);
   }

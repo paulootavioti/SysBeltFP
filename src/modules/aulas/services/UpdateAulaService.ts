@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { aulaIncludeCompleto } from "./aulaInclude";
 
 interface UpdateAulaDTO {
@@ -8,12 +9,14 @@ interface UpdateAulaDTO {
 }
 
 export class UpdateAulaService {
-  async execute(id: number, data: UpdateAulaDTO) {
+  async execute(id: number, data: UpdateAulaDTO, unidadeId: number | null) {
     const aula = await prisma.aula.findUnique({ where: { id } });
 
     if (!aula) {
       throw new AppError("Aula não encontrada.");
     }
+
+    garantirAcessoUnidade(unidadeId, aula.unidadeId, "Aula não encontrada.");
 
     return prisma.aula.update({
       where: { id },

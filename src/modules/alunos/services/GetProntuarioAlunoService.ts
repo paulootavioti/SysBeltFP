@@ -1,8 +1,9 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class GetProntuarioAlunoService {
-  async execute(id: number) {
+  async execute(id: number, unidadeId: number | null) {
     const aluno = await prisma.aluno.findUnique({
       where: {
         id,
@@ -52,6 +53,8 @@ export class GetProntuarioAlunoService {
     if (!aluno) {
       throw new AppError("Aluno não encontrado.");
     }
+
+    garantirAcessoUnidade(unidadeId, aluno.unidadeId, "Aluno não encontrado.");
 
     const totalAulas = aluno.aulas.length;
 

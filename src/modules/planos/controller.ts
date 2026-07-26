@@ -21,7 +21,7 @@ export class PlanosController {
 
     const service = new UpdatePlanoService();
 
-    const plano = await service.execute(Number(id), req.body);
+    const plano = await service.execute(Number(id), req.body, req.user.unidadeId);
 
     return res.json(plano);
   }
@@ -29,7 +29,7 @@ export class PlanosController {
   async list(req: Request, res: Response) {
     const service = new ListPlanosService();
 
-    const planos = await service.execute();
+    const planos = await service.execute(req.user.unidadeId);
 
     return res.json(planos);
   }
@@ -39,7 +39,7 @@ export class PlanosController {
 
     const service = new ToggleAtivoPlanoService();
 
-    const plano = await service.execute(Number(id));
+    const plano = await service.execute(Number(id), req.user.unidadeId);
 
     return res.json(plano);
   }

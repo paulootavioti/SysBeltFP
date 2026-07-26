@@ -127,7 +127,7 @@ describe("GetGradeSemanalService", () => {
       data: { unidadeId: unidade.id, turmaId: turma.id, data: foraDaSemana, status: "PENDENTE" },
     });
 
-    const grade = await service.execute(AGORA_FIXO);
+    const grade = await service.execute(unidade.id, AGORA_FIXO);
 
     expect(grade).toHaveLength(6);
     expect(grade.every((item) => item.turmaNome === "TESTE_GRADE_TURMA")).toBe(true);

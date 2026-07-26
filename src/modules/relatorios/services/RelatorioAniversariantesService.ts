@@ -1,8 +1,9 @@
 import { prisma } from "../../../shared/database/prisma";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class RelatorioAniversariantesService {
 
-  async execute() {
+  async execute(unidadeId: number | null) {
 
     const mesAtual =
       new Date().getMonth() + 1;
@@ -10,7 +11,8 @@ export class RelatorioAniversariantesService {
     const alunos =
       await prisma.aluno.findMany({
         where: {
-          ativo: true
+          ativo: true,
+          ...escopoUnidade(unidadeId)
         },
         orderBy: {
           nome: "asc"

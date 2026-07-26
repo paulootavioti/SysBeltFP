@@ -3,6 +3,8 @@ import { prisma } from "../../shared/database/prisma";
 import { DeleteCompeticaoService } from "./services/DeleteCompeticaoService";
 import { LIMITE_PADRAO_LISTAGEM } from "../../shared/constants/pagination";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
+import { escopoUnidade, garantirAcessoUnidade } from "../../shared/utils/escopoUnidade";
+import { AppError } from "../../shared/errors/AppError";
 
 export class CompeticoesController {
 
@@ -29,6 +31,7 @@ export class CompeticoesController {
   async list(req: Request, res: Response) {
 
     const competicoes = await prisma.competicao.findMany({
+      where: escopoUnidade(req.user.unidadeId),
       take: LIMITE_PADRAO_LISTAGEM,
       orderBy: {
         data: "desc"
@@ -45,14 +48,28 @@ export class CompeticoesController {
       competicaoId,
       alunoId
     } = req.body;
-  
+
+    const competicao = await prisma.competicao.findUnique({ where: { id: Number(competicaoId) } });
+
+    if (!competicao) {
+      throw new AppError("Competição não encontrada.");
+    }
+
+    garantirAcessoUnidade(req.user.unidadeId, competicao.unidadeId, "Competição não encontrada.");
+
+    const aluno = await prisma.aluno.findUnique({ where: { id: Number(alunoId) } });
+
+    if (!aluno || aluno.unidadeId !== competicao.unidadeId) {
+      throw new AppError("Aluno não encontrado.");
+    }
+
     const inscricao = await prisma.competicaoAluno.create({
       data: {
         competicaoId: Number(competicaoId),
         alunoId: Number(alunoId)
       }
     });
-  
+
     return res.status(201).json(inscricao);
   }
 
@@ -61,7 +78,15 @@ export class CompeticoesController {
   async atletas(req: Request, res: Response) {
 
     const { id } = req.params;
-  
+
+    const competicao = await prisma.competicao.findUnique({ where: { id: Number(id) } });
+
+    if (!competicao) {
+      throw new AppError("Competição não encontrada.");
+    }
+
+    garantirAcessoUnidade(req.user.unidadeId, competicao.unidadeId, "Competição não encontrada.");
+
     const atletas = await prisma.competicaoAluno.findMany({
       take: LIMITE_PADRAO_LISTAGEM,
       where: {
@@ -72,7 +97,7 @@ export class CompeticoesController {
         competicao: true
       }
     });
-  
+
     return res.json(atletas);
   }
 
@@ -81,9 +106,24 @@ export class CompeticoesController {
   async resultado(req: Request, res: Response) {
 
     const { id } = req.params;
-  
+
     const { resultado } = req.body;
-  
+
+    const inscricaoExistente = await prisma.competicaoAluno.findUnique({
+      where: { id: Number(id) },
+      include: { competicao: true },
+    });
+
+    if (!inscricaoExistente) {
+      throw new AppError("Inscrição não encontrada.");
+    }
+
+    garantirAcessoUnidade(
+      req.user.unidadeId,
+      inscricaoExistente.competicao.unidadeId,
+      "Inscrição não encontrada."
+    );
+
     const inscricao =
       await prisma.competicaoAluno.update({
         where: {
@@ -93,14 +133,14 @@ export class CompeticoesController {
           resultado
         }
       });
-  
+
     return res.json(inscricao);
   }
 
   async delete(req: Request, res: Response) {
     const service = new DeleteCompeticaoService();
 
-    await service.execute(Number(req.params.id));
+    await service.execute(Number(req.params.id), req.user.unidadeId);
 
     return res.status(204).send();
   }

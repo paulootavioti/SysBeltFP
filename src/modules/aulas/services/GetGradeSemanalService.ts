@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { calcularSemana } from "../utils/semana";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 type StatusExibicao = "AGENDADA" | "CONCLUIDA" | "NAO_REALIZADA";
 
@@ -47,12 +48,13 @@ function calcularStatusExibicao(
 }
 
 export class GetGradeSemanalService {
-  async execute(referencia: Date = new Date()) {
+  async execute(unidadeId: number | null, referencia: Date = new Date()) {
     const { inicio, fim } = calcularSemana(referencia);
 
     const programadas = await prisma.aulaProgramada.findMany({
       where: {
         data: { gte: inicio, lte: fim },
+        ...escopoUnidade(unidadeId),
       },
       include: {
         turma: {
