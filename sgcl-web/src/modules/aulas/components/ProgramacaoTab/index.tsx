@@ -13,7 +13,6 @@ import { useAuth } from "../../../../contexts/useAuth";
 import { AulaService } from "../../services/AulaService";
 import { ProgramarAulaForm, type ProgramarAulaFormData } from "../ProgramarAulaForm";
 import { EditarProgramacaoForm, type EditarProgramacaoFormData } from "../EditarProgramacaoForm";
-import { ReplicarProgramacaoForm, type ReplicarProgramacaoFormData } from "../ReplicarProgramacaoForm";
 import { AvisoCancelamentoLista } from "../AvisoCancelamentoLista";
 import { ResumoTurmas } from "../ResumoTurmas";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -41,7 +40,6 @@ export function ProgramacaoTab() {
   const [erro, setErro] = useState("");
 
   const [modalAberto, setModalAberto] = useState(false);
-  const [modalReplicarAberto, setModalReplicarAberto] = useState(false);
   const [programacaoEditando, setProgramacaoEditando] = useState<AulaProgramada | null>(null);
   const [avisosCancelamento, setAvisosCancelamento] = useState<MensagemGerada[] | null>(null);
 
@@ -76,43 +74,35 @@ export function ProgramacaoTab() {
     try {
       setSalvando(true);
       setErro("");
-      await AulaService.criarProgramada({
-        turmaId: Number(data.turmaId),
-        aulaCurriculoId: data.aulaCurriculoId ? Number(data.aulaCurriculoId) : undefined,
-        data: data.data,
-        observacoes: data.observacoes || undefined,
-      });
+
+      if (data.modo === "unica") {
+        await AulaService.criarProgramada({
+          turmaId: Number(data.turmaId),
+          aulaCurriculoId: data.aulaCurriculoId ? Number(data.aulaCurriculoId) : undefined,
+          data: data.data as string,
+          observacoes: data.observacoes || undefined,
+        });
+      } else {
+        const resultado = await AulaService.replicarProgramada({
+          turmaId: Number(data.turmaId),
+          aulaCurriculoId: data.aulaCurriculoId ? Number(data.aulaCurriculoId) : undefined,
+          dataInicio: data.dataInicio as string,
+          dataFim: data.dataFim as string,
+          diasSemana: data.diasSemana as number[],
+          observacoes: data.observacoes || undefined,
+        });
+        window.alert(
+          `${resultado.criadas} aula(s) programada(s) com sucesso.` +
+            (resultado.ignoradasPorDuplicidade > 0
+              ? ` ${resultado.ignoradasPorDuplicidade} data(s) já tinham programação e foram ignoradas.`
+              : "")
+        );
+      }
+
       if (turmaSelecionada) await carregarProgramacoes();
       setModalAberto(false);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao programar aula."));
-    } finally {
-      setSalvando(false);
-    }
-  }
-
-  async function handleReplicar(data: ReplicarProgramacaoFormData) {
-    try {
-      setSalvando(true);
-      setErro("");
-      const resultado = await AulaService.replicarProgramada({
-        turmaId: Number(data.turmaId),
-        aulaCurriculoId: data.aulaCurriculoId ? Number(data.aulaCurriculoId) : undefined,
-        dataInicio: data.dataInicio,
-        dataFim: data.dataFim,
-        diasSemana: data.diasSemana,
-        observacoes: data.observacoes || undefined,
-      });
-      if (turmaSelecionada) await carregarProgramacoes();
-      setModalReplicarAberto(false);
-      window.alert(
-        `${resultado.criadas} aula(s) programada(s) com sucesso.` +
-          (resultado.ignoradasPorDuplicidade > 0
-            ? ` ${resultado.ignoradasPorDuplicidade} data(s) já tinham programação e foram ignoradas.`
-            : "")
-      );
-    } catch (error) {
-      setErro(getApiErrorMessage(error, "Erro ao replicar programação."));
     } finally {
       setSalvando(false);
     }
@@ -251,9 +241,6 @@ export function ProgramacaoTab() {
         <Button type="button" onClick={() => setModalAberto(true)}>
           + Programar Aula
         </Button>
-        <Button type="button" variant="secondary" onClick={() => setModalReplicarAberto(true)}>
-          Replicar Programação
-        </Button>
       </div>
 
       <ErrorMessage message={erro} />
@@ -289,18 +276,10 @@ export function ProgramacaoTab() {
       )}
 
       <Modal open={modalAberto} title="Programar Aula" onClose={() => setModalAberto(false)}>
-        <ProgramarAulaForm loading={salvando} onSubmit={handleProgramar} />
-      </Modal>
-
-      <Modal
-        open={modalReplicarAberto}
-        title="Replicar Programação"
-        onClose={() => setModalReplicarAberto(false)}
-      >
-        <ReplicarProgramacaoForm
+        <ProgramarAulaForm
           turmaIdInicial={turmaSelecionada?.id}
           loading={salvando}
-          onSubmit={handleReplicar}
+          onSubmit={handleProgramar}
         />
       </Modal>
 

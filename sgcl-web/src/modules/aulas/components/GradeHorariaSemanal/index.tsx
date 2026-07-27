@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 
 import { Loading } from "../../../../components/ui/Loading";
 import { Tooltip } from "../../../../components/ui/Tooltip";
+import { Modal } from "../../../../components/ui/Modal";
 import { AulaService } from "../../services/AulaService";
+import { ProgramarAulaForm, type ProgramarAulaFormData } from "../ProgramarAulaForm";
+import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import type { ItemGradeSemanal } from "../../types";
 
 import "./styles.css";
@@ -28,6 +31,31 @@ const CLASSE_STATUS: Record<ItemGradeSemanal["status"], string> = {
   NAO_REALIZADA: "grade-item-nao-realizada",
 };
 
+// deriva a segunda-feira da semana a partir de um item real (data + diaSemana
+// desse item) usando campos UTC — a "data" vem como meia-noite UTC do dia
+// calendário, então misturar com métodos locais desalinharia o cálculo.
+function segundaDaSemana(item: ItemGradeSemanal): Date {
+  const data = new Date(item.data);
+  const offset = item.diaSemana === 0 ? 6 : item.diaSemana - 1;
+  const segunda = new Date(data);
+  segunda.setUTCDate(segunda.getUTCDate() - offset);
+  return segunda;
+}
+
+function dataDoDia(segunda: Date, diaIndice: number): Date {
+  const offset = diaIndice === 0 ? 6 : diaIndice - 1;
+  const data = new Date(segunda);
+  data.setUTCDate(data.getUTCDate() + offset);
+  return data;
+}
+
+function paraDatetimeLocal(data: Date, horario: string): string {
+  const ano = data.getUTCFullYear();
+  const mes = String(data.getUTCMonth() + 1).padStart(2, "0");
+  const dia = String(data.getUTCDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}T${horario}`;
+}
+
 export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalProps) {
   const navigate = useNavigate();
 
@@ -35,29 +63,65 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
 
-  useEffect(() => {
-    let ativo = true;
+  const [dataHoraNovaAula, setDataHoraNovaAula] = useState<string | null>(null);
+  const [salvando, setSalvando] = useState(false);
 
-    async function carregar() {
-      try {
-        setLoading(true);
-        const dados = await AulaService.gradeSemanal();
-        if (ativo) setItens(dados);
-      } catch {
-        if (ativo) setErro("Não foi possível carregar a grade horária.");
-      } finally {
-        if (ativo) setLoading(false);
-      }
+  async function carregar() {
+    try {
+      setLoading(true);
+      const dados = await AulaService.gradeSemanal();
+      setItens(dados);
+    } catch {
+      setErro("Não foi possível carregar a grade horária.");
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     carregar();
-
-    return () => {
-      ativo = false;
-    };
   }, []);
 
   const horarios = Array.from(new Set(itens.map((item) => item.horarioInicio))).sort();
+
+  function abrirProgramar(diaIndice: number, horario: string) {
+    if (itens.length === 0) return;
+    const segunda = segundaDaSemana(itens[0]);
+    const data = dataDoDia(segunda, diaIndice);
+    setDataHoraNovaAula(paraDatetimeLocal(data, horario));
+  }
+
+  async function handleProgramar(data: ProgramarAulaFormData) {
+    try {
+      setSalvando(true);
+      setErro("");
+
+      if (data.modo === "unica") {
+        await AulaService.criarProgramada({
+          turmaId: Number(data.turmaId),
+          aulaCurriculoId: data.aulaCurriculoId ? Number(data.aulaCurriculoId) : undefined,
+          data: data.data as string,
+          observacoes: data.observacoes || undefined,
+        });
+      } else {
+        await AulaService.replicarProgramada({
+          turmaId: Number(data.turmaId),
+          aulaCurriculoId: data.aulaCurriculoId ? Number(data.aulaCurriculoId) : undefined,
+          dataInicio: data.dataInicio as string,
+          dataFim: data.dataFim as string,
+          diasSemana: data.diasSemana as number[],
+          observacoes: data.observacoes || undefined,
+        });
+      }
+
+      setDataHoraNovaAula(null);
+      await carregar();
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao programar aula."));
+    } finally {
+      setSalvando(false);
+    }
+  }
 
   return (
     <div className={`grade-semanal${compacta ? " grade-semanal-compacta" : ""}`}>
@@ -65,7 +129,7 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
 
       {loading ? (
         <Loading message="Carregando grade..." />
-      ) : erro ? (
+      ) : erro && itens.length === 0 ? (
         <p className="grade-semanal-vazio">{erro}</p>
       ) : horarios.length === 0 ? (
         <p className="grade-semanal-vazio">Nenhuma aula programada nesta semana.</p>
@@ -107,6 +171,17 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
                             </button>
                           </Tooltip>
                         ))}
+
+                        {itensDaCelula.length === 0 && !compacta && (
+                          <button
+                            type="button"
+                            className="grade-item-vazio"
+                            aria-label={`Programar aula em ${dia.label} às ${horario}`}
+                            onClick={() => abrirProgramar(dia.indice, horario)}
+                          >
+                            +
+                          </button>
+                        )}
                       </td>
                     );
                   })}
@@ -116,6 +191,21 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
           </table>
         </div>
       )}
+
+      <Modal
+        open={dataHoraNovaAula !== null}
+        title="Programar Aula"
+        onClose={() => setDataHoraNovaAula(null)}
+      >
+        {dataHoraNovaAula && (
+          <ProgramarAulaForm
+            key={dataHoraNovaAula}
+            dataInicial={dataHoraNovaAula}
+            loading={salvando}
+            onSubmit={handleProgramar}
+          />
+        )}
+      </Modal>
     </div>
   );
 }
