@@ -6,6 +6,7 @@ import { Tooltip } from "../../../../components/ui/Tooltip";
 import { Modal } from "../../../../components/ui/Modal";
 import { AulaService } from "../../services/AulaService";
 import { ProgramarAulaForm, type ProgramarAulaFormData } from "../ProgramarAulaForm";
+import { GradeMensal } from "./GradeMensal";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import type { ItemGradeSemanal } from "../../types";
 
@@ -59,12 +60,15 @@ function paraDatetimeLocal(data: Date, horario: string): string {
 export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalProps) {
   const navigate = useNavigate();
 
+  const [visualizacao, setVisualizacao] = useState<"semana" | "mes">("semana");
+
   const [itens, setItens] = useState<ItemGradeSemanal[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
 
   const [dataHoraNovaAula, setDataHoraNovaAula] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [mesRefreshKey, setMesRefreshKey] = useState(0);
 
   async function carregar() {
     try {
@@ -116,6 +120,7 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
 
       setDataHoraNovaAula(null);
       await carregar();
+      setMesRefreshKey((chave) => chave + 1);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao programar aula."));
     } finally {
@@ -125,9 +130,34 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
 
   return (
     <div className={`grade-semanal${compacta ? " grade-semanal-compacta" : ""}`}>
-      <h2>Grade Horária Semanal</h2>
+      <div className="grade-semanal-cabecalho">
+        <h2>Grade Horária {visualizacao === "semana" ? "Semanal" : "Mensal"}</h2>
 
-      {loading ? (
+        {!compacta && (
+          <div className="grade-semanal-visualizacao" role="group" aria-label="Visualização da grade">
+            <button
+              type="button"
+              className={`grade-semanal-visualizacao-item${visualizacao === "semana" ? " active" : ""}`}
+              aria-pressed={visualizacao === "semana"}
+              onClick={() => setVisualizacao("semana")}
+            >
+              Semana
+            </button>
+            <button
+              type="button"
+              className={`grade-semanal-visualizacao-item${visualizacao === "mes" ? " active" : ""}`}
+              aria-pressed={visualizacao === "mes"}
+              onClick={() => setVisualizacao("mes")}
+            >
+              Mês
+            </button>
+          </div>
+        )}
+      </div>
+
+      {visualizacao === "mes" && !compacta ? (
+        <GradeMensal key={mesRefreshKey} onAgendar={setDataHoraNovaAula} />
+      ) : loading ? (
         <Loading message="Carregando grade..." />
       ) : erro && itens.length === 0 ? (
         <p className="grade-semanal-vazio">{erro}</p>
