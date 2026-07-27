@@ -17,6 +17,7 @@ export class GetTurmaDetalhadaService {
             apelido: true,
           },
         },
+        sala: true,
         alunos: {
           orderBy: {
             nome: "asc",

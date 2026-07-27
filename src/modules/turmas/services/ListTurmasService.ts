@@ -16,6 +16,7 @@ export class ListTurmasService {
             apelido: true,
           },
         },
+        sala: true,
         _count: {
           select: {
             alunos: {

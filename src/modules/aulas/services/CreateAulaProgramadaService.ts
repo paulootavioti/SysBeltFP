@@ -1,6 +1,7 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
+import { buscarConflitoProgramacao, mensagemConflitoProgramacao } from "../../../shared/utils/conflitoHorario";
 
 interface CreateAulaProgramadaDTO {
   turmaId: number;
@@ -29,6 +30,20 @@ export class CreateAulaProgramadaService {
       if (!aulaCurriculo) {
         throw new AppError("Aula do currículo não encontrada.");
       }
+    }
+
+    const conflito = await buscarConflitoProgramacao({
+      unidadeId: turma.unidadeId,
+      turmaId: turma.id,
+      salaId: turma.salaId,
+      professorId: turma.professorId,
+      horarioInicio: turma.horarioInicio,
+      horarioFim: turma.horarioFim,
+      datas: [new Date(data.data)],
+    });
+
+    if (conflito) {
+      throw new AppError(mensagemConflitoProgramacao(conflito));
     }
 
     return prisma.aulaProgramada.create({

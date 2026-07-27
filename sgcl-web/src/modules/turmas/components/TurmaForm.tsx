@@ -16,6 +16,9 @@ import { CurriculoService } from "../../curriculos/services/CurriculoService";
 import type { Usuario } from "../../usuarios/types/usuario";
 import { UsuarioService } from "../../usuarios/services/UsuarioService";
 
+import type { Sala } from "../../salas/types/sala";
+import { SalaService } from "../../salas/services/SalaService";
+
 import { turmaSchema, type TurmaFormData } from "../schema/turma.schema";
 import type { Turma } from "../types/turma";
 
@@ -28,6 +31,7 @@ interface TurmaFormProps {
 export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) {
   const [curriculos, setCurriculos] = useState<Curriculo[]>([]);
   const [professores, setProfessores] = useState<Usuario[]>([]);
+  const [salas, setSalas] = useState<Sala[]>([]);
 
   const methods = useForm<TurmaFormData>({
     resolver: zodResolver(turmaSchema),
@@ -38,6 +42,7 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
       horarioInicio: turma?.horarioInicio ?? "",
       horarioFim: turma?.horarioFim ?? "",
       professorId: turma?.professorId ? String(turma.professorId) : "",
+      salaId: turma?.salaId ? String(turma.salaId) : "",
       curriculoId: turma?.curriculoId ? String(turma.curriculoId) : "",
       limiteAlunos: turma?.limiteAlunos ? String(turma.limiteAlunos) : "",
     },
@@ -52,6 +57,7 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
     UsuarioService.listar().then((usuarios) =>
       setProfessores(usuarios.filter((usuario) => usuario.perfil === "PROFESSOR"))
     );
+    SalaService.listar().then((salas) => setSalas(salas.filter((sala) => sala.ativo)));
   }, []);
 
   return (
@@ -78,6 +84,15 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
               {...register("professorId")}
             />
             <ErrorMessage message={errors.professorId?.message ?? ""} />
+          </FormGridItem>
+
+          <FormGridItem>
+            <Select
+              label="Sala (opcional)"
+              options={salas.map((sala) => ({ label: sala.nome, value: String(sala.id) }))}
+              {...register("salaId")}
+            />
+            <ErrorMessage message={errors.salaId?.message ?? ""} />
           </FormGridItem>
 
           <FormGridItem span={2}>

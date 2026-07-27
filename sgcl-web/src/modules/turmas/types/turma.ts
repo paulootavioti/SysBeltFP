@@ -4,6 +4,11 @@ export interface ProfessorResumo {
   apelido?: string | null;
 }
 
+export interface SalaResumo {
+  id: number;
+  nome: string;
+}
+
 export interface Turma {
   id: number;
   nome: string;
@@ -13,6 +18,8 @@ export interface Turma {
   horarioFim: string;
   professorId?: number | null;
   professor?: ProfessorResumo | null;
+  salaId?: number | null;
+  sala?: SalaResumo | null;
   ativo: boolean;
   limiteAlunos?: number | null;
   curriculoId?: number | null;

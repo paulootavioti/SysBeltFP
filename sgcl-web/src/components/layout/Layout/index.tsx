@@ -17,6 +17,7 @@ import {
   LuChartLine,
   LuPiggyBank,
   LuCreditCard,
+  LuDoorOpen,
   LuMessageCircle,
   LuLogOut,
   LuMenu,
@@ -46,6 +47,7 @@ const NAV_ITEMS = [
   { to: "/relatorios", label: "Relatórios", icon: LuChartLine },
   { to: "/financeiro", label: "Financeiro", icon: LuPiggyBank },
   { to: "/planos", label: "Planos", icon: LuCreditCard },
+  { to: "/salas", label: "Salas", icon: LuDoorOpen },
   { to: "/mensagens", label: "Mensagens", icon: LuMessageCircle },
 ];
 

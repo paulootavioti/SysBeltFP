@@ -84,6 +84,11 @@ export function Turmas() {
       render: (turma: Turma) => turma.professor?.apelido || turma.professor?.nome || "-",
     },
     {
+      header: "Sala",
+      accessor: "sala" as const,
+      render: (turma: Turma) => turma.sala?.nome || "-",
+    },
+    {
       header: "Dias",
       accessor: "diasSemana" as const,
       render: (turma: Turma) => formatarDiasSemana(turma.diasSemana),

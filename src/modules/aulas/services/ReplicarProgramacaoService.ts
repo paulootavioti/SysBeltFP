@@ -1,6 +1,7 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
+import { buscarConflitoProgramacao, mensagemConflitoProgramacao } from "../../../shared/utils/conflitoHorario";
 
 const MAXIMO_AULAS_POR_REPLICACAO = 400;
 
@@ -68,6 +69,20 @@ export class ReplicarProgramacaoService {
 
     if (novasDatas.length === 0) {
       throw new AppError("Todas as datas do período já possuem programação para esta turma.");
+    }
+
+    const conflito = await buscarConflitoProgramacao({
+      unidadeId: turma.unidadeId,
+      turmaId: turma.id,
+      salaId: turma.salaId,
+      professorId: turma.professorId,
+      horarioInicio: turma.horarioInicio,
+      horarioFim: turma.horarioFim,
+      datas: novasDatas,
+    });
+
+    if (conflito) {
+      throw new AppError(mensagemConflitoProgramacao(conflito));
     }
 
     await prisma.aulaProgramada.createMany({

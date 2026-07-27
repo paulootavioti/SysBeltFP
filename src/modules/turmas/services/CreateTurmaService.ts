@@ -1,4 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
+import { AppError } from "../../../shared/errors/AppError";
+import { buscarConflitoTurma, mensagemConflitoTurma } from "../../../shared/utils/conflitoHorario";
 
 interface CreateTurmaDTO {
   unidadeId: number;
@@ -8,12 +10,26 @@ interface CreateTurmaDTO {
   horarioInicio: string;
   horarioFim: string;
   professorId?: number;
+  salaId?: number;
   limiteAlunos?: number;
   curriculoId?: number;
 }
 
 export class CreateTurmaService {
   async execute(data: CreateTurmaDTO) {
+
+    const conflito = await buscarConflitoTurma({
+      unidadeId: data.unidadeId,
+      diasSemana: data.diasSemana,
+      horarioInicio: data.horarioInicio,
+      horarioFim: data.horarioFim,
+      salaId: data.salaId,
+      professorId: data.professorId,
+    });
+
+    if (conflito) {
+      throw new AppError(mensagemConflitoTurma(conflito));
+    }
 
     return prisma.turma.create({
       data,
@@ -25,6 +41,7 @@ export class CreateTurmaService {
             apelido: true,
           },
         },
+        sala: true,
         curriculo: true,
       },
     });
