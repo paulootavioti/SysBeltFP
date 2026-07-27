@@ -1,24 +1,22 @@
 import { useState } from "react";
-import { Layout } from "../../../../components/layout/Layout";
-import { PageHeader } from "../../../../components/layout/PageHeader";
-import { Button } from "../../../../components/ui/Button";
-import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
-import { Table } from "../../../../components/ui/Table";
-import { EmptyState } from "../../../../components/ui/EmptyState";
-import { Loading } from "../../../../components/ui/Loading";
-import { StatusBadge } from "../../../../components/ui/StatusBadge";
-import { Modal } from "../../../../components/ui/Modal";
-import { useToast } from "../../../../contexts/toast/useToast";
-import { useAuth } from "../../../../contexts/useAuth";
-import { useArenas } from "../../hooks/useArenas";
-import { ArenaService } from "../../services/ArenaService";
-import { ArenaForm } from "../../components/ArenaForm";
-import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
-import type { Arena } from "../../types/arena";
-import type { ArenaFormData } from "../../schema/arena.schema";
-import "./styles.css";
+import { Button } from "../../../components/ui/Button";
+import { ErrorMessage } from "../../../components/ui/ErrorMessage";
+import { Table } from "../../../components/ui/Table";
+import { EmptyState } from "../../../components/ui/EmptyState";
+import { Loading } from "../../../components/ui/Loading";
+import { StatusBadge } from "../../../components/ui/StatusBadge";
+import { Modal } from "../../../components/ui/Modal";
+import { useToast } from "../../../contexts/toast/useToast";
+import { useAuth } from "../../../contexts/useAuth";
+import { useArenas } from "../hooks/useArenas";
+import { ArenaService } from "../services/ArenaService";
+import { ArenaForm } from "./ArenaForm";
+import { getApiErrorMessage } from "../../../shared/utils/getApiErrorMessage";
+import type { Arena } from "../types/arena";
+import type { ArenaFormData } from "../schema/arena.schema";
+import "./ArenasTab.css";
 
-export function Arenas() {
+export function ArenasTab() {
   const toast = useToast();
   const { usuario } = useAuth();
   const ehSuperadmin = usuario?.perfil === "SUPERADMIN";
@@ -109,9 +107,7 @@ export function Arenas() {
   ];
 
   return (
-    <Layout>
-      <PageHeader title="Arenas" subtitle="Tatames, tapetes e demais espaços onde as turmas dão aula." />
-
+    <div className="arenas-tab">
       <div className="arenas-acoes">
         <Button type="button" onClick={handleNovaArena}>
           + Nova Arena
@@ -140,6 +136,6 @@ export function Arenas() {
           onSubmit={handleSalvarArena}
         />
       </Modal>
-    </Layout>
+    </div>
   );
 }

@@ -20,7 +20,16 @@ export class ListAulasProgramadasService {
         ...escopoUnidade(unidadeId),
       },
       include: {
-        turma: true,
+        turma: {
+          include: {
+            professor: {
+              select: { id: true, nome: true, apelido: true },
+            },
+            arena: {
+              select: { id: true, nome: true },
+            },
+          },
+        },
         aulaCurriculo: true,
       },
       orderBy: {

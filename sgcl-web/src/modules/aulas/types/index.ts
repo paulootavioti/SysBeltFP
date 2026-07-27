@@ -1,7 +1,8 @@
 export interface TurmaResumo {
   id: number;
   nome: string;
-  professor: string;
+  professor?: { id: number; nome: string; apelido?: string | null } | null;
+  arena?: { id: number; nome: string } | null;
 }
 
 export interface TecnicaAulaCurriculo {

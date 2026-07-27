@@ -32,7 +32,6 @@ const Turmas = lazy(() => import("../modules/turmas/pages/Listar").then((m) => (
 const DetalheTurma = lazy(() => import("../modules/turmas/pages/Detalhes").then((m) => ({ default: m.DetalheTurma })));
 
 const Planos = lazy(() => import("../modules/planos/pages/Listar").then((m) => ({ default: m.Planos })));
-const Arenas = lazy(() => import("../modules/arenas/pages/Listar").then((m) => ({ default: m.Arenas })));
 const Unidades = lazy(() => import("../modules/unidades/pages/Listar").then((m) => ({ default: m.Unidades })));
 const Mensagens = lazy(() => import("../modules/mensagens/pages/Listar").then((m) => ({ default: m.Mensagens })));
 
@@ -242,11 +241,7 @@ export function AppRoutes() {
 
         <Route
           path="/arenas"
-          element={
-            <PrivateRoute>
-              <Arenas />
-            </PrivateRoute>
-          }
+          element={<Navigate to="/unidades" replace />}
         />
 
         <Route

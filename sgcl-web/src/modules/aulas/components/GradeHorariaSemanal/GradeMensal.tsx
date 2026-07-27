@@ -132,17 +132,22 @@ export function GradeMensal({ onAgendar }: GradeMensalProps) {
               </div>
 
               <div className="grade-mensal-dia-itens">
-                {itensDoDia.map((item) => (
-                  <Tooltip key={item.id} content={`Professor(a): ${item.turma.professor || "-"}`}>
-                    <button
-                      type="button"
-                      className={`grade-item ${CLASSE_STATUS[item.status]}`}
-                      onClick={() => navigate(`/turmas/${item.turmaId}`)}
-                    >
-                      {horarioDoItem(item)} {item.turma.nome}
-                    </button>
-                  </Tooltip>
-                ))}
+                {itensDoDia.map((item) => {
+                  const professor = item.turma.professor?.apelido || item.turma.professor?.nome || "-";
+                  const arena = item.turma.arena?.nome || "-";
+
+                  return (
+                    <Tooltip key={item.id} content={`Professor(a): ${professor} — Arena: ${arena}`}>
+                      <button
+                        type="button"
+                        className={`grade-item ${CLASSE_STATUS[item.status]}`}
+                        onClick={() => navigate(`/turmas/${item.turmaId}`)}
+                      >
+                        {horarioDoItem(item)} {item.turma.nome}
+                      </button>
+                    </Tooltip>
+                  );
+                })}
               </div>
             </div>
           );

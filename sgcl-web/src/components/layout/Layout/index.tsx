@@ -47,7 +47,6 @@ const NAV_ITEMS = [
   { to: "/relatorios", label: "Relatórios", icon: LuChartLine },
   { to: "/financeiro", label: "Financeiro", icon: LuPiggyBank },
   { to: "/planos", label: "Planos", icon: LuCreditCard },
-  { to: "/arenas", label: "Arenas", icon: LuDoorOpen },
   { to: "/mensagens", label: "Mensagens", icon: LuMessageCircle },
 ];
 
@@ -62,7 +61,13 @@ export function Layout({ children }: LayoutProps) {
     setMenuAberto(false);
   }, [location.pathname]);
 
-  const itensVisiveis = NAV_ITEMS.filter((item) => perfilTemAcesso(usuario?.perfil, item.to));
+  // pra quem não é SUPERADMIN, "/unidades" só mostra a aba de Arenas — o
+  // item do menu reflete isso em vez de prometer administração de unidades.
+  const itensVisiveis = NAV_ITEMS.filter((item) => perfilTemAcesso(usuario?.perfil, item.to)).map((item) =>
+    item.to === "/unidades" && usuario?.perfil !== "SUPERADMIN"
+      ? { ...item, label: "Arenas", icon: LuDoorOpen }
+      : item
+  );
 
   function handleLogout() {
     logout();
