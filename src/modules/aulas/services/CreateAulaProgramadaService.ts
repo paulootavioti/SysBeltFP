@@ -35,7 +35,7 @@ export class CreateAulaProgramadaService {
     const conflito = await buscarConflitoProgramacao({
       unidadeId: turma.unidadeId,
       turmaId: turma.id,
-      salaId: turma.salaId,
+      arenaId: turma.arenaId,
       professorId: turma.professorId,
       horarioInicio: turma.horarioInicio,
       horarioFim: turma.horarioFim,

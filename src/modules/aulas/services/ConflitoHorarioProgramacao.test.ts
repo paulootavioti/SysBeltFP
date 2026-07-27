@@ -5,12 +5,12 @@ import { CreateAulaProgramadaService } from "./CreateAulaProgramadaService";
 import { ReplicarProgramacaoService } from "./ReplicarProgramacaoService";
 
 let unidadeId: number;
-let salaId: number;
+let arenaId: number;
 
 async function limpar() {
   await prisma.aulaProgramada.deleteMany({ where: { turma: { nome: { startsWith: "TESTE_CONFPROG_" } } } });
   await prisma.turma.deleteMany({ where: { nome: { startsWith: "TESTE_CONFPROG_" } } });
-  await prisma.sala.deleteMany({ where: { nome: "TESTE_CONFPROG_SALA" } });
+  await prisma.arena.deleteMany({ where: { nome: "TESTE_CONFPROG_ARENA" } });
   await prisma.unidade.deleteMany({ where: { nome: "TESTE_CONFPROG_UNIDADE" } });
 }
 
@@ -20,8 +20,8 @@ beforeEach(async () => {
   const unidade = await prisma.unidade.create({ data: { nome: "TESTE_CONFPROG_UNIDADE" } });
   unidadeId = unidade.id;
 
-  const sala = await prisma.sala.create({ data: { unidadeId, nome: "TESTE_CONFPROG_SALA" } });
-  salaId = sala.id;
+  const arena = await prisma.arena.create({ data: { unidadeId, nome: "TESTE_CONFPROG_ARENA" } });
+  arenaId = arena.id;
 });
 afterAll(limpar);
 
@@ -34,13 +34,13 @@ async function criarTurma(nome: string, horarioInicio: string, horarioFim: strin
       diasSemana,
       horarioInicio,
       horarioFim,
-      salaId,
+      arenaId,
     },
   });
 }
 
 describe("CreateAulaProgramadaService: conflito de horário", () => {
-  it("rejeita programar aula em data/horário já ocupado na mesma sala por outra turma", async () => {
+  it("rejeita programar aula em data/horário já ocupado na mesma arena por outra turma", async () => {
     const turmaA = await criarTurma("TESTE_CONFPROG_TURMA_A", "18:00", "19:00", [1]);
     const turmaB = await criarTurma("TESTE_CONFPROG_TURMA_B", "18:30", "19:30", [1]);
 
@@ -50,10 +50,10 @@ describe("CreateAulaProgramadaService: conflito de horário", () => {
 
     await expect(
       new CreateAulaProgramadaService().execute({ turmaId: turmaB.id, data }, unidadeId)
-    ).rejects.toThrow(/sala/i);
+    ).rejects.toThrow(/arena/i);
   });
 
-  it("permite programar aula na mesma sala em horário não sobreposto", async () => {
+  it("permite programar aula na mesma arena em horário não sobreposto", async () => {
     const turmaA = await criarTurma("TESTE_CONFPROG_TURMA_A", "18:00", "19:00", [1]);
     const turmaB = await criarTurma("TESTE_CONFPROG_TURMA_B", "19:00", "20:00", [1]);
 
@@ -95,7 +95,7 @@ describe("CreateAulaProgramadaService: conflito de horário", () => {
 });
 
 describe("ReplicarProgramacaoService: conflito de horário", () => {
-  it("rejeita replicação que colide com aula já programada na mesma sala", async () => {
+  it("rejeita replicação que colide com aula já programada na mesma arena", async () => {
     const turmaA = await criarTurma("TESTE_CONFPROG_TURMA_A", "18:00", "19:00", [1]);
     const turmaB = await criarTurma("TESTE_CONFPROG_TURMA_B", "18:00", "19:00", [1]);
 
@@ -116,6 +116,6 @@ describe("ReplicarProgramacaoService: conflito de horário", () => {
         },
         unidadeId
       )
-    ).rejects.toThrow(/sala/i);
+    ).rejects.toThrow(/arena/i);
   });
 });

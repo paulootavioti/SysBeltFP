@@ -6,12 +6,12 @@ import { UpdateTurmaService } from "./UpdateTurmaService";
 
 let unidadeId: number;
 let professorId: number;
-let salaId: number;
+let arenaId: number;
 
 async function limpar() {
   await prisma.turma.deleteMany({ where: { nome: { startsWith: "TESTE_CONF_" } } });
   await prisma.usuario.deleteMany({ where: { nome: "TESTE_CONF_PROFESSOR" } });
-  await prisma.sala.deleteMany({ where: { nome: { startsWith: "TESTE_CONF_SALA" } } });
+  await prisma.arena.deleteMany({ where: { nome: { startsWith: "TESTE_CONF_ARENA" } } });
   await prisma.unidade.deleteMany({ where: { nome: "TESTE_CONF_UNIDADE" } });
 }
 
@@ -32,8 +32,8 @@ beforeEach(async () => {
   });
   professorId = professor.id;
 
-  const sala = await prisma.sala.create({ data: { unidadeId, nome: "TESTE_CONF_SALA" } });
-  salaId = sala.id;
+  const arena = await prisma.arena.create({ data: { unidadeId, nome: "TESTE_CONF_ARENA" } });
+  arenaId = arena.id;
 });
 afterAll(limpar);
 
@@ -47,14 +47,14 @@ async function criarTurmaBase(overrides: Partial<Parameters<CreateTurmaService["
     diasSemana: [2, 4],
     horarioInicio: "18:00",
     horarioFim: "19:00",
-    salaId,
+    arenaId,
     professorId,
     ...overrides,
   });
 }
 
 describe("CreateTurmaService: conflito de horário", () => {
-  it("rejeita nova turma na mesma sala, mesmo dia e horário sobreposto", async () => {
+  it("rejeita nova turma na mesma arena, mesmo dia e horário sobreposto", async () => {
     await criarTurmaBase();
 
     const service = new CreateTurmaService();
@@ -67,15 +67,15 @@ describe("CreateTurmaService: conflito de horário", () => {
         diasSemana: [4],
         horarioInicio: "18:30",
         horarioFim: "19:30",
-        salaId,
+        arenaId,
       })
-    ).rejects.toThrow(/sala/i);
+    ).rejects.toThrow(/arena/i);
   });
 
-  it("rejeita nova turma com o mesmo professor, mesmo dia e horário sobreposto (sala diferente)", async () => {
+  it("rejeita nova turma com o mesmo professor, mesmo dia e horário sobreposto (arena diferente)", async () => {
     await criarTurmaBase();
 
-    const outraSala = await prisma.sala.create({ data: { unidadeId, nome: "TESTE_CONF_SALA_2" } });
+    const outraArena = await prisma.arena.create({ data: { unidadeId, nome: "TESTE_CONF_ARENA_2" } });
 
     const service = new CreateTurmaService();
 
@@ -87,13 +87,13 @@ describe("CreateTurmaService: conflito de horário", () => {
         diasSemana: [2],
         horarioInicio: "18:00",
         horarioFim: "19:00",
-        salaId: outraSala.id,
+        arenaId: outraArena.id,
         professorId,
       })
     ).rejects.toThrow(/professor/i);
   });
 
-  it("permite turma na mesma sala em dia diferente", async () => {
+  it("permite turma na mesma arena em dia diferente", async () => {
     await criarTurmaBase();
 
     const service = new CreateTurmaService();
@@ -105,13 +105,13 @@ describe("CreateTurmaService: conflito de horário", () => {
       diasSemana: [3],
       horarioInicio: "18:00",
       horarioFim: "19:00",
-      salaId,
+      arenaId,
     });
 
     expect(turma.id).toBeDefined();
   });
 
-  it("permite turma na mesma sala e dia com horário não sobreposto", async () => {
+  it("permite turma na mesma arena e dia com horário não sobreposto", async () => {
     await criarTurmaBase();
 
     const service = new CreateTurmaService();
@@ -123,7 +123,7 @@ describe("CreateTurmaService: conflito de horário", () => {
       diasSemana: [2],
       horarioInicio: "19:00",
       horarioFim: "20:00",
-      salaId,
+      arenaId,
     });
 
     expect(turma.id).toBeDefined();
@@ -156,11 +156,11 @@ describe("UpdateTurmaService: conflito de horário", () => {
           diasSemana: turmaBase.diasSemana,
           horarioInicio: turmaBase.horarioInicio,
           horarioFim: turmaBase.horarioFim,
-          salaId,
+          arenaId,
         },
         unidadeId
       )
-    ).rejects.toThrow(/sala/i);
+    ).rejects.toThrow(/arena/i);
   });
 
   it("não bloqueia editar a própria turma mantendo o mesmo horário", async () => {
@@ -176,7 +176,7 @@ describe("UpdateTurmaService: conflito de horário", () => {
         diasSemana: turmaBase.diasSemana,
         horarioInicio: turmaBase.horarioInicio,
         horarioFim: turmaBase.horarioFim,
-        salaId,
+        arenaId,
         professorId,
       },
       unidadeId

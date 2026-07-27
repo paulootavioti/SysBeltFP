@@ -7,7 +7,7 @@ export const turmaSchema = z.object({
   horarioInicio: z.string().min(1, "Informe o horário de início."),
   horarioFim: z.string().min(1, "Informe o horário de término."),
   professorId: z.string().min(1, "Selecione o professor."),
-  salaId: z.string().optional(),
+  arenaId: z.string().optional(),
   curriculoId: z.string().optional(),
   limiteAlunos: z.string().optional(),
 });

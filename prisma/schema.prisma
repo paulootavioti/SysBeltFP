@@ -24,7 +24,7 @@ model Unidade {
   nome      String
   ativo     Boolean  @default(true)
 
-  salas         Sala[]
+  arenas        Arena[]
   usuarios      Usuario[]
   alunos        Aluno[]
   responsaveis  Responsavel[]
@@ -41,7 +41,9 @@ model Unidade {
   createdAt DateTime @default(now())
 }
 
-model Sala {
+// qualquer sala, tatame ou área usada pra ministrar aulas — uma unidade
+// tem uma ou mais arenas.
+model Arena {
   id        Int      @id @default(autoincrement())
 
   unidadeId Int
@@ -270,10 +272,8 @@ model Turma {
   unidadeId     Int
   unidade       Unidade  @relation(fields: [unidadeId], references: [id])
 
-  // ainda não usado pra checagem de conflito (Fase 3) — só preparando o
-  // schema pra não precisar de outra migration quando Sala entrar em uso.
-  salaId        Int?
-  sala          Sala?    @relation(fields: [salaId], references: [id])
+  arenaId       Int?
+  arena         Arena?   @relation(fields: [arenaId], references: [id])
 
   nome          String
   faixaEtaria   String

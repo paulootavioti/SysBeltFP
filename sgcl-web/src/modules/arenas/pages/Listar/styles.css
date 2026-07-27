@@ -1,10 +1,10 @@
-.salas-acoes {
+.arenas-acoes {
   display: flex;
   justify-content: flex-end;
   margin-bottom: var(--space-4);
 }
 
-.salas-table-actions {
+.arenas-table-actions {
   display: flex;
   gap: var(--space-2);
   flex-wrap: wrap;

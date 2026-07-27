@@ -16,8 +16,8 @@ import { CurriculoService } from "../../curriculos/services/CurriculoService";
 import type { Usuario } from "../../usuarios/types/usuario";
 import { UsuarioService } from "../../usuarios/services/UsuarioService";
 
-import type { Sala } from "../../salas/types/sala";
-import { SalaService } from "../../salas/services/SalaService";
+import type { Arena } from "../../arenas/types/arena";
+import { ArenaService } from "../../arenas/services/ArenaService";
 
 import { turmaSchema, type TurmaFormData } from "../schema/turma.schema";
 import type { Turma } from "../types/turma";
@@ -31,7 +31,7 @@ interface TurmaFormProps {
 export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) {
   const [curriculos, setCurriculos] = useState<Curriculo[]>([]);
   const [professores, setProfessores] = useState<Usuario[]>([]);
-  const [salas, setSalas] = useState<Sala[]>([]);
+  const [arenas, setArenas] = useState<Arena[]>([]);
 
   const methods = useForm<TurmaFormData>({
     resolver: zodResolver(turmaSchema),
@@ -42,7 +42,7 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
       horarioInicio: turma?.horarioInicio ?? "",
       horarioFim: turma?.horarioFim ?? "",
       professorId: turma?.professorId ? String(turma.professorId) : "",
-      salaId: turma?.salaId ? String(turma.salaId) : "",
+      arenaId: turma?.arenaId ? String(turma.arenaId) : "",
       curriculoId: turma?.curriculoId ? String(turma.curriculoId) : "",
       limiteAlunos: turma?.limiteAlunos ? String(turma.limiteAlunos) : "",
     },
@@ -57,7 +57,7 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
     UsuarioService.listar().then((usuarios) =>
       setProfessores(usuarios.filter((usuario) => usuario.perfil === "PROFESSOR"))
     );
-    SalaService.listar().then((salas) => setSalas(salas.filter((sala) => sala.ativo)));
+    ArenaService.listar().then((arenas) => setArenas(arenas.filter((arena) => arena.ativo)));
   }, []);
 
   return (
@@ -88,11 +88,11 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
 
           <FormGridItem>
             <Select
-              label="Sala (opcional)"
-              options={salas.map((sala) => ({ label: sala.nome, value: String(sala.id) }))}
-              {...register("salaId")}
+              label="Arena (opcional)"
+              options={arenas.map((arena) => ({ label: arena.nome, value: String(arena.id) }))}
+              {...register("arenaId")}
             />
-            <ErrorMessage message={errors.salaId?.message ?? ""} />
+            <ErrorMessage message={errors.arenaId?.message ?? ""} />
           </FormGridItem>
 
           <FormGridItem span={2}>

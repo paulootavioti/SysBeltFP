@@ -10,7 +10,7 @@ interface CreateTurmaDTO {
   horarioInicio: string;
   horarioFim: string;
   professorId?: number;
-  salaId?: number;
+  arenaId?: number;
   limiteAlunos?: number;
   curriculoId?: number;
 }
@@ -23,7 +23,7 @@ export class CreateTurmaService {
       diasSemana: data.diasSemana,
       horarioInicio: data.horarioInicio,
       horarioFim: data.horarioFim,
-      salaId: data.salaId,
+      arenaId: data.arenaId,
       professorId: data.professorId,
     });
 
@@ -41,7 +41,7 @@ export class CreateTurmaService {
             apelido: true,
           },
         },
-        sala: true,
+        arena: true,
         curriculo: true,
       },
     });

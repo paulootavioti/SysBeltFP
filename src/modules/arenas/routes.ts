@@ -1,42 +1,42 @@
 import { Router } from "express";
-import { SalasController } from "./controller";
+import { ArenasController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
 import { ensureRole } from "../../shared/middlewares/ensureRole";
 import { validateBody } from "../../shared/middlewares/validateBody";
-import { salaSchema } from "./validation";
+import { criarArenaSchema, atualizarArenaSchema } from "./validation";
 
-const salasRoutes = Router();
+const arenasRoutes = Router();
 
-const salasController = new SalasController();
+const arenasController = new ArenasController();
 
-salasRoutes.post(
+arenasRoutes.post(
   "/",
   ensureAuthenticated,
   ensureRole(["ADMIN"]),
-  validateBody(salaSchema),
-  salasController.create
+  validateBody(criarArenaSchema),
+  arenasController.create
 );
 
-salasRoutes.get(
+arenasRoutes.get(
   "/",
   ensureAuthenticated,
   ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
-  salasController.list
+  arenasController.list
 );
 
-salasRoutes.put(
+arenasRoutes.put(
   "/:id",
   ensureAuthenticated,
   ensureRole(["ADMIN"]),
-  validateBody(salaSchema),
-  salasController.update
+  validateBody(atualizarArenaSchema),
+  arenasController.update
 );
 
-salasRoutes.patch(
+arenasRoutes.patch(
   "/:id/ativo",
   ensureAuthenticated,
   ensureRole(["ADMIN"]),
-  salasController.toggleAtivo
+  arenasController.toggleAtivo
 );
 
-export { salasRoutes };
+export { arenasRoutes };

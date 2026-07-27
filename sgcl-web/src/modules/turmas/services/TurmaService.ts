@@ -15,7 +15,7 @@ export class TurmaService {
     return ApiClient.post<Turma>("/turmas", {
       ...data,
       professorId: data.professorId ? Number(data.professorId) : undefined,
-      salaId: data.salaId ? Number(data.salaId) : undefined,
+      arenaId: data.arenaId ? Number(data.arenaId) : undefined,
       curriculoId: data.curriculoId ? Number(data.curriculoId) : undefined,
       limiteAlunos: data.limiteAlunos ? Number(data.limiteAlunos) : undefined,
     });
@@ -25,7 +25,7 @@ export class TurmaService {
     return ApiClient.put<Turma>(`/turmas/${id}`, {
       ...data,
       professorId: data.professorId ? Number(data.professorId) : undefined,
-      salaId: data.salaId ? Number(data.salaId) : undefined,
+      arenaId: data.arenaId ? Number(data.arenaId) : undefined,
       curriculoId: data.curriculoId ? Number(data.curriculoId) : undefined,
       limiteAlunos: data.limiteAlunos ? Number(data.limiteAlunos) : undefined,
     });

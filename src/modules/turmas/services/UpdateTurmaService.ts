@@ -10,7 +10,7 @@ interface UpdateTurmaDTO {
   horarioInicio: string;
   horarioFim: string;
   professorId?: number;
-  salaId?: number;
+  arenaId?: number;
   limiteAlunos?: number;
   curriculoId?: number;
 }
@@ -30,7 +30,7 @@ export class UpdateTurmaService {
       diasSemana: data.diasSemana,
       horarioInicio: data.horarioInicio,
       horarioFim: data.horarioFim,
-      salaId: data.salaId,
+      arenaId: data.arenaId,
       professorId: data.professorId,
       excluirTurmaId: id,
     });
@@ -46,7 +46,7 @@ export class UpdateTurmaService {
         professor: {
           select: { id: true, nome: true, apelido: true },
         },
-        sala: true,
+        arena: true,
         curriculo: true,
       },
     });

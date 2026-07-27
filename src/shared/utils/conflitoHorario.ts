@@ -1,7 +1,7 @@
 import { prisma } from "../database/prisma";
 
 export interface ConflitoHorario {
-  tipo: "SALA" | "PROFESSOR";
+  tipo: "ARENA" | "PROFESSOR";
   turmaId: number;
   turmaNome: string;
 }
@@ -15,16 +15,16 @@ interface ConflitoTurmaParams {
   diasSemana: number[];
   horarioInicio: string;
   horarioFim: string;
-  salaId?: number | null;
+  arenaId?: number | null;
   professorId?: number | null;
   excluirTurmaId?: number;
 }
 
 // checagem para o padrão semanal recorrente de uma turma (usada ao criar/editar a Turma).
 export async function buscarConflitoTurma(params: ConflitoTurmaParams): Promise<ConflitoHorario | null> {
-  const { unidadeId, diasSemana, horarioInicio, horarioFim, salaId, professorId, excluirTurmaId } = params;
+  const { unidadeId, diasSemana, horarioInicio, horarioFim, arenaId, professorId, excluirTurmaId } = params;
 
-  if (!salaId && !professorId) return null;
+  if (!arenaId && !professorId) return null;
 
   const candidatas = await prisma.turma.findMany({
     where: {
@@ -33,18 +33,18 @@ export async function buscarConflitoTurma(params: ConflitoTurmaParams): Promise<
       id: excluirTurmaId ? { not: excluirTurmaId } : undefined,
       diasSemana: { hasSome: diasSemana },
       OR: [
-        ...(salaId ? [{ salaId }] : []),
+        ...(arenaId ? [{ arenaId }] : []),
         ...(professorId ? [{ professorId }] : []),
       ],
     },
-    select: { id: true, nome: true, salaId: true, professorId: true, horarioInicio: true, horarioFim: true },
+    select: { id: true, nome: true, arenaId: true, professorId: true, horarioInicio: true, horarioFim: true },
   });
 
   for (const candidata of candidatas) {
     if (!horariosSobrepoem(horarioInicio, horarioFim, candidata.horarioInicio, candidata.horarioFim)) continue;
 
-    if (salaId && candidata.salaId === salaId) {
-      return { tipo: "SALA", turmaId: candidata.id, turmaNome: candidata.nome };
+    if (arenaId && candidata.arenaId === arenaId) {
+      return { tipo: "ARENA", turmaId: candidata.id, turmaNome: candidata.nome };
     }
     if (professorId && candidata.professorId === professorId) {
       return { tipo: "PROFESSOR", turmaId: candidata.id, turmaNome: candidata.nome };
@@ -57,7 +57,7 @@ export async function buscarConflitoTurma(params: ConflitoTurmaParams): Promise<
 interface ConflitoProgramacaoParams {
   unidadeId: number;
   turmaId: number;
-  salaId?: number | null;
+  arenaId?: number | null;
   professorId?: number | null;
   horarioInicio: string;
   horarioFim: string;
@@ -74,9 +74,9 @@ export interface ConflitoProgramacao extends ConflitoHorario {
 export async function buscarConflitoProgramacao(
   params: ConflitoProgramacaoParams
 ): Promise<ConflitoProgramacao | null> {
-  const { unidadeId, turmaId, salaId, professorId, horarioInicio, horarioFim, datas } = params;
+  const { unidadeId, turmaId, arenaId, professorId, horarioInicio, horarioFim, datas } = params;
 
-  if (!salaId && !professorId) return null;
+  if (!arenaId && !professorId) return null;
   if (datas.length === 0) return null;
 
   const turmasCandidatas = await prisma.turma.findMany({
@@ -84,11 +84,11 @@ export async function buscarConflitoProgramacao(
       unidadeId,
       id: { not: turmaId },
       OR: [
-        ...(salaId ? [{ salaId }] : []),
+        ...(arenaId ? [{ arenaId }] : []),
         ...(professorId ? [{ professorId }] : []),
       ],
     },
-    select: { id: true, salaId: true, professorId: true, horarioInicio: true, horarioFim: true },
+    select: { id: true, arenaId: true, professorId: true, horarioInicio: true, horarioFim: true },
   });
 
   const idsConflitantes = turmasCandidatas
@@ -103,14 +103,14 @@ export async function buscarConflitoProgramacao(
       status: { not: "CANCELADA" },
       data: { in: datas },
     },
-    include: { turma: { select: { id: true, nome: true, salaId: true, professorId: true } } },
+    include: { turma: { select: { id: true, nome: true, arenaId: true, professorId: true } } },
     orderBy: { data: "asc" },
   });
 
   if (!programacaoConflitante) return null;
 
-  const tipo: "SALA" | "PROFESSOR" =
-    salaId && programacaoConflitante.turma.salaId === salaId ? "SALA" : "PROFESSOR";
+  const tipo: "ARENA" | "PROFESSOR" =
+    arenaId && programacaoConflitante.turma.arenaId === arenaId ? "ARENA" : "PROFESSOR";
 
   return {
     tipo,
@@ -120,9 +120,9 @@ export async function buscarConflitoProgramacao(
   };
 }
 
-function descricaoRecurso(tipo: "SALA" | "PROFESSOR"): { sujeito: string; ocupado: string } {
-  return tipo === "SALA"
-    ? { sujeito: "A sala", ocupado: "ocupada" }
+function descricaoRecurso(tipo: "ARENA" | "PROFESSOR"): { sujeito: string; ocupado: string } {
+  return tipo === "ARENA"
+    ? { sujeito: "A arena", ocupado: "ocupada" }
     : { sujeito: "O professor", ocupado: "ocupado" };
 }
 
