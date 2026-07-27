@@ -22,10 +22,10 @@ import {
   LuLogOut,
   LuMenu,
   LuX,
-  LuBuilding2,
 } from "react-icons/lu";
 import { perfilTemAcesso } from "../../../shared/constants/acessoPorPerfil";
 import { NotificationBell } from "../../ui/NotificationBell";
+import { SeletorUnidadeVisualizada } from "../SeletorUnidadeVisualizada";
 import "./styles.css";
 
 interface LayoutProps {
@@ -33,7 +33,7 @@ interface LayoutProps {
 }
 
 const NAV_ITEMS = [
-  { to: "/unidades", label: "Unidades", icon: LuBuilding2 },
+  { to: "/unidades", label: "Arenas", icon: LuDoorOpen },
   { to: "/dashboard", label: "Dashboard", icon: LuLayoutDashboard },
   { to: "/alunos", label: "Alunos", icon: LuUsers },
   { to: "/turmas", label: "Turmas", icon: LuSchool },
@@ -61,13 +61,12 @@ export function Layout({ children }: LayoutProps) {
     setMenuAberto(false);
   }, [location.pathname]);
 
-  // pra quem não é SUPERADMIN, "/unidades" só mostra a aba de Arenas — o
-  // item do menu reflete isso em vez de prometer administração de unidades.
-  const itensVisiveis = NAV_ITEMS.filter((item) => perfilTemAcesso(usuario?.perfil, item.to)).map((item) =>
-    item.to === "/unidades" && usuario?.perfil !== "SUPERADMIN"
-      ? { ...item, label: "Arenas", icon: LuDoorOpen }
-      : item
-  );
+  // SUPERADMIN administra unidades pelo Dashboard (que já tem item
+  // próprio no menu), então "/unidades" (aqui, a tela de Arenas) some
+  // daqui pra esse perfil.
+  const itensVisiveis = NAV_ITEMS
+    .filter((item) => item.to !== "/unidades" || usuario?.perfil !== "SUPERADMIN")
+    .filter((item) => perfilTemAcesso(usuario?.perfil, item.to));
 
   function handleLogout() {
     logout();
@@ -136,6 +135,8 @@ export function Layout({ children }: LayoutProps) {
           {(usuario?.perfil === "ADMIN" || usuario?.perfil === "RECEPCAO") && (
             <NotificationBell />
           )}
+
+          <SeletorUnidadeVisualizada />
 
           <Button onClick={handleLogout}>
             <LuLogOut size={16} />

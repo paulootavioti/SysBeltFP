@@ -9,8 +9,12 @@ import { Loading } from "../../components/ui/Loading";
 import { ErrorMessage } from "../../components/ui/ErrorMessage";
 import { PeriodoSelector, type PeriodoOpcao } from "../../components/ui/PeriodoSelector";
 import { BarChart } from "../../components/ui/BarChart";
+import { Tabs } from "../../components/ui/Tabs";
 import { GradeHorariaSemanal } from "../../modules/aulas/components/GradeHorariaSemanal";
+import { UnidadesTab } from "../../modules/unidades/components/UnidadesTab";
+import { ArenasTab } from "../../modules/arenas/components/ArenasTab";
 
+import { useAuth } from "../../contexts/useAuth";
 import { DashboardService, type DashboardResumo, type DashboardResumoPeriodo } from "./DashboardService";
 import { GraduacaoService } from "../../modules/graduacoes/services/GraduacaoService";
 import type { AlunoElegivel } from "../../modules/graduacoes/types";
@@ -31,6 +35,8 @@ function formatarMoeda(valor: number): string {
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
+  const ehSuperadmin = usuario?.perfil === "SUPERADMIN";
 
   const [dados, setDados] = useState<DashboardResumo | null>(null);
   const [proximasGraduacoes, setProximasGraduacoes] = useState<AlunoElegivel[]>([]);
@@ -81,9 +87,24 @@ export function Dashboard() {
     };
   }, [periodo]);
 
+  const secaoUnidades = ehSuperadmin && (
+    <section className="dashboard-secao">
+      <h2>Unidades e Arenas</h2>
+      <Tabs
+        defaultValue="unidades"
+        tabs={[
+          { label: "Unidades", value: "unidades", content: <UnidadesTab /> },
+          { label: "Arenas", value: "arenas", content: <ArenasTab /> },
+        ]}
+      />
+    </section>
+  );
+
   if (erro) {
     return (
       <Layout>
+        <PageHeader title="Dashboard" subtitle="Resumo geral da academia." />
+        {secaoUnidades}
         <ErrorMessage message={erro} />
       </Layout>
     );
@@ -92,6 +113,8 @@ export function Dashboard() {
   if (!dados) {
     return (
       <Layout>
+        <PageHeader title="Dashboard" subtitle="Resumo geral da academia." />
+        {secaoUnidades}
         <Loading />
       </Layout>
     );
@@ -100,6 +123,8 @@ export function Dashboard() {
   return (
     <Layout>
       <PageHeader title="Dashboard" subtitle="Resumo geral da academia." />
+
+      {secaoUnidades}
 
       <section className="dashboard-secao">
         <div className="dashboard-secao-cabecalho">

@@ -48,6 +48,17 @@ export async function ensureAuthenticated(
       unidadeId: usuario.unidadeId
     };
 
+    // SUPERADMIN pode "visualizar como" uma unidade específica — o frontend
+    // manda o id escolhido nesse header, e a partir daqui toda a cadeia de
+    // escopo (escopoUnidade, garantirAcessoUnidade, requireUnidadeId) passa
+    // a enxergar só aquela unidade, sem precisar mudar nada nos services.
+    if (usuario.perfil === "SUPERADMIN") {
+      const unidadeVisualizada = Number(req.headers["x-unidade-id"]);
+      if (Number.isInteger(unidadeVisualizada) && unidadeVisualizada > 0) {
+        req.user.unidadeId = unidadeVisualizada;
+      }
+    }
+
     return next();
 
   } catch (error) {

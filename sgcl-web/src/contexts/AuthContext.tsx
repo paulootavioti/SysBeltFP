@@ -2,11 +2,19 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { api } from "../services/api";
 import { AuthContext } from "./authContextData";
-import type { Usuario } from "./authContextData";
+import type { Usuario, UnidadeVisualizada } from "./authContextData";
 
 type AuthProviderProps = {
   children: ReactNode;
 };
+
+function aplicarHeaderUnidade(unidade: UnidadeVisualizada) {
+  if (unidade) {
+    api.defaults.headers.common["X-Unidade-Id"] = String(unidade.id);
+  } else {
+    delete api.defaults.headers.common["X-Unidade-Id"];
+  }
+}
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [usuario, setUsuario] = useState<Usuario | null>(() => {
@@ -30,6 +38,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return null;
   });
 
+  const [unidadeVisualizada, setUnidadeVisualizada] = useState<UnidadeVisualizada>(() => {
+    const storage = localStorage.getItem("@sgcl:unidadeVisualizada");
+    const unidade = storage ? JSON.parse(storage) : null;
+    aplicarHeaderUnidade(unidade);
+    return unidade;
+  });
+
   async function login(email: string, senha: string) {
     const response = await api.post("/auth/login", {
       email,
@@ -45,6 +60,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setUsuario(usuario);
     setToken(token);
+    definirUnidadeVisualizada(null);
 
     return usuario as Usuario;
   }
@@ -57,6 +73,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setUsuario(null);
     setToken(null);
+    definirUnidadeVisualizada(null);
+  }
+
+  function definirUnidadeVisualizada(unidade: UnidadeVisualizada) {
+    if (unidade) {
+      localStorage.setItem("@sgcl:unidadeVisualizada", JSON.stringify(unidade));
+    } else {
+      localStorage.removeItem("@sgcl:unidadeVisualizada");
+    }
+
+    aplicarHeaderUnidade(unidade);
+    setUnidadeVisualizada(unidade);
   }
 
   return (
@@ -66,6 +94,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         token,
         login,
         logout,
+        unidadeVisualizada,
+        definirUnidadeVisualizada,
       }}
     >
       {children}

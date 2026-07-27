@@ -8,8 +8,8 @@ interface RegraAcesso {
 // Espelha as permissões (ensureRole) já aplicadas no backend, módulo a
 // módulo, pra que o menu e as rotas nunca ofereçam algo que a API recusaria.
 const REGRAS_ACESSO: RegraAcesso[] = [
-  // SUPERADMIN vê as duas abas (Unidades + Arenas); os demais perfis
-  // acessam a mesma rota mas só enxergam a aba de Arenas da própria unidade.
+  // SUPERADMIN administra unidades pelo Dashboard; essa rota, pros demais
+  // perfis, é só a tela de Arenas da própria unidade.
   { prefixo: "/unidades", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
   { prefixo: "/dashboard", perfis: ["ADMIN"] },
   { prefixo: "/alunos", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
@@ -29,7 +29,7 @@ const REGRAS_ACESSO: RegraAcesso[] = [
 // Página segura para qualquer perfil autenticado — usada como destino
 // depois do login e como fallback quando o perfil não tem acesso à rota atual.
 export const ROTA_PADRAO_POR_PERFIL: Record<Perfil, string> = {
-  SUPERADMIN: "/unidades",
+  SUPERADMIN: "/dashboard",
   ADMIN: "/dashboard",
   PROFESSOR: "/alunos",
   RECEPCAO: "/alunos",
