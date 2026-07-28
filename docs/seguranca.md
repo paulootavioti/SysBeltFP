@@ -1,8 +1,8 @@
 # Segurança
 
-Versão: 1.0
+Versão: 2.0
 
-Última atualização: Julho/2026
+Última atualização: Julho/2026 (matriz de permissões dos 4 perfis, isolamento multi-unidade, redação de dados por perfil)
 
 ---
 
@@ -206,49 +206,42 @@ Todas ficam em:
 
 # Controle de Acesso
 
-Perfis
+O sistema possui quatro perfis. A tabela abaixo resume o que cada um acessa — detalhamento completo (RN-160 a RN-194) em `regras-de-negocio.md`.
 
-ADMIN
-
-↓
-
-Acesso total
-
----
-
-PROFESSOR
-
-↓
-
-Módulos pedagógicos
-
-↓
-
-Consultas
-
-↓
-
-Aulas
-
-↓
-
-Graduações
+| Perfil | Escopo | Acesso |
+|---|---|---|
+| **SUPERADMIN** | Todas as unidades | Irrestrito. Único perfil que cadastra Unidades, cria outro SUPERADMIN e vincula usuários a múltiplas unidades. Bypassa toda checagem de `ensureRole`. |
+| **ADMIN** | Própria(s) unidade(s) — pode ter mais de uma | Gestão completa: Alunos, Turmas, Aulas, Arenas, Usuários (Professor/Recepção da própria unidade), Financeiro, Relatórios, Mensagens, Planos, Competições. Consulta (leitura) da grade de outras unidades. |
+| **PROFESSOR** | Pode estar vinculado a mais de uma unidade | Aulas (agendar, iniciar, chamada, transferir), Planejamento Pedagógico, Graduações, Competições, Planos (consulta), Turmas (consulta). **Sem** acesso a Relatórios, Mensagens, Unidades/Arenas, Financeiro, Mensalidades. Dados do Aluno **redigidos** (ver seção própria abaixo). |
+| **RECEPCAO** | Própria unidade | Alunos, Turmas, Aulas, Mensalidades, Graduações, Competições, Planos, Mensagens, Relatórios. **Sem** acesso a Planejamento Pedagógico nem Financeiro. |
 
 ---
 
-RECEPCAO
+# Isolamento Multi-Unidade (Multi-Tenant)
 
-↓
+Toda entidade operacional carrega `unidadeId`. O escopo é resolvido centralizadamente em `ensureAuthenticated` e aplicado pelos utilitários `escopoUnidade()` / `garantirAcessoUnidade()` — nenhum Service filtra manualmente.
 
-Cadastros
+## Unidade ativa e header `X-Unidade-Id`
 
-↓
+- **SUPERADMIN**: pode enviar o header `X-Unidade-Id` para "visualizar como" qualquer unidade específica; sem o header, enxerga todas.
+- **ADMIN / PROFESSOR / RECEPCAO** vinculados a mais de uma unidade (tabela `UsuarioUnidade`): podem enviar o mesmo header para trocar a própria "unidade ativa" — mas só é aceito se a unidade pedida estiver entre as que o usuário de fato tem vínculo. Uma tentativa de informar uma unidade não vinculada é silenciosamente ignorada (mantém a unidade ativa atual).
+- Qualquer outro perfil: o header é ignorado.
 
-Financeiro
+Esse mecanismo troca o escopo de uma requisição sem exigir nenhuma mudança nos Services — todos já filtram por `req.user.unidadeId`.
 
-↓
+## Consulta somente leitura entre unidades
 
-Responsáveis
+ADMIN e PROFESSOR também podem consultar (**somente leitura**) a grade horária de outra unidade através do parâmetro de query `unidadeConsultaId` (rotas `/aulas/programadas` e `/aulas/grade-semanal`) — mecanismo independente do `X-Unidade-Id`: não altera o escopo do usuário em nenhuma outra rota, serve só para essa consulta pontual.
+
+---
+
+# Redação de Dados por Perfil
+
+O perfil PROFESSOR só pode ver do Aluno: **nome, apelido, nome do responsável, turma, presenças e graduações**.
+
+Essa restrição é aplicada no backend, não na UI: o `select` do Prisma em `ListAlunosService` e `GetAlunoCompletoService` é montado de forma diferente quando `req.user.perfil === "PROFESSOR"`, omitindo CPF, endereço, contato, dados de saúde, financeiro e comportamentos desde a query — o campo nunca chega a sair do banco para esse perfil. A rota de prontuário completo (`GET /alunos/:id/prontuario`) é bloqueada inteiramente para PROFESSOR.
+
+Esse é o primeiro mecanismo de redação de campos por perfil do sistema; qualquer nova tela com dados sensíveis de Aluno deve seguir o mesmo padrão (branch por perfil dentro do Service, nunca apenas escondendo campos no frontend).
 
 ---
 
@@ -375,7 +368,7 @@ Mensalidades
 
 Observações
 
-Esses dados devem ser acessados apenas por usuários autorizados.
+Esses dados devem ser acessados apenas por usuários autorizados. Ver seção "Redação de Dados por Perfil" para o mecanismo de enforcement no backend (hoje aplicado ao Aluno para o perfil PROFESSOR).
 
 ---
 
@@ -454,7 +447,14 @@ Valores novos
 ## Julho/2026
 
 - **Cadastro de usuário público**: a rota `POST /auth/register` não exigia autenticação nem perfil, permitindo que qualquer pessoa criasse uma conta com perfil ADMIN. Corrigido para exigir `ensureAuthenticated` + `ensureRole(["ADMIN"])`.
-- **Financeiro restrito indevidamente**: `GET /financeiro/resumo` aceitava apenas ADMIN, contrariando esta própria documentação (que define RECEPÇÃO com acesso a Financeiro). Corrigido para `ensureRole(["ADMIN", "RECEPCAO"])`.
+- **Financeiro restrito indevidamente**: `GET /financeiro/resumo` aceitava apenas ADMIN, contrariando esta própria documentação (que definia RECEPÇÃO com acesso a Financeiro). Corrigido na época para `ensureRole(["ADMIN", "RECEPCAO"])` — **revisto posteriormente** (ver entrada de RBAC abaixo): a regra de negócio mudou e RECEPÇÃO deixou de ter acesso a Financeiro.
+
+## Julho/2026 — Multi-unidade e matriz de permissões (RBAC)
+
+- Nenhum usuário além do SUPERADMIN podia ser criado como SUPERADMIN — `POST /auth/register` corrigido para aceitar `perfil: "SUPERADMIN"` somente quando quem cadastra já é SUPERADMIN.
+- Redefinida a matriz de permissões dos 4 perfis (ver seção "Controle de Acesso"): PROFESSOR perdeu acesso a Relatórios, Mensagens e Unidades/Arenas, e ficou só de consulta em Turmas; RECEPÇÃO perdeu acesso a Planejamento Pedagógico e Financeiro.
+- Implementada redação de campos do Aluno para o perfil PROFESSOR diretamente nos Services (não apenas na UI) — ver seção "Redação de Dados por Perfil".
+- Implementado isolamento multi-unidade completo (Unidade/Arena) com o mecanismo de header `X-Unidade-Id`, e o vínculo de usuários (Admin, Professor, Recepção) a múltiplas unidades via `UsuarioUnidade`.
 
 ---
 
