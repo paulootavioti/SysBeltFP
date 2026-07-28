@@ -3,6 +3,7 @@ import { prisma } from "../../shared/database/prisma";
 import { CreateGraduacaoService } from "./services/CreateGraduacaoService";
 import { GetEvolucaoAlunoService } from "./services/GetEvolucaoAlunoService";
 import { IncrementarGrauService } from "./services/IncrementarGrauService";
+import { ListProximasGraduacoesService } from "./services/ListProximasGraduacoesService";
 import { LIMITE_PADRAO_LISTAGEM } from "../../shared/constants/pagination";
 import { escopoUnidade } from "../../shared/utils/escopoUnidade";
 
@@ -92,41 +93,9 @@ export class GraduacoesController {
   //Proximas Graduacoes
   async proximas(req: Request, res: Response) {
 
-    const alunos = await prisma.aluno.findMany({
-      where: {
-        ativo: true,
-        ...escopoUnidade(req.user.unidadeId)
-      }
-    });
+    const service = new ListProximasGraduacoesService();
 
-    const presencasPorAluno = await prisma.aulaAluno.groupBy({
-      by: ["alunoId"],
-      where: {
-        presente: true,
-        alunoId: { in: alunos.map((aluno) => aluno.id) },
-      },
-      _count: { _all: true },
-    });
-
-    const totalPorAluno = new Map(
-      presencasPorAluno.map((item) => [item.alunoId, item._count._all])
-    );
-
-    const aulasPorGrau = 8;
-
-    const resultado = alunos
-      .map((aluno) => {
-        const totalPresencas = totalPorAluno.get(aluno.id) ?? 0;
-
-        return {
-          alunoId: aluno.id,
-          nome: aluno.nome,
-          faixa: aluno.faixa,
-          presencas: totalPresencas,
-          aptoGraduacao: totalPresencas > 0 && totalPresencas % aulasPorGrau === 0,
-        };
-      })
-      .filter((aluno) => aluno.aptoGraduacao);
+    const resultado = await service.execute(req.user.unidadeId);
 
     return res.json(resultado);
   }

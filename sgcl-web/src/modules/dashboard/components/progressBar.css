@@ -1,0 +1,18 @@
+/* Barra de progresso compartilhada por Metas, Eventos (inscrições) e
+   Graduações — mesma aparência nas três, então fica num arquivo à parte
+   em vez de duplicada. */
+
+.dashboard-meta-barra {
+  width: 100%;
+  height: 8px;
+  border-radius: var(--radius-md);
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.dashboard-meta-barra-preenchida {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--radius-md);
+  transition: width 0.2s ease;
+}

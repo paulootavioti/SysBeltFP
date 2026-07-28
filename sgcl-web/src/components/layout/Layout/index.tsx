@@ -19,6 +19,8 @@ import {
   LuCreditCard,
   LuDoorOpen,
   LuMessageCircle,
+  LuTarget,
+  LuMegaphone,
   LuLogOut,
   LuMenu,
   LuX,
@@ -49,6 +51,8 @@ const NAV_ITEMS = [
   { to: "/financeiro", label: "Financeiro", icon: LuPiggyBank },
   { to: "/planos", label: "Planos", icon: LuCreditCard },
   { to: "/mensagens", label: "Mensagens", icon: LuMessageCircle },
+  { to: "/metas", label: "Metas", icon: LuTarget },
+  { to: "/eventos", label: "Campanhas e Seminários", icon: LuMegaphone },
 ];
 
 export function Layout({ children }: LayoutProps) {

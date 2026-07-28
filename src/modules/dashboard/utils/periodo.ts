@@ -2,7 +2,7 @@ export type Periodo = "DIARIO" | "SEMANAL" | "MENSAL" | "ANUAL";
 
 export type UnidadeBucket = "HORA" | "DIA" | "MES";
 
-interface RangePeriodo {
+export interface RangePeriodo {
   inicio: Date;
   fim: Date;
   unidade: UnidadeBucket;
@@ -90,4 +90,95 @@ export function montarSerie(
   });
 
   return buckets.map((b) => ({ rotulo: b.rotulo, valor: totais.get(b.chave) ?? 0 }));
+}
+
+// Igual a `montarSerie`, mas devolve os itens de cada bucket (em vez de um
+// total único) — usado quando o gráfico precisa de mais de um valor por
+// bucket (ex.: recebido/previsto/pendente/vencido no mesmo dia).
+export function agruparPorBucket<T>(
+  range: RangePeriodo,
+  itens: T[],
+  dataDoItem: (item: T) => Date
+): { rotulo: string; itens: T[] }[] {
+  const buckets = gerarBucketsVazios(range);
+  const grupos = new Map(buckets.map((b) => [b.chave, [] as T[]]));
+
+  itens.forEach((item) => {
+    const chave = chaveBucket(dataDoItem(item), range.unidade);
+    const grupo = grupos.get(chave);
+    if (grupo) grupo.push(item);
+  });
+
+  return buckets.map((b) => ({ rotulo: b.rotulo, itens: grupos.get(b.chave) ?? [] }));
+}
+
+// Janela imediatamente anterior ao período atual, com a mesma duração —
+// base de comparação para as variações percentuais (RN de "período anterior").
+export function calcularRangePeriodoAnterior(periodo: Periodo, agora: Date = new Date()): RangePeriodo {
+  const atual = calcularRangePeriodo(periodo, agora);
+
+  switch (periodo) {
+    case "DIARIO": {
+      const inicio = new Date(atual.inicio);
+      inicio.setDate(inicio.getDate() - 1);
+      return { inicio, fim: atual.inicio, unidade: "HORA" };
+    }
+
+    case "SEMANAL": {
+      const inicio = new Date(atual.inicio);
+      inicio.setDate(inicio.getDate() - 7);
+      return { inicio, fim: atual.inicio, unidade: "DIA" };
+    }
+
+    case "MENSAL": {
+      const inicio = new Date(atual.inicio.getFullYear(), atual.inicio.getMonth() - 1, 1);
+      return { inicio, fim: atual.inicio, unidade: "DIA" };
+    }
+
+    case "ANUAL": {
+      const inicio = new Date(atual.inicio.getFullYear() - 1, 0, 1);
+      return { inicio, fim: atual.inicio, unidade: "MES" };
+    }
+  }
+}
+
+export interface DivisaoPeriodo {
+  quantidade: number;
+  unidadeTexto: string;
+}
+
+// Em quantas fatias o período se divide, pra calcular médias (receita
+// média, média de novas matrículas) — ver regra de negócio do dashboard.
+export function divisoesDoPeriodo(periodo: Periodo, agora: Date = new Date()): DivisaoPeriodo {
+  switch (periodo) {
+    case "DIARIO":
+      return { quantidade: 24, unidadeTexto: "por hora" };
+
+    case "SEMANAL":
+      return { quantidade: 7, unidadeTexto: "por dia" };
+
+    case "MENSAL": {
+      const diasNoMes = new Date(agora.getFullYear(), agora.getMonth() + 1, 0).getDate();
+      return { quantidade: Math.max(1, Math.ceil(diasNoMes / 7)), unidadeTexto: "por semana" };
+    }
+
+    case "ANUAL":
+      return { quantidade: 12, unidadeTexto: "por mês" };
+  }
+}
+
+export interface Variacao {
+  // null = sem base de comparação (período anterior zerado e período atual
+  // não) — o front deve mostrar "Novo no período", nunca uma % artificial.
+  percentual: number | null;
+}
+
+// variacaoPercentual = ((atual - anterior) / anterior) * 100, protegido
+// contra divisão por zero.
+export function calcularVariacaoPercentual(atual: number, anterior: number): Variacao {
+  if (anterior === 0) {
+    return { percentual: atual === 0 ? 0 : null };
+  }
+
+  return { percentual: ((atual - anterior) / anterior) * 100 };
 }

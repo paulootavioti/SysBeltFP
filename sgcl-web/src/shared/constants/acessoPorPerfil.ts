@@ -24,6 +24,8 @@ const REGRAS_ACESSO: RegraAcesso[] = [
   { prefixo: "/financeiro", perfis: ["ADMIN"] },
   { prefixo: "/planos", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
   { prefixo: "/mensagens", perfis: ["ADMIN", "RECEPCAO"] },
+  { prefixo: "/metas", perfis: ["ADMIN"] },
+  { prefixo: "/eventos", perfis: ["ADMIN", "RECEPCAO"] },
 ];
 
 // Página segura para qualquer perfil autenticado — usada como destino

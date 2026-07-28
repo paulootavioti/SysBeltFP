@@ -3,10 +3,22 @@ import { Request, Response } from "express";
 import { prisma } from "../../shared/database/prisma";
 import { AppError } from "../../shared/errors/AppError";
 import { GetResumoPeriodoService } from "./services/GetResumoPeriodoService";
+import { GetAlertasDashboardService } from "./services/GetAlertasDashboardService";
+import { GetResumoUnidadesService } from "./services/GetResumoUnidadesService";
 import { escopoUnidade } from "../../shared/utils/escopoUnidade";
 import type { Periodo } from "./utils/periodo";
 
 const PERIODOS_VALIDOS: Periodo[] = ["DIARIO", "SEMANAL", "MENSAL", "ANUAL"];
+
+function periodoDaQuery(req: Request): Periodo {
+  const periodo = String(req.query.periodo || "MENSAL").toUpperCase();
+
+  if (!PERIODOS_VALIDOS.includes(periodo as Periodo)) {
+    throw new AppError(`Período inválido. Use um dos seguintes: ${PERIODOS_VALIDOS.join(", ")}.`);
+  }
+
+  return periodo as Periodo;
+}
 
 export class DashboardController {
 
@@ -114,18 +126,32 @@ export class DashboardController {
 
   async resumoPeriodo(req: Request, res: Response) {
 
-    const periodo = String(req.query.periodo || "MENSAL").toUpperCase();
-
-    if (!PERIODOS_VALIDOS.includes(periodo as Periodo)) {
-      throw new AppError(
-        `Período inválido. Use um dos seguintes: ${PERIODOS_VALIDOS.join(", ")}.`
-      );
-    }
+    const periodo = periodoDaQuery(req);
 
     const service = new GetResumoPeriodoService();
 
-    const resumo = await service.execute(periodo as Periodo, req.user.unidadeId);
+    const resumo = await service.execute(periodo, req.user.unidadeId);
 
     return res.json(resumo);
+  }
+
+  async alertas(req: Request, res: Response) {
+
+    const service = new GetAlertasDashboardService();
+
+    const alertas = await service.execute(req.user.unidadeId);
+
+    return res.json(alertas);
+  }
+
+  async unidades(req: Request, res: Response) {
+
+    const periodo = periodoDaQuery(req);
+
+    const service = new GetResumoUnidadesService();
+
+    const unidades = await service.execute(req.user.unidadeId, periodo);
+
+    return res.json(unidades);
   }
 }
