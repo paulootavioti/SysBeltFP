@@ -36,7 +36,7 @@ export function DashboardUnits({ unidades, eventos }: DashboardUnitsProps) {
       <div className="dashboard-unidades-grid">
         {unidades.map((unidade) => {
           const proximoEvento = eventos
-            .filter((evento) => evento.unidadeId === String(unidade.id) && evento.status !== "CANCELADO" && evento.status !== "CONCLUIDO")
+            .filter((evento) => evento.unidadeId === unidade.id && evento.status !== "CANCELADO" && evento.status !== "CONCLUIDO")
             .sort((a, b) => new Date(a.dataInicio).getTime() - new Date(b.dataInicio).getTime())[0];
 
           return (

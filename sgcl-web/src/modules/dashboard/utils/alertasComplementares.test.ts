@@ -7,7 +7,7 @@ import type { Evento } from "../../eventos/types";
 
 function meta(overrides: Partial<MetaDashboard>): MetaDashboard {
   return {
-    id: "m1",
+    id: 1,
     nome: "Meta X",
     tipo: "RECEITA",
     valorAtual: 0,
@@ -22,7 +22,8 @@ function meta(overrides: Partial<MetaDashboard>): MetaDashboard {
 
 function evento(overrides: Partial<Evento>): Evento {
   return {
-    id: "e1",
+    id: 1,
+    unidadeId: 1,
     titulo: "Evento X",
     tipo: "SEMINARIO",
     status: "AGENDADO",

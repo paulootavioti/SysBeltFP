@@ -11,7 +11,7 @@ export type TipoEvento =
 export type StatusEvento = "RASCUNHO" | "AGENDADO" | "EM_ANDAMENTO" | "CONCLUIDO" | "CANCELADO";
 
 export interface Evento {
-  id: string;
+  id: number;
   titulo: string;
   descricao?: string;
   tipo: TipoEvento;
@@ -19,7 +19,7 @@ export interface Evento {
   dataInicio: string;
   dataFim?: string;
   local?: string;
-  unidadeId?: string;
+  unidadeId: number;
   metaParticipantes?: number;
   participantesConfirmados?: number;
   investimento?: number;

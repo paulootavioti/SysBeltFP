@@ -9,7 +9,7 @@ export type TipoMeta =
 export type StatusMeta = "NAO_INICIADA" | "EM_ANDAMENTO" | "ATINGIDA" | "ATRASADA";
 
 export interface MetaDashboard {
-  id: string;
+  id: number;
   nome: string;
   tipo: TipoMeta;
   valorAtual: number;
