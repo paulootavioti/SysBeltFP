@@ -33,7 +33,7 @@ const REGRAS_ACESSO: RegraAcesso[] = [
 export const ROTA_PADRAO_POR_PERFIL: Record<Perfil, string> = {
   SUPERADMIN: "/dashboard",
   ADMIN: "/dashboard",
-  PROFESSOR: "/alunos",
+  PROFESSOR: "/aulas",
   RECEPCAO: "/alunos",
 };
 
