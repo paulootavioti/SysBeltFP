@@ -45,6 +45,24 @@ describe("perfilTemAcesso", () => {
     expect(perfilTemAcesso("RECEPCAO", "/usuarios")).toBe(false);
   });
 
+  it("apenas ADMIN tem acesso a Metas", () => {
+    expect(perfilTemAcesso("ADMIN", "/metas")).toBe(true);
+    expect(perfilTemAcesso("PROFESSOR", "/metas")).toBe(false);
+    expect(perfilTemAcesso("RECEPCAO", "/metas")).toBe(false);
+  });
+
+  it("ADMIN e RECEPCAO têm acesso a Campanhas e Seminários (Eventos); PROFESSOR não", () => {
+    expect(perfilTemAcesso("ADMIN", "/eventos")).toBe(true);
+    expect(perfilTemAcesso("RECEPCAO", "/eventos")).toBe(true);
+    expect(perfilTemAcesso("RECEPCAO", "/eventos/novo")).toBe(true);
+    expect(perfilTemAcesso("PROFESSOR", "/eventos")).toBe(false);
+  });
+
+  it("SUPERADMIN tem acesso irrestrito, inclusive Metas e Eventos", () => {
+    expect(perfilTemAcesso("SUPERADMIN", "/metas")).toBe(true);
+    expect(perfilTemAcesso("SUPERADMIN", "/eventos")).toBe(true);
+  });
+
   it("sem perfil definido, nenhuma rota com regra é liberada", () => {
     expect(perfilTemAcesso(undefined, "/dashboard")).toBe(false);
     expect(perfilTemAcesso(undefined, "/alunos")).toBe(false);

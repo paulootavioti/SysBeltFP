@@ -35,6 +35,13 @@ const Planos = lazy(() => import("../modules/planos/pages/Listar").then((m) => (
 const Unidades = lazy(() => import("../modules/unidades/pages/Listar").then((m) => ({ default: m.Unidades })));
 const Mensagens = lazy(() => import("../modules/mensagens/pages/Listar").then((m) => ({ default: m.Mensagens })));
 
+const Metas = lazy(() => import("../modules/metas/pages/Listar").then((m) => ({ default: m.Metas })));
+
+const Eventos = lazy(() => import("../modules/eventos/pages/Listar").then((m) => ({ default: m.Eventos })));
+const NovoEvento = lazy(() => import("../modules/eventos/pages/Novo").then((m) => ({ default: m.NovoEvento })));
+const DetalheEvento = lazy(() => import("../modules/eventos/pages/Detalhes").then((m) => ({ default: m.DetalheEvento })));
+const EditarEvento = lazy(() => import("../modules/eventos/pages/Editar").then((m) => ({ default: m.EditarEvento })));
+
 export function AppRoutes() {
   return (
     <Suspense fallback={<Loading />}>
@@ -263,6 +270,51 @@ export function AppRoutes() {
           element={
             <PrivateRoute>
               <Mensagens />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/metas"
+          element={
+            <PrivateRoute>
+              <Metas />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/eventos"
+          element={
+            <PrivateRoute>
+              <Eventos />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/eventos/novo"
+          element={
+            <PrivateRoute>
+              <NovoEvento />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/eventos/:id"
+          element={
+            <PrivateRoute>
+              <DetalheEvento />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/eventos/:id/editar"
+          element={
+            <PrivateRoute>
+              <EditarEvento />
             </PrivateRoute>
           }
         />

@@ -1,0 +1,9 @@
+.dashboard-kpi-complemento {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin: 4px 0;
+}
+
+.dashboard-kpi-sem-dados {
+  font-style: italic;
+}

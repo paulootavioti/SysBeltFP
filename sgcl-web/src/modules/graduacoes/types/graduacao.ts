@@ -27,6 +27,10 @@ export interface AlunoElegivel {
   nome: string;
   faixa: string;
   presencas: number;
+  proximaFaixa?: string | null;
+  aulasRealizadas?: number;
+  aulasRestantes?: number;
+  percentualProgresso?: number;
 }
 
 // Trilha Infantil (Kids e Teens, até 14 anos)

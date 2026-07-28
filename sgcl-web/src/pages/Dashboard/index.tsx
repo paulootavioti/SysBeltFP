@@ -1,223 +1,182 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
 import { Layout } from "../../components/layout/Layout";
 import { PageHeader } from "../../components/layout/PageHeader";
-import { Card } from "../../components/ui/Card";
-import { Button } from "../../components/ui/Button";
 import { Loading } from "../../components/ui/Loading";
-import { ErrorMessage } from "../../components/ui/ErrorMessage";
-import { PeriodoSelector, type PeriodoOpcao } from "../../components/ui/PeriodoSelector";
-import { BarChart } from "../../components/ui/BarChart";
-import { Tabs } from "../../components/ui/Tabs";
-import { GradeHorariaSemanal } from "../../modules/aulas/components/GradeHorariaSemanal";
-import { UnidadesTab } from "../../modules/unidades/components/UnidadesTab";
-import { ArenasTab } from "../../modules/arenas/components/ArenasTab";
+import { PeriodoSelector } from "../../components/ui/PeriodoSelector";
 
-import { useAuth } from "../../contexts/useAuth";
-import { DashboardService, type DashboardResumo, type DashboardResumoPeriodo } from "./DashboardService";
-import { GraduacaoService } from "../../modules/graduacoes/services/GraduacaoService";
-import type { AlunoElegivel } from "../../modules/graduacoes/types";
-import { getApiErrorMessage } from "../../shared/utils/getApiErrorMessage";
+import { useDashboard } from "../../modules/dashboard/hooks/useDashboard";
+import { DashboardSection } from "../../modules/dashboard/components/DashboardSection";
+import { DashboardSectionError } from "../../modules/dashboard/components/DashboardSectionError";
+import { DashboardKpiCard } from "../../modules/dashboard/components/DashboardKpiCard";
+import { DashboardCharts } from "../../modules/dashboard/components/DashboardCharts";
+import { DashboardGoals } from "../../modules/dashboard/components/DashboardGoals";
+import { DashboardAlertList } from "../../modules/dashboard/components/DashboardAlertList";
+import { DashboardEvents } from "../../modules/dashboard/components/DashboardEvents";
+import { DashboardGraduations } from "../../modules/dashboard/components/DashboardGraduations";
+import { DashboardUnits } from "../../modules/dashboard/components/DashboardUnits";
+import { mesclarAlertas } from "../../modules/dashboard/utils/alertasComplementares";
+import { formatarDecimal, formatarMoeda, formatarPercentual } from "../../modules/dashboard/utils/formatters";
+import type { PeriodoOpcao } from "../../modules/dashboard/types";
 
 import "./styles.css";
 
 const RUBRICA_PERIODO: Record<PeriodoOpcao, string> = {
   DIARIO: "Hoje, por hora",
   SEMANAL: "Últimos 7 dias",
-  MENSAL: "Este mês, dia a dia",
-  ANUAL: "Este ano, mês a mês",
+  MENSAL: "Este mês, por semana",
+  ANUAL: "Este ano, por mês",
 };
 
-function formatarMoeda(valor: number): string {
-  return `R$ ${valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
 export function Dashboard() {
-  const navigate = useNavigate();
-  const { usuario } = useAuth();
-  const ehSuperadmin = usuario?.perfil === "SUPERADMIN";
+  const {
+    periodo,
+    definirPeriodo,
+    resumoPeriodo,
+    unidades,
+    alertas,
+    graduacoes,
+    metas,
+    eventos,
+    recarregarResumoPeriodo,
+    recarregarUnidades,
+    recarregarAlertas,
+    recarregarGraduacoes,
+    recarregarMetas,
+    recarregarEventos,
+  } = useDashboard();
 
-  const [dados, setDados] = useState<DashboardResumo | null>(null);
-  const [proximasGraduacoes, setProximasGraduacoes] = useState<AlunoElegivel[]>([]);
-  const [erro, setErro] = useState("");
+  const kpis = resumoPeriodo.dados?.kpis;
 
-  const [periodo, setPeriodo] = useState<PeriodoOpcao>("MENSAL");
-  const [resumoPeriodo, setResumoPeriodo] = useState<DashboardResumoPeriodo | null>(null);
-  const [carregandoPeriodo, setCarregandoPeriodo] = useState(true);
-
-  useEffect(() => {
-    async function carregar() {
-      try {
-        setErro("");
-        const [resumo, elegiveis] = await Promise.all([
-          DashboardService.resumo(),
-          GraduacaoService.listarProximas(),
-        ]);
-
-        setDados(resumo);
-        setProximasGraduacoes(elegiveis);
-      } catch (error) {
-        setErro(getApiErrorMessage(error, "Erro ao carregar dashboard."));
-      }
-    }
-
-    carregar();
-  }, []);
-
-  useEffect(() => {
-    let ativo = true;
-
-    async function carregarPeriodo() {
-      try {
-        setCarregandoPeriodo(true);
-        const resumo = await DashboardService.resumoPeriodo(periodo);
-        if (ativo) setResumoPeriodo(resumo);
-      } catch {
-        if (ativo) setResumoPeriodo(null);
-      } finally {
-        if (ativo) setCarregandoPeriodo(false);
-      }
-    }
-
-    carregarPeriodo();
-
-    return () => {
-      ativo = false;
-    };
-  }, [periodo]);
-
-  const secaoUnidades = ehSuperadmin && (
-    <section className="dashboard-secao">
-      <h2>Unidades e Arenas</h2>
-      <Tabs
-        defaultValue="unidades"
-        tabs={[
-          { label: "Unidades", value: "unidades", content: <UnidadesTab /> },
-          { label: "Arenas", value: "arenas", content: <ArenasTab /> },
-        ]}
-      />
-    </section>
-  );
-
-  if (erro) {
-    return (
-      <Layout>
-        <PageHeader title="Dashboard" subtitle="Resumo geral da academia." />
-        {secaoUnidades}
-        <ErrorMessage message={erro} />
-      </Layout>
-    );
-  }
-
-  if (!dados) {
-    return (
-      <Layout>
-        <PageHeader title="Dashboard" subtitle="Resumo geral da academia." />
-        {secaoUnidades}
-        <Loading />
-      </Layout>
-    );
-  }
+  const alertasCompletos = mesclarAlertas(alertas.dados ?? [], metas.dados ?? [], eventos.dados ?? []);
 
   return (
     <Layout>
-      <PageHeader title="Dashboard" subtitle="Resumo geral da academia." />
+      <PageHeader title="Dashboard" subtitle="Painel executivo da academia." />
 
-      {secaoUnidades}
-
-      <section className="dashboard-secao">
-        <div className="dashboard-secao-cabecalho">
-          <div>
-            <h2>Desempenho no Período</h2>
-            <p className="dashboard-secao-rubrica">{RUBRICA_PERIODO[periodo]}</p>
-          </div>
-          <PeriodoSelector valor={periodo} onChange={setPeriodo} />
+      <div className="dashboard-filtro-periodo">
+        <div>
+          <p className="dashboard-secao-rubrica">{RUBRICA_PERIODO[periodo]}</p>
         </div>
+        <PeriodoSelector valor={periodo} onChange={definirPeriodo} />
+      </div>
 
-        {carregandoPeriodo && !resumoPeriodo ? (
+      <DashboardSection titulo="Visão Executiva" subtitulo="Principais números do período selecionado.">
+        {resumoPeriodo.carregando && !kpis ? (
           <Loading />
-        ) : !resumoPeriodo ? (
-          <p className="dashboard-vazio">Não foi possível carregar os dados do período.</p>
-        ) : (
-          <div style={{ opacity: carregandoPeriodo ? 0.6 : 1, transition: "opacity 0.15s ease" }}>
-            <div className="dashboard-grid">
-              <Card titulo="Receita no Período" valor={formatarMoeda(resumoPeriodo.kpis.receita)} />
-              <Card titulo="Presenças no Período" valor={resumoPeriodo.kpis.presencas} />
-              <Card titulo="Novos Alunos" valor={resumoPeriodo.kpis.novosAlunos} />
-              <Card titulo="Graduações no Período" valor={resumoPeriodo.kpis.graduacoes} />
-            </div>
+        ) : resumoPeriodo.erro ? (
+          <DashboardSectionError mensagem={resumoPeriodo.erro} onTentarNovamente={recarregarResumoPeriodo} />
+        ) : !kpis ? null : (
+          <div className="dashboard-grid" style={{ opacity: resumoPeriodo.carregando ? 0.6 : 1 }}>
+            <DashboardKpiCard
+              titulo="Receita no Período"
+              valor={formatarMoeda(kpis.receita)}
+              complemento={`Média de ${formatarMoeda(kpis.receitaMedia)} ${kpis.unidadeMediaNovasMatriculas}`}
+              variacao={kpis.variacaoReceita}
+            />
 
-            <div className="dashboard-graficos">
-              <BarChart
-                titulo="Receita"
-                subtitulo="Mensalidades recebidas no período"
-                dados={resumoPeriodo.seriesReceita}
-                formatarValor={formatarMoeda}
-              />
-              <BarChart
-                titulo="Frequência"
-                subtitulo="Presenças registradas no período"
-                dados={resumoPeriodo.seriesFrequencia}
-              />
-              <BarChart
-                titulo="Novas Matrículas"
-                subtitulo="Alunos cadastrados no período"
-                dados={resumoPeriodo.seriesNovasMatriculas}
-              />
-            </div>
+            <DashboardKpiCard
+              titulo="Ticket Médio"
+              valor={`${formatarMoeda(kpis.ticketMedio)} por aluno`}
+              complemento={`${kpis.alunosPagantes} aluno(s) pagante(s) no período`}
+              semDados={kpis.alunosPagantes === 0}
+            />
+
+            <DashboardKpiCard
+              titulo="Alunos Ativos"
+              valor={String(kpis.alunosAtivos)}
+              complemento="Total de alunos ativos hoje"
+              variacao={kpis.variacaoAlunosAtivos}
+            />
+
+            <DashboardKpiCard
+              titulo="Novas Matrículas"
+              valor={String(kpis.novosAlunos)}
+              complemento={`${kpis.cancelamentos} cancelamento(s) • saldo ${kpis.saldoAlunos >= 0 ? "+" : ""}${kpis.saldoAlunos}`}
+              variacao={kpis.variacaoNovasMatriculas}
+            />
+
+            <DashboardKpiCard
+              titulo="Média de Novas Matrículas"
+              valor={`${formatarDecimal(kpis.mediaNovasMatriculas)} ${kpis.unidadeMediaNovasMatriculas}`}
+            />
+
+            <DashboardKpiCard
+              titulo="Taxa de Frequência"
+              valor={formatarPercentual(kpis.taxaFrequencia)}
+              complemento={`${kpis.presencas} de ${kpis.presencasEsperadas} presenças esperadas`}
+              variacao={kpis.variacaoFrequencia}
+              semDados={kpis.presencasEsperadas === 0}
+            />
+
+            <DashboardKpiCard
+              titulo="Mensalidades Vencidas"
+              valor={String(kpis.mensalidadesVencidas)}
+              complemento={`${formatarPercentual(kpis.taxaInadimplencia)} de inadimplência no período`}
+            />
+
+            <DashboardKpiCard titulo="Graduações Realizadas" valor={String(kpis.graduacoes)} />
           </div>
         )}
-      </section>
+      </DashboardSection>
 
-      <section className="dashboard-secao">
-        <h2>Alunos e Atividades</h2>
+      <DashboardSection titulo="Gráficos de Desempenho" subtitulo="Reagem ao período selecionado acima.">
+        {resumoPeriodo.carregando && !resumoPeriodo.dados ? (
+          <Loading />
+        ) : resumoPeriodo.erro ? (
+          <DashboardSectionError mensagem={resumoPeriodo.erro} onTentarNovamente={recarregarResumoPeriodo} />
+        ) : resumoPeriodo.dados ? (
+          <DashboardCharts resumo={resumoPeriodo.dados} />
+        ) : null}
+      </DashboardSection>
 
-        <div className="dashboard-grid">
-          <Card titulo="Alunos Ativos" valor={dados.alunosAtivos} />
-          <Card titulo="Responsáveis" valor={dados.responsaveis} />
-          <Card titulo="Presenças Hoje" valor={dados.presencasHoje} />
-          <Card titulo="Graduações" valor={dados.graduacoes} />
-          <Card titulo="Competições" valor={dados.competicoes} />
-        </div>
-      </section>
+      <DashboardSection titulo="Metas do Período" subtitulo="Acompanhamento dos objetivos estratégicos.">
+        {metas.carregando ? (
+          <Loading />
+        ) : metas.erro ? (
+          <DashboardSectionError mensagem={metas.erro} onTentarNovamente={recarregarMetas} />
+        ) : (
+          <DashboardGoals metas={metas.dados ?? []} />
+        )}
+      </DashboardSection>
 
-      <section className="dashboard-secao">
-        <h2>Financeiro</h2>
+      <DashboardSection titulo="Atenção do Gestor" subtitulo="O que exige uma ação agora.">
+        {alertas.carregando ? (
+          <Loading />
+        ) : alertas.erro ? (
+          <DashboardSectionError mensagem={alertas.erro} onTentarNovamente={recarregarAlertas} />
+        ) : (
+          <DashboardAlertList alertas={alertasCompletos} />
+        )}
+      </DashboardSection>
 
-        <div className="dashboard-grid">
-          <Card titulo="Total Recebido" valor={`R$ ${dados.totalRecebido.toFixed(2)}`} />
-          <Card titulo="Total Pendente" valor={`R$ ${dados.totalPendente.toFixed(2)}`} />
-          <Card titulo="Mensalidades Pendentes" valor={dados.mensalidadesPendentes} />
-          <Card titulo="Mensalidades Vencidas" valor={dados.mensalidadesVencidas} />
-        </div>
-      </section>
+      <DashboardSection titulo="Campanhas e Seminários" subtitulo="Eventos ativos e próximos.">
+        {eventos.carregando ? (
+          <Loading />
+        ) : eventos.erro ? (
+          <DashboardSectionError mensagem={eventos.erro} onTentarNovamente={recarregarEventos} />
+        ) : (
+          <DashboardEvents eventos={eventos.dados ?? []} />
+        )}
+      </DashboardSection>
 
-      <div className="dashboard-linha-inferior">
-        <section className="dashboard-secao dashboard-secao-flex">
-          <h2>Próximas Graduações</h2>
+      <DashboardSection titulo="Próximas Graduações" subtitulo="Alunos perto de evoluir de faixa ou grau.">
+        {graduacoes.carregando ? (
+          <Loading />
+        ) : graduacoes.erro ? (
+          <DashboardSectionError mensagem={graduacoes.erro} onTentarNovamente={recarregarGraduacoes} />
+        ) : (
+          <DashboardGraduations alunos={graduacoes.dados ?? []} />
+        )}
+      </DashboardSection>
 
-          {proximasGraduacoes.length === 0 ? (
-            <p className="dashboard-vazio">Nenhum aluno elegível no momento.</p>
-          ) : (
-            <div className="dashboard-lista">
-              {proximasGraduacoes.slice(0, 5).map((aluno) => (
-                <div key={aluno.alunoId} className="dashboard-lista-item">
-                  <span>{aluno.nome}</span>
-                  <span>{aluno.faixa}</span>
-                  <span>{aluno.presencas} aulas</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <Button type="button" variant="secondary" onClick={() => navigate("/graduacoes/proximas")}>
-            Ver todos
-          </Button>
-        </section>
-
-        <GradeHorariaSemanal compacta />
-      </div>
+      <DashboardSection titulo="Unidades e Arenas" subtitulo="Situação operacional de cada unidade.">
+        {unidades.carregando && !unidades.dados ? (
+          <Loading />
+        ) : unidades.erro ? (
+          <DashboardSectionError mensagem={unidades.erro} onTentarNovamente={recarregarUnidades} />
+        ) : (
+          <DashboardUnits unidades={unidades.dados ?? []} eventos={eventos.dados ?? []} />
+        )}
+      </DashboardSection>
     </Layout>
   );
 }

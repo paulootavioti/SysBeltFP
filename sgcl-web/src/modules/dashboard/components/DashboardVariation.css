@@ -1,0 +1,23 @@
+.dashboard-variacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-xs);
+  font-weight: 600;
+}
+
+.dashboard-variacao-positiva {
+  color: var(--color-success);
+}
+
+.dashboard-variacao-negativa {
+  color: var(--color-danger);
+}
+
+.dashboard-variacao-estavel {
+  color: var(--color-text-light);
+}
+
+.dashboard-variacao-novo {
+  color: var(--color-accent);
+}

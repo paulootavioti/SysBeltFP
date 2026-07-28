@@ -38,4 +38,18 @@ dashboardRoutes.get(
   dashboardController.resumoPeriodo
 );
 
+dashboardRoutes.get(
+  "/alertas",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  dashboardController.alertas
+);
+
+dashboardRoutes.get(
+  "/unidades",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  dashboardController.unidades
+);
+
 export { dashboardRoutes };
