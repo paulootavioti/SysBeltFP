@@ -324,6 +324,7 @@ model Usuario {
 
   turmas            Turma[]
   avisosReconhecidos AvisoReconhecido[]
+  aulasSubstituindo AulaProgramada[] @relation("AulaProgramadaProfessorSubstituto")
 
   createdAt         DateTime @default(now())
 }
@@ -514,6 +515,13 @@ model AulaProgramada {
 
   aulaId          Int?     @unique
   aula            Aula?    @relation(fields: [aulaId], references: [id])
+
+  // transferência: o professor titular (turma.professor) está impedido de
+  // dar essa aula específica — outro professor assume só essa ocorrência,
+  // com justificativa obrigatória do impedimento.
+  professorSubstitutoId    Int?
+  professorSubstituto      Usuario? @relation("AulaProgramadaProfessorSubstituto", fields: [professorSubstitutoId], references: [id])
+  motivoTransferencia      String?
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt

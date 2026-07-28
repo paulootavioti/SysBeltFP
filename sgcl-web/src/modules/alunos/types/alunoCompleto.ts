@@ -1,4 +1,4 @@
-import type { Aluno } from "./aluno";
+import type { Aluno, AlunoBasico } from "./aluno";
 import type { Responsavel } from "../../responsaveis/types/responsavel";
 import type { Presenca } from "./presenca";
 import type { Graduacao } from "./graduacao";
@@ -10,4 +10,10 @@ export interface AlunoCompleto extends Aluno {
   presencas?: Presenca[];
   graduacoes?: Graduacao[];
   mensalidades?: Mensalidade[];
+}
+
+// versão redigida devolvida pelo backend pra PROFESSOR.
+export interface AlunoCompletoBasico extends AlunoBasico {
+  presencas?: Presenca[];
+  graduacoes?: Graduacao[];
 }

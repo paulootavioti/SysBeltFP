@@ -4,3 +4,8 @@ export interface Unidade {
   ativo: boolean;
   createdAt: string;
 }
+
+export interface UnidadeOpcao {
+  id: number;
+  nome: string;
+}

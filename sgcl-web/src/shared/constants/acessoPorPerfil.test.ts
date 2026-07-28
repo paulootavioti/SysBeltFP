@@ -20,9 +20,16 @@ describe("perfilTemAcesso", () => {
     expect(perfilTemAcesso("PROFESSOR", "/financeiro")).toBe(false);
   });
 
-  it("RECEPCAO tem acesso a Mensalidades e Financeiro", () => {
+  it("RECEPCAO tem acesso a Mensalidades, mas não a Financeiro nem Planejamento Pedagógico", () => {
     expect(perfilTemAcesso("RECEPCAO", "/mensalidades")).toBe(true);
-    expect(perfilTemAcesso("RECEPCAO", "/financeiro")).toBe(true);
+    expect(perfilTemAcesso("RECEPCAO", "/financeiro")).toBe(false);
+    expect(perfilTemAcesso("RECEPCAO", "/planejamento")).toBe(false);
+  });
+
+  it("PROFESSOR não tem acesso a Relatórios, Mensagens nem Unidades/Arenas", () => {
+    expect(perfilTemAcesso("PROFESSOR", "/relatorios")).toBe(false);
+    expect(perfilTemAcesso("PROFESSOR", "/mensagens")).toBe(false);
+    expect(perfilTemAcesso("PROFESSOR", "/unidades")).toBe(false);
   });
 
   it("todos os perfis têm acesso a Alunos, inclusive sub-rotas", () => {

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import { ListUsuariosService } from "./services/ListUsuariosService";
+import { ListProfessoresService } from "./services/ListProfessoresService";
 import { UpdatePerfilUsuarioService } from "./services/UpdatePerfilUsuarioService";
 import { ToggleUsuarioAtivoService } from "./services/ToggleUsuarioAtivoService";
 import { UpdateUsuarioService } from "./services/UpdateUsuarioService";
@@ -20,6 +21,21 @@ export class UsuariosController {
       await service.execute(req.user.unidadeId);
 
     return res.json(usuarios);
+
+  }
+
+  async listarProfessores(
+    req: Request,
+    res: Response
+  ) {
+
+    const service =
+      new ListProfessoresService();
+
+    const professores =
+      await service.execute(req.user.unidadeId);
+
+    return res.json(professores);
 
   }
 

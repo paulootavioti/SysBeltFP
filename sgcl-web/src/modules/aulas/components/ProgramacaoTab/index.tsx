@@ -13,6 +13,7 @@ import { useAuth } from "../../../../contexts/useAuth";
 import { AulaService } from "../../services/AulaService";
 import { ProgramarAulaForm, type ProgramarAulaFormData } from "../ProgramarAulaForm";
 import { EditarProgramacaoForm, type EditarProgramacaoFormData } from "../EditarProgramacaoForm";
+import { TransferirAulaForm, type TransferirAulaFormData } from "../TransferirAulaForm";
 import { AvisoCancelamentoLista } from "../AvisoCancelamentoLista";
 import { ResumoTurmas } from "../ResumoTurmas";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -41,14 +42,21 @@ export function ProgramacaoTab() {
 
   const [modalAberto, setModalAberto] = useState(false);
   const [programacaoEditando, setProgramacaoEditando] = useState<AulaProgramada | null>(null);
+  const [programacaoTransferindo, setProgramacaoTransferindo] = useState<AulaProgramada | null>(null);
   const [avisosCancelamento, setAvisosCancelamento] = useState<MensagemGerada[] | null>(null);
 
   const [salvando, setSalvando] = useState(false);
+  const [transferindo, setTransferindo] = useState(false);
   const [iniciandoId, setIniciandoId] = useState<number | null>(null);
   const [excluindoId, setExcluindoId] = useState<number | null>(null);
   const [cancelandoId, setCancelandoId] = useState<number | null>(null);
 
   const ehAdmin = usuario?.perfil === "ADMIN";
+
+  function podeTransferir(programacao: AulaProgramada) {
+    if (ehAdmin) return true;
+    return usuario?.perfil === "PROFESSOR" && programacao.turma.professor?.id === usuario.id;
+  }
 
   async function carregarProgramacoes() {
     if (!turmaSelecionada) return;
@@ -128,6 +136,25 @@ export function ProgramacaoTab() {
     }
   }
 
+  async function handleTransferir(data: TransferirAulaFormData) {
+    if (!programacaoTransferindo) return;
+
+    try {
+      setTransferindo(true);
+      setErro("");
+      await AulaService.transferirProgramada(programacaoTransferindo.id, {
+        professorSubstitutoId: Number(data.professorSubstitutoId),
+        motivo: data.motivo,
+      });
+      await carregarProgramacoes();
+      setProgramacaoTransferindo(null);
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao transferir aula."));
+    } finally {
+      setTransferindo(false);
+    }
+  }
+
   async function handleIniciar(id: number) {
     try {
       setIniciandoId(id);
@@ -179,6 +206,19 @@ export function ProgramacaoTab() {
     { header: "Turma", accessor: "turma" as const, render: (p: AulaProgramada) => p.turma.nome },
     { header: "Data/Horário", accessor: "data" as const, render: (p: AulaProgramada) => formatarDataHora(p.data) },
     {
+      header: "Professor",
+      accessor: "professorSubstituto" as const,
+      render: (p: AulaProgramada) =>
+        p.professorSubstituto ? (
+          <span title={p.motivoTransferencia ?? ""}>
+            {p.professorSubstituto.apelido || p.professorSubstituto.nome}{" "}
+            <Badge variant="warning">Substituto</Badge>
+          </span>
+        ) : (
+          p.turma.professor?.apelido || p.turma.professor?.nome || "-"
+        ),
+    },
+    {
       header: "Plano de Aula",
       accessor: "aulaCurriculoId" as const,
       render: (p: AulaProgramada) => p.aulaCurriculo?.titulo ?? "-",
@@ -206,6 +246,17 @@ export function ProgramacaoTab() {
               <Button type="button" size="sm" variant="secondary" onClick={() => setProgramacaoEditando(p)}>
                 Editar
               </Button>
+
+              {podeTransferir(p) && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setProgramacaoTransferindo(p)}
+                >
+                  {p.professorSubstituto ? "Trocar Substituto" : "Transferir"}
+                </Button>
+              )}
 
               <Button
                 type="button"
@@ -303,6 +354,20 @@ export function ProgramacaoTab() {
         onClose={() => setAvisosCancelamento(null)}
       >
         <AvisoCancelamentoLista avisos={avisosCancelamento ?? []} />
+      </Modal>
+
+      <Modal
+        open={programacaoTransferindo !== null}
+        title="Transferir Aula"
+        onClose={() => setProgramacaoTransferindo(null)}
+      >
+        {programacaoTransferindo && (
+          <TransferirAulaForm
+            programacao={programacaoTransferindo}
+            loading={transferindo}
+            onSubmit={handleTransferir}
+          />
+        )}
       </Modal>
     </div>
   );

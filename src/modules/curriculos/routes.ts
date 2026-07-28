@@ -26,14 +26,14 @@ curriculosRoutes.post(
 curriculosRoutes.get(
   "/",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "PROFESSOR"]),
   controller.list
 );
 
 curriculosRoutes.get(
   "/:id",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "PROFESSOR"]),
   controller.show
 );
 

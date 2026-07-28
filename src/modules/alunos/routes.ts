@@ -26,17 +26,21 @@ const alunosController =
     alunosController.list
   );
   
+  // só é usado pela tela de Relatórios, que PROFESSOR não acessa mais —
+  // e o retorno inclui dataNascimento, fora do recorte permitido a ele.
   alunosRoutes.get(
     "/aniversariantes",
     ensureAuthenticated,
-    ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+    ensureRole(["ADMIN", "RECEPCAO"]),
     alunosController.aniversariantes
   );
 
+  // prontuário é a ficha médica/completa do aluno — PROFESSOR só enxerga o
+  // recorte básico (nome, apelido, responsável, turma, presenças, graduações).
   alunosRoutes.get(
     "/:id/prontuario",
     ensureAuthenticated,
-    ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+    ensureRole(["ADMIN", "RECEPCAO"]),
     alunosController.prontuario
   );
   

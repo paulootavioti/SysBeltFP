@@ -74,3 +74,18 @@ export interface Aluno {
   responsaveis?: Responsavel[];
   mensalidades?: Mensalidade[];
 }
+
+// PROFESSOR só recebe do backend esse recorte: nome, apelido, nome do
+// responsável e turma — nada de CPF, endereço, saúde ou financeiro.
+export interface ResponsavelBasico {
+  id: number;
+  nome: string;
+}
+
+export interface AlunoBasico {
+  id: number;
+  nome: string;
+  apelido?: string | null;
+  turma?: TurmaResumo | null;
+  responsaveis?: ResponsavelBasico[];
+}

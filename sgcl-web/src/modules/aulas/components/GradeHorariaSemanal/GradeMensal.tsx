@@ -41,9 +41,11 @@ function horarioDoItem(item: AulaProgramada): string {
 
 interface GradeMensalProps {
   onAgendar: (dataHoraLocal: string) => void;
+  unidadeConsultaId?: number;
+  apenasConsulta?: boolean;
 }
 
-export function GradeMensal({ onAgendar }: GradeMensalProps) {
+export function GradeMensal({ onAgendar, unidadeConsultaId, apenasConsulta = false }: GradeMensalProps) {
   const navigate = useNavigate();
 
   const [itens, setItens] = useState<AulaProgramada[]>([]);
@@ -56,7 +58,7 @@ export function GradeMensal({ onAgendar }: GradeMensalProps) {
     async function carregar() {
       try {
         setLoading(true);
-        const dados = await AulaService.listarProgramadas({ periodo: "MENSAL" });
+        const dados = await AulaService.listarProgramadas({ periodo: "MENSAL", unidadeConsultaId });
         if (ativo) setItens(dados);
       } catch {
         if (ativo) setErro("Não foi possível carregar a grade do mês.");
@@ -70,7 +72,7 @@ export function GradeMensal({ onAgendar }: GradeMensalProps) {
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [unidadeConsultaId]);
 
   if (loading) return <Loading message="Carregando grade..." />;
   if (erro) return <p className="grade-semanal-vazio">{erro}</p>;
@@ -119,7 +121,7 @@ export function GradeMensal({ onAgendar }: GradeMensalProps) {
               <div className="grade-mensal-dia-cabecalho">
                 <span className="grade-mensal-dia-numero">{dia.getUTCDate()}</span>
 
-                {!foraDoMes && (
+                {!foraDoMes && !apenasConsulta && (
                   <button
                     type="button"
                     className="grade-mensal-dia-adicionar"
@@ -141,7 +143,8 @@ export function GradeMensal({ onAgendar }: GradeMensalProps) {
                       <button
                         type="button"
                         className={`grade-item ${CLASSE_STATUS[item.status]}`}
-                        onClick={() => navigate(`/turmas/${item.turmaId}`)}
+                        onClick={apenasConsulta ? undefined : () => navigate(`/turmas/${item.turmaId}`)}
+                        disabled={apenasConsulta}
                       >
                         {horarioDoItem(item)} {item.turma.nome}
                       </button>

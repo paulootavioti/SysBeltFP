@@ -20,7 +20,7 @@ arenasRoutes.post(
 arenasRoutes.get(
   "/",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "RECEPCAO"]),
   arenasController.list
 );
 

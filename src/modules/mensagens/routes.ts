@@ -7,7 +7,7 @@ const mensagensRoutes = Router();
 
 const controller = new MensagensController();
 
-const perfisPermitidos = ["ADMIN", "PROFESSOR", "RECEPCAO"];
+const perfisPermitidos = ["ADMIN", "RECEPCAO"];
 
 mensagensRoutes.get(
   "/lembrete-semanal",

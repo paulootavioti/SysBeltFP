@@ -15,35 +15,35 @@ const relatoriosController =
 relatoriosRoutes.get(
   "/evolucao/:alunoId",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "RECEPCAO"]),
   relatoriosController.evolucao
 );
 
 relatoriosRoutes.get(
   "/financeiro",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "RECEPCAO"]),
   relatoriosController.financeiro
 );
 
 relatoriosRoutes.get(
   "/ranking",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "RECEPCAO"]),
   relatoriosController.ranking
 );
 
 relatoriosRoutes.get(
   "/aniversariantes",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "RECEPCAO"]),
   relatoriosController.aniversariantes
 );
 
 relatoriosRoutes.get(
   "/comportamental/:alunoId",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "RECEPCAO"]),
   relatoriosController.comportamental
 );
 

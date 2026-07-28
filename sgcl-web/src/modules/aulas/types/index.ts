@@ -83,6 +83,9 @@ export interface AulaProgramada {
   observacoes?: string | null;
   status: "PENDENTE" | "INICIADA" | "CANCELADA";
   aulaId?: number | null;
+  professorSubstitutoId?: number | null;
+  professorSubstituto?: { id: number; nome: string; apelido?: string | null } | null;
+  motivoTransferencia?: string | null;
 }
 
 export interface ItemGradeSemanal {

@@ -6,7 +6,7 @@ export interface ConflitoHorario {
   turmaNome: string;
 }
 
-function horariosSobrepoem(inicioA: string, fimA: string, inicioB: string, fimB: string): boolean {
+export function horariosSobrepoem(inicioA: string, fimA: string, inicioB: string, fimB: string): boolean {
   return inicioA < fimB && inicioB < fimA;
 }
 

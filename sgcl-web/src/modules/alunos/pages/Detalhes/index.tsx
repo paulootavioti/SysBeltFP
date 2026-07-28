@@ -17,22 +17,30 @@ import type { Responsavel } from "../../../responsaveis/types/responsavel";
 import { AlunoResumo } from "../../components/AlunoResumo";
 import { DadosTab } from "../../components/tabs/DadosTab";
 import { ResponsaveisTab } from "../../components/tabs/ResponsaveisTab";
+import { ResponsaveisNomeTab } from "../../components/tabs/ResponsaveisNomeTab";
 import { PresencasTab } from "../../components/tabs/PresencasTab";
 import { GraduacoesTab } from "../../components/tabs/GraduacoesTab";
 import { FinanceiroTab } from "../../components/tabs/FinanceiroTab";
 
 import { AlunoService } from "../../services/AlunoService";
+import { useAuth } from "../../../../contexts/useAuth";
 
-import type { AlunoCompleto } from "../../types/alunoCompleto";
+import type { AlunoCompleto, AlunoCompletoBasico } from "../../types/alunoCompleto";
 
 import "./styles.css";
 
 export function AlunoDetalhes() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { usuario } = useAuth();
+
+  // PROFESSOR só recebe do backend o recorte básico (nome, apelido,
+  // responsável, turma, presenças, graduações) — a tela inteira renderiza
+  // um layout reduzido pra esse perfil.
+  const ehProfessor = usuario?.perfil === "PROFESSOR";
 
   const [aluno, setAluno] =
-    useState<AlunoCompleto | null>(null);
+    useState<AlunoCompleto | AlunoCompletoBasico | null>(null);
 
   const [
     modalResponsavelAberto,
@@ -48,21 +56,24 @@ export function AlunoDetalhes() {
     async function carregarAluno() {
       if (!id) return;
 
-      const data = await AlunoService.buscar(Number(id));
+      const data = ehProfessor
+        ? await AlunoService.buscarBasico(Number(id))
+        : await AlunoService.buscar(Number(id));
 
-      setAluno(data as AlunoCompleto);
+      setAluno(data);
     }
 
     carregarAluno();
-  }, [id]);
+  }, [id, ehProfessor]);
 
   async function recarregarAluno() {
     if (!aluno) return;
 
-    const alunoAtualizado =
-      await AlunoService.buscar(aluno.id);
+    const alunoAtualizado = ehProfessor
+      ? await AlunoService.buscarBasico(aluno.id)
+      : await AlunoService.buscar(aluno.id);
 
-    setAluno(alunoAtualizado as AlunoCompleto);
+    setAluno(alunoAtualizado);
   }
 
   async function handleSalvarResponsavel(
@@ -130,6 +141,47 @@ export function AlunoDetalhes() {
     );
   }
 
+  if (ehProfessor) {
+    const alunoBasico = aluno as AlunoCompletoBasico;
+
+    return (
+      <Layout>
+        <div className="aluno-detalhes-acoes">
+          <Button type="button" onClick={() => navigate("/alunos")}>
+            Voltar para alunos
+          </Button>
+        </div>
+
+        <PageHeader title={alunoBasico.nome} subtitle="Dados do aluno." />
+
+        <AlunoResumo aluno={alunoBasico} somenteBasico />
+
+        <Tabs
+          defaultValue="responsaveis"
+          tabs={[
+            {
+              label: "Responsáveis",
+              value: "responsaveis",
+              content: <ResponsaveisNomeTab responsaveis={alunoBasico.responsaveis} />,
+            },
+            {
+              label: "Presenças",
+              value: "presencas",
+              content: <PresencasTab aluno={alunoBasico} />,
+            },
+            {
+              label: "Graduações",
+              value: "graduacoes",
+              content: <GraduacoesTab aluno={alunoBasico} />,
+            },
+          ]}
+        />
+      </Layout>
+    );
+  }
+
+  const alunoCompleto = aluno as AlunoCompleto;
+
   return (
     <Layout>
       <div className="aluno-detalhes-acoes">
@@ -142,24 +194,24 @@ export function AlunoDetalhes() {
         <Button
           type="button"
           variant="secondary"
-          onClick={() => navigate(`/alunos/${aluno.id}/prontuario`)}
+          onClick={() => navigate(`/alunos/${alunoCompleto.id}/prontuario`)}
         >
           Ver Prontuário
         </Button>
         <Button
           type="button"
           variant="secondary"
-          onClick={() => navigate(`/alunos/${aluno.id}/editar`)}
+          onClick={() => navigate(`/alunos/${alunoCompleto.id}/editar`)}
         >
           Editar
         </Button>
       </div>
       <PageHeader
-        title={aluno.nome}
+        title={alunoCompleto.nome}
         subtitle="Prontuário completo do aluno."
       />
 
-      <AlunoResumo aluno={aluno} />
+      <AlunoResumo aluno={alunoCompleto} />
 
       <Tabs
         defaultValue="dados"
@@ -167,14 +219,14 @@ export function AlunoDetalhes() {
           {
             label: "Dados",
             value: "dados",
-            content: <DadosTab aluno={aluno} />,
+            content: <DadosTab aluno={alunoCompleto} />,
           },
           {
             label: "Responsáveis",
             value: "responsaveis",
             content: (
               <ResponsaveisTab
-                responsaveis={aluno.responsaveis ?? []}
+                responsaveis={alunoCompleto.responsaveis ?? []}
                 onNovo={handleNovoResponsavel}
                 onEditar={handleEditarResponsavel}
                 onExcluir={(responsavel) =>
@@ -186,17 +238,17 @@ export function AlunoDetalhes() {
           {
             label: "Presenças",
             value: "presencas",
-            content: <PresencasTab aluno={aluno} />,
+            content: <PresencasTab aluno={alunoCompleto} />,
           },
           {
             label: "Graduações",
             value: "graduacoes",
-            content: <GraduacoesTab aluno={aluno} />,
+            content: <GraduacoesTab aluno={alunoCompleto} />,
           },
           {
             label: "Financeiro",
             value: "financeiro",
-            content: <FinanceiroTab aluno={aluno} />,
+            content: <FinanceiroTab aluno={alunoCompleto} />,
           },
         ]}
       />

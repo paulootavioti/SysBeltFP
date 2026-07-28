@@ -35,6 +35,11 @@ export const updateAulaProgramadaSchema = z.object({
   observacoes: z.string().nullish(),
 });
 
+export const transferirAulaProgramadaSchema = z.object({
+  professorSubstitutoId: z.coerce.number().int().positive("Informe o professor substituto."),
+  motivo: z.string().trim().min(1, "Informe o motivo do impedimento."),
+});
+
 export const replicarProgramacaoSchema = z.object({
   turmaId: z.coerce.number().int().positive("Informe a turma."),
   aulaCurriculoId: z.coerce.number().int().positive().nullish(),

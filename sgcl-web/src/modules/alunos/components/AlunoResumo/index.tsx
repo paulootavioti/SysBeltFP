@@ -8,11 +8,15 @@ import type { AlunoCompleto } from "../../types/alunoCompleto";
 import "./styles.css";
 
 interface AlunoResumoProps {
-  aluno: AlunoCompleto;
+  aluno: Pick<AlunoCompleto, "id" | "nome" | "apelido" | "fotoUrl" | "turma"> &
+    Partial<Pick<AlunoCompleto, "dataNascimento" | "ativo" | "mensalidades" | "faixa" | "grau" | "telefone" | "whatsapp">>;
+  // PROFESSOR só pode ver nome, apelido e turma — nada de idade, contato,
+  // status ativo/financeiro (o backend nem envia esses campos pra ele).
+  somenteBasico?: boolean;
 }
 
-export function AlunoResumo({ aluno }: AlunoResumoProps) {
-  const idade = calcularIdade(aluno.dataNascimento);
+export function AlunoResumo({ aluno, somenteBasico = false }: AlunoResumoProps) {
+  const idade = calcularIdade(aluno.dataNascimento ?? "");
   const statusFinanceiro = calcularStatusFinanceiroAluno(aluno.mensalidades);
 
   return (
@@ -28,28 +32,36 @@ export function AlunoResumo({ aluno }: AlunoResumoProps) {
         <div className="aluno-resumo-header">
           <h2>{aluno.nome}</h2>
 
-          <div className="aluno-resumo-badges">
-            <StatusBadge status={aluno.ativo ? "ATIVO" : "INATIVO"} />
-            {statusFinanceiro && <StatusBadge status={statusFinanceiro} />}
-          </div>
+          {!somenteBasico && (
+            <div className="aluno-resumo-badges">
+              <StatusBadge status={aluno.ativo ? "ATIVO" : "INATIVO"} />
+              {statusFinanceiro && <StatusBadge status={statusFinanceiro} />}
+            </div>
+          )}
         </div>
 
-        <p>
-          {idade !== null ? `${idade} anos` : "Idade não informada"}
-          {" • "}
-          Faixa {aluno.faixa}
-          {" • "}
-          Grau {aluno.grau}
-        </p>
+        {!somenteBasico && (
+          <p>
+            {idade !== null ? `${idade} anos` : "Idade não informada"}
+            {" • "}
+            Faixa {aluno.faixa}
+            {" • "}
+            Grau {aluno.grau}
+          </p>
+        )}
 
         <div className="aluno-resumo-details">
-          <span>
-            <strong>Telefone:</strong> {aluno.telefone || "-"}
-          </span>
+          {!somenteBasico && (
+            <>
+              <span>
+                <strong>Telefone:</strong> {aluno.telefone || "-"}
+              </span>
 
-          <span>
-            <strong>WhatsApp:</strong> {aluno.whatsapp || "-"}
-          </span>
+              <span>
+                <strong>WhatsApp:</strong> {aluno.whatsapp || "-"}
+              </span>
+            </>
+          )}
 
           <span>
             <strong>Turma:</strong> {aluno.turma?.nome || "Não vinculada"}

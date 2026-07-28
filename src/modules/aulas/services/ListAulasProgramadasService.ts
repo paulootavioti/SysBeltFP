@@ -31,6 +31,9 @@ export class ListAulasProgramadasService {
           },
         },
         aulaCurriculo: true,
+        professorSubstituto: {
+          select: { id: true, nome: true, apelido: true },
+        },
       },
       orderBy: {
         data: "asc",

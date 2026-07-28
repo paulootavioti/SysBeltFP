@@ -10,20 +10,20 @@ interface RegraAcesso {
 const REGRAS_ACESSO: RegraAcesso[] = [
   // SUPERADMIN administra unidades pelo Dashboard; essa rota, pros demais
   // perfis, é só a tela de Arenas da própria unidade.
-  { prefixo: "/unidades", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
+  { prefixo: "/unidades", perfis: ["ADMIN", "RECEPCAO"] },
   { prefixo: "/dashboard", perfis: ["ADMIN"] },
   { prefixo: "/alunos", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
   { prefixo: "/turmas", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
   { prefixo: "/aulas", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
-  { prefixo: "/planejamento", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
+  { prefixo: "/planejamento", perfis: ["ADMIN", "PROFESSOR"] },
   { prefixo: "/mensalidades", perfis: ["ADMIN", "RECEPCAO"] },
   { prefixo: "/graduacoes", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
   { prefixo: "/usuarios", perfis: ["ADMIN"] },
   { prefixo: "/competicoes", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
-  { prefixo: "/relatorios", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
-  { prefixo: "/financeiro", perfis: ["ADMIN", "RECEPCAO"] },
+  { prefixo: "/relatorios", perfis: ["ADMIN", "RECEPCAO"] },
+  { prefixo: "/financeiro", perfis: ["ADMIN"] },
   { prefixo: "/planos", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
-  { prefixo: "/mensagens", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
+  { prefixo: "/mensagens", perfis: ["ADMIN", "RECEPCAO"] },
 ];
 
 // Página segura para qualquer perfil autenticado — usada como destino

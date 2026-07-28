@@ -1,6 +1,7 @@
 import { ApiClient } from "../../../shared/api/ApiClient";
 
-import type { Aluno } from "../types";
+import type { Aluno, AlunoBasico } from "../types";
+import type { AlunoCompletoBasico } from "../types/alunoCompleto";
 import type { AlunoFormData } from "../schema/aluno.schema";
 
 export class AlunoService {
@@ -8,8 +9,18 @@ export class AlunoService {
     return ApiClient.get<Aluno[]>("/alunos");
   }
 
+  // mesmo endpoint — o backend devolve o recorte básico quando quem pede é
+  // PROFESSOR, então o formato da resposta já vem sem os campos restritos.
+  static async listarBasico() {
+    return ApiClient.get<AlunoBasico[]>("/alunos");
+  }
+
   static async buscar(id: number) {
     return ApiClient.get<Aluno>(`/alunos/${id}`);
+  }
+
+  static async buscarBasico(id: number) {
+    return ApiClient.get<AlunoCompletoBasico>(`/alunos/${id}`);
   }
 
   static async criar(data: AlunoFormData) {

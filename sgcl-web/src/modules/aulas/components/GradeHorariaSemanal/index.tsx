@@ -8,7 +8,10 @@ import { AulaService } from "../../services/AulaService";
 import { ProgramarAulaForm, type ProgramarAulaFormData } from "../ProgramarAulaForm";
 import { GradeMensal } from "./GradeMensal";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+import { useAuth } from "../../../../contexts/useAuth";
+import { UnidadeService } from "../../../unidades/services/UnidadeService";
 import type { ItemGradeSemanal } from "../../types";
+import type { UnidadeOpcao } from "../../../unidades/types/unidade";
 
 import "./styles.css";
 
@@ -57,8 +60,14 @@ function paraDatetimeLocal(data: Date, horario: string): string {
   return `${ano}-${mes}-${dia}T${horario}`;
 }
 
+// ADMIN e PROFESSOR podem consultar (só leitura) a grade de outra unidade
+// pra efeito informativo — RECEPCAO e SUPERADMIN (que já tem o seletor
+// global de "unidade visualizada") não usam esse seletor local.
+const PERFIS_COM_CONSULTA_CROSS_UNIT = ["ADMIN", "PROFESSOR"];
+
 export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalProps) {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
 
   const [visualizacao, setVisualizacao] = useState<"semana" | "mes">("semana");
 
@@ -70,10 +79,24 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
   const [salvando, setSalvando] = useState(false);
   const [mesRefreshKey, setMesRefreshKey] = useState(0);
 
+  const [unidadesConsulta, setUnidadesConsulta] = useState<UnidadeOpcao[]>([]);
+  const [unidadeConsultaId, setUnidadeConsultaId] = useState("");
+
+  const podeConsultarOutraUnidade =
+    !compacta && !!usuario?.perfil && PERFIS_COM_CONSULTA_CROSS_UNIT.includes(usuario.perfil);
+  const apenasConsulta = podeConsultarOutraUnidade && unidadeConsultaId !== "";
+
+  useEffect(() => {
+    if (!podeConsultarOutraUnidade) return;
+    UnidadeService.listarOpcoes().then(setUnidadesConsulta);
+  }, [podeConsultarOutraUnidade]);
+
   async function carregar() {
     try {
       setLoading(true);
-      const dados = await AulaService.gradeSemanal();
+      const dados = await AulaService.gradeSemanal(
+        unidadeConsultaId ? Number(unidadeConsultaId) : undefined
+      );
       setItens(dados);
     } catch {
       setErro("Não foi possível carregar a grade horária.");
@@ -84,7 +107,8 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
 
   useEffect(() => {
     carregar();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unidadeConsultaId]);
 
   const horarios = Array.from(new Set(itens.map((item) => item.horarioInicio))).sort();
 
@@ -155,8 +179,28 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
         )}
       </div>
 
+      {podeConsultarOutraUnidade && (
+        <label className="grade-semanal-consulta-unidade">
+          <span>Consultar grade de</span>
+          <select value={unidadeConsultaId} onChange={(e) => setUnidadeConsultaId(e.target.value)}>
+            <option value="">Minha unidade</option>
+            {unidadesConsulta.map((unidade) => (
+              <option key={unidade.id} value={String(unidade.id)}>
+                {unidade.nome}
+              </option>
+            ))}
+          </select>
+          {apenasConsulta && <span className="grade-semanal-consulta-aviso">Somente consulta</span>}
+        </label>
+      )}
+
       {visualizacao === "mes" && !compacta ? (
-        <GradeMensal key={mesRefreshKey} onAgendar={setDataHoraNovaAula} />
+        <GradeMensal
+          key={mesRefreshKey}
+          onAgendar={setDataHoraNovaAula}
+          unidadeConsultaId={unidadeConsultaId ? Number(unidadeConsultaId) : undefined}
+          apenasConsulta={apenasConsulta}
+        />
       ) : loading ? (
         <Loading message="Carregando grade..." />
       ) : erro && itens.length === 0 ? (
@@ -195,14 +239,15 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
                             <button
                               type="button"
                               className={`grade-item ${CLASSE_STATUS[item.status]}`}
-                              onClick={() => navigate(`/turmas/${item.turmaId}`)}
+                              onClick={apenasConsulta ? undefined : () => navigate(`/turmas/${item.turmaId}`)}
+                              disabled={apenasConsulta}
                             >
                               {item.turmaNome}
                             </button>
                           </Tooltip>
                         ))}
 
-                        {itensDaCelula.length === 0 && !compacta && (
+                        {itensDaCelula.length === 0 && !compacta && !apenasConsulta && (
                           <button
                             type="button"
                             className="grade-item-vazio"

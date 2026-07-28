@@ -1,4 +1,11 @@
 export type PerfilUsuario = "ADMIN" | "PROFESSOR" | "RECEPCAO";
+
+export interface ProfessorOpcao {
+  id: number;
+  nome: string;
+  apelido?: string | null;
+}
+
 export interface Usuario {
   id: number;
   nome: string;

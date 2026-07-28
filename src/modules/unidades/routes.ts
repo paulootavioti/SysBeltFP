@@ -24,6 +24,15 @@ unidadesRoutes.get(
   unidadesController.list
 );
 
+// versão enxuta (id/nome), pra ADMIN/PROFESSOR popularem o seletor de
+// consulta de grade horária de outra unidade — não expõe dados completos.
+unidadesRoutes.get(
+  "/opcoes",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR"]),
+  unidadesController.listarOpcoes
+);
+
 unidadesRoutes.put(
   "/:id",
   ensureAuthenticated,

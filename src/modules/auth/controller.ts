@@ -6,12 +6,16 @@ import { AppError } from "../../shared/errors/AppError";
 
 export class AuthController {
   async register(req: Request, res: Response) {
+    if (req.body.perfil === "SUPERADMIN" && req.user.perfil !== "SUPERADMIN") {
+      throw new AppError("Apenas um superadmin pode conceder esse perfil.", 403);
+    }
+
     // um ADMIN sempre cadastra dentro da própria unidade; só um SUPERADMIN
     // (sem unidade fixa) pode e precisa informar em qual unidade o novo
-    // usuário entra.
+    // usuário entra. Um novo SUPERADMIN não pertence a nenhuma unidade.
     const unidadeId = req.user.unidadeId ?? req.body.unidadeId ?? null;
 
-    if (!unidadeId) {
+    if (!unidadeId && req.body.perfil !== "SUPERADMIN") {
       throw new AppError("Informe a unidade para este usuário.");
     }
 

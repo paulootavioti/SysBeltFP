@@ -12,6 +12,7 @@ import { Loading } from "../../../../components/ui/Loading";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
 import { Modal } from "../../../../components/ui/Modal";
 
+import { useAuth } from "../../../../contexts/useAuth";
 import { TurmaService } from "../../services/TurmaService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { formatarDiasSemana } from "../../../../shared/constants/diasSemana";
@@ -24,6 +25,8 @@ import "./styles.css";
 export function DetalheTurma() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { usuario } = useAuth();
+  const podeGerenciar = usuario?.perfil !== "PROFESSOR";
 
   const [turma, setTurma] = useState<TurmaDetalhada | null>(null);
   const [loading, setLoading] = useState(true);
@@ -134,13 +137,15 @@ export function DetalheTurma() {
 
       <ErrorMessage message={erro} />
 
-      {turma.ativo ? (
+      {podeGerenciar && turma.ativo && (
         <div className="turma-detalhe-acoes">
           <Button type="button" onClick={handleAbrirModal}>
             + Vincular Aluno
           </Button>
         </div>
-      ) : (
+      )}
+
+      {podeGerenciar && !turma.ativo && (
         <p className="turma-detalhe-inativa-aviso">
           Esta turma está inativa — não é possível vincular novos alunos a ela.
         </p>

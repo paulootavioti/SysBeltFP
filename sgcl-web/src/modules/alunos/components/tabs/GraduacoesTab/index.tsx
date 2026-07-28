@@ -5,13 +5,13 @@ import { TimelineGraduacoes } from "../../../../graduacoes/components/TimelineGr
 import { GraduacaoService } from "../../../../graduacoes/services/GraduacaoService";
 import { Loading } from "../../../../../components/ui/Loading";
 
-import type { AlunoCompleto } from "../../../types/alunoCompleto";
+import type { Graduacao } from "../../../types/graduacao";
 import type { EvolucaoAluno } from "../../../../graduacoes/types";
 
 import "./styles.css";
 
 interface GraduacoesTabProps {
-  aluno: AlunoCompleto;
+  aluno: { id: number; graduacoes?: Graduacao[] };
 }
 
 export function GraduacoesTab({ aluno }: GraduacoesTabProps) {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
@@ -11,6 +11,7 @@ import { AlunoService } from "../../services/AlunoService";
 import { ResponsavelService } from "../../../responsaveis/services/ResponsavelService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { useToast } from "../../../../contexts/toast/useToast";
+import { useAuth } from "../../../../contexts/useAuth";
 
 import type { Aluno } from "../../types";
 import type { AlunoFormData } from "../../schema/aluno.schema";
@@ -19,6 +20,7 @@ export function EditarAluno() {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { usuario } = useAuth();
 
   const [aluno, setAluno] = useState<Aluno | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,6 +87,13 @@ export function EditarAluno() {
     } finally {
       setSalvando(false);
     }
+  }
+
+  // PROFESSOR não tem permissão de editar aluno — navegação manual pra cá
+  // só devolveria os dados básicos (redigidos) num formulário que espera
+  // o cadastro completo.
+  if (usuario?.perfil === "PROFESSOR") {
+    return <Navigate to="/alunos" replace />;
   }
 
   return (

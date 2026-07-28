@@ -1,9 +1,14 @@
 import { ApiClient } from "../../../shared/api/ApiClient";
-import type { Usuario } from "../types/usuario";
+import type { Usuario, ProfessorOpcao } from "../types/usuario";
 import type { UsuarioUpdateFormData } from "../schema/usuario.schema";
 export class UsuarioService {
   static async listar() {
     return ApiClient.get<Usuario[]>("/usuarios");
+  }
+  // versão enxuta (id/nome/apelido) — ADMIN e PROFESSOR usam pra escolher
+  // um professor substituto na transferência de aula.
+  static async listarProfessores() {
+    return ApiClient.get<ProfessorOpcao[]>("/usuarios/professores");
   }
   static async criar(data: UsuarioUpdateFormData) {
     return ApiClient.post<Usuario>("/auth/register", data);

@@ -8,7 +8,7 @@ interface CreateUsuarioDTO {
   email: string;
   senha: string;
   perfil: string;
-  unidadeId: number;
+  unidadeId: number | null;
   nivelGraduacao?: string;
   outrasGraduacoes?: string;
   fotoUrl?: string | null;

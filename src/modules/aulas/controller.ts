@@ -16,12 +16,14 @@ import { DeleteAulaProgramadaService } from "./services/DeleteAulaProgramadaServ
 import { UpdateAulaService } from "./services/UpdateAulaService";
 import { GetGradeSemanalService } from "./services/GetGradeSemanalService";
 import { UpdateAulaProgramadaService } from "./services/UpdateAulaProgramadaService";
+import { TransferirAulaProgramadaService } from "./services/TransferirAulaProgramadaService";
 import { CancelarAulaProgramadaService } from "./services/CancelarAulaProgramadaService";
 import { ReplicarProgramacaoService } from "./services/ReplicarProgramacaoService";
 import { GetResumoTurmasProgramadasService } from "./services/GetResumoTurmasProgramadasService";
 import { GetResumoTurmasAulasService } from "./services/GetResumoTurmasAulasService";
 import { AvisoCancelamentoAulaService } from "../mensagens/services/AvisoCancelamentoAulaService";
 import { PERIODOS_CONTAGEM_VALIDOS, type PeriodoContagem } from "./utils/periodoContagem";
+import { resolverUnidadeConsulta } from "./utils/resolverUnidadeConsulta";
 
 function lerPeriodo(req: Request): PeriodoContagem | undefined {
   if (!req.query.periodo) return undefined;
@@ -119,7 +121,7 @@ export class AulasController {
         turmaId: req.query.turmaId ? Number(req.query.turmaId) : undefined,
         periodo: lerPeriodo(req),
       },
-      req.user.unidadeId
+      resolverUnidadeConsulta(req.user.perfil, req.user.unidadeId, req.query.unidadeConsultaId)
     );
 
     return res.json(programacoes);
@@ -141,6 +143,18 @@ export class AulasController {
     const aula = await service.execute(Number(req.params.id), req.user.unidadeId);
 
     return res.json(aula);
+  }
+
+  async transferirProgramada(req: Request, res: Response) {
+    const service = new TransferirAulaProgramadaService();
+
+    const programacao = await service.execute(Number(req.params.id), req.body, {
+      id: req.user.id,
+      perfil: req.user.perfil,
+      unidadeId: req.user.unidadeId,
+    });
+
+    return res.json(programacao);
   }
 
   async updateProgramada(req: Request, res: Response) {
@@ -204,7 +218,10 @@ export class AulasController {
 
     const referencia = req.query.data ? new Date(String(req.query.data)) : new Date();
 
-    const grade = await service.execute(req.user.unidadeId, referencia);
+    const grade = await service.execute(
+      resolverUnidadeConsulta(req.user.perfil, req.user.unidadeId, req.query.unidadeConsultaId),
+      referencia
+    );
 
     return res.json(grade);
   }

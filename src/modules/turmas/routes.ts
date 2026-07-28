@@ -13,7 +13,7 @@ const turmasController =
 turmasRoutes.post(
   "/",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "RECEPCAO"]),
   validateBody(turmaSchema),
   turmasController.create
 );
@@ -35,7 +35,7 @@ turmasRoutes.get(
 turmasRoutes.put(
   "/:id",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "RECEPCAO"]),
   validateBody(turmaSchema),
   turmasController.update
 );
@@ -43,14 +43,14 @@ turmasRoutes.put(
 turmasRoutes.patch(
   "/:turmaId/alunos/:alunoId",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "RECEPCAO"]),
   turmasController.vincularAluno
 );
 
 turmasRoutes.patch(
   "/:id/ativo",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  ensureRole(["ADMIN", "RECEPCAO"]),
   turmasController.toggleAtivo
 );
 

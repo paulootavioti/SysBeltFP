@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { CreateUnidadeService } from "./services/CreateUnidadeService";
 import { UpdateUnidadeService } from "./services/UpdateUnidadeService";
 import { ListUnidadesService } from "./services/ListUnidadesService";
+import { ListUnidadesOpcoesService } from "./services/ListUnidadesOpcoesService";
 import { ToggleAtivoUnidadeService } from "./services/ToggleAtivoUnidadeService";
 
 export class UnidadesController {
@@ -27,6 +28,14 @@ export class UnidadesController {
 
   async list(req: Request, res: Response) {
     const service = new ListUnidadesService();
+
+    const unidades = await service.execute();
+
+    return res.json(unidades);
+  }
+
+  async listarOpcoes(req: Request, res: Response) {
+    const service = new ListUnidadesOpcoesService();
 
     const unidades = await service.execute();
 

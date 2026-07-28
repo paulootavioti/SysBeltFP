@@ -18,7 +18,8 @@ import { calcularStatusFinanceiroAluno } from "../../utils/statusFinanceiro";
 
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { useAlunos } from "../../hooks/useAlunos";
-import type { Aluno } from "../../types";
+import { useAuth } from "../../../../contexts/useAuth";
+import type { Aluno, AlunoBasico } from "../../types";
 
 import { AlunoService } from "../../services/AlunoService";
 
@@ -26,6 +27,11 @@ import "./styles.css";
 
 export function Alunos() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
+
+  // o backend já devolve o recorte básico (nome, apelido, responsável,
+  // turma) pra PROFESSOR nesse mesmo endpoint — só muda como renderizamos.
+  const ehProfessor = usuario?.perfil === "PROFESSOR";
 
   const {
     alunos,
@@ -35,7 +41,7 @@ export function Alunos() {
     carregarAlunos,
   } = useAlunos();
 
-  
+
   const [busca, setBusca] = useState("");
   
   async function alterarStatus(id: number) {
@@ -62,6 +68,42 @@ export function Alunos() {
       (aluno.apelido ?? "").toLowerCase().includes(termo)
     );
   });
+
+  // pro PROFESSOR o backend já devolve esse recorte (mesmo endpoint) —
+  // o cast só ajusta o tipo do lado do cliente pra bater com o que veio.
+  const alunosBasicosFiltrados = alunosFiltrados as unknown as AlunoBasico[];
+
+  const columnsBasicas = [
+    {
+      header: "Nome",
+      accessor: "nome" as const,
+    },
+    {
+      header: "Apelido",
+      accessor: "apelido" as const,
+      render: (aluno: AlunoBasico) => aluno.apelido || "-",
+    },
+    {
+      header: "Turma",
+      accessor: "turma" as const,
+      render: (aluno: AlunoBasico) => aluno.turma?.nome || "Não vinculada",
+    },
+    {
+      header: "Responsável",
+      accessor: "responsaveis" as const,
+      render: (aluno: AlunoBasico) =>
+        aluno.responsaveis?.map((responsavel) => responsavel.nome).join(", ") || "-",
+    },
+    {
+      header: "Ações",
+      accessor: "id" as const,
+      render: (aluno: AlunoBasico) => (
+        <Button type="button" size="sm" onClick={() => navigate(`/alunos/${aluno.id}`)}>
+          Detalhes
+        </Button>
+      ),
+    },
+  ];
 
   const columns = [
     {
@@ -156,14 +198,16 @@ export function Alunos() {
         subtitle="Cadastro e gerenciamento de alunos."
       />
 
-      <div className="alunos-actions">
-        <Button
-          type="button"
-          onClick={() => navigate("/alunos/cadastro")}
-        >
-          + Novo Aluno
-        </Button>
-      </div> 
+      {!ehProfessor && (
+        <div className="alunos-actions">
+          <Button
+            type="button"
+            onClick={() => navigate("/alunos/cadastro")}
+          >
+            + Novo Aluno
+          </Button>
+        </div>
+      )}
 
       {/* <form
         onSubmit={salvarAluno}
@@ -217,6 +261,8 @@ export function Alunos() {
           title="Nenhum aluno encontrado"
           description="Cadastre um novo aluno ou ajuste sua pesquisa."
         />
+      ) : ehProfessor ? (
+        <Table columns={columnsBasicas} data={alunosBasicosFiltrados} />
       ) : (
         <Table columns={columns} data={alunosFiltrados} />
       )}

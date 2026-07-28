@@ -1,7 +1,7 @@
-import type { AlunoCompleto } from "../../../types/alunoCompleto";
+import type { Presenca } from "../../../types/presenca";
 
 interface PresencasTabProps {
-  aluno: AlunoCompleto;
+  aluno: { presencas?: Presenca[] };
 }
 
 export function PresencasTab({

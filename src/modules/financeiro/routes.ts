@@ -10,7 +10,7 @@ const financeiroController = new FinanceiroController();
 financeiroRoutes.get(
   "/resumo",
   ensureAuthenticated,
-  ensureRole(["ADMIN", "RECEPCAO"]),
+  ensureRole(["ADMIN"]),
   financeiroController.resumo
 );
 

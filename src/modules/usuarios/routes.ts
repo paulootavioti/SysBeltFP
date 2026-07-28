@@ -24,6 +24,15 @@ usuariosRoutes.get(
   usuariosController.list
 );
 
+// versão enxuta (id/nome/apelido) dos professores da unidade — usada pelo
+// seletor de professor substituto na transferência de aula.
+usuariosRoutes.get(
+  "/professores",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR"]),
+  usuariosController.listarProfessores
+);
+
 usuariosRoutes.put(
   "/:id",
   ensureAuthenticated,

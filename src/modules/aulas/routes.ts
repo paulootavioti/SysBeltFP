@@ -11,6 +11,7 @@ import {
   updateAulaSchema,
   updateAulaProgramadaSchema,
   replicarProgramacaoSchema,
+  transferirAulaProgramadaSchema,
 } from "./validation";
 
 const aulasRoutes = Router();
@@ -104,6 +105,14 @@ aulasRoutes.put(
   ensureRole(["ADMIN", "PROFESSOR"]),
   validateBody(updateAulaProgramadaSchema),
   controller.updateProgramada
+);
+
+aulasRoutes.patch(
+  "/programadas/:id/transferir",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR"]),
+  validateBody(transferirAulaProgramadaSchema),
+  controller.transferirProgramada
 );
 
 aulasRoutes.delete(

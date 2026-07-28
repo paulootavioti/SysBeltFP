@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
@@ -10,12 +10,14 @@ import { AlunoService } from "../../services/AlunoService";
 import { ResponsavelService } from "../../../responsaveis/services/ResponsavelService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { useToast } from "../../../../contexts/toast/useToast";
+import { useAuth } from "../../../../contexts/useAuth";
 
 import type { AlunoFormData } from "../../schema/aluno.schema";
 
 export function CadastroAluno() {
   const navigate = useNavigate();
   const toast = useToast();
+  const { usuario } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
@@ -51,6 +53,10 @@ export function CadastroAluno() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (usuario?.perfil === "PROFESSOR") {
+    return <Navigate to="/alunos" replace />;
   }
 
   return (

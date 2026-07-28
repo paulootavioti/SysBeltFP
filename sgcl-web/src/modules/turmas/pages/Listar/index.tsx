@@ -11,6 +11,7 @@ import { Loading } from "../../../../components/ui/Loading";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
 import { Modal } from "../../../../components/ui/Modal";
 
+import { useAuth } from "../../../../contexts/useAuth";
 import { useTurmas } from "../../hooks/useTurmas";
 import { TurmaService } from "../../services/TurmaService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -26,6 +27,8 @@ import "./styles.css";
 export function Turmas() {
   const navigate = useNavigate();
   const toast = useToast();
+  const { usuario } = useAuth();
+  const podeGerenciar = usuario?.perfil !== "PROFESSOR";
   const { turmas, loading, erro, setErro, carregarTurmas } = useTurmas();
   const [modalAberto, setModalAberto] = useState(false);
   const [turmaEditando, setTurmaEditando] = useState<Turma | null>(null);
@@ -122,18 +125,22 @@ export function Turmas() {
             Ver alunos
           </Button>
 
-          <Button type="button" size="sm" variant="secondary" onClick={() => handleEditarTurma(turma)}>
-            Editar
-          </Button>
+          {podeGerenciar && (
+            <>
+              <Button type="button" size="sm" variant="secondary" onClick={() => handleEditarTurma(turma)}>
+                Editar
+              </Button>
 
-          <Button
-            type="button"
-            size="sm"
-            variant={turma.ativo ? "danger" : "primary"}
-            onClick={() => handleAlterarStatus(turma.id)}
-          >
-            {turma.ativo ? "Inativar" : "Ativar"}
-          </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={turma.ativo ? "danger" : "primary"}
+                onClick={() => handleAlterarStatus(turma.id)}
+              >
+                {turma.ativo ? "Inativar" : "Ativar"}
+              </Button>
+            </>
+          )}
         </div>
       ),
     },
@@ -147,11 +154,13 @@ export function Turmas() {
         <GradeHorariaSemanal />
       </div>
 
-      <div className="turmas-acoes">
-        <Button type="button" onClick={handleNovaTurma}>
-          + Nova Turma
-        </Button>
-      </div>
+      {podeGerenciar && (
+        <div className="turmas-acoes">
+          <Button type="button" onClick={handleNovaTurma}>
+            + Nova Turma
+          </Button>
+        </div>
+      )}
 
       <ErrorMessage message={erro} />
 

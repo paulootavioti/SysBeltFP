@@ -45,6 +45,9 @@ interface ReplicarProgramacaoData {
 interface ListaFiltros {
   turmaId?: number;
   periodo?: PeriodoContagem;
+  // consulta (só leitura) da grade de outra unidade — disponível pra
+  // ADMIN/PROFESSOR, ignorado pelo backend pra qualquer outro perfil.
+  unidadeConsultaId?: number;
 }
 
 function montarQuery(filtros?: ListaFiltros) {
@@ -53,6 +56,7 @@ function montarQuery(filtros?: ListaFiltros) {
   const params = new URLSearchParams();
   if (filtros.turmaId) params.set("turmaId", String(filtros.turmaId));
   if (filtros.periodo) params.set("periodo", filtros.periodo);
+  if (filtros.unidadeConsultaId) params.set("unidadeConsultaId", String(filtros.unidadeConsultaId));
 
   const query = params.toString();
   return query ? `?${query}` : "";
@@ -159,6 +163,12 @@ export class AulaService {
     return response.data;
   }
 
+  static async transferirProgramada(id: number, data: { professorSubstitutoId: number; motivo: string }) {
+    const response = await api.patch<AulaProgramada>(`/aulas/programadas/${id}/transferir`, data);
+
+    return response.data;
+  }
+
   static async cancelarProgramada(id: number) {
     const response = await api.patch<{ programacao: AulaProgramada; avisos: MensagemGerada[] }>(
       `/aulas/programadas/${id}/cancelar`
@@ -181,8 +191,9 @@ export class AulaService {
     await api.delete(`/aulas/programadas/${id}`);
   }
 
-  static async gradeSemanal() {
-    const response = await api.get<ItemGradeSemanal[]>("/aulas/grade-semanal");
+  static async gradeSemanal(unidadeConsultaId?: number) {
+    const query = unidadeConsultaId ? `?unidadeConsultaId=${unidadeConsultaId}` : "";
+    const response = await api.get<ItemGradeSemanal[]>(`/aulas/grade-semanal${query}`);
 
     return response.data;
   }
