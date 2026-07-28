@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { perfilTemAcesso } from "./acessoPorPerfil";
+import { perfilTemAcesso, ROTA_PADRAO_POR_PERFIL } from "./acessoPorPerfil";
 
 describe("perfilTemAcesso", () => {
   it("ADMIN tem acesso ao Dashboard", () => {
@@ -70,5 +70,17 @@ describe("perfilTemAcesso", () => {
 
   it("rota sem regra cadastrada é liberada por padrão", () => {
     expect(perfilTemAcesso("PROFESSOR", "/uma-rota-qualquer")).toBe(true);
+  });
+});
+
+describe("ROTA_PADRAO_POR_PERFIL", () => {
+  it("PROFESSOR cai em Aulas (não em Alunos) após o login", () => {
+    expect(ROTA_PADRAO_POR_PERFIL.PROFESSOR).toBe("/aulas");
+  });
+
+  it("a rota padrão de cada perfil é uma rota que o próprio perfil tem acesso", () => {
+    for (const perfil of Object.keys(ROTA_PADRAO_POR_PERFIL) as (keyof typeof ROTA_PADRAO_POR_PERFIL)[]) {
+      expect(perfilTemAcesso(perfil, ROTA_PADRAO_POR_PERFIL[perfil])).toBe(true);
+    }
   });
 });
