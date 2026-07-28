@@ -9,6 +9,9 @@ interface CreateUsuarioDTO {
   senha: string;
   perfil: string;
   unidadeId: number | null;
+  // todas as unidades que o usuário pode acessar — só é maior que 1 item
+  // quando um SUPERADMIN vincula um ADMIN/RECEPCAO a mais de uma unidade.
+  unidadeIds?: number[];
   nivelGraduacao?: string;
   outrasGraduacoes?: string;
   fotoUrl?: string | null;
@@ -23,6 +26,7 @@ export class CreateUsuarioService {
     senha,
     perfil,
     unidadeId,
+    unidadeIds,
     nivelGraduacao,
     outrasGraduacoes,
     fotoUrl
@@ -44,6 +48,8 @@ export class CreateUsuarioService {
     const senhaHash =
       await hash(senha, 8);
 
+    const idsVinculo = unidadeIds?.length ? unidadeIds : unidadeId ? [unidadeId] : [];
+
     return prisma.usuario.create({
       data: {
         nome,
@@ -54,7 +60,10 @@ export class CreateUsuarioService {
         unidadeId,
         nivelGraduacao,
         outrasGraduacoes,
-        fotoUrl
+        fotoUrl,
+        unidadesVinculadas: idsVinculo.length
+          ? { create: idsVinculo.map((id) => ({ unidadeId: id })) }
+          : undefined,
       }
     });
 

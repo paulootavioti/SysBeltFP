@@ -37,6 +37,7 @@ model Unidade {
   graduacoes    Graduacao[]
   aulasProgramadas AulaProgramada[]
   aulas         Aula[]
+  vinculosUsuarios UsuarioUnidade[]
 
   createdAt DateTime @default(now())
 }
@@ -304,7 +305,10 @@ model Turma {
 model Usuario {
   id                Int      @id @default(autoincrement())
 
-  // nulo só pra SUPERADMIN — todo outro perfil pertence a uma unidade.
+  // nulo só pra SUPERADMIN. Pros demais, é a unidade ATIVA no momento —
+  // pra ADMIN/RECEPCAO vinculado a mais de uma unidade (ver
+  // UsuarioUnidade), é a que ele escolheu no seletor de "unidade ativa";
+  // pra quem só tem uma, é sempre a mesma.
   unidadeId         Int?
   unidade           Unidade? @relation(fields: [unidadeId], references: [id])
 
@@ -325,8 +329,30 @@ model Usuario {
   turmas            Turma[]
   avisosReconhecidos AvisoReconhecido[]
   aulasSubstituindo AulaProgramada[] @relation("AulaProgramadaProfessorSubstituto")
+  // unidades que esse usuário pode acessar — ADMIN e RECEPCAO podem ter
+  // mais de uma (só o SUPERADMIN monta essa lista); PROFESSOR sempre tem
+  // exatamente uma.
+  unidadesVinculadas UsuarioUnidade[]
 
   createdAt         DateTime @default(now())
+}
+
+// vínculo N:N entre Usuario e Unidade — permite ADMIN/RECEPCAO trabalharem
+// em mais de uma unidade. Usuario.unidadeId continua sendo a unidade ATIVA
+// (o que já é usado em todo o escopo do sistema); essa tabela só guarda
+// quais unidades cada usuário PODE escolher como ativa.
+model UsuarioUnidade {
+  id        Int     @id @default(autoincrement())
+
+  usuarioId Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([usuarioId, unidadeId])
 }
 
 model AvisoReconhecido {

@@ -19,7 +19,10 @@ export class ListUsuariosService {
         outrasGraduacoes: true,
         fotoUrl: true,
         ativo: true,
-        createdAt: true
+        createdAt: true,
+        unidadesVinculadas: {
+          select: { unidade: { select: { id: true, nome: true } } },
+        },
       },
       orderBy: {
         nome: "asc"

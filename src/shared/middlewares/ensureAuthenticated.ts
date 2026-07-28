@@ -3,6 +3,7 @@ import { verify } from "jsonwebtoken";
 
 import { AppError } from "../errors/AppError";
 import { prisma } from "../database/prisma";
+import { PERFIS_MULTI_UNIDADE } from "../constants/perfis";
 
 interface TokenPayload {
   sub: string;
@@ -56,6 +57,22 @@ export async function ensureAuthenticated(
       const unidadeVisualizada = Number(req.headers["x-unidade-id"]);
       if (Number.isInteger(unidadeVisualizada) && unidadeVisualizada > 0) {
         req.user.unidadeId = unidadeVisualizada;
+      }
+    } else if (PERFIS_MULTI_UNIDADE.includes(usuario.perfil) && req.headers["x-unidade-id"]) {
+      // ADMIN/PROFESSOR/RECEPCAO vinculado a mais de uma unidade pode trocar
+      // qual unidade está ativa — mas só entre as unidades que ele de fato
+      // tem vínculo (UsuarioUnidade), diferente do SUPERADMIN, que é
+      // irrestrito.
+      const unidadeSolicitada = Number(req.headers["x-unidade-id"]);
+
+      if (Number.isInteger(unidadeSolicitada) && unidadeSolicitada > 0) {
+        const vinculo = await prisma.usuarioUnidade.findFirst({
+          where: { usuarioId: usuario.id, unidadeId: unidadeSolicitada },
+        });
+
+        if (vinculo) {
+          req.user.unidadeId = unidadeSolicitada;
+        }
       }
     }
 

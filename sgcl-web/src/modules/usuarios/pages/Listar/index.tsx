@@ -82,6 +82,11 @@ export function Usuarios() {
             <>
               <div>Apelido: {usuario.apelido || "-"}</div>
               {usuario.nivelGraduacao && <div>Graduação: {usuario.nivelGraduacao}</div>}
+              {(usuario.unidadesVinculadas?.length ?? 0) > 1 && (
+                <div>
+                  Unidades: {usuario.unidadesVinculadas!.map((v) => v.unidade.nome).join(", ")}
+                </div>
+              )}
             </>
           }
         >
@@ -93,17 +98,23 @@ export function Usuarios() {
     {
       header: "Perfil",
       accessor: "perfil" as const,
-      render: (usuario: Usuario) => (
-        <select
-          value={usuario.perfil}
-          onChange={(e) => handleAlterarPerfil(usuario.id, e.target.value)}
-          className="usuarios-perfil-select"
-        >
-          <option value="ADMIN">Admin</option>
-          <option value="PROFESSOR">Professor</option>
-          <option value="RECEPCAO">Recepção</option>
-        </select>
-      ),
+      render: (usuario: Usuario) =>
+        // SUPERADMIN não é uma opção desse select (só ADMIN/PROFESSOR/RECEPCAO
+        // se trocam por aqui) — sem essa checagem, o <select> caía por
+        // padrão em "Admin" pra uma linha de SUPERADMIN, o que é enganoso.
+        usuario.perfil === "SUPERADMIN" ? (
+          <span>Superadmin</span>
+        ) : (
+          <select
+            value={usuario.perfil}
+            onChange={(e) => handleAlterarPerfil(usuario.id, e.target.value)}
+            className="usuarios-perfil-select"
+          >
+            <option value="ADMIN">Admin</option>
+            <option value="PROFESSOR">Professor</option>
+            <option value="RECEPCAO">Recepção</option>
+          </select>
+        ),
     },
     {
       header: "Status",

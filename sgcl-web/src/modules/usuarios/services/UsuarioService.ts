@@ -10,6 +10,11 @@ export class UsuarioService {
   static async listarProfessores() {
     return ApiClient.get<ProfessorOpcao[]>("/usuarios/professores");
   }
+  // unidades vinculadas ao usuário autenticado — usada pelo seletor de
+  // "unidade ativa" quando um ADMIN/RECEPCAO tem mais de uma.
+  static async listarMinhasUnidades() {
+    return ApiClient.get<{ id: number; nome: string }[]>("/usuarios/minhas-unidades");
+  }
   static async criar(data: UsuarioUpdateFormData) {
     return ApiClient.post<Usuario>("/auth/register", data);
   }

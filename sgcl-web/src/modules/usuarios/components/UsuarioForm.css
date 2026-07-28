@@ -1,0 +1,5 @@
+.usuario-form-unidades-checklist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}

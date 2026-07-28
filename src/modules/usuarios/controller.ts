@@ -2,10 +2,12 @@ import { Request, Response } from "express";
 
 import { ListUsuariosService } from "./services/ListUsuariosService";
 import { ListProfessoresService } from "./services/ListProfessoresService";
+import { ListMinhasUnidadesService } from "./services/ListMinhasUnidadesService";
 import { UpdatePerfilUsuarioService } from "./services/UpdatePerfilUsuarioService";
 import { ToggleUsuarioAtivoService } from "./services/ToggleUsuarioAtivoService";
 import { UpdateUsuarioService } from "./services/UpdateUsuarioService";
 import { AppError } from "../../shared/errors/AppError";
+import { PERFIS_MULTI_UNIDADE } from "../../shared/constants/perfis";
 
 export class UsuariosController {
 
@@ -36,6 +38,21 @@ export class UsuariosController {
       await service.execute(req.user.unidadeId);
 
     return res.json(professores);
+
+  }
+
+  async listarMinhasUnidades(
+    req: Request,
+    res: Response
+  ) {
+
+    const service =
+      new ListMinhasUnidadesService();
+
+    const unidades =
+      await service.execute(req.user.id);
+
+    return res.json(unidades);
 
   }
 
@@ -80,13 +97,23 @@ export class UsuariosController {
       throw new AppError("Apenas um superadmin pode conceder esse perfil.", 403);
     }
 
+    // vincular um usuário a mais de uma unidade só o SUPERADMIN pode fazer.
+    const unidadeIds =
+      req.user.perfil === "SUPERADMIN" && Array.isArray(req.body.unidadeIds)
+        ? req.body.unidadeIds.map(Number).filter((unidadeId: number) => Number.isInteger(unidadeId) && unidadeId > 0)
+        : undefined;
+
+    if (unidadeIds && unidadeIds.length > 1 && !PERFIS_MULTI_UNIDADE.includes(req.body.perfil)) {
+      throw new AppError("Só usuários Admin, Professor ou Recepção podem ser vinculados a mais de uma unidade.");
+    }
+
     const service =
       new UpdateUsuarioService();
 
     const usuario =
       await service.execute(
         Number(id),
-        req.body,
+        { ...req.body, unidadeIds },
         req.user.unidadeId
       );
 

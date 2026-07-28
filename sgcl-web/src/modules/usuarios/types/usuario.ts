@@ -1,4 +1,4 @@
-export type PerfilUsuario = "ADMIN" | "PROFESSOR" | "RECEPCAO";
+export type PerfilUsuario = "ADMIN" | "PROFESSOR" | "RECEPCAO" | "SUPERADMIN";
 
 export interface ProfessorOpcao {
   id: number;
@@ -17,4 +17,5 @@ export interface Usuario {
   fotoUrl?: string | null;
   ativo: boolean;
   createdAt: string;
+  unidadesVinculadas?: { unidade: { id: number; nome: string } }[];
 }

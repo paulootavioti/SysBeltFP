@@ -13,6 +13,9 @@ interface UpdateUsuarioDTO {
   nivelGraduacao?: string | null;
   outrasGraduacoes?: string | null;
   fotoUrl?: string | null;
+  // só é aplicado quando quem edita é SUPERADMIN (checado no controller) —
+  // substitui por completo a lista de unidades vinculadas ao usuário.
+  unidadeIds?: number[];
 }
 
 export class UpdateUsuarioService {
@@ -37,6 +40,34 @@ export class UpdateUsuarioService {
 
     const senhaHash = data.senha ? await hash(data.senha, 8) : undefined;
 
+    // virou SUPERADMIN: não pertence a nenhuma unidade — some com a ativa
+    // e com todos os vínculos, ainda que unidadeIds tenha vindo preenchido.
+    if (data.perfil === "SUPERADMIN") {
+      return prisma.usuario.update({
+        where: { id },
+        data: {
+          nome: data.nome,
+          apelido: data.apelido,
+          email: data.email,
+          ...(senhaHash ? { senha: senhaHash } : {}),
+          perfil: data.perfil,
+          nivelGraduacao: data.nivelGraduacao,
+          outrasGraduacoes: data.outrasGraduacoes,
+          fotoUrl: data.fotoUrl,
+          unidadeId: null,
+          unidadesVinculadas: { deleteMany: {} },
+        },
+      });
+    }
+
+    // a unidade ATIVA só muda se ela não estiver mais entre as vinculadas
+    // (ex.: SUPERADMIN removeu a unidade que o usuário estava usando) —
+    // do contrário mantém, pra não derrubar a sessão ativa dele à toa.
+    const novaUnidadeAtiva =
+      data.unidadeIds?.length && !data.unidadeIds.includes(usuario.unidadeId ?? -1)
+        ? data.unidadeIds[0]
+        : undefined;
+
     return prisma.usuario.update({
       where: { id },
       data: {
@@ -48,6 +79,15 @@ export class UpdateUsuarioService {
         nivelGraduacao: data.nivelGraduacao,
         outrasGraduacoes: data.outrasGraduacoes,
         fotoUrl: data.fotoUrl,
+        ...(novaUnidadeAtiva ? { unidadeId: novaUnidadeAtiva } : {}),
+        ...(data.unidadeIds?.length
+          ? {
+              unidadesVinculadas: {
+                deleteMany: {},
+                create: data.unidadeIds.map((unidadeId) => ({ unidadeId })),
+              },
+            }
+          : {}),
       },
     });
 

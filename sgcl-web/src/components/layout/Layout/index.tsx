@@ -26,6 +26,7 @@ import {
 import { perfilTemAcesso } from "../../../shared/constants/acessoPorPerfil";
 import { NotificationBell } from "../../ui/NotificationBell";
 import { SeletorUnidadeVisualizada } from "../SeletorUnidadeVisualizada";
+import { SeletorUnidadeAtiva } from "../SeletorUnidadeAtiva";
 import "./styles.css";
 
 interface LayoutProps {
@@ -137,6 +138,7 @@ export function Layout({ children }: LayoutProps) {
           )}
 
           <SeletorUnidadeVisualizada />
+          <SeletorUnidadeAtiva />
 
           <Button onClick={handleLogout}>
             <LuLogOut size={16} />

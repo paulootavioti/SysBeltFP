@@ -9,6 +9,8 @@ export const registerSchema = z.object({
   // só é lido quando quem cadastra é SUPERADMIN — um ADMIN normal sempre
   // cadastra dentro da própria unidade, esse campo é ignorado nesse caso.
   unidadeId: z.coerce.number().int().positive().nullish(),
+  // idem: só o SUPERADMIN pode vincular o usuário a mais de uma unidade.
+  unidadeIds: z.array(z.coerce.number().int().positive()).nullish(),
   nivelGraduacao: z.string().nullish(),
   outrasGraduacoes: z.string().nullish(),
   fotoUrl: z.string().nullish(),

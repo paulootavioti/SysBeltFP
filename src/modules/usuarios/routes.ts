@@ -33,6 +33,15 @@ usuariosRoutes.get(
   usuariosController.listarProfessores
 );
 
+// unidades vinculadas ao usuário autenticado — usada pelo seletor de
+// "unidade ativa" de quem está vinculado a mais de uma unidade.
+usuariosRoutes.get(
+  "/minhas-unidades",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR", "RECEPCAO"]),
+  usuariosController.listarMinhasUnidades
+);
+
 usuariosRoutes.put(
   "/:id",
   ensureAuthenticated,

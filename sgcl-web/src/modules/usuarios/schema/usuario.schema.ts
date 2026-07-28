@@ -4,15 +4,20 @@ const usuarioBaseSchema = z.object({
   nome: z.string().min(3, "Informe o nome."),
   apelido: z.string().optional(),
   email: z.string().email("Email inválido."),
+  // SUPERADMIN só é uma opção real quando quem preenche o formulário
+  // também é SUPERADMIN — a UI já esconde essa opção pros demais, isso
+  // aqui é só validação de formato.
   perfil: z
     .string()
     .refine(
-      (p) => ["ADMIN", "PROFESSOR", "RECEPCAO"].includes(p),
+      (p) => ["ADMIN", "PROFESSOR", "RECEPCAO", "SUPERADMIN"].includes(p),
       "Selecione um perfil."
     ),
   nivelGraduacao: z.string().optional(),
   outrasGraduacoes: z.string().optional(),
   fotoUrl: z.string().nullish(),
+  // só é lido quando quem cadastra/edita é SUPERADMIN.
+  unidadeIds: z.array(z.number()).optional(),
 });
 
 export const usuarioSchema = usuarioBaseSchema.extend({
