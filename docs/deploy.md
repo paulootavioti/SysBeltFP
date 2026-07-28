@@ -1,560 +1,168 @@
 # Deploy
 
-Versão: 1.0
+Versão: 2.0
 
-Última atualização: Julho/2026
+Última atualização: Julho/2026 (processo real via Netlify — substitui a descrição anterior baseada em Docker/Nginx, que nunca chegou a ser usada)
 
 ---
 
 # Objetivo
 
-Este documento descreve o processo oficial de implantação (Deploy) do Sys Belt - Sistema Faixa Preta.
-
-Seu objetivo é garantir que qualquer desenvolvedor consiga publicar uma nova versão do sistema de forma segura, reproduzível e documentada.
+Este documento descreve o processo real de implantação (deploy) do Sys Belt - Sistema Faixa Preta, que roda inteiramente na **Netlify** — não há Docker, Nginx ou servidor próprio em produção.
 
 ---
 
-# Ambientes
-
-O Sys Belt possui três ambientes.
-
-## Desenvolvimento
-
-Objetivo
-
-Desenvolvimento diário.
-
-Banco
-
-SQLite
-
-Frontend
-
-Vite
-
-Backend
-
-Node.js
-
----
-
-## Homologação
-
-Objetivo
-
-Testes antes da produção.
-
-Banco
-
-PostgreSQL
-
-Servidor
-
-Docker
-
----
-
-## Produção
-
-Objetivo
-
-Uso oficial da academia.
-
-Banco
-
-PostgreSQL
-
-Servidor
-
-Docker
-
-HTTPS
-
-Backup automático
-
-Monitoramento
-
----
-
-# Estrutura
+# Visão Geral
 
 ```
-Internet
-
-↓
-
-Nginx
-
-↓
-
-Frontend React
-
-↓
-
-API Express
-
-↓
-
-PostgreSQL
+Git push (branch main)
+        │
+        ▼
+   Netlify Build
+        │
+        ├── npm ci (backend)
+        ├── npx prisma generate
+        ├── npx prisma migrate deploy   ← aplica migrations pendentes no Postgres de produção
+        └── cd sgcl-web && npm ci && npm run build
+        │
+        ▼
+   Publica sgcl-web/dist (frontend estático)
+        │
+   Empacota src/ (backend) como Netlify Function
 ```
 
----
-
-# Tecnologias
-
-Frontend
-
-React
-
-Vite
-
-TypeScript
+Frontend e backend são publicados juntos, a partir do mesmo repositório e do mesmo build — não são dois deploys separados.
 
 ---
 
-Backend
+# Configuração (`netlify.toml`)
 
-Node.js
+```toml
+[build]
+  command = "npm ci --include=dev && npx prisma generate && npx prisma migrate deploy && cd sgcl-web && npm ci --include=dev && npm run build"
+  publish = "sgcl-web/dist"
 
-Express
+[build.environment]
+  NODE_VERSION = "20"
+  NODE_ENV = "production"
 
-TypeScript
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[functions.api]
+  included_files = ["node_modules/.prisma/client/**"]
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+Pontos importantes:
+
+- **A migration roda automaticamente a cada deploy** (`npx prisma migrate deploy` faz parte do build command) — não é preciso rodar manualmente, desde que o push para `main` dispare o deploy automático da Netlify.
+- O frontend chama a API sempre em `/api/*` (mesma origem) — o redirect resolve para a function, então não há problema de CORS em produção.
+- O backend inteiro (`src/app.ts`) é empacotado como uma única Netlify Function (`netlify/functions/api.ts`), usando `serverless-http`.
 
 ---
 
-Banco
+# Backend como Netlify Function
 
-PostgreSQL
+```ts
+// netlify/functions/api.ts
+import serverless from "serverless-http";
+import { app } from "../../src/app";
 
----
+export const handler = serverless(app, {
+  basePath: "/api",
+  binary: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+});
+```
 
-ORM
+O mesmo `app` do Express usado em desenvolvimento (`npm run dev` → `src/server.ts`) roda em produção dentro da function — não existe uma versão "de produção" separada do backend.
 
-Prisma
-
----
-
-Container
-
-Docker
-
-Docker Compose
-
----
-
-Servidor Web
-
-Nginx
-
----
-
-SSL
-
-Let's Encrypt
+`included_files` garante que o Prisma Client gerado (`node_modules/.prisma/client/**`) vá junto no pacote da function.
 
 ---
 
 # Variáveis de Ambiente
 
-Backend
+Configuradas em **Site settings → Environment variables** no painel da Netlify (nunca commitadas):
 
 ```
-DATABASE_URL=
-
-JWT_SECRET=
-
-JWT_EXPIRES_IN=
-
-PORT=
-```
-
-Frontend
-
-```
-VITE_API_URL=
-```
-
-Nunca armazenar senhas diretamente no código.
-
----
-
-# Estrutura de Produção
-
-```
-/opt/sgcl
-
-backend/
-
-frontend/
-
-docker-compose.yml
-
-.env
-
-backups/
-
-logs/
-```
-
----
-
-# Docker
-
-Containers
-
-Frontend
-
-Backend
-
-PostgreSQL
-
-Nginx
-
----
-
-# Docker Compose
-
-Serviços
-
-frontend
-
-backend
-
-database
-
-nginx
-
----
-
-# Banco
-
-Desenvolvimento
-
-SQLite
-
-Produção
-
-PostgreSQL
-
----
-
-# Migrações
-
-Sempre executar:
-
-```
-npx prisma migrate deploy
-```
-
-Nunca utilizar:
-
-```
-migrate dev
-```
-
-em produção.
-
----
-
-# Prisma
-
-Atualizar Client
-
-```
-npx prisma generate
-```
-
----
-
-# Build
-
-Frontend
-
-```
-npm run build
-```
-
-Backend
-
-```
-npm run build
-```
-
----
-
-# Inicialização
-
-Backend
-
-```
-npm start
-```
-
-ou
-
-```
-node dist/server.js
-```
-
----
-
-# Processo de Deploy
-
-1.
-
-Atualizar código
-
-↓
-
-2.
-
-Instalar dependências
-
-↓
-
-3.
-
-Executar migrações
-
-↓
-
-4.
-
-Gerar Prisma Client
-
-↓
-
-5.
-
-Build
-
-↓
-
-6.
-
-Reiniciar containers
-
-↓
-
-7.
-
-Validar aplicação
-
----
-
-# Atualização
-
-Fluxo
-
-Git Pull
-
-↓
-
-npm install
-
-↓
-
-Prisma Generate
-
-↓
-
-Migrate Deploy
-
-↓
-
-Build
-
-↓
-
-Restart
-
----
-
-# Backup
-
-Backup diário
-
-Banco PostgreSQL
-
-↓
-
-Arquivo SQL
-
-↓
-
-Compactação
-
-↓
-
-Armazenamento externo
-
----
-
-Retenção
-
-7 dias
-
-30 dias
-
-12 meses
-
----
-
-# Logs
-
-Backend
-
-Logs de aplicação
-
----
-
-Nginx
-
-Logs HTTP
-
----
-
-Banco
-
-Logs de consultas críticas
-
----
-
-# Monitoramento
-
-CPU
-
-RAM
-
-Espaço em disco
-
-Tempo de resposta
-
-Uso de banco
-
-Disponibilidade
-
----
-
-# SSL
-
-Todos os acessos deverão utilizar HTTPS.
-
-Certificado
-
-Let's Encrypt
-
-Renovação automática.
-
----
-
-# Segurança
-
-Nunca expor
-
-.env
-
-Banco
-
+DATABASE_URL       # connection string do Postgres (recomendado: Neon com endpoint pooled)
 JWT_SECRET
+JWT_EXPIRES_IN     # ex.: "7d"
+CORS_ORIGIN        # origens permitidas (pouco relevante em produção, já que front e back são same-origin via /api)
+```
 
-Logs sensíveis
+Localmente, essas mesmas variáveis ficam em `.env` (nunca commitado — ver `.env.example`).
 
----
+Frontend (`sgcl-web/.env.local`, opcional):
 
-# Firewall
+```
+VITE_API_URL=http://localhost:3333   # só em dev, apontando pro backend local
+```
 
-Permitir apenas
-
-80
-
-443
-
-22 (SSH)
-
-Bloquear portas internas.
+Em produção o frontend **não define** `VITE_API_URL` — usa `/api` (same-origin) automaticamente.
 
 ---
 
-# Banco
+# Banco de Dados
 
-Acesso apenas pelo backend.
-
-Nunca permitir acesso público ao PostgreSQL.
+**PostgreSQL** em todos os ambientes — não há SQLite em nenhum momento do fluxo. Recomendado usar um provedor com pooling para uso serverless (ex.: Neon, endpoint "pooled") — cada invocação da function pode abrir sua própria conexão.
 
 ---
 
-# Estratégia de Atualização
+# Migrations
 
-Deploy azul/verde (planejado)
+Sempre geradas localmente com:
 
-ou
+```bash
+npx prisma migrate dev --name descricao_da_mudanca
+```
 
-Deploy Rolling
+Isso cria o arquivo em `prisma/migrations/` e já aplica no banco de desenvolvimento. Esse arquivo vai para o Git — é ele que a Netlify aplica automaticamente em produção via `prisma migrate deploy` durante o build.
 
-Objetivo
-
-Zero indisponibilidade.
-
----
-
-# Recuperação
-
-Caso uma atualização falhe.
-
-Restaurar
-
-↓
-
-Container anterior
-
-↓
-
-Banco
-
-↓
-
-Backup
+**Nunca** rodar `prisma migrate dev` contra o banco de produção — é exclusivamente uma ferramenta de desenvolvimento local.
 
 ---
 
-# Versionamento
+# Processo de Deploy (fluxo real)
 
-Todas as versões deverão possuir:
+1. Desenvolver e verificar localmente (`tsc`, `vitest`, `eslint`, `build` — ver `testes.md`).
+2. Criar a migration, se houver mudança de schema (`npx prisma migrate dev`).
+3. Commit + push para `main`.
+4. Netlify detecta o push e dispara o build automaticamente (se o deploy automático estiver habilitado no site).
+5. Build roda: instala dependências, gera o Prisma Client, **aplica as migrations pendentes no banco de produção**, builda o frontend.
+6. Se o build passar, a nova versão é publicada (frontend estático + function atualizada).
+7. Validar em produção: login, uma tela de cada módulo principal, uma chamada de API.
 
-Tag Git
-
-Número da versão
-
-Registro no changelog
+Se o build falhar (inclusive por uma migration com erro), a versão anterior continua no ar — a Netlify não publica um build quebrado.
 
 ---
 
-# CI/CD (Futuro)
+# Rollback
 
-Pipeline
+A Netlify mantém o histórico de deploys anteriores — um rollback é feito publicando novamente (via painel) um deploy anterior já buildado. Isso **não** reverte migrations de banco já aplicadas — uma mudança de schema incompatível exige uma migration reversa própria, criada e testada como qualquer outra.
 
-GitHub
+---
 
-↓
+# Domínio e SSL
 
-Testes
+Gerenciados pela Netlify (certificado automático via Let's Encrypt, renovação automática). Não há configuração manual de Nginx/SSL.
 
-↓
+---
 
-Build
+# Logs e Monitoramento
 
-↓
-
-Deploy
-
-↓
-
-Homologação
-
-↓
-
-Produção
+Logs de build e das invocações da function ficam disponíveis no painel da Netlify (aba Functions/Deploys). Não há stack próprio de observabilidade (Prometheus/Grafana/Sentry) configurado hoje — ver seção "Roadmap".
 
 ---
 
@@ -563,51 +171,15 @@ Produção
 Antes
 
 - Código revisado
-- Testes executados
-- Migrações validadas
+- `tsc --noEmit`, `vitest run`, `eslint` e `build` passando (backend e frontend)
+- Migration criada e testada localmente, se houver
 
-Durante
-
-- Backup realizado
-- Deploy executado
-- Logs monitorados
-
-Depois
+Depois (produção)
 
 - Login funcionando
-- Dashboard funcionando
-- Cadastro funcionando
-- Banco atualizado
-- API respondendo
-- Monitoramento ativo
-
----
-
-# Recuperação de Desastres
-
-Em caso de falha grave.
-
-1.
-
-Restaurar banco
-
-↓
-
-2.
-
-Restaurar containers
-
-↓
-
-3.
-
-Validar versão
-
-↓
-
-4.
-
-Liberar acesso
+- Uma tela de cada módulo principal carregando
+- Migration aplicada (checar log de build da Netlify)
+- Nenhum erro novo nos logs da function
 
 ---
 
@@ -615,19 +187,13 @@ Liberar acesso
 
 Próximas melhorias
 
-- Kubernetes
-- Balanceamento de carga
-- Redis
-- CDN
-- Cache
-- Observabilidade
-- Prometheus
-- Grafana
-- Sentry
-- Deploy automático
+- Ambiente de homologação separado (branch deploy / preview deploys da própria Netlify)
+- Observabilidade (Sentry para erros de function)
+- Backup automatizado do banco (hoje depende do backup nativo do provedor Postgres, ex.: Neon)
+- CI rodando a suíte de testes antes do deploy (hoje a verificação é manual, antes do push)
 
 ---
 
 # Conclusão
 
-O processo de Deploy do Sys Belt foi projetado para garantir segurança, disponibilidade e rastreabilidade, permitindo que novas versões sejam publicadas com mínimo risco e máxima previsibilidade.
+O processo de deploy do Sys Belt é intencionalmente simples: um único `git push` para `main` aciona build, migration e publicação de frontend e backend juntos, sem infraestrutura própria para gerenciar.

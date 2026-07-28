@@ -370,6 +370,77 @@ Início do módulo de mensalidades.
 
 ---
 
+# 1.0.0-alpha
+
+## Multi-Tenant — Unidades e Arenas
+
+### Adicionado
+
+- Entidade `Unidade` (filial da academia) e `Arena` (sala/tatame) — toda entidade operacional passou a carregar `unidadeId`
+- Isolamento automático de dados por unidade em todos os módulos, via `escopoUnidade()`/`garantirAcessoUnidade()`
+- SUPERADMIN: novo perfil com acesso irrestrito a todas as unidades, incluindo seletor "visualizar como" (todas ou uma unidade específica) que filtra o sistema inteiro
+- Arena vinculada explicitamente a uma Unidade; Turma pode ser vinculada a uma Arena
+- Checagem de conflito de horário (mesma Arena ou mesmo professor) ao criar/editar Turma e ao programar aulas
+- Tela de Unidades incorporada ao Dashboard; tela de Arenas movida para dentro de Unidades
+
+### Corrigido
+
+- Tooltip da grade mensal não mostrava professor nem arena da aula (N+1 de include do Prisma)
+
+---
+
+# 1.1.0-alpha
+
+## RBAC completo por perfil
+
+### Adicionado
+
+- SUPERADMIN agora pode cadastrar outro usuário SUPERADMIN (antes só existia por seed)
+- Matriz de permissões redefinida para os 4 perfis (SUPERADMIN, ADMIN, PROFESSOR, RECEPCAO) — ver `regras-de-negocio.md` RN-170 a RN-174
+- PROFESSOR: Turmas viram somente-consulta; perde acesso a Relatórios, Mensagens e Unidades/Arenas
+- RECEPCAO: perde acesso a Planejamento Pedagógico e Financeiro
+- Consulta somente leitura da grade horária de outras unidades para ADMIN/PROFESSOR (parâmetro `unidadeConsultaId`, independente do "ver como" do SUPERADMIN)
+- Redação de campos do Aluno para o perfil PROFESSOR: só nome, apelido, responsável, turma, presenças e graduações — aplicado no `select` do Prisma, não apenas na UI
+- Prontuário completo do Aluno bloqueado para PROFESSOR
+
+### Adicionado — Transferência de Aula
+
+- Um professor impedido de dar uma aula programada pode transferi-la para outro professor da unidade, com motivo obrigatório
+- Checagem de conflito de horário do professor substituto antes de confirmar a transferência
+- Novos campos em `AulaProgramada`: `professorSubstitutoId`, `motivoTransferencia`
+
+---
+
+# 1.2.0-alpha
+
+## Usuário Multi-Unidade
+
+### Adicionado
+
+- Tabela `UsuarioUnidade` (N:N) — ADMIN, PROFESSOR e RECEPCAO podem estar vinculados a mais de uma Unidade (Professor porque pode dar aula em unidades/arenas diferentes, em horários diferentes)
+- Checklist de unidades no cadastro/edição de usuário, disponível somente quando quem cadastra é SUPERADMIN
+- Seletor de "unidade ativa" no cabeçalho para quem está vinculado a mais de uma unidade — mesmo mecanismo de header (`X-Unidade-Id`) do "ver como" do SUPERADMIN, mas restrito às unidades vinculadas
+- SUPERADMIN agora selecionável como perfil na tela de Usuários (antes só via API)
+- Promover um usuário a SUPERADMIN agora limpa sua unidade ativa e todos os vínculos de unidade
+
+---
+
+# 1.3.0-alpha
+
+## Documentação
+
+### Adicionado
+
+- README raiz reescrito (estava vazio)
+- Documentação núcleo (README, regras de negócio, banco de dados, API, segurança) atualizada para refletir o sistema multi-unidade e a matriz de permissões real
+- Documentação complementar (testes, deploy, changelog, roadmap, ADRs, design system, coding standards, product vision) revisada e alinhada ao estado real do sistema
+
+### Removido
+
+- `docs/teste.md` — arquivo perdido sem conteúdo de documentação real
+
+---
+
 # Próximas versões
 
 ## 1.0.0

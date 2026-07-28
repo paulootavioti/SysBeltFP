@@ -2,9 +2,9 @@
 
 > Documento de Planejamento Estratégico
 
-Versão do documento: 2.0
+Versão do documento: 3.0
 
-Última atualização: Julho/2026
+Última atualização: Julho/2026 (multi-tenant e RBAC concluídos — deixaram de ser visão de longo prazo)
 
 ---
 
@@ -47,11 +47,11 @@ Fornecer uma plataforma moderna para academias de artes marciais que permita aco
 
 Versão
 
-0.9.0-alpha
+1.3.0-alpha
 
 Situação
 
-🟢 Desenvolvimento Ativo
+🟢 Desenvolvimento Ativo — multi-unidade (multi-tenant) e RBAC completo já em produção
 
 ---
 
@@ -62,8 +62,7 @@ Backend
 - Node.js
 - Express
 - Prisma
-- SQLite
-- PostgreSQL (produção)
+- PostgreSQL
 
 Frontend
 
@@ -74,6 +73,10 @@ Frontend
 Autenticação
 
 - JWT
+
+Deploy
+
+- Netlify (frontend estático + backend como Netlify Function)
 
 ---
 
@@ -91,7 +94,37 @@ Itens
 - Prisma
 - JWT
 - Middleware
-- Controle de perfis
+- Controle de perfis (4 perfis: SUPERADMIN, ADMIN, PROFESSOR, RECEPCAO)
+
+---
+
+## Multi-Tenant (Unidades e Arenas)
+
+Status
+
+✅ Concluído
+
+Itens
+
+- Unidade (filial) e Arena (sala/tatame), com isolamento de dados por unidade em todos os módulos
+- SUPERADMIN: acesso irrestrito, com seletor "visualizar como" qualquer unidade ou todas
+- Checagem de conflito de horário por Arena/professor
+- Usuário (Admin, Professor, Recepção) vinculado a mais de uma unidade, com seletor de "unidade ativa"
+
+---
+
+## Permissões por Perfil (RBAC)
+
+Status
+
+✅ Concluído
+
+Itens
+
+- Matriz de permissões granular por módulo e perfil (ver `regras-de-negocio.md` e `seguranca.md`)
+- Redação de campos do Aluno para o perfil Professor
+- Consulta somente leitura de grade horária entre unidades para Admin/Professor
+- Transferência de aula entre professores, com justificativa obrigatória
 
 ---
 
@@ -451,6 +484,30 @@ Pendências
 
 ---
 
+## Sprint 18
+
+✅ Multi-Tenant (Unidades e Arenas)
+
+---
+
+## Sprint 19
+
+✅ Permissões por Perfil (RBAC) e Transferência de Aula
+
+---
+
+## Sprint 20
+
+✅ Usuário Multi-Unidade
+
+---
+
+## Sprint 21
+
+✅ Documentação núcleo e complementar atualizada
+
+---
+
 # Objetivo da versão 1.0
 
 A versão 1.0 deverá permitir o funcionamento completo da academia sem necessidade de controles paralelos em planilhas.
@@ -483,7 +540,13 @@ Planejada para:
 
 # Longo Prazo
 
-Transformar o Sys Belt - Sistema Faixa Preta em uma plataforma SaaS para academias de artes marciais.
+O núcleo multi-tenant (Unidade → Arena → Turma, isolamento de dados, SUPERADMIN, usuários vinculados a múltiplas unidades) já está implementado — a plataforma já funciona como um SaaS para múltiplas unidades de uma mesma academia.
+
+O que falta para uma oferta SaaS multi-cliente (várias academias diferentes, não só várias unidades da mesma):
+
+- Onboarding self-service de uma nova academia (hoje o cadastro de Unidade é feito manualmente por um SUPERADMIN)
+- Cobrança/plano de assinatura da própria plataforma (separado do módulo de Mensalidades, que é da academia para o aluno)
+- Página pública de marketing/cadastro
 
 ---
 

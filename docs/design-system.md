@@ -1,8 +1,8 @@
 # Design System
 
-Versão: 1.0
+Versão: 1.1
 
-Última atualização: Julho/2026
+Última atualização: Julho/2026 (lista real de componentes existentes)
 
 ---
 
@@ -570,34 +570,36 @@ types.ts
 
 # Componentes existentes
 
-Layout
+Layout (`components/layout/`)
 
-- Page
+- Layout (sidebar + header da aplicação autenticada)
 - PageHeader
+- Toolbar
+- SeletorUnidadeVisualizada ("ver como" do SUPERADMIN)
+- SeletorUnidadeAtiva (troca de unidade ativa, ADMIN/PROFESSOR/RECEPCAO multi-unidade)
 
-Feedback
+UI genéricos (`components/ui/`)
 
-- Loading
-- StatusBadge
-- EmptyState
-- ConfirmDialog
+- Button, Input, Select, Textarea, Checkbox
+- Loading, EmptyState, ErrorMessage
+- Modal, Tabs, Tooltip, Toast
+- Table, DataTable, CrudDataTable
+- Badge, StatusBadge, Card
+- FormGrid, FormGridItem, FormSection
+- ImageUpload, AuthenticatedImage (imagens que exigem JWT para carregar)
+- NotificationBell
+- BarChart, PeriodoSelector, DiaSemanaSelector
 
-Formulários
+SGCL — específicos do domínio (`components/sgcl/`)
 
-- Button
-- Input
-- Select
-- Textarea
-- ImageUpload
+- Page, Section (layout)
+- InfoCard (cards)
+- StatusBadge (feedback)
 
-Cards
-
-- InfoCard
-- AulaAlunoCard
-
-Pedagógicos
+Pedagógicos (dentro dos módulos)
 
 - BehaviorSelector
+- AulaAlunoCard
 
 ---
 
@@ -650,7 +652,7 @@ Dark Mode
 Tema personalizado
 
 Animações
-ß
+
 Modo compacto
 
 Acessibilidade avançada

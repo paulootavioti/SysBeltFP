@@ -336,6 +336,8 @@ Arquivos principais:
 - [`testes.md`](testes.md) — estratégia de testes
 - [`changelog.md`](changelog.md) — histórico de versões
 - [`architecture-decisions.md`](architecture-decisions.md) — ADRs
+- [`coding-standards.md`](coding-standards.md) — padrões de código (backend e frontend)
+- [`product-vision.md`](product-vision.md) — visão de produto
 
 ---
 
