@@ -38,6 +38,8 @@ model Unidade {
   aulasProgramadas AulaProgramada[]
   aulas         Aula[]
   vinculosUsuarios UsuarioUnidade[]
+  metas         Meta[]
+  eventos       Evento[]
 
   createdAt DateTime @default(now())
 }
@@ -551,4 +553,52 @@ model AulaProgramada {
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
+}
+
+// Meta estratégica do gestor (receita, matrículas, alunos ativos,
+// frequência, inadimplência, retenção). `valorAtual` não é armazenado —
+// é sempre calculado ao vivo a partir dos dados reais (ver
+// GetMetasDashboardService), pra nunca ficar desatualizado.
+model Meta {
+  id          Int      @id @default(autoincrement())
+
+  unidadeId   Int
+  unidade     Unidade  @relation(fields: [unidadeId], references: [id])
+
+  nome        String
+  tipo        String   // RECEITA | NOVAS_MATRICULAS | ALUNOS_ATIVOS | FREQUENCIA | INADIMPLENCIA | RETENCAO
+  valorMeta   Float
+  formatoValor String  // MOEDA | QUANTIDADE | PERCENTUAL
+  dataLimite  DateTime
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+}
+
+// Campanha de matrícula, campanha promocional/indicação, seminário,
+// workshop, aulão ou competição organizada pela academia — domínio
+// técnico "eventos", exibido na interface como "Campanhas e Seminários".
+model Evento {
+  id                      Int      @id @default(autoincrement())
+
+  unidadeId               Int
+  unidade                 Unidade  @relation(fields: [unidadeId], references: [id])
+
+  titulo                  String
+  descricao               String?
+  tipo                    String   // CAMPANHA_MATRICULA | CAMPANHA_PROMOCIONAL | CAMPANHA_INDICACAO | SEMINARIO | WORKSHOP | AULAO | COMPETICAO | OUTRO
+  status                  String   @default("RASCUNHO") // RASCUNHO | AGENDADO | EM_ANDAMENTO | CONCLUIDO | CANCELADO
+
+  dataInicio              DateTime
+  dataFim                 DateTime?
+  local                   String?
+
+  metaParticipantes       Int?
+  participantesConfirmados Int?
+  investimento            Float?
+  receitaGerada           Float?
+  responsavel             String?
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @default(now()) @updatedAt
 }

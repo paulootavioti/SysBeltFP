@@ -41,7 +41,7 @@ export function Eventos() {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
-  const [excluindoId, setExcluindoId] = useState<string | null>(null);
+  const [excluindoId, setExcluindoId] = useState<number | null>(null);
 
   const [busca, setBusca] = useState("");
   const [tipo, setTipo] = useState("");
@@ -84,7 +84,7 @@ export function Eventos() {
     try {
       setExcluindoId(evento.id);
       setErro("");
-      await EventoService.excluir(evento.id);
+      await EventoService.excluir(String(evento.id));
       await carregar();
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao excluir o evento."));
@@ -139,7 +139,7 @@ export function Eventos() {
                 {evento.local ? ` • ${evento.local}` : ""}
               </p>
 
-              {evento.metaParticipantes !== undefined && (
+              {evento.metaParticipantes != null && (
                 <p className="eventos-card-info">
                   {evento.participantesConfirmados ?? 0} de {evento.metaParticipantes} participante(s)
                 </p>

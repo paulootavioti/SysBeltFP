@@ -1,2 +1,13 @@
+.metas-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-4);
+}
+
+.metas-card-acoes {
+  display: flex;
+  gap: var(--space-2);
+}
+
 /* A grade de metas em si é estilizada pelos CSS dos componentes do
    dashboard reaproveitados aqui (DashboardGoals.css, progressBar.css). */

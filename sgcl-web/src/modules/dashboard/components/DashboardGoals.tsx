@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui/Button";
 import { Badge } from "../../../components/ui/Badge";
@@ -12,6 +13,10 @@ interface DashboardGoalsProps {
   // false na própria página /metas, onde o botão "Gerenciar metas" seria
   // redundante (o usuário já está lá).
   mostrarBotaoGerenciar?: boolean;
+  // Quando informado, substitui o botão "Ver detalhes" de cada card —
+  // usado na página /metas pra oferecer Editar/Excluir em vez de navegar
+  // pra ela mesma.
+  renderAcoes?: (meta: MetaDashboard) => ReactNode;
 }
 
 const LABEL_STATUS: Record<StatusMeta, string> = {
@@ -34,7 +39,7 @@ function formatarValorMeta(valor: number, unidade: MetaDashboard["unidade"]): st
   return formatarNumero(valor);
 }
 
-export function DashboardGoals({ metas, mostrarBotaoGerenciar = true }: DashboardGoalsProps) {
+export function DashboardGoals({ metas, mostrarBotaoGerenciar = true, renderAcoes }: DashboardGoalsProps) {
   const navigate = useNavigate();
 
   return (
@@ -77,9 +82,13 @@ export function DashboardGoals({ metas, mostrarBotaoGerenciar = true }: Dashboar
 
                 <p className="dashboard-meta-prazo">Prazo: {formatarData(meta.dataLimite)}</p>
 
-                <Button type="button" variant="secondary" size="sm" onClick={() => navigate("/metas")}>
-                  Ver detalhes
-                </Button>
+                {renderAcoes ? (
+                  renderAcoes(meta)
+                ) : (
+                  <Button type="button" variant="secondary" size="sm" onClick={() => navigate("/metas")}>
+                    Ver detalhes
+                  </Button>
+                )}
               </article>
             );
           })}

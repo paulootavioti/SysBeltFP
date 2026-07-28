@@ -50,7 +50,7 @@ export function DashboardEvents({ eventos }: DashboardEventsProps) {
               {TIPO_EVENTO_LABEL[proximoEvento.tipo]} • {formatarData(proximoEvento.dataInicio)}
             </p>
 
-            {proximoEvento.metaParticipantes !== undefined && (
+            {proximoEvento.metaParticipantes != null && (
               <>
                 <p className="dashboard-evento-info">
                   {proximoEvento.participantesConfirmados ?? 0} de {proximoEvento.metaParticipantes} participante(s) confirmado(s)

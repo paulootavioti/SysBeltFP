@@ -92,13 +92,13 @@ export function DetalheEvento() {
             <Card
               titulo="Participantes"
               valor={
-                evento.metaParticipantes !== undefined
+                evento.metaParticipantes != null
                   ? `${evento.participantesConfirmados ?? 0} de ${evento.metaParticipantes}`
                   : "—"
               }
             />
-            {evento.investimento !== undefined && <Card titulo="Investimento" valor={formatarMoeda(evento.investimento)} />}
-            {evento.receitaGerada !== undefined && <Card titulo="Receita Gerada" valor={formatarMoeda(evento.receitaGerada)} />}
+            {evento.investimento != null && <Card titulo="Investimento" valor={formatarMoeda(evento.investimento)} />}
+            {evento.receitaGerada != null && <Card titulo="Receita Gerada" valor={formatarMoeda(evento.receitaGerada)} />}
           </div>
         </>
       )}
