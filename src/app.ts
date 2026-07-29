@@ -33,6 +33,7 @@ import { assinaturasRoutes } from "./modules/assinaturas/routes";
 import { modelosContratoRoutes } from "./modules/modelosContrato/routes";
 import { contratosRoutes } from "./modules/contratos/routes";
 import { assinaturaEletronicaRoutes } from "./modules/assinaturaEletronica/routes";
+import { notificacoesRoutes } from "./modules/notificacoes/routes";
 
 const corsOrigin = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
@@ -89,6 +90,7 @@ app.use("/assinaturas", assinaturasRoutes);
 app.use("/modelos-contrato", modelosContratoRoutes);
 app.use("/contratos", contratosRoutes);
 app.use("/assinatura-eletronica", assinaturaEletronicaRoutes);
+app.use("/notificacoes", notificacoesRoutes);
 
 app.use("/auth", authRoutes);
 app.use(errorHandler);
