@@ -1,0 +1,12 @@
+.modelos-contrato-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.modelos-contrato-table-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}

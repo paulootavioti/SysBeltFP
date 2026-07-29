@@ -1,0 +1,17 @@
+.modelo-contrato-variaveis {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  font-size: var(--font-sm);
+}
+
+.modelo-contrato-variaveis ul {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+}
+
+.modelo-contrato-variaveis code {
+  color: var(--text);
+  font-weight: 600;
+}

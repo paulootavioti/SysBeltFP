@@ -13,13 +13,15 @@ interface ImageUploadProps {
   onChange?: (url: string | undefined) => void;
 }
 
-// "financeiro" também aceita PDF (comprovante de pagamento) — os demais
-// prefixos continuam sendo só foto de perfil.
+// "financeiro" (comprovante de pagamento) e "contratos" (contrato
+// assinado) também aceitam PDF — os demais prefixos continuam sendo só
+// foto de perfil.
 const ACCEPT_POR_PREFIXO: Record<PrefixoUpload, string> = {
   alunos: "image/*",
   responsaveis: "image/*",
   usuarios: "image/*",
   financeiro: "image/*,application/pdf",
+  contratos: "image/*,application/pdf",
 };
 
 export function ImageUpload({

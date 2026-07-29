@@ -55,31 +55,51 @@ enum StatusAssinatura {
   CONCLUIDA
 }
 
+// Os 8 estados pedidos pelo produto para o ciclo de vida do contrato.
+enum SituacaoContrato {
+  RASCUNHO
+  PENDENTE_ASSINATURA
+  ASSINADO
+  ATIVO
+  SUSPENSO
+  CANCELADO
+  ENCERRADO
+  RENOVADO
+}
+
+enum TipoAssinaturaContrato {
+  DIGITAL
+  ELETRONICA
+  PRESENCIAL
+}
+
 model Unidade {
-  id        Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  nome      String
-  ativo     Boolean  @default(true)
+  nome  String
+  ativo Boolean @default(true)
 
-  arenas        Arena[]
-  usuarios      Usuario[]
-  alunos        Aluno[]
-  responsaveis  Responsavel[]
-  turmas        Turma[]
-  planos        Plano[]
-  curriculos    Curriculo[]
-  tecnicas      Tecnica[]
-  competicoes   Competicao[]
-  mensalidades  Mensalidade[]
-  graduacoes    Graduacao[]
+  arenas           Arena[]
+  usuarios         Usuario[]
+  alunos           Aluno[]
+  responsaveis     Responsavel[]
+  turmas           Turma[]
+  planos           Plano[]
+  curriculos       Curriculo[]
+  tecnicas         Tecnica[]
+  competicoes      Competicao[]
+  mensalidades     Mensalidade[]
+  graduacoes       Graduacao[]
   aulasProgramadas AulaProgramada[]
-  aulas         Aula[]
+  aulas            Aula[]
   vinculosUsuarios UsuarioUnidade[]
-  metas         Meta[]
-  eventos       Evento[]
-  formasPagamento FormaPagamento[]
-  auditLogs     AuditLog[]
-  assinaturas   Assinatura[]
+  metas            Meta[]
+  eventos          Evento[]
+  formasPagamento  FormaPagamento[]
+  auditLogs        AuditLog[]
+  assinaturas      Assinatura[]
+  modelosContrato  ModeloContrato[]
+  contratos        Contrato[]
 
   createdAt DateTime @default(now())
 }
@@ -87,131 +107,134 @@ model Unidade {
 // qualquer sala, tatame ou área usada pra ministrar aulas — uma unidade
 // tem uma ou mais arenas.
 model Arena {
-  id        Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   unidadeId Int
-  unidade   Unidade  @relation(fields: [unidadeId], references: [id])
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  nome      String
-  ativo     Boolean  @default(true)
+  nome  String
+  ativo Boolean @default(true)
 
-  turmas    Turma[]
+  turmas Turma[]
 
   createdAt DateTime @default(now())
 }
 
 model Aluno {
-  id                Int              @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId         Int
-  unidade           Unidade          @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  nome              String
-  apelido           String?
-  dataNascimento    DateTime
+  nome           String
+  apelido        String?
+  dataNascimento DateTime
 
-  sexo              String?
-  cpf               String?
-  rg                String?
+  sexo String?
+  cpf  String?
+  rg   String?
 
-  telefone          String?
-  whatsapp          String?
-  email             String?
+  telefone String?
+  whatsapp String?
+  email    String?
 
-  cep               String?
-  logradouro        String?
-  numero            String?
-  complemento       String?
-  bairro            String?
-  cidade            String?
-  uf                String?
+  cep         String?
+  logradouro  String?
+  numero      String?
+  complemento String?
+  bairro      String?
+  cidade      String?
+  uf          String?
 
-  escola            String?
-  serieEscolar      String?
-  turnoEscolar      String?
+  escola       String?
+  serieEscolar String?
+  turnoEscolar String?
 
-  peso              Float?
-  altura            Float?
+  peso   Float?
+  altura Float?
 
-  tamanhoKimono     String?
-  marcaKimono       String?
+  tamanhoKimono String?
+  marcaKimono   String?
 
   restricoesMedicas String?
   alergias          String?
   medicamentos      String?
   observacoes       String?
 
-  fotoUrl           String?
+  fotoUrl String?
 
-  faixa             String           @default("Branca")
-  grau              Int              @default(0)
-  ativo             Boolean          @default(true)
+  faixa String  @default("Branca")
+  grau  Int     @default(0)
+  ativo Boolean @default(true)
 
-  responsaveis      Responsavel[]
-  mensalidades      Mensalidade[]
-  assinaturas       Assinatura[]
-  graduacoes        Graduacao[]
-  aulas             AulaAluno[]
-  competicoes       CompeticaoAluno[]
-  comportamentos    Comportamento[]
+  responsaveis   Responsavel[]
+  mensalidades   Mensalidade[]
+  assinaturas    Assinatura[]
+  graduacoes     Graduacao[]
+  aulas          AulaAluno[]
+  competicoes    CompeticaoAluno[]
+  comportamentos Comportamento[]
+  contratos      Contrato[]
 
-  turmaId           Int?
-  turma             Turma?           @relation(fields: [turmaId], references: [id])
+  turmaId Int?
+  turma   Turma? @relation(fields: [turmaId], references: [id])
 
-  formaPagamento    String?
-  diaVencimento     Int?
+  formaPagamento String?
+  diaVencimento  Int?
 
-  planoId           Int?
-  plano             Plano?           @relation(fields: [planoId], references: [id])
+  planoId Int?
+  plano   Plano? @relation(fields: [planoId], references: [id])
 
-  createdAt         DateTime         @default(now())
+  createdAt DateTime @default(now())
   //updatedAt         DateTime         @updatedAt
   updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Responsavel {
-  id                     Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId              Int
-  unidade                Unidade  @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  nome                   String
-  apelido                String?
+  nome    String
+  apelido String?
 
-  cpf                    String?
-  rg                     String?
-  dataNascimento         DateTime?
-  sexo                   String?
+  cpf            String?
+  rg             String?
+  dataNascimento DateTime?
+  sexo           String?
 
-  telefone               String?
-  whatsapp               String?
-  email                  String?
+  telefone String?
+  whatsapp String?
+  email    String?
 
-  cep                    String?
-  logradouro             String?
-  numero                 String?
-  complemento            String?
-  bairro                 String?
-  cidade                 String?
-  uf                     String?
+  cep         String?
+  logradouro  String?
+  numero      String?
+  complemento String?
+  bairro      String?
+  cidade      String?
+  uf          String?
 
-  parentesco             String   @default("Não informado")
+  parentesco String @default("Não informado")
 
-  responsavelFinanceiro  Boolean  @default(false)
-  podeBuscar             Boolean  @default(true)
-  contatoEmergencia      Boolean  @default(false)
-  recebeComunicados      Boolean  @default(true)
+  responsavelFinanceiro Boolean @default(false)
+  podeBuscar            Boolean @default(true)
+  contatoEmergencia     Boolean @default(false)
+  recebeComunicados     Boolean @default(true)
 
-  observacoes            String?
-  fotoUrl                String?
+  observacoes String?
+  fotoUrl     String?
 
-  ativo                  Boolean  @default(true)
+  ativo Boolean @default(true)
 
-  alunoId                Int
-  aluno                  Aluno    @relation(fields: [alunoId], references: [id])
+  alunoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id])
 
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @default(now()) @updatedAt
+  contratosComoContratante Contrato[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // forma de pagamento configurável por unidade — habilita/desabilita os
@@ -219,92 +242,93 @@ model Responsavel {
 // `configuracao` (ex.: dias de compensação do boleto). `nomePersonalizado`
 // só é usado quando `tipo === OUTRO`.
 model FormaPagamento {
-  id                 Int                @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId          Int
-  unidade            Unidade            @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  tipo               TipoFormaPagamento
-  nomePersonalizado  String?
-  ativo              Boolean            @default(true)
-  configuracao       Json?
+  tipo              TipoFormaPagamento
+  nomePersonalizado String?
+  ativo             Boolean            @default(true)
+  configuracao      Json?
 
-  mensalidades       Mensalidade[]
-  assinaturas        Assinatura[]
+  mensalidades Mensalidade[]
+  assinaturas  Assinatura[]
+  contratos    Contrato[]
 
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // Auditoria genérica de alterações financeiras e contratuais — quem fez,
 // quando, o que mudou. Reaproveitada por qualquer módulo de escrita
 // sensível (hoje: Mensalidade; nas próximas fases: Contrato, Assinatura).
 model AuditLog {
-  id            Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId     Int
-  unidade       Unidade  @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  usuarioId     Int
-  usuario       Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
 
-  entidade      String   // ex.: "Mensalidade"
-  entidadeId    Int
-  operacao      String   // CRIACAO | ATUALIZACAO | CANCELAMENTO | ESTORNO | PAGAMENTO | EXCLUSAO
+  entidade   String // ex.: "Mensalidade"
+  entidadeId Int
+  operacao   String // CRIACAO | ATUALIZACAO | CANCELAMENTO | ESTORNO | PAGAMENTO | EXCLUSAO
 
   valoresAntes  Json?
   valoresDepois Json?
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([entidade, entidadeId])
 }
 
 model Mensalidade {
-  id                  Int               @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId           Int
-  unidade             Unidade           @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  valor               Float
-  vencimento          DateTime
-  dataPagamento       DateTime?
-  pago                Boolean           @default(false)
-  descricao           String?
+  valor         Float
+  vencimento    DateTime
+  dataPagamento DateTime?
+  pago          Boolean   @default(false)
+  descricao     String?
 
-  status              StatusMensalidade @default(ABERTA)
+  status StatusMensalidade @default(ABERTA)
 
-  formaPagamentoId    Int?
-  formaPagamento      FormaPagamento?   @relation(fields: [formaPagamentoId], references: [id])
+  formaPagamentoId Int?
+  formaPagamento   FormaPagamento? @relation(fields: [formaPagamentoId], references: [id])
 
   // valor original informado no cadastro; desconto/acrescimo/multa/juros
   // ajustam esse valor; valorFinal é o resultado já calculado e persistido
   // (recalculado a cada atualização) — evita recalcular na leitura toda hora.
-  valorOriginal       Float             @default(0)
-  desconto            Float             @default(0)
-  acrescimo           Float             @default(0)
-  multa               Float             @default(0)
-  juros               Float             @default(0)
-  valorFinal          Float             @default(0)
+  valorOriginal Float @default(0)
+  desconto      Float @default(0)
+  acrescimo     Float @default(0)
+  multa         Float @default(0)
+  juros         Float @default(0)
+  valorFinal    Float @default(0)
 
-  comprovanteUrl      String?
+  comprovanteUrl String?
 
-  dataGeracao         DateTime          @default(now())
+  dataGeracao DateTime @default(now())
 
-  canceladoEm         DateTime?
-  motivoCancelamento  String?
+  canceladoEm        DateTime?
+  motivoCancelamento String?
 
-  estornadoEm         DateTime?
-  motivoEstorno       String?
+  estornadoEm   DateTime?
+  motivoEstorno String?
 
   // preenchido só quando a mensalidade foi gerada automaticamente por uma
   // cobrança recorrente (ver GerarCobrancasRecorrentesService) — nulo pra
   // mensalidades avulsas, cadastradas manualmente.
-  assinaturaId        Int?
-  assinatura          Assinatura?       @relation(fields: [assinaturaId], references: [id])
+  assinaturaId Int?
+  assinatura   Assinatura? @relation(fields: [assinaturaId], references: [id])
 
-  alunoId             Int
-  aluno               Aluno             @relation(fields: [alunoId], references: [id])
+  alunoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id])
 }
 
 // Configuração de cobrança recorrente de um aluno — o motor de geração
@@ -313,198 +337,296 @@ model Mensalidade {
 // dataFim/numeroParcelas. O desconto por pontualidade é aplicado só no
 // momento do pagamento (ver PagarMensalidadeService), não na geração.
 model Assinatura {
-  id                    Int               @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId             Int
-  unidade               Unidade           @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  alunoId               Int
-  aluno                 Aluno             @relation(fields: [alunoId], references: [id])
+  alunoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id])
 
-  planoId               Int?
-  plano                 Plano?            @relation(fields: [planoId], references: [id])
+  planoId Int?
+  plano   Plano? @relation(fields: [planoId], references: [id])
 
-  formaPagamentoId      Int?
-  formaPagamento        FormaPagamento?   @relation(fields: [formaPagamentoId], references: [id])
+  formaPagamentoId Int?
+  formaPagamento   FormaPagamento? @relation(fields: [formaPagamentoId], references: [id])
 
-  valor                 Float
-  diaVencimento         Int
+  valor         Float
+  diaVencimento Int
 
-  dataInicio            DateTime
-  dataFim                DateTime?
+  dataInicio DateTime
+  dataFim    DateTime?
 
   // quando indeterminado=false, a geração para sozinha ao atingir
   // numeroParcelas (parcelasGeradas conta quantas mensalidades já saíram
   // desta assinatura); quando true, numeroParcelas é ignorado.
-  indeterminado          Boolean           @default(true)
-  numeroParcelas         Int?
-  parcelasGeradas        Int               @default(0)
+  indeterminado   Boolean @default(true)
+  numeroParcelas  Int?
+  parcelasGeradas Int     @default(0)
 
-  desconto               Float             @default(0)
-  acrescimo              Float             @default(0)
-  multa                  Float             @default(0)
-  juros                  Float             @default(0)
-  descontoPontualidade   Float             @default(0)
+  desconto             Float @default(0)
+  acrescimo            Float @default(0)
+  multa                Float @default(0)
+  juros                Float @default(0)
+  descontoPontualidade Float @default(0)
 
-  status                 StatusAssinatura  @default(ATIVA)
+  status StatusAssinatura @default(ATIVA)
 
   ultimaCobrancaGeradaEm DateTime?
 
-  mensalidades           Mensalidade[]
+  mensalidades Mensalidade[]
 
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+// Modelo de texto de contrato, com variáveis dinâmicas ({{nomeAluno}},
+// {{nomeResponsavel}}, {{cpf}}, {{endereco}}, {{unidade}}, {{professor}},
+// {{plano}}, {{valor}}, {{vencimento}}, {{data}}, entre outras — ver
+// src/modules/contratos/utils/variaveisContrato.ts). "Versionamento" é
+// modelado como uma cadeia: editar um modelo ativo cria uma nova linha
+// apontando modeloOrigemId pro modelo anterior (o modelo antigo não é
+// sobrescrito, então contratos já gerados a partir dele continuam
+// referenciando a versão que usaram). "Clonagem" cria uma cópia
+// independente (sem modeloOrigemId), pronta pra virar um modelo novo.
+model ModeloContrato {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  nome     String
+  conteudo String
+
+  versao Int     @default(1)
+  ativo  Boolean @default(true)
+
+  modeloOrigemId Int?
+  modeloOrigem   ModeloContrato?  @relation("VersoesModeloContrato", fields: [modeloOrigemId], references: [id])
+  versoes        ModeloContrato[] @relation("VersoesModeloContrato")
+
+  contratos Contrato[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+// Contrato vinculado à matrícula do aluno. Quando o aluno é menor de
+// idade (Aluno.dataNascimento), o contratante é obrigatoriamente um
+// Responsavel (contratanteResponsavelId preenchido) — ver
+// determinarContratante() em CreateContratoService; quando maior, o
+// próprio aluno é o contratante e contratanteResponsavelId fica nulo.
+// `conteudoGerado` é um snapshot do texto do ModeloContrato já com as
+// variáveis substituídas no momento da geração — edições posteriores no
+// modelo não afetam contratos já emitidos.
+model Contrato {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  // sequencial por unidade (não é o id do banco) — ver
+  // CreateContratoService para o cálculo.
+  numero Int
+
+  alunoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id])
+
+  contratanteResponsavelId Int?
+  contratanteResponsavel   Responsavel? @relation(fields: [contratanteResponsavelId], references: [id])
+
+  modeloContratoId Int
+  modeloContrato   ModeloContrato @relation(fields: [modeloContratoId], references: [id])
+
+  planoId Int?
+  plano   Plano? @relation(fields: [planoId], references: [id])
+
+  formaPagamentoId Int?
+  formaPagamento   FormaPagamento? @relation(fields: [formaPagamentoId], references: [id])
+
+  valor Float
+
+  dataInicioVigencia DateTime
+  dataFimVigencia    DateTime?
+
+  regrasCancelamento String?
+  clausulas          String?
+
+  conteudoGerado String
+
+  situacao SituacaoContrato @default(RASCUNHO)
+
+  tipoAssinatura      TipoAssinaturaContrato?
+  assinadoEm          DateTime?
+  contratoAssinadoUrl String?
+
+  // quando true, RenovarContratosVencidosService (disparo externo/cron)
+  // gera automaticamente o contrato seguinte ao fim da vigência; quando
+  // false, a renovação só acontece por ação manual (RenovarContratoService).
+  renovacaoAutomatica Boolean @default(false)
+
+  contratoAnteriorId Int?
+  contratoAnterior   Contrato?  @relation("RenovacaoContrato", fields: [contratoAnteriorId], references: [id])
+  renovacoes         Contrato[] @relation("RenovacaoContrato")
+
+  canceladoEm        DateTime?
+  motivoCancelamento String?
+
+  encerradoEm DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([unidadeId, numero])
 }
 
 model Graduacao {
-  id          Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId   Int
-  unidade     Unidade   @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  faixa       String
-  data        DateTime
+  faixa String
+  data  DateTime
 
-  alunoId     Int
-  aluno       Aluno     @relation(fields: [alunoId], references: [id])
+  alunoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id])
 }
 
 model AulaAluno {
-  id          Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  aulaId      Int
-  aula        Aula     @relation(fields: [aulaId], references: [id])
+  aulaId Int
+  aula   Aula @relation(fields: [aulaId], references: [id])
 
-  alunoId     Int
-  aluno       Aluno    @relation(fields: [alunoId], references: [id])
+  alunoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id])
 
-  presente    Boolean  @default(false)
+  presente Boolean @default(false)
 
-  respeito    Boolean  @default(false)
-  valentia    Boolean  @default(false)
-  esforco     Boolean  @default(false)
-  atencao     Boolean  @default(false)
-  disciplina  Boolean  @default(false)
+  respeito   Boolean @default(false)
+  valentia   Boolean @default(false)
+  esforco    Boolean @default(false)
+  atencao    Boolean @default(false)
+  disciplina Boolean @default(false)
 
-  observacao  String?
+  observacao String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@unique([aulaId, alunoId])
 }
 
 model Competicao {
-  id          Int                 @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId   Int
-  unidade     Unidade             @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  nome        String
-  data        DateTime
-  local       String
+  nome  String
+  data  DateTime
+  local String
 
-  atletas     CompeticaoAluno[]
+  atletas CompeticaoAluno[]
 }
 
 model CompeticaoAluno {
-  id              Int          @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  competicaoId    Int
-  alunoId         Int
+  competicaoId Int
+  alunoId      Int
 
-  resultado       String?
+  resultado String?
 
-  competicao      Competicao   @relation(fields: [competicaoId], references: [id])
-  aluno           Aluno        @relation(fields: [alunoId], references: [id])
+  competicao Competicao @relation(fields: [competicaoId], references: [id])
+  aluno      Aluno      @relation(fields: [alunoId], references: [id])
 }
 
 model Comportamento {
-  id          Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  alunoId     Int
-  aluno       Aluno    @relation(fields: [alunoId], references: [id])
+  alunoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id])
 
-  respeito    Int
-  valentia    Int
-  esforco     Int
-  atencao     Int
-  disciplina  Int
+  respeito   Int
+  valentia   Int
+  esforco    Int
+  atencao    Int
+  disciplina Int
 
-  observacao  String?
+  observacao String?
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model Turma {
-  id            Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId     Int
-  unidade       Unidade  @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  arenaId       Int?
-  arena         Arena?   @relation(fields: [arenaId], references: [id])
+  arenaId Int?
+  arena   Arena? @relation(fields: [arenaId], references: [id])
 
-  nome          String
-  faixaEtaria   String
+  nome        String
+  faixaEtaria String
 
   diasSemana    Int[]
   horarioInicio String
   horarioFim    String
 
-  professorId   Int?
-  professor     Usuario? @relation(fields: [professorId], references: [id])
+  professorId Int?
+  professor   Usuario? @relation(fields: [professorId], references: [id])
 
-  limiteAlunos  Int?
+  limiteAlunos Int?
 
-  ativo         Boolean  @default(true)
+  ativo Boolean @default(true)
 
-  curriculoId   Int?
-  curriculo     Curriculo? @relation(fields: [curriculoId], references: [id])
+  curriculoId Int?
+  curriculo   Curriculo? @relation(fields: [curriculoId], references: [id])
 
-  alunos        Aluno[]
-  aulas         Aula[]
+  alunos           Aluno[]
+  aulas            Aula[]
   aulasProgramadas AulaProgramada[]
 
-  createdAt     DateTime @default(now())
-
- 
+  createdAt DateTime @default(now())
 }
 
 model Usuario {
-  id                Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   // nulo só pra SUPERADMIN. Pros demais, é a unidade ATIVA no momento —
   // pra ADMIN/RECEPCAO vinculado a mais de uma unidade (ver
   // UsuarioUnidade), é a que ele escolheu no seletor de "unidade ativa";
   // pra quem só tem uma, é sempre a mesma.
-  unidadeId         Int?
-  unidade           Unidade? @relation(fields: [unidadeId], references: [id])
+  unidadeId Int?
+  unidade   Unidade? @relation(fields: [unidadeId], references: [id])
 
-  nome              String
-  apelido           String?
-  email             String   @unique
-  senha             String
+  nome    String
+  apelido String?
+  email   String  @unique
+  senha   String
 
-  perfil            String
+  perfil String
 
-  nivelGraduacao    String?
-  outrasGraduacoes  String?
+  nivelGraduacao   String?
+  outrasGraduacoes String?
 
-  fotoUrl           String?
+  fotoUrl String?
 
-  ativo             Boolean  @default(true)
+  ativo Boolean @default(true)
 
-  turmas            Turma[]
+  turmas             Turma[]
   avisosReconhecidos AvisoReconhecido[]
-  aulasSubstituindo AulaProgramada[] @relation("AulaProgramadaProfessorSubstituto")
+  aulasSubstituindo  AulaProgramada[]   @relation("AulaProgramadaProfessorSubstituto")
   // unidades que esse usuário pode acessar — ADMIN e RECEPCAO podem ter
   // mais de uma (só o SUPERADMIN monta essa lista); PROFESSOR sempre tem
   // exatamente uma.
   unidadesVinculadas UsuarioUnidade[]
-  auditLogs         AuditLog[]
+  auditLogs          AuditLog[]
 
-  createdAt         DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 // vínculo N:N entre Usuario e Unidade — permite ADMIN/RECEPCAO trabalharem
@@ -512,7 +634,7 @@ model Usuario {
 // (o que já é usado em todo o escopo do sistema); essa tabela só guarda
 // quais unidades cada usuário PODE escolher como ativa.
 model UsuarioUnidade {
-  id        Int     @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   usuarioId Int
   usuario   Usuario @relation(fields: [usuarioId], references: [id])
@@ -526,202 +648,203 @@ model UsuarioUnidade {
 }
 
 model AvisoReconhecido {
-  id           Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  usuarioId    Int
-  usuario      Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
 
   tipo         String
   referenciaId Int
 
-  criadoEm     DateTime @default(now())
+  criadoEm DateTime @default(now())
 
   @@unique([usuarioId, tipo, referenciaId])
 }
 
 model Plano {
-  id            Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId     Int
-  unidade       Unidade  @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
   nome          String
   valor         Float
   periodicidade String
 
-  ativo         Boolean  @default(true)
+  ativo Boolean @default(true)
 
-  alunos        Aluno[]
-  assinaturas   Assinatura[]
+  alunos      Aluno[]
+  assinaturas Assinatura[]
+  contratos   Contrato[]
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 }
 
 model Aula {
-  id          Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId   Int
-  unidade     Unidade   @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
   data        DateTime
   professor   String?
   observacoes String?
 
-  turmaId     Int?
-  turma       Turma?    @relation(fields: [turmaId], references: [id])
+  turmaId Int?
+  turma   Turma? @relation(fields: [turmaId], references: [id])
 
   aulaCurriculoId Int?
-  aulaCurriculo   AulaCurriculo? @relation(fields: [aulaCurriculoId], references: [id])
-  programacao AulaProgramada?
+  aulaCurriculo   AulaCurriculo?  @relation(fields: [aulaCurriculoId], references: [id])
+  programacao     AulaProgramada?
 
-  alunos      AulaAluno[]
+  alunos AulaAluno[]
 
   jogosRealizados    String[]           @default([])
   tecnicasRealizadas TecnicaCurriculo[] @relation("AulaTecnicasRealizadas")
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   status AulaStatus @default(ABERTA)
 }
 
 model Tecnica {
-  id              Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId       Int
-  unidade         Unidade  @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  nome            String
+  nome String
 
-  categoria       String
-  subCategoria    String?
+  categoria    String
+  subCategoria String?
 
-  descricao       String?
+  descricao String?
 
-  faixaMinima     String?
-  idadeMinima     Int?
+  faixaMinima String?
+  idadeMinima Int?
 
-  nivel           String?
+  nivel String?
 
-  ordemCurriculo  Int?
+  ordemCurriculo Int?
 
-  ativa           Boolean  @default(true)
+  ativa Boolean @default(true)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Curriculo {
-  id          Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId   Int
-  unidade     Unidade  @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  nome        String
-  descricao   String?
-  modalidade  String   @default("Jiu-Jitsu")
-  publico     String   @default("Kids")
+  nome       String
+  descricao  String?
+  modalidade String  @default("Jiu-Jitsu")
+  publico    String  @default("Kids")
 
-  ativo       Boolean  @default(true)
+  ativo Boolean @default(true)
 
-  modulos     ModuloCurriculo[]
-  turmas      Turma[]
+  modulos ModuloCurriculo[]
+  turmas  Turma[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model ModuloCurriculo {
-  id            Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  nome          String
-  descricao     String?
+  nome      String
+  descricao String?
 
-  faixa         String?
-  idadeMinima   Int?
-  idadeMaxima   Int?
+  faixa       String?
+  idadeMinima Int?
+  idadeMaxima Int?
 
-  ordem         Int      @default(0)
+  ordem Int @default(0)
 
-  curriculoId   Int
-  curriculo     Curriculo @relation(fields: [curriculoId], references: [id])
+  curriculoId Int
+  curriculo   Curriculo @relation(fields: [curriculoId], references: [id])
 
-  aulas         AulaCurriculo[]
+  aulas AulaCurriculo[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model AulaCurriculo {
-  id              Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  titulo          String
-  objetivo        String?
-  descricao       String?
-  duracaoMinutos  Int?
-  jogosSugeridos  String?
+  titulo         String
+  objetivo       String?
+  descricao      String?
+  duracaoMinutos Int?
+  jogosSugeridos String?
 
-  ordem           Int      @default(0)
+  ordem Int @default(0)
 
-  moduloId        Int
-  modulo          ModuloCurriculo @relation(fields: [moduloId], references: [id])
+  moduloId Int
+  modulo   ModuloCurriculo @relation(fields: [moduloId], references: [id])
 
   tecnicas        TecnicaCurriculo[]
   aulasRealizadas Aula[]
   programacoes    AulaProgramada[]
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model TecnicaCurriculo {
-  id              Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  nome            String
-  categoria       String?
-  descricao       String?
+  nome      String
+  categoria String?
+  descricao String?
 
-  obrigatoria     Boolean  @default(true)
-  ordem           Int      @default(0)
+  obrigatoria Boolean @default(true)
+  ordem       Int     @default(0)
 
   aulaCurriculoId Int
   aulaCurriculo   AulaCurriculo @relation(fields: [aulaCurriculoId], references: [id])
 
   aulasQueRealizaram Aula[] @relation("AulaTecnicasRealizadas")
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model AulaProgramada {
-  id              Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId       Int
-  unidade         Unidade  @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  turmaId         Int
-  turma           Turma    @relation(fields: [turmaId], references: [id])
+  turmaId Int
+  turma   Turma @relation(fields: [turmaId], references: [id])
 
   aulaCurriculoId Int?
   aulaCurriculo   AulaCurriculo? @relation(fields: [aulaCurriculoId], references: [id])
 
-  data            DateTime
-  observacoes     String?
+  data        DateTime
+  observacoes String?
 
-  status          String   @default("PENDENTE")
+  status String @default("PENDENTE")
 
-  aulaId          Int?     @unique
-  aula            Aula?    @relation(fields: [aulaId], references: [id])
+  aulaId Int?  @unique
+  aula   Aula? @relation(fields: [aulaId], references: [id])
 
   // transferência: o professor titular (turma.professor) está impedido de
   // dar essa aula específica — outro professor assume só essa ocorrência,
   // com justificativa obrigatória do impedimento.
-  professorSubstitutoId    Int?
-  professorSubstituto      Usuario? @relation("AulaProgramadaProfessorSubstituto", fields: [professorSubstitutoId], references: [id])
-  motivoTransferencia      String?
+  professorSubstitutoId Int?
+  professorSubstituto   Usuario? @relation("AulaProgramadaProfessorSubstituto", fields: [professorSubstitutoId], references: [id])
+  motivoTransferencia   String?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // Meta estratégica do gestor (receita, matrículas, alunos ativos,
@@ -729,45 +852,45 @@ model AulaProgramada {
 // é sempre calculado ao vivo a partir dos dados reais (ver
 // GetMetasDashboardService), pra nunca ficar desatualizado.
 model Meta {
-  id          Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId   Int
-  unidade     Unidade  @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  nome        String
-  tipo        String   // RECEITA | NOVAS_MATRICULAS | ALUNOS_ATIVOS | FREQUENCIA | INADIMPLENCIA | RETENCAO
-  valorMeta   Float
-  formatoValor String  // MOEDA | QUANTIDADE | PERCENTUAL
-  dataLimite  DateTime
+  nome         String
+  tipo         String // RECEITA | NOVAS_MATRICULAS | ALUNOS_ATIVOS | FREQUENCIA | INADIMPLENCIA | RETENCAO
+  valorMeta    Float
+  formatoValor String // MOEDA | QUANTIDADE | PERCENTUAL
+  dataLimite   DateTime
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // Campanha de matrícula, campanha promocional/indicação, seminário,
 // workshop, aulão ou competição organizada pela academia — domínio
 // técnico "eventos", exibido na interface como "Campanhas e Seminários".
 model Evento {
-  id                      Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  unidadeId               Int
-  unidade                 Unidade  @relation(fields: [unidadeId], references: [id])
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  titulo                  String
-  descricao               String?
-  tipo                    String   // CAMPANHA_MATRICULA | CAMPANHA_PROMOCIONAL | CAMPANHA_INDICACAO | SEMINARIO | WORKSHOP | AULAO | COMPETICAO | OUTRO
-  status                  String   @default("RASCUNHO") // RASCUNHO | AGENDADO | EM_ANDAMENTO | CONCLUIDO | CANCELADO
+  titulo    String
+  descricao String?
+  tipo      String // CAMPANHA_MATRICULA | CAMPANHA_PROMOCIONAL | CAMPANHA_INDICACAO | SEMINARIO | WORKSHOP | AULAO | COMPETICAO | OUTRO
+  status    String  @default("RASCUNHO") // RASCUNHO | AGENDADO | EM_ANDAMENTO | CONCLUIDO | CANCELADO
 
-  dataInicio              DateTime
-  dataFim                 DateTime?
-  local                   String?
+  dataInicio DateTime
+  dataFim    DateTime?
+  local      String?
 
-  metaParticipantes       Int?
+  metaParticipantes        Int?
   participantesConfirmados Int?
-  investimento            Float?
-  receitaGerada           Float?
-  responsavel             String?
+  investimento             Float?
+  receitaGerada            Float?
+  responsavel              String?
 
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }

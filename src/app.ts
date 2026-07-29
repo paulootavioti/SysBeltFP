@@ -30,6 +30,8 @@ import { eventosRoutes } from "./modules/eventos/routes";
 import { formasPagamentoRoutes } from "./modules/formasPagamento/routes";
 import { pagamentosRoutes } from "./modules/pagamentos/routes";
 import { assinaturasRoutes } from "./modules/assinaturas/routes";
+import { modelosContratoRoutes } from "./modules/modelosContrato/routes";
+import { contratosRoutes } from "./modules/contratos/routes";
 
 const corsOrigin = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
@@ -83,6 +85,8 @@ app.use("/eventos", eventosRoutes);
 app.use("/formas-pagamento", formasPagamentoRoutes);
 app.use("/pagamentos", pagamentosRoutes);
 app.use("/assinaturas", assinaturasRoutes);
+app.use("/modelos-contrato", modelosContratoRoutes);
+app.use("/contratos", contratosRoutes);
 
 app.use("/auth", authRoutes);
 app.use(errorHandler);

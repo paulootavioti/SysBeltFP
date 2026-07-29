@@ -39,6 +39,9 @@ const Metas = lazy(() => import("../modules/metas/pages/Listar").then((m) => ({ 
 
 const FormasPagamento = lazy(() => import("../modules/formasPagamento/pages/Listar").then((m) => ({ default: m.FormasPagamento })));
 const Assinaturas = lazy(() => import("../modules/assinaturas/pages/Listar").then((m) => ({ default: m.Assinaturas })));
+const ModelosContrato = lazy(() => import("../modules/modelosContrato/pages/Listar").then((m) => ({ default: m.ModelosContrato })));
+const Contratos = lazy(() => import("../modules/contratos/pages/Listar").then((m) => ({ default: m.Contratos })));
+const DetalheContrato = lazy(() => import("../modules/contratos/pages/Detalhes").then((m) => ({ default: m.DetalheContrato })));
 
 const Eventos = lazy(() => import("../modules/eventos/pages/Listar").then((m) => ({ default: m.Eventos })));
 const NovoEvento = lazy(() => import("../modules/eventos/pages/Novo").then((m) => ({ default: m.NovoEvento })));
@@ -336,6 +339,33 @@ export function AppRoutes() {
           element={
             <PrivateRoute>
               <Assinaturas />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/modelos-contrato"
+          element={
+            <PrivateRoute>
+              <ModelosContrato />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/contratos"
+          element={
+            <PrivateRoute>
+              <Contratos />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/contratos/:id"
+          element={
+            <PrivateRoute>
+              <DetalheContrato />
             </PrivateRoute>
           }
         />

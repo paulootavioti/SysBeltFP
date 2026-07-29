@@ -1,6 +1,6 @@
 import { api } from "../../services/api";
 
-export type PrefixoUpload = "alunos" | "responsaveis" | "usuarios" | "financeiro";
+export type PrefixoUpload = "alunos" | "responsaveis" | "usuarios" | "financeiro" | "contratos";
 
 export class UploadService {
   static async enviarFoto(file: File, prefixo: PrefixoUpload) {
