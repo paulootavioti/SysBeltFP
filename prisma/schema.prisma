@@ -262,7 +262,7 @@ model Mensalidade {
   pago                Boolean           @default(false)
   descricao           String?
 
-  status              StatusMensalidade @default(PENDENTE)
+  status              StatusMensalidade @default(ABERTA)
 
   formaPagamentoId    Int?
   formaPagamento      FormaPagamento?   @relation(fields: [formaPagamentoId], references: [id])
