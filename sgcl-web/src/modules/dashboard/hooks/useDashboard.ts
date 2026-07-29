@@ -22,13 +22,12 @@ function estadoInicial<T>(): SecaoEstado<T> {
 }
 
 // Cada seção do dashboard carrega, falha e recarrega de forma independente
-// — um erro numa seção nunca impede as outras de aparecer. O booleano
-// `ativo` evita `setState` depois que o componente desmontou ou o efeito
-// foi re-disparado (mesmo padrão já usado no restante do app, sem
+// — um erro numa seção (ex.: Eventos, que ainda é mock) nunca impede as
+// outras (ex.: os indicadores financeiros) de aparecer. O booleano `ativo`
+// evita `setState` depois que o componente desmontou ou o efeito foi
+// re-disparado (mesmo padrão já usado no restante do app, sem
 // AbortController porque o backend não suporta cancelamento de requisição).
-// Exportado pra ser reaproveitado por outros dashboards de seção
-// independente (ex.: o dashboard financeiro).
-export function useSecaoDashboard<T>(
+function useSecaoDashboard<T>(
   buscar: () => Promise<T>,
   mensagemErro: string,
   deps: unknown[]
@@ -86,6 +85,8 @@ export function useDashboard() {
     []
   );
 
+  // Metas e Eventos ainda não têm backend próprio nesta fase — os
+  // services abaixo são mocks temporários (ver comentário em cada um).
   const [metas, recarregarMetas] = useSecaoDashboard<MetaDashboard[]>(
     () => MetaService.listarDashboard(),
     "Erro ao carregar as metas.",

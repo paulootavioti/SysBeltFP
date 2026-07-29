@@ -5,9 +5,7 @@ type StatusType =
   | "INATIVO"
   | "PAGO"
   | "PENDENTE"
-  | "VENCIDO"
-  | "CANCELADO"
-  | "ESTORNADO";
+  | "VENCIDO";
 
 interface StatusBadgeProps {
   status: StatusType;

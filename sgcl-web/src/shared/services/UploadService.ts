@@ -1,9 +1,7 @@
 import { api } from "../../services/api";
 
-export type PrefixoUpload = "alunos" | "responsaveis" | "usuarios" | "financeiro";
-
 export class UploadService {
-  static async enviarFoto(file: File, prefixo: PrefixoUpload) {
+  static async enviarFoto(file: File, prefixo: "alunos" | "responsaveis" | "usuarios") {
     const formData = new FormData();
     formData.append("arquivo", file);
     formData.append("prefixo", prefixo);

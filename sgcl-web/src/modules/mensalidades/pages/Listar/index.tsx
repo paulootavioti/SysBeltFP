@@ -11,24 +11,16 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { useMensalidades } from "../../hooks/useMensalidades";
 import { MensalidadeService } from "../../services/MensalidadeService";
 import { MensalidadeCard } from "../../components/MensalidadeCard";
-import { MotivoModal } from "../../components/MotivoModal";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { calcularStatusMensalidade } from "../../utils/status";
 import { useToast } from "../../../../contexts/toast/useToast";
 import "./styles.css";
-
-type Filtro = "TODAS" | "PENDENTE" | "VENCIDA" | "PAGA" | "CANCELADA" | "ESTORNADA";
-type AcaoComMotivo = { tipo: "CANCELAR" | "ESTORNAR"; id: number } | null;
-
 export function ListarMensalidades() {
   const navigate = useNavigate();
   const toast = useToast();
   const { mensalidades, loading, erro, setErro, carregarMensalidades } = useMensalidades();
-  const [filtro, setFiltro] = useState<Filtro>("TODAS");
+  const [filtro, setFiltro] = useState<"TODAS" | "PENDENTE" | "VENCIDA" | "PAGA">("TODAS");
   const [busca, setBusca] = useState("");
-  const [acaoComMotivo, setAcaoComMotivo] = useState<AcaoComMotivo>(null);
-  const [enviandoMotivo, setEnviandoMotivo] = useState(false);
-
   const mensalidadesFiltradas = mensalidades
     .filter((m) => {
       const status = calcularStatusMensalidade(m);
@@ -38,7 +30,6 @@ export function ListarMensalidades() {
     .filter((m) =>
       m.aluno?.nome.toLowerCase().includes(busca.toLowerCase())
     );
-
   async function handleMarcarComoPago(id: number) {
     try {
       setErro("");
@@ -51,43 +42,12 @@ export function ListarMensalidades() {
       toast.error(mensagem);
     }
   }
-
-  async function handleConfirmarMotivo(motivo: string) {
-    if (!acaoComMotivo) return;
-
-    try {
-      setEnviandoMotivo(true);
-      setErro("");
-
-      if (acaoComMotivo.tipo === "CANCELAR") {
-        await MensalidadeService.cancelar(acaoComMotivo.id, motivo);
-        toast.success("Mensalidade cancelada.");
-      } else {
-        await MensalidadeService.estornar(acaoComMotivo.id, motivo);
-        toast.success("Mensalidade estornada.");
-      }
-
-      await carregarMensalidades();
-      setAcaoComMotivo(null);
-    } catch (error) {
-      const mensagem = getApiErrorMessage(
-        error,
-        acaoComMotivo.tipo === "CANCELAR" ? "Erro ao cancelar mensalidade." : "Erro ao estornar mensalidade."
-      );
-      setErro(mensagem);
-      toast.error(mensagem);
-    } finally {
-      setEnviandoMotivo(false);
-    }
-  }
-
   const totalPendente = mensalidades
-    .filter((m) => !m.pago && calcularStatusMensalidade(m) !== "CANCELADA" && calcularStatusMensalidade(m) !== "ESTORNADA")
-    .reduce((sum, m) => sum + m.valorFinal, 0);
+    .filter((m) => !m.pago)
+    .reduce((sum, m) => sum + m.valor, 0);
   const totalPago = mensalidades
     .filter((m) => m.pago)
-    .reduce((sum, m) => sum + m.valorFinal, 0);
-
+    .reduce((sum, m) => sum + m.valor, 0);
   return (
     <Layout>
       <PageHeader
@@ -120,7 +80,7 @@ export function ListarMensalidades() {
         </Button>
       </div>
       <div className="mensalidades-filtros">
-        {(["TODAS", "PENDENTE", "VENCIDA", "PAGA", "CANCELADA", "ESTORNADA"] as const).map((f) => (
+        {(["TODAS", "PENDENTE", "VENCIDA", "PAGA"] as const).map((f) => (
           <button
             key={f}
             type="button"
@@ -147,21 +107,10 @@ export function ListarMensalidades() {
               mensalidade={mensalidade}
               onEditar={(id) => navigate(`/mensalidades/${id}`)}
               onMarcarComoPago={handleMarcarComoPago}
-              onCancelar={(id) => setAcaoComMotivo({ tipo: "CANCELAR", id })}
-              onEstornar={(id) => setAcaoComMotivo({ tipo: "ESTORNAR", id })}
             />
           ))}
         </div>
       )}
-
-      <MotivoModal
-        open={!!acaoComMotivo}
-        title={acaoComMotivo?.tipo === "CANCELAR" ? "Cancelar Mensalidade" : "Estornar Mensalidade"}
-        label={acaoComMotivo?.tipo === "CANCELAR" ? "Motivo do cancelamento" : "Motivo do estorno"}
-        loading={enviandoMotivo}
-        onClose={() => setAcaoComMotivo(null)}
-        onConfirm={handleConfirmarMotivo}
-      />
     </Layout>
   );
 }

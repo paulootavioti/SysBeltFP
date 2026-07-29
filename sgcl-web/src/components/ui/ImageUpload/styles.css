@@ -72,20 +72,6 @@
 
 }
 
-.image-upload-arquivo-link{
-
-  padding:16px;
-
-  text-align:center;
-
-  color: var(--primary);
-
-  font-weight:600;
-
-  text-decoration:none;
-
-}
-
 .image-upload-erro{
 
   color: var(--color-danger, #B3261E);

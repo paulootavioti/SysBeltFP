@@ -13,10 +13,10 @@ export const Textarea = forwardRef<
   TextareaProps
 >(({ label, error, ...props }, ref) => {
   return (
-    <label className="textarea-group">
-      <span className="textarea-label">
+    <div className="textarea-group">
+      <label className="textarea-label">
         {label}
-      </span>
+      </label>
 
       <textarea
         ref={ref}
@@ -31,7 +31,7 @@ export const Textarea = forwardRef<
           {error}
         </span>
       )}
-    </label>
+    </div>
   );
 });
 

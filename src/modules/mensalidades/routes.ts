@@ -3,13 +3,7 @@ import { MensalidadesController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
 import { ensureRole } from "../../shared/middlewares/ensureRole";
 import { validateBody } from "../../shared/middlewares/validateBody";
-import {
-  mensalidadeSchema,
-  cancelarMensalidadeSchema,
-  estornarMensalidadeSchema,
-  pagarMensalidadeSchema,
-  registrarComprovanteSchema,
-} from "./validation";
+import { mensalidadeSchema } from "./validation";
 
 const mensalidadesRoutes = Router();
 
@@ -39,13 +33,6 @@ mensalidadesRoutes.get(
 );
 
 mensalidadesRoutes.get(
-  "/aluno/:alunoId/historico",
-  ensureAuthenticated,
-  ensureRole(["ADMIN", "RECEPCAO"]),
-  mensalidadesController.historicoAluno
-);
-
-mensalidadesRoutes.get(
   "/:id",
   ensureAuthenticated,
   ensureRole(["ADMIN", "RECEPCAO"]),
@@ -56,32 +43,13 @@ mensalidadesRoutes.patch(
   "/:id/pagar",
   ensureAuthenticated,
   ensureRole(["ADMIN"]),
-  validateBody(pagarMensalidadeSchema),
   mensalidadesController.pagar
 );
 
-mensalidadesRoutes.patch(
-  "/:id/cancelar",
-  ensureAuthenticated,
-  ensureRole(["ADMIN"]),
-  validateBody(cancelarMensalidadeSchema),
-  mensalidadesController.cancelar
-);
-
-mensalidadesRoutes.patch(
-  "/:id/estornar",
-  ensureAuthenticated,
-  ensureRole(["ADMIN"]),
-  validateBody(estornarMensalidadeSchema),
-  mensalidadesController.estornar
-);
-
-mensalidadesRoutes.post(
-  "/:id/comprovante",
-  ensureAuthenticated,
-  ensureRole(["ADMIN", "RECEPCAO"]),
-  validateBody(registrarComprovanteSchema),
-  mensalidadesController.registrarComprovante
-);
+//Migrado para financeiro
+// mensalidadesRoutes.get(
+//   "/inadimplentes",
+//   mensalidadesController.inadimplentes
+// );
 
 export { mensalidadesRoutes };

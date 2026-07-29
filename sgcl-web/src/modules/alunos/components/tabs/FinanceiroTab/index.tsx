@@ -10,8 +10,6 @@ const MAPA_BADGE = {
   PAGA: "PAGO",
   PENDENTE: "PENDENTE",
   VENCIDA: "VENCIDO",
-  CANCELADA: "CANCELADO",
-  ESTORNADA: "ESTORNADO",
 } as const;
 
 interface FinanceiroTabProps {
@@ -36,7 +34,7 @@ export function FinanceiroTab({ aluno }: FinanceiroTabProps) {
         {aluno.mensalidades.map((mensalidade) => (
           <div key={mensalidade.id} className="financeiro-tab-item">
             <span className="financeiro-tab-valor">
-              R$ {(mensalidade.valorFinal || mensalidade.valor).toFixed(2)}
+              R$ {mensalidade.valor.toFixed(2)}
             </span>
             <span className="financeiro-tab-vencimento">
               Vencimento: {new Date(mensalidade.vencimento).toLocaleDateString("pt-BR", { timeZone: "UTC" })}

@@ -1,13 +1,10 @@
 import { Request, Response } from "express";
+import { prisma } from "../../shared/database/prisma";
 import { CreateMensalidadeService } from "./services/CreateMensalidadeService";
 import { ListMensalidadesService } from "./services/ListMensalidadesService";
 import { GetMensalidadeService } from "./services/GetMensalidadeService";
 import { GetMensalidadesVencidasService } from "./services/GetMensalidadesVencidasService";
 import { PagarMensalidadeService } from "./services/PagarMensalidadeService";
-import { CancelarMensalidadeService } from "./services/CancelarMensalidadeService";
-import { EstornarMensalidadeService } from "./services/EstornarMensalidadeService";
-import { RegistrarComprovanteService } from "./services/RegistrarComprovanteService";
-import { GetHistoricoAlunoService } from "./services/GetHistoricoAlunoService";
 
 export class MensalidadesController {
 
@@ -15,18 +12,16 @@ export class MensalidadesController {
 
     const service =
       new CreateMensalidadeService();
-
-
+  
+  
     const mensalidade =
       await service.execute({
         ...req.body,
         valor: Number(req.body.valor),
-        alunoId: Number(req.body.alunoId),
-        unidadeIdUsuario: req.user.unidadeId,
-        usuarioId: req.user.id,
+        alunoId: Number(req.body.alunoId)
       });
-
-
+  
+  
     return res.status(201).json(mensalidade);
   }
 
@@ -34,7 +29,7 @@ export class MensalidadesController {
 
     const service =
       new ListMensalidadesService();
-
+  
     const mensalidades =
       await service.execute(req.user.unidadeId);
 
@@ -80,66 +75,27 @@ export class MensalidadesController {
     const mensalidade =
       await service.execute(
         Number(id),
-        req.user.unidadeId,
-        req.user.id,
-        req.body
+        req.user.unidadeId
       );
-
+  
     return res.json(mensalidade);
   }
 
-  async cancelar(req: Request, res: Response) {
-    const { id } = req.params;
+  //Inadinplentes **Este está em financeiro como indicador e aqui é uma lista
+  // async inadimplentes(req: Request, res: Response) {
 
-    const service = new CancelarMensalidadeService();
+  //   const mensalidades = await prisma.mensalidade.findMany({
+  //     where: {
+  //       pago: false,
+  //       vencimento: {
+  //         lt: new Date()
+  //       }
+  //     },
+  //     include: {
+  //       aluno: true
+  //     }
+  //   });
 
-    const mensalidade = await service.execute(
-      Number(id),
-      req.user.unidadeId,
-      req.user.id,
-      req.body.motivo
-    );
-
-    return res.json(mensalidade);
-  }
-
-  async estornar(req: Request, res: Response) {
-    const { id } = req.params;
-
-    const service = new EstornarMensalidadeService();
-
-    const mensalidade = await service.execute(
-      Number(id),
-      req.user.unidadeId,
-      req.user.id,
-      req.body.motivo
-    );
-
-    return res.json(mensalidade);
-  }
-
-  async registrarComprovante(req: Request, res: Response) {
-    const { id } = req.params;
-
-    const service = new RegistrarComprovanteService();
-
-    const mensalidade = await service.execute(
-      Number(id),
-      req.user.unidadeId,
-      req.user.id,
-      req.body.comprovanteUrl
-    );
-
-    return res.json(mensalidade);
-  }
-
-  async historicoAluno(req: Request, res: Response) {
-    const { alunoId } = req.params;
-
-    const service = new GetHistoricoAlunoService();
-
-    const historico = await service.execute(Number(alunoId), req.user.unidadeId);
-
-    return res.json(historico);
-  }
+  //   return res.json(mensalidades);
+  // }
 }

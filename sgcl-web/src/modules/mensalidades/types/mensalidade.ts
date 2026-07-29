@@ -1,9 +1,3 @@
-// Nomes iguais ao enum StatusMensalidade do backend. "VENCIDA" existe no
-// enum mas hoje nunca é gravado pelo backend — ele fica sempre "ABERTA"
-// mesmo depois do vencimento; "vencida" continua sendo calculado no
-// cliente (ver utils/status.ts), comparando vencimento com hoje.
-export type StatusMensalidadeBackend = "ABERTA" | "PAGA" | "VENCIDA" | "CANCELADA" | "ESTORNADA";
-
 export interface Mensalidade {
   id: number;
   alunoId: number;
@@ -13,31 +7,12 @@ export interface Mensalidade {
   pago: boolean;
   descricao?: string | null;
 
-  status: StatusMensalidadeBackend;
-  formaPagamentoId?: number | null;
-  valorOriginal: number;
-  desconto: number;
-  acrescimo: number;
-  multa: number;
-  juros: number;
-  valorFinal: number;
-  comprovanteUrl?: string | null;
-  canceladoEm?: string | null;
-  motivoCancelamento?: string | null;
-  estornadoEm?: string | null;
-  motivoEstorno?: string | null;
-
   // Relacionamentos
   aluno?: {
     id: number;
     nome: string;
     faixa?: string;
   };
-  formaPagamento?: {
-    id: number;
-    tipo: string;
-    nomePersonalizado?: string | null;
-  } | null;
 }
 
 export interface MensalidadeComAluno extends Mensalidade {
@@ -52,6 +27,4 @@ export enum StatusMensalidade {
   PENDENTE = "PENDENTE",
   VENCIDA = "VENCIDA",
   PAGA = "PAGA",
-  CANCELADA = "CANCELADA",
-  ESTORNADA = "ESTORNADA",
 }
