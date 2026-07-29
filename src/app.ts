@@ -27,6 +27,8 @@ import { unidadesRoutes } from "./modules/unidades/routes";
 import { arenasRoutes } from "./modules/arenas/routes";
 import { metasRoutes } from "./modules/metas/routes";
 import { eventosRoutes } from "./modules/eventos/routes";
+import { formasPagamentoRoutes } from "./modules/formasPagamento/routes";
+import { pagamentosRoutes } from "./modules/pagamentos/routes";
 
 const corsOrigin = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
@@ -77,6 +79,8 @@ app.use("/unidades", unidadesRoutes);
 app.use("/arenas", arenasRoutes);
 app.use("/metas", metasRoutes);
 app.use("/eventos", eventosRoutes);
+app.use("/formas-pagamento", formasPagamentoRoutes);
+app.use("/pagamentos", pagamentosRoutes);
 
 app.use("/auth", authRoutes);
 app.use(errorHandler);

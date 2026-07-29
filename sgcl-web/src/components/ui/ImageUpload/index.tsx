@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 
-import { UploadService } from "../../../shared/services/UploadService";
+import { UploadService, type PrefixoUpload } from "../../../shared/services/UploadService";
 import { getApiErrorMessage } from "../../../shared/utils/getApiErrorMessage";
 
 import "./styles.css";
@@ -9,9 +9,18 @@ import "./styles.css";
 interface ImageUploadProps {
   label: string;
   valorAtual?: string | null;
-  prefixo: "alunos" | "responsaveis" | "usuarios";
+  prefixo: PrefixoUpload;
   onChange?: (url: string | undefined) => void;
 }
+
+// "financeiro" também aceita PDF (comprovante de pagamento) — os demais
+// prefixos continuam sendo só foto de perfil.
+const ACCEPT_POR_PREFIXO: Record<PrefixoUpload, string> = {
+  alunos: "image/*",
+  responsaveis: "image/*",
+  usuarios: "image/*",
+  financeiro: "image/*,application/pdf",
+};
 
 export function ImageUpload({
   label,
@@ -20,6 +29,7 @@ export function ImageUpload({
   onChange,
 }: ImageUploadProps) {
   const [preview, setPreview] = useState<string>();
+  const [previewEhImagem, setPreviewEhImagem] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
 
@@ -36,6 +46,7 @@ export function ImageUpload({
 
         objectUrl = URL.createObjectURL(blob);
         setPreview(objectUrl);
+        setPreviewEhImagem(blob.type.startsWith("image/"));
       } catch {
         // preview é só cosmético — se falhar, mantém o placeholder
       }
@@ -61,6 +72,7 @@ export function ImageUpload({
     }
 
     setPreview(URL.createObjectURL(file));
+    setPreviewEhImagem(file.type.startsWith("image/"));
     setErro("");
 
     try {
@@ -68,7 +80,7 @@ export function ImageUpload({
       const { url } = await UploadService.enviarFoto(file, prefixo);
       onChange?.(url);
     } catch (error) {
-      setErro(getApiErrorMessage(error, "Erro ao enviar a imagem."));
+      setErro(getApiErrorMessage(error, "Erro ao enviar o arquivo."));
       onChange?.(undefined);
     } finally {
       setEnviando(false);
@@ -85,23 +97,33 @@ export function ImageUpload({
       <label className="image-upload-box">
 
         {preview ? (
-
-          <img
-            src={preview}
-            alt="Preview"
-          />
-
+          previewEhImagem ? (
+            <img
+              src={preview}
+              alt="Preview"
+            />
+          ) : (
+            <a
+              href={preview}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="image-upload-arquivo-link"
+            >
+              📄 Ver arquivo enviado
+            </a>
+          )
         ) : (
 
           <span>
-            {enviando ? "Enviando..." : "Clique para selecionar uma imagem"}
+            {enviando ? "Enviando..." : "Clique para selecionar um arquivo"}
           </span>
 
         )}
 
         <input
           type="file"
-          accept="image/*"
+          accept={ACCEPT_POR_PREFIXO[prefixo]}
           disabled={enviando}
           onChange={handleChange}
         />

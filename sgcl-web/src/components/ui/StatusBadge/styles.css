@@ -38,3 +38,13 @@
   background: rgba(220, 38, 38, .15);
   color: var(--danger);
 }
+
+.status-cancelado {
+  background: rgba(107, 114, 128, .15);
+  color: var(--text-muted, #6b7280);
+}
+
+.status-estornado {
+  background: rgba(217, 119, 6, .15);
+  color: var(--warning);
+}
