@@ -4,7 +4,9 @@ import { AppError } from "../../shared/errors/AppError";
 import { UploadFotoService } from "./services/UploadFotoService";
 import { GetFotoService } from "./services/GetFotoService";
 
-const PREFIXOS_PERMITIDOS = ["alunos", "responsaveis", "usuarios"] as const;
+// "financeiro" guarda comprovantes de pagamento (imagem ou PDF) — os
+// demais prefixos continuam sendo só foto de perfil.
+const PREFIXOS_PERMITIDOS = ["alunos", "responsaveis", "usuarios", "financeiro"] as const;
 
 export class UploadsController {
   async uploadFoto(req: Request, res: Response) {

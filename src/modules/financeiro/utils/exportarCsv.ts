@@ -1,0 +1,25 @@
+interface ColunaCsv<T> {
+  chave: keyof T;
+  rotulo: string;
+}
+
+function escaparCsv(valor: unknown): string {
+  if (valor === null || valor === undefined) return "";
+
+  const texto = valor instanceof Date ? valor.toLocaleDateString("pt-BR") : String(valor);
+
+  if (texto.includes(";") || texto.includes('"') || texto.includes("\n")) {
+    return `"${texto.replace(/"/g, '""')}"`;
+  }
+
+  return texto;
+}
+
+// Exportação simples, sem dependência nova (não há gerador de PDF
+// instalado no projeto) — devolve uma string CSV pronta pra download.
+export function gerarCsv<T extends Record<string, unknown>>(linhas: T[], colunas: ColunaCsv<T>[]): string {
+  const cabecalho = colunas.map((coluna) => escaparCsv(coluna.rotulo)).join(";");
+  const corpo = linhas.map((linha) => colunas.map((coluna) => escaparCsv(linha[coluna.chave])).join(";"));
+
+  return [cabecalho, ...corpo].join("\n");
+}

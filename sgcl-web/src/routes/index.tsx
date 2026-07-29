@@ -37,6 +37,8 @@ const Mensagens = lazy(() => import("../modules/mensagens/pages/Listar").then((m
 
 const Metas = lazy(() => import("../modules/metas/pages/Listar").then((m) => ({ default: m.Metas })));
 
+const FormasPagamento = lazy(() => import("../modules/formasPagamento/pages/Listar").then((m) => ({ default: m.FormasPagamento })));
+
 const Eventos = lazy(() => import("../modules/eventos/pages/Listar").then((m) => ({ default: m.Eventos })));
 const NovoEvento = lazy(() => import("../modules/eventos/pages/Novo").then((m) => ({ default: m.NovoEvento })));
 const DetalheEvento = lazy(() => import("../modules/eventos/pages/Detalhes").then((m) => ({ default: m.DetalheEvento })));
@@ -315,6 +317,15 @@ export function AppRoutes() {
           element={
             <PrivateRoute>
               <EditarEvento />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/financeiro/formas-pagamento"
+          element={
+            <PrivateRoute>
+              <FormasPagamento />
             </PrivateRoute>
           }
         />
