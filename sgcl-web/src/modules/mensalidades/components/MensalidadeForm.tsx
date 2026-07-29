@@ -10,6 +10,8 @@ import { FormGrid } from "../../../components/ui/FormGrid";
 import { FormGridItem } from "../../../components/ui/FormGridItem";
 import type { Aluno } from "../../alunos/types";
 import { AlunoService } from "../../alunos/services/AlunoService";
+import { FormaPagamentoService } from "../../formasPagamento/services/FormaPagamentoService";
+import { nomeFormaPagamento, type FormaPagamento } from "../../formasPagamento/types";
 import { mensalidadeSchema, type MensalidadeFormData } from "../schema/mensalidade.schema";
 interface MensalidadeFormProps {
   loading?: boolean;
@@ -23,6 +25,7 @@ export function MensalidadeForm({
 }: MensalidadeFormProps) {
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [carregandoAlunos, setCarregandoAlunos] = useState(true);
+  const [formasPagamento, setFormasPagamento] = useState<FormaPagamento[]>([]);
   const methods = useForm<MensalidadeFormData>({
     resolver: zodResolver(mensalidadeSchema),
     defaultValues: defaultValues || {
@@ -31,6 +34,11 @@ export function MensalidadeForm({
       vencimento: "",
       pago: false,
       descricao: "",
+      formaPagamentoId: "",
+      desconto: "",
+      acrescimo: "",
+      multa: "",
+      juros: "",
     },
   });
   const { register, handleSubmit, formState: { errors } } = methods;
@@ -44,6 +52,10 @@ export function MensalidadeForm({
       }
     }
     carregarAlunos();
+
+    FormaPagamentoService.listar()
+      .then((data) => setFormasPagamento(data.filter((f) => f.ativo)))
+      .catch(() => setFormasPagamento([]));
   }, []);
   return (
     <FormProvider {...methods}>
@@ -85,6 +97,31 @@ export function MensalidadeForm({
               type="date"
               {...register("dataPagamento")}
             />
+          </FormGridItem>
+          <FormGridItem span={2}>
+            <Select
+              label="Forma de Pagamento (opcional)"
+              options={[
+                { label: "Não informada", value: "" },
+                ...formasPagamento.map((forma) => ({
+                  label: nomeFormaPagamento(forma),
+                  value: String(forma.id),
+                })),
+              ]}
+              {...register("formaPagamentoId")}
+            />
+          </FormGridItem>
+          <FormGridItem>
+            <Input label="Desconto (R$)" type="number" step="0.01" min="0" placeholder="0,00" {...register("desconto")} />
+          </FormGridItem>
+          <FormGridItem>
+            <Input label="Acréscimo (R$)" type="number" step="0.01" min="0" placeholder="0,00" {...register("acrescimo")} />
+          </FormGridItem>
+          <FormGridItem>
+            <Input label="Multa por atraso (R$)" type="number" step="0.01" min="0" placeholder="0,00" {...register("multa")} />
+          </FormGridItem>
+          <FormGridItem>
+            <Input label="Juros (R$)" type="number" step="0.01" min="0" placeholder="0,00" {...register("juros")} />
           </FormGridItem>
           <FormGridItem span={2}>
             <Input

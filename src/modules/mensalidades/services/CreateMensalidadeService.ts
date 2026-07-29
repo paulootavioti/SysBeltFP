@@ -1,13 +1,25 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
+import { AuditLogService } from "../../../shared/services/AuditLogService";
 import { garantirSemMensalidadeNoMes } from "../utils/garantirSemMensalidadeNoMes";
+import { calcularValorFinal } from "../utils/calcularValorFinal";
 
 interface CreateMensalidadeDTO {
   valor: number;
   vencimento: string;
   alunoId: number;
   descricao?: string | null;
+  formaPagamentoId?: number | null;
+  desconto?: number | null;
+  acrescimo?: number | null;
+  multa?: number | null;
+  juros?: number | null;
+  unidadeIdUsuario: number | null;
+  usuarioId: number;
 }
+
+const auditLogService = new AuditLogService();
 
 export class CreateMensalidadeService {
 
@@ -15,7 +27,14 @@ export class CreateMensalidadeService {
     valor,
     vencimento,
     alunoId,
-    descricao
+    descricao,
+    formaPagamentoId,
+    desconto,
+    acrescimo,
+    multa,
+    juros,
+    unidadeIdUsuario,
+    usuarioId,
   }: CreateMensalidadeDTO) {
 
     await garantirSemMensalidadeNoMes(alunoId, vencimento);
@@ -29,6 +48,10 @@ export class CreateMensalidadeService {
       throw new AppError("Aluno não encontrado.");
     }
 
+    garantirAcessoUnidade(unidadeIdUsuario, aluno.unidadeId, "Aluno não encontrado.");
+
+    const valorFinal = calcularValorFinal({ valor, desconto, acrescimo, multa, juros });
+
     const mensalidade =
       await prisma.mensalidade.create({
         data: {
@@ -36,9 +59,25 @@ export class CreateMensalidadeService {
           valor,
           vencimento: new Date(vencimento),
           alunoId,
-          descricao: descricao?.trim() || "Mensalidade"
+          descricao: descricao?.trim() || "Mensalidade",
+          formaPagamentoId: formaPagamentoId ?? null,
+          valorOriginal: valor,
+          desconto: desconto ?? 0,
+          acrescimo: acrescimo ?? 0,
+          multa: multa ?? 0,
+          juros: juros ?? 0,
+          valorFinal,
         }
       });
+
+    await auditLogService.registrar({
+      unidadeId: aluno.unidadeId,
+      usuarioId,
+      entidade: "Mensalidade",
+      entidadeId: mensalidade.id,
+      operacao: "CRIACAO",
+      valoresDepois: mensalidade,
+    });
 
     return mensalidade;
   }

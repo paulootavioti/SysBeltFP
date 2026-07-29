@@ -13,13 +13,16 @@ export class GetMensalidadesVencidasService {
         take: LIMITE_PADRAO_LISTAGEM,
         where: {
           pago: false,
+          status: { notIn: ["CANCELADA", "ESTORNADA"] },
           vencimento: {
             lt: hoje
           },
           ...escopoUnidade(unidadeId)
         },
+        orderBy: { vencimento: "asc" },
         include: {
-          aluno: true
+          aluno: true,
+          formaPagamento: true,
         }
       });
 

@@ -10,7 +10,8 @@ export class GetMensalidadeService {
       await prisma.mensalidade.findUnique({
         where: { id },
         include: {
-          aluno: true
+          aluno: true,
+          formaPagamento: true,
         }
       });
 

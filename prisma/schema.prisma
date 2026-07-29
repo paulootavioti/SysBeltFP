@@ -18,6 +18,36 @@ enum AulaStatus {
   FINALIZADA
 }
 
+// O frontend hoje calcula um status equivalente no cliente
+// (mensalidades/utils/status.ts) usando o rótulo "PENDENTE" pra
+// "ainda não paga, dentro do prazo" — aqui esse mesmo estado se chama
+// ABERTA (nome mais preciso pro dado agora persistido no banco); o
+// frontend passa a mapear ABERTA -> "PENDENTE" na exibição, sem quebrar a
+// UI existente.
+enum StatusMensalidade {
+  ABERTA
+  PAGA
+  VENCIDA
+  CANCELADA
+  ESTORNADA
+}
+
+// Os 10 tipos pedidos pelo produto + OUTRO (forma configurável pelo
+// administrador, com nome livre em FormaPagamento.nomePersonalizado).
+enum TipoFormaPagamento {
+  PIX
+  PIX_RECORRENTE
+  CARTAO_CREDITO_VISTA
+  CARTAO_CREDITO_PARCELADO
+  CARTAO_CREDITO_RECORRENTE
+  CARTAO_DEBITO
+  TRANSFERENCIA
+  DINHEIRO
+  BOLETO
+  LINK_PAGAMENTO
+  OUTRO
+}
+
 model Unidade {
   id        Int      @id @default(autoincrement())
 
@@ -40,6 +70,8 @@ model Unidade {
   vinculosUsuarios UsuarioUnidade[]
   metas         Meta[]
   eventos       Evento[]
+  formasPagamento FormaPagamento[]
+  auditLogs     AuditLog[]
 
   createdAt DateTime @default(now())
 }
@@ -173,20 +205,90 @@ model Responsavel {
   updatedAt              DateTime @default(now()) @updatedAt
 }
 
+// forma de pagamento configurável por unidade — habilita/desabilita os
+// tipos suportados e guarda parâmetros específicos do gateway em
+// `configuracao` (ex.: dias de compensação do boleto). `nomePersonalizado`
+// só é usado quando `tipo === OUTRO`.
+model FormaPagamento {
+  id                 Int                @id @default(autoincrement())
+
+  unidadeId          Int
+  unidade            Unidade            @relation(fields: [unidadeId], references: [id])
+
+  tipo               TipoFormaPagamento
+  nomePersonalizado  String?
+  ativo              Boolean            @default(true)
+  configuracao       Json?
+
+  mensalidades       Mensalidade[]
+
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @default(now()) @updatedAt
+}
+
+// Auditoria genérica de alterações financeiras e contratuais — quem fez,
+// quando, o que mudou. Reaproveitada por qualquer módulo de escrita
+// sensível (hoje: Mensalidade; nas próximas fases: Contrato, Assinatura).
+model AuditLog {
+  id            Int      @id @default(autoincrement())
+
+  unidadeId     Int
+  unidade       Unidade  @relation(fields: [unidadeId], references: [id])
+
+  usuarioId     Int
+  usuario       Usuario  @relation(fields: [usuarioId], references: [id])
+
+  entidade      String   // ex.: "Mensalidade"
+  entidadeId    Int
+  operacao      String   // CRIACAO | ATUALIZACAO | CANCELAMENTO | ESTORNO | PAGAMENTO | EXCLUSAO
+
+  valoresAntes  Json?
+  valoresDepois Json?
+
+  createdAt     DateTime @default(now())
+
+  @@index([entidade, entidadeId])
+}
+
 model Mensalidade {
-  id             Int       @id @default(autoincrement())
+  id                  Int               @id @default(autoincrement())
 
-  unidadeId      Int
-  unidade        Unidade   @relation(fields: [unidadeId], references: [id])
+  unidadeId           Int
+  unidade             Unidade           @relation(fields: [unidadeId], references: [id])
 
-  valor          Float
-  vencimento     DateTime
-  dataPagamento  DateTime?
-  pago           Boolean   @default(false)
-  descricao      String?
+  valor               Float
+  vencimento          DateTime
+  dataPagamento       DateTime?
+  pago                Boolean           @default(false)
+  descricao           String?
 
-  alunoId        Int
-  aluno          Aluno     @relation(fields: [alunoId], references: [id])
+  status              StatusMensalidade @default(ABERTA)
+
+  formaPagamentoId    Int?
+  formaPagamento      FormaPagamento?   @relation(fields: [formaPagamentoId], references: [id])
+
+  // valor original informado no cadastro; desconto/acrescimo/multa/juros
+  // ajustam esse valor; valorFinal é o resultado já calculado e persistido
+  // (recalculado a cada atualização) — evita recalcular na leitura toda hora.
+  valorOriginal       Float             @default(0)
+  desconto            Float             @default(0)
+  acrescimo           Float             @default(0)
+  multa               Float             @default(0)
+  juros               Float             @default(0)
+  valorFinal          Float             @default(0)
+
+  comprovanteUrl      String?
+
+  dataGeracao         DateTime          @default(now())
+
+  canceladoEm         DateTime?
+  motivoCancelamento  String?
+
+  estornadoEm         DateTime?
+  motivoEstorno       String?
+
+  alunoId             Int
+  aluno               Aluno             @relation(fields: [alunoId], references: [id])
 }
 
 model Graduacao {
@@ -335,6 +437,7 @@ model Usuario {
   // mais de uma (só o SUPERADMIN monta essa lista); PROFESSOR sempre tem
   // exatamente uma.
   unidadesVinculadas UsuarioUnidade[]
+  auditLogs         AuditLog[]
 
   createdAt         DateTime @default(now())
 }
