@@ -48,6 +48,13 @@ enum TipoFormaPagamento {
   OUTRO
 }
 
+enum StatusAssinatura {
+  ATIVA
+  PAUSADA
+  CANCELADA
+  CONCLUIDA
+}
+
 model Unidade {
   id        Int      @id @default(autoincrement())
 
@@ -72,6 +79,7 @@ model Unidade {
   eventos       Evento[]
   formasPagamento FormaPagamento[]
   auditLogs     AuditLog[]
+  assinaturas   Assinatura[]
 
   createdAt DateTime @default(now())
 }
@@ -141,6 +149,7 @@ model Aluno {
 
   responsaveis      Responsavel[]
   mensalidades      Mensalidade[]
+  assinaturas       Assinatura[]
   graduacoes        Graduacao[]
   aulas             AulaAluno[]
   competicoes       CompeticaoAluno[]
@@ -221,6 +230,7 @@ model FormaPagamento {
   configuracao       Json?
 
   mensalidades       Mensalidade[]
+  assinaturas        Assinatura[]
 
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @default(now()) @updatedAt
@@ -287,8 +297,63 @@ model Mensalidade {
   estornadoEm         DateTime?
   motivoEstorno       String?
 
+  // preenchido só quando a mensalidade foi gerada automaticamente por uma
+  // cobrança recorrente (ver GerarCobrancasRecorrentesService) — nulo pra
+  // mensalidades avulsas, cadastradas manualmente.
+  assinaturaId        Int?
+  assinatura          Assinatura?       @relation(fields: [assinaturaId], references: [id])
+
   alunoId             Int
   aluno               Aluno             @relation(fields: [alunoId], references: [id])
+}
+
+// Configuração de cobrança recorrente de um aluno — o motor de geração
+// automática (GerarCobrancasRecorrentesService) cria, periodicamente, a
+// Mensalidade do mês seguinte pra cada assinatura ATIVA, respeitando
+// dataFim/numeroParcelas. O desconto por pontualidade é aplicado só no
+// momento do pagamento (ver PagarMensalidadeService), não na geração.
+model Assinatura {
+  id                    Int               @id @default(autoincrement())
+
+  unidadeId             Int
+  unidade               Unidade           @relation(fields: [unidadeId], references: [id])
+
+  alunoId               Int
+  aluno                 Aluno             @relation(fields: [alunoId], references: [id])
+
+  planoId               Int?
+  plano                 Plano?            @relation(fields: [planoId], references: [id])
+
+  formaPagamentoId      Int?
+  formaPagamento        FormaPagamento?   @relation(fields: [formaPagamentoId], references: [id])
+
+  valor                 Float
+  diaVencimento         Int
+
+  dataInicio            DateTime
+  dataFim                DateTime?
+
+  // quando indeterminado=false, a geração para sozinha ao atingir
+  // numeroParcelas (parcelasGeradas conta quantas mensalidades já saíram
+  // desta assinatura); quando true, numeroParcelas é ignorado.
+  indeterminado          Boolean           @default(true)
+  numeroParcelas         Int?
+  parcelasGeradas        Int               @default(0)
+
+  desconto               Float             @default(0)
+  acrescimo              Float             @default(0)
+  multa                  Float             @default(0)
+  juros                  Float             @default(0)
+  descontoPontualidade   Float             @default(0)
+
+  status                 StatusAssinatura  @default(ATIVA)
+
+  ultimaCobrancaGeradaEm DateTime?
+
+  mensalidades           Mensalidade[]
+
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @default(now()) @updatedAt
 }
 
 model Graduacao {
@@ -487,6 +552,7 @@ model Plano {
   ativo         Boolean  @default(true)
 
   alunos        Aluno[]
+  assinaturas   Assinatura[]
 
   createdAt     DateTime @default(now())
 }

@@ -27,6 +27,10 @@ export interface Mensalidade {
   estornadoEm?: string | null;
   motivoEstorno?: string | null;
 
+  // preenchido só quando a mensalidade foi gerada automaticamente por uma
+  // assinatura (cobrança recorrente) — nulo pra mensalidades avulsas.
+  assinaturaId?: number | null;
+
   // Relacionamentos
   aluno?: {
     id: number;

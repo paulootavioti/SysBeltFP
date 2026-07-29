@@ -44,6 +44,11 @@
 .mensalidade-detalhe-comprovante {
   margin-bottom: var(--space-4);
 }
+.mensalidade-detalhe-recorrente {
+  color: var(--text-light);
+  font-size: var(--font-sm);
+  margin-bottom: var(--space-3);
+}
 .mensalidade-detalhe-id {
   color: var(--text-light);
   font-size: var(--font-sm);

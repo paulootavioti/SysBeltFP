@@ -1,11 +1,10 @@
 import { prisma } from "../../../shared/database/prisma";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { montarWhereMensalidade, type FiltrosFinanceiro } from "../utils/filtros";
 
 export interface DashboardFinanceiro {
   receitaPrevista: number;
   receitaRecebida: number;
-  // Cobrança recorrente é Fase 2 (Assinatura) — fica zerada até lá, sem
-  // fingir um dado que o sistema ainda não calcula de verdade.
   receitaRecorrente: number;
   receitaPorUnidade: { unidadeId: number; unidade: string; valor: number }[];
   receitaPorProfessor: { professorId: number; professor: string; valor: number }[];
@@ -94,10 +93,23 @@ export class GetDashboardFinanceiroService {
       select: { id: true, valorFinal: true, vencimento: true, aluno: { select: { nome: true } } },
     });
 
+    const whereUnidadeAssinatura = {
+      ...escopoUnidade(unidadeId),
+      ...(unidadeId === null && filtros.unidadeId ? { unidadeId: filtros.unidadeId } : {}),
+    };
+
+    const assinaturasAtivas = await prisma.assinatura.findMany({
+      where: { ...whereUnidadeAssinatura, status: "ATIVA" },
+      select: { valor: true },
+    });
+
+    const cobrancasRecorrentesAtivas = assinaturasAtivas.length;
+    const receitaRecorrente = assinaturasAtivas.reduce((soma, a) => soma + a.valor, 0);
+
     return {
       receitaPrevista,
       receitaRecebida,
-      receitaRecorrente: 0,
+      receitaRecorrente,
       receitaPorUnidade: Array.from(porUnidade.entries()).map(([id, dados]) => ({
         unidadeId: id,
         unidade: dados.unidade,
@@ -112,7 +124,7 @@ export class GetDashboardFinanceiroService {
       taxaInadimplencia,
       mensalidadesVencidas: vencidasCount,
       mensalidadesPagas: pagas.length,
-      cobrancasRecorrentesAtivas: 0,
+      cobrancasRecorrentesAtivas,
       proximosVencimentos: proximosVencimentos.map((m) => ({
         id: m.id,
         aluno: m.aluno.nome,

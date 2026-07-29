@@ -38,6 +38,7 @@ const Mensagens = lazy(() => import("../modules/mensagens/pages/Listar").then((m
 const Metas = lazy(() => import("../modules/metas/pages/Listar").then((m) => ({ default: m.Metas })));
 
 const FormasPagamento = lazy(() => import("../modules/formasPagamento/pages/Listar").then((m) => ({ default: m.FormasPagamento })));
+const Assinaturas = lazy(() => import("../modules/assinaturas/pages/Listar").then((m) => ({ default: m.Assinaturas })));
 
 const Eventos = lazy(() => import("../modules/eventos/pages/Listar").then((m) => ({ default: m.Eventos })));
 const NovoEvento = lazy(() => import("../modules/eventos/pages/Novo").then((m) => ({ default: m.NovoEvento })));
@@ -326,6 +327,15 @@ export function AppRoutes() {
           element={
             <PrivateRoute>
               <FormasPagamento />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/assinaturas"
+          element={
+            <PrivateRoute>
+              <Assinaturas />
             </PrivateRoute>
           }
         />
