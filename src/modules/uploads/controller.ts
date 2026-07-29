@@ -4,9 +4,10 @@ import { AppError } from "../../shared/errors/AppError";
 import { UploadFotoService } from "./services/UploadFotoService";
 import { GetFotoService } from "./services/GetFotoService";
 
-// "financeiro" guarda comprovantes de pagamento (imagem ou PDF) — os
-// demais prefixos continuam sendo só foto de perfil.
-const PREFIXOS_PERMITIDOS = ["alunos", "responsaveis", "usuarios", "financeiro"] as const;
+// "financeiro" guarda comprovantes de pagamento e "contratos" guarda o
+// contrato assinado (imagem ou PDF, em ambos) — os demais prefixos
+// continuam sendo só foto de perfil.
+const PREFIXOS_PERMITIDOS = ["alunos", "responsaveis", "usuarios", "financeiro", "contratos"] as const;
 
 export class UploadsController {
   async uploadFoto(req: Request, res: Response) {

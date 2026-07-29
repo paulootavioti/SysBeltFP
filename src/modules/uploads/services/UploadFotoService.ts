@@ -5,13 +5,15 @@ import { getFotosStore } from "./blobStore";
 
 const TIPOS_IMAGEM = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-// comprovantes de pagamento (prefixo "financeiro") também aceitam PDF —
-// os demais prefixos continuam só imagem de perfil.
+// comprovantes de pagamento (prefixo "financeiro") e contrato assinado
+// (prefixo "contratos") também aceitam PDF — os demais prefixos
+// continuam só imagem de perfil.
 const TIPOS_PERMITIDOS_POR_PREFIXO: Record<string, string[]> = {
   alunos: TIPOS_IMAGEM,
   responsaveis: TIPOS_IMAGEM,
   usuarios: TIPOS_IMAGEM,
   financeiro: [...TIPOS_IMAGEM, "application/pdf"],
+  contratos: [...TIPOS_IMAGEM, "application/pdf"],
 };
 
 const EXTENSAO_POR_TIPO: Record<string, string> = {
@@ -25,7 +27,7 @@ const EXTENSAO_POR_TIPO: Record<string, string> = {
 interface UploadFotoDTO {
   buffer: Buffer;
   mimetype: string;
-  prefixo: "alunos" | "responsaveis" | "usuarios" | "financeiro";
+  prefixo: "alunos" | "responsaveis" | "usuarios" | "financeiro" | "contratos";
 }
 
 export class UploadFotoService {
@@ -34,7 +36,7 @@ export class UploadFotoService {
 
     if (!tiposPermitidos.includes(mimetype)) {
       throw new AppError(
-        prefixo === "financeiro"
+        prefixo === "financeiro" || prefixo === "contratos"
           ? "Formato não suportado. Envie JPEG, PNG, WEBP, GIF ou PDF."
           : "Formato de imagem não suportado. Envie JPEG, PNG, WEBP ou GIF."
       );

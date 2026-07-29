@@ -1,0 +1,66 @@
+.contrato-detalhe-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.contrato-detalhe-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.contrato-detalhe-header h2 {
+  margin: 0;
+  color: var(--text);
+}
+
+.contrato-detalhe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.contrato-detalhe-grid p {
+  margin: 0 0 4px;
+  color: var(--text-light);
+  font-size: var(--font-sm);
+}
+
+.contrato-detalhe-grid strong {
+  color: var(--text);
+}
+
+.contrato-detalhe-motivo {
+  color: var(--text-light);
+  font-size: var(--font-sm);
+  margin-bottom: var(--space-3);
+}
+
+.contrato-detalhe-renovacao {
+  color: var(--text-light);
+  font-size: var(--font-sm);
+  margin-bottom: var(--space-3);
+}
+
+.contrato-detalhe-conteudo {
+  white-space: pre-wrap;
+  background: var(--bg, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  font-size: var(--font-sm);
+  line-height: 1.6;
+  margin-bottom: var(--space-4);
+}
+
+.contrato-detalhe-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
