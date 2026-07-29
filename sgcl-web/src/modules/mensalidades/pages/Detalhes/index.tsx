@@ -199,6 +199,11 @@ export function DetalheMensalidade() {
             />
           </div>
         )}
+        {mensalidade.assinaturaId && (
+          <p className="mensalidade-detalhe-recorrente">
+            🔁 Gerada automaticamente pela assinatura recorrente #{mensalidade.assinaturaId}
+          </p>
+        )}
         <p className="mensalidade-detalhe-id">ID da Mensalidade: {mensalidade.id}</p>
         <div className="mensalidade-detalhe-acoes">
           {!mensalidade.pago && status !== "PAGA" && status !== "CANCELADA" && status !== "ESTORNADA" && (

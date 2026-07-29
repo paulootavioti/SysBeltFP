@@ -2,6 +2,7 @@ import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
+import { calcularValorFinal } from "../utils/calcularValorFinal";
 
 const auditLogService = new AuditLogService();
 
@@ -13,7 +14,10 @@ export class PagarMensalidadeService {
 
   async execute(id: number, unidadeId: number | null, usuarioId: number, dados: PagarMensalidadeDTO = {}) {
 
-    const mensalidadeExistente = await prisma.mensalidade.findUnique({ where: { id } });
+    const mensalidadeExistente = await prisma.mensalidade.findUnique({
+      where: { id },
+      include: { assinatura: true },
+    });
 
     if (!mensalidadeExistente) {
       throw new AppError("Mensalidade não encontrada.", 404);
@@ -25,6 +29,25 @@ export class PagarMensalidadeService {
       throw new AppError("Não é possível marcar como paga uma mensalidade cancelada ou estornada.");
     }
 
+    const agora = new Date();
+
+    // Desconto por pontualidade: só se a mensalidade veio de uma assinatura
+    // com esse benefício configurado, e o pagamento acontece até o
+    // vencimento (inclusive) — aplicado só agora, no momento do pagamento,
+    // nunca na geração da cobrança.
+    const pagouEmDia = agora <= mensalidadeExistente.vencimento;
+    const descontoPontualidade =
+      mensalidadeExistente.assinatura && pagouEmDia ? mensalidadeExistente.assinatura.descontoPontualidade : 0;
+
+    const descontoTotal = mensalidadeExistente.desconto + descontoPontualidade;
+    const valorFinal = calcularValorFinal({
+      valor: mensalidadeExistente.valorOriginal || mensalidadeExistente.valor,
+      desconto: descontoTotal,
+      acrescimo: mensalidadeExistente.acrescimo,
+      multa: mensalidadeExistente.multa,
+      juros: mensalidadeExistente.juros,
+    });
+
     const mensalidade =
       await prisma.mensalidade.update({
         where: {
@@ -33,8 +56,10 @@ export class PagarMensalidadeService {
         data: {
           pago: true,
           status: "PAGA",
-          dataPagamento: new Date(),
+          dataPagamento: agora,
           formaPagamentoId: dados.formaPagamentoId ?? mensalidadeExistente.formaPagamentoId,
+          desconto: descontoTotal,
+          valorFinal,
         }
       });
 
