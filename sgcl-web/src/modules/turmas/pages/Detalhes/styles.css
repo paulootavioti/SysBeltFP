@@ -14,3 +14,9 @@
   text-align: right;
   margin-bottom: var(--space-4);
 }
+
+.turma-detalhe-vincular-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

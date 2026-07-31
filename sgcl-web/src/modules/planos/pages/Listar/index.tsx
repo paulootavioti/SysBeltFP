@@ -8,6 +8,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
 import { Modal } from "../../../../components/ui/Modal";
+import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 import { useToast } from "../../../../contexts/toast/useToast";
 import { usePlanos } from "../../hooks/usePlanos";
 import { PlanoService } from "../../services/PlanoService";
@@ -23,6 +24,8 @@ export function Planos() {
   const [modalAberto, setModalAberto] = useState(false);
   const [planoEditando, setPlanoEditando] = useState<Plano | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [planoParaInativar, setPlanoParaInativar] = useState<Plano | null>(null);
+  const [alterandoStatus, setAlterandoStatus] = useState(false);
 
   function handleNovoPlano() {
     setPlanoEditando(null);
@@ -60,11 +63,15 @@ export function Planos() {
 
   async function handleAlterarStatus(id: number) {
     try {
+      setAlterandoStatus(true);
       setErro("");
       await PlanoService.alterarStatus(id);
       await carregarPlanos();
+      setPlanoParaInativar(null);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao alterar status do plano."));
+    } finally {
+      setAlterandoStatus(false);
     }
   }
 
@@ -94,7 +101,7 @@ export function Planos() {
             type="button"
             size="sm"
             variant={plano.ativo ? "danger" : "primary"}
-            onClick={() => handleAlterarStatus(plano.id)}
+            onClick={() => (plano.ativo ? setPlanoParaInativar(plano) : handleAlterarStatus(plano.id))}
           >
             {plano.ativo ? "Inativar" : "Ativar"}
           </Button>
@@ -135,6 +142,16 @@ export function Planos() {
           onSubmit={handleSalvarPlano}
         />
       </Modal>
+
+      <ConfirmDialog
+        open={planoParaInativar !== null}
+        title="Inativar plano"
+        message={`Inativar o plano "${planoParaInativar?.nome}"? Ele deixa de aparecer para novas matrículas, mas contratos e mensalidades já vinculados a ele não são afetados retroativamente.`}
+        confirmLabel="Inativar"
+        loading={alterandoStatus}
+        onConfirm={() => planoParaInativar && handleAlterarStatus(planoParaInativar.id)}
+        onCancel={() => setPlanoParaInativar(null)}
+      />
     </Layout>
   );
 }

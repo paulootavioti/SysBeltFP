@@ -35,8 +35,18 @@
 }
 
 .alunos-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
   margin-top: var(--space-4);
-  max-width: 420px;
+}
+
+.alunos-search > .input-wrapper {
+  flex: 2 1 260px;
+}
+
+.alunos-search > .select-wrapper {
+  flex: 1 1 160px;
 }
 
 .alunos-actions {

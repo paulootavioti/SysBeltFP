@@ -5,6 +5,16 @@ export interface Competicao {
   local: string;
 }
 
+export const RESULTADOS_COMPETICAO = [
+  "Ouro",
+  "Prata",
+  "Bronze",
+  "Não classificado",
+  "Desclassificado",
+] as const;
+
+export type ResultadoCompeticao = (typeof RESULTADOS_COMPETICAO)[number];
+
 export interface Atleta {
   id: number;
   competicaoId: number;

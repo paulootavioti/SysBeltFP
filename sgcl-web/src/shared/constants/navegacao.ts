@@ -156,7 +156,7 @@ export const NAV_TREE: NavEntry[] = [
     label: "Configurações",
     icon: LuSettings,
     items: [
-      item("/unidades", "Arenas", LuDoorOpen),
+      item("/arenas", "Arenas", LuDoorOpen),
       item("/usuarios", "Usuários", LuUserCog),
     ],
   },

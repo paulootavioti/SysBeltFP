@@ -7,6 +7,7 @@ import { Loading } from "../../../../components/ui/Loading";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Modal } from "../../../../components/ui/Modal";
+import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 import { DashboardGoals } from "../../../dashboard/components/DashboardGoals";
 
 import { useMetas } from "../../hooks/useMetas";
@@ -25,6 +26,7 @@ export function Metas() {
   const [metaEmEdicao, setMetaEmEdicao] = useState<MetaDashboard | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [excluindoId, setExcluindoId] = useState<number | null>(null);
+  const [metaParaExcluir, setMetaParaExcluir] = useState<MetaDashboard | null>(null);
 
   function abrirCriacao() {
     setMetaEmEdicao(null);
@@ -56,16 +58,15 @@ export function Metas() {
     }
   }
 
-  async function handleExcluir(meta: MetaDashboard) {
-    if (!window.confirm(`Excluir a meta "${meta.nome}"? Essa ação não pode ser desfeita.`)) {
-      return;
-    }
+  async function confirmarExclusaoMeta() {
+    if (!metaParaExcluir) return;
 
     try {
-      setExcluindoId(meta.id);
+      setExcluindoId(metaParaExcluir.id);
       setErro("");
-      await MetaService.excluir(meta.id);
+      await MetaService.excluir(metaParaExcluir.id);
       await carregarMetas();
+      setMetaParaExcluir(null);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao excluir a meta."));
     } finally {
@@ -111,7 +112,7 @@ export function Metas() {
                 variant="danger"
                 size="sm"
                 disabled={excluindoId === meta.id}
-                onClick={() => handleExcluir(meta)}
+                onClick={() => setMetaParaExcluir(meta)}
               >
                 {excluindoId === meta.id ? "Excluindo..." : "Excluir"}
               </Button>
@@ -127,6 +128,16 @@ export function Metas() {
       >
         <MetaForm loading={salvando} valoresIniciais={metaEmEdicao ?? undefined} onSubmit={handleSalvar} />
       </Modal>
+
+      <ConfirmDialog
+        open={metaParaExcluir !== null}
+        title="Excluir meta"
+        message={`Excluir a meta "${metaParaExcluir?.nome}"? Essa ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        loading={excluindoId === metaParaExcluir?.id}
+        onConfirm={confirmarExclusaoMeta}
+        onCancel={() => setMetaParaExcluir(null)}
+      />
     </Layout>
   );
 }

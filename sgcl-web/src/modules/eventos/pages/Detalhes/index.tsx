@@ -99,6 +99,13 @@ export function DetalheEvento() {
             />
             {evento.investimento != null && <Card titulo="Investimento" valor={formatarMoeda(evento.investimento)} />}
             {evento.receitaGerada != null && <Card titulo="Receita Gerada" valor={formatarMoeda(evento.receitaGerada)} />}
+            {evento.investimento != null && evento.receitaGerada != null && (
+              <Card titulo="Saldo">
+                <h2 className={`evento-detalhe-saldo ${evento.receitaGerada - evento.investimento >= 0 ? "evento-detalhe-saldo-positivo" : "evento-detalhe-saldo-negativo"}`}>
+                  {formatarMoeda(evento.receitaGerada - evento.investimento)}
+                </h2>
+              </Card>
+            )}
           </div>
         </>
       )}

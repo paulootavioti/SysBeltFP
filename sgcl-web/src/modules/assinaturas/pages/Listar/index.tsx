@@ -8,6 +8,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { Badge } from "../../../../components/ui/Badge";
 import { Modal } from "../../../../components/ui/Modal";
+import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 import { useToast } from "../../../../contexts/toast/useToast";
 import { useAuth } from "../../../../contexts/useAuth";
 
@@ -37,6 +38,7 @@ export function Assinaturas() {
   const [assinaturaEditando, setAssinaturaEditando] = useState<Assinatura | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [gerando, setGerando] = useState(false);
+  const [confirmandoGeracao, setConfirmandoGeracao] = useState(false);
 
   function handleNovaAssinatura() {
     setAssinaturaEditando(null);
@@ -91,6 +93,7 @@ export function Assinaturas() {
         `${resultado.geradas} cobrança(s) gerada(s). ${resultado.ignoradasPorDuplicidade} já existiam este mês. ${resultado.concluidas} assinatura(s) concluída(s).`
       );
       await carregarAssinaturas();
+      setConfirmandoGeracao(false);
     } catch (error) {
       const mensagem = getApiErrorMessage(error, "Erro ao gerar cobranças.");
       setErro(mensagem);
@@ -151,7 +154,13 @@ export function Assinaturas() {
 
       <div className="assinaturas-acoes">
         {ehAdmin && (
-          <Button type="button" variant="secondary" disabled={gerando} onClick={handleGerarCobrancas}>
+          <Button
+            type="button"
+            variant="secondary"
+            className="botao-acao-aviso"
+            disabled={gerando}
+            onClick={() => setConfirmandoGeracao(true)}
+          >
             {gerando ? "Gerando..." : "Gerar cobranças agora"}
           </Button>
         )}
@@ -190,6 +199,17 @@ export function Assinaturas() {
           onSubmit={handleSalvarAssinatura}
         />
       </Modal>
+
+      <ConfirmDialog
+        open={confirmandoGeracao}
+        title="Gerar cobranças agora"
+        message="Isso vai gerar a mensalidade do mês corrente para cada assinatura ativa que ainda não tem cobrança gerada neste ciclo. Assinaturas que já têm a cobrança do mês são ignoradas. Deseja continuar?"
+        confirmLabel={gerando ? "Gerando..." : "Gerar cobranças"}
+        variant="primary"
+        loading={gerando}
+        onConfirm={handleGerarCobrancas}
+        onCancel={() => setConfirmandoGeracao(false)}
+      />
     </Layout>
   );
 }

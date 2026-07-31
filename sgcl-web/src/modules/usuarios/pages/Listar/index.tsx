@@ -8,6 +8,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
 import { Modal } from "../../../../components/ui/Modal";
+import { Select } from "../../../../components/ui/Select";
 import { Tooltip } from "../../../../components/ui/Tooltip";
 import { useUsuarios } from "../../hooks/useUsuarios";
 import { UsuarioService } from "../../services/UsuarioService";
@@ -16,6 +17,13 @@ import { UsuarioForm } from "../../components/UsuarioForm";
 import type { Usuario } from "../../types/usuario";
 import type { UsuarioUpdateFormData } from "../../schema/usuario.schema";
 import "./styles.css";
+
+const OPCOES_PERFIL = [
+  { value: "ADMIN", label: "Admin" },
+  { value: "PROFESSOR", label: "Professor" },
+  { value: "RECEPCAO", label: "Recepção" },
+];
+
 export function Usuarios() {
   const { usuarios, loading, erro, setErro, carregarUsuarios } = useUsuarios();
   const [modalAberto, setModalAberto] = useState(false);
@@ -105,15 +113,15 @@ export function Usuarios() {
         usuario.perfil === "SUPERADMIN" ? (
           <span>Superadmin</span>
         ) : (
-          <select
+          <Select
             value={usuario.perfil}
-            onChange={(e) => handleAlterarPerfil(usuario.id, e.target.value)}
+            options={OPCOES_PERFIL}
+            onChange={(e) => {
+              if (!e.target.value) return;
+              handleAlterarPerfil(usuario.id, e.target.value);
+            }}
             className="usuarios-perfil-select"
-          >
-            <option value="ADMIN">Admin</option>
-            <option value="PROFESSOR">Professor</option>
-            <option value="RECEPCAO">Recepção</option>
-          </select>
+          />
         ),
     },
     {

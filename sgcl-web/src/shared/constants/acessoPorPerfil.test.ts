@@ -26,10 +26,10 @@ describe("perfilTemAcesso", () => {
     expect(perfilTemAcesso("RECEPCAO", "/planejamento")).toBe(false);
   });
 
-  it("PROFESSOR não tem acesso a Relatórios, Mensagens nem Unidades/Arenas", () => {
+  it("PROFESSOR não tem acesso a Relatórios, Mensagens nem Arenas", () => {
     expect(perfilTemAcesso("PROFESSOR", "/relatorios")).toBe(false);
     expect(perfilTemAcesso("PROFESSOR", "/mensagens")).toBe(false);
-    expect(perfilTemAcesso("PROFESSOR", "/unidades")).toBe(false);
+    expect(perfilTemAcesso("PROFESSOR", "/arenas")).toBe(false);
   });
 
   it("todos os perfis têm acesso a Alunos, inclusive sub-rotas", () => {

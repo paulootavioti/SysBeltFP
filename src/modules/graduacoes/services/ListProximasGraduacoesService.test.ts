@@ -80,6 +80,40 @@ describe("ListProximasGraduacoesService", () => {
     expect(resultado).toHaveLength(0);
   });
 
+  it("com apenasElegiveis=false, retorna também alunos não aptos com o progresso calculado", async () => {
+    await criarAlunoComPresencas({
+      nome: "TESTE_PROXGRAD_ALUNO_5B",
+      idade: 10,
+      faixa: "Branca",
+      presencas: 5,
+    });
+
+    const resultado = await service.execute(unidadeId, false);
+
+    expect(resultado).toHaveLength(1);
+    const aluno = resultado[0];
+    expect(aluno.aptoGraduacao).toBe(false);
+    expect(aluno.presencas).toBe(5);
+    expect(aluno.grauAtual).toBe(0);
+    expect(aluno.faltamParaProximoGrau).toBe(3);
+  });
+
+  it("com apenasElegiveis=false, faltamParaProximoGrau é 0 quando as presenças batem num múltiplo de 8", async () => {
+    await criarAlunoComPresencas({
+      nome: "TESTE_PROXGRAD_ALUNO_16",
+      idade: 10,
+      faixa: "Branca",
+      presencas: 16,
+    });
+
+    const resultado = await service.execute(unidadeId, false);
+
+    expect(resultado).toHaveLength(1);
+    const aluno = resultado[0];
+    expect(aluno.grauAtual).toBe(2);
+    expect(aluno.faltamParaProximoGrau).toBe(0);
+  });
+
   it("próximaFaixa é null quando o aluno já está na última faixa da trilha (Preta, adulto)", async () => {
     await criarAlunoComPresencas({
       nome: "TESTE_PROXGRAD_ALUNO_PRETA",

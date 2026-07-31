@@ -5,6 +5,9 @@
   box-shadow: var(--shadow);
   padding: var(--space-3);
 }
+.aluno-elegivel-card-pendente {
+  border-color: var(--border);
+}
 .aluno-elegivel-header {
   display: flex;
   align-items: flex-start;

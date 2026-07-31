@@ -15,13 +15,14 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 export function Select({
   label,
   options,
+  className,
   ...props
 }: SelectProps) {
   return (
     <label className="select-wrapper">
       {label && <span>{label}</span>}
 
-      <select className="select" {...props}>
+      <select className={`select${className ? ` ${className}` : ""}`} {...props}>
         <option value="">Selecione</option>
 
         {options.map((option) => (

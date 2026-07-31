@@ -6,6 +6,7 @@ import { PageHeader } from "../../../../components/layout/PageHeader";
 
 import { Button } from "../../../../components/ui/Button";
 import { Input } from "../../../../components/ui/Input";
+import { Select } from "../../../../components/ui/Select";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Table } from "../../../../components/ui/Table";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
@@ -44,7 +45,19 @@ export function Alunos() {
 
 
   const [busca, setBusca] = useState("");
-  
+  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroTurma, setFiltroTurma] = useState("");
+
+  const opcoesTurma = Array.from(
+    new Map(
+      alunos
+        .filter((aluno) => aluno.turma)
+        .map((aluno) => [aluno.turma!.id, aluno.turma!.nome])
+    ).entries()
+  )
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .map(([id, nome]) => ({ value: String(id), label: nome }));
+
   async function alterarStatus(id: number) {
     try {
       setErro("");
@@ -64,18 +77,24 @@ export function Alunos() {
 
   const alunosFiltrados = alunos.filter((aluno) => {
     const termo = busca.toLowerCase();
-    return (
+    const bateBusca =
       aluno.nome.toLowerCase().includes(termo) ||
-      (aluno.apelido ?? "").toLowerCase().includes(termo)
-    );
+      (aluno.apelido ?? "").toLowerCase().includes(termo);
+
+    const bateStatus =
+      filtroStatus === "" || (aluno.ativo ? "ATIVO" : "INATIVO") === filtroStatus;
+
+    const bateTurma = filtroTurma === "" || String(aluno.turma?.id ?? "") === filtroTurma;
+
+    return bateBusca && bateStatus && bateTurma;
   });
 
   // pro PROFESSOR o backend já devolve esse recorte (mesmo endpoint) —
   // o cast só ajusta o tipo do lado do cliente pra bater com o que veio.
   const alunosBasicosFiltrados = alunosFiltrados as unknown as AlunoBasico[];
 
-  const paginacaoCompleta = usePaginacaoCliente(alunosFiltrados, 15, [busca]);
-  const paginacaoBasica = usePaginacaoCliente(alunosBasicosFiltrados, 15, [busca]);
+  const paginacaoCompleta = usePaginacaoCliente(alunosFiltrados, 15, [busca, filtroStatus, filtroTurma]);
+  const paginacaoBasica = usePaginacaoCliente(alunosBasicosFiltrados, 15, [busca, filtroTurma]);
 
   const columnsBasicas = [
     {
@@ -221,6 +240,25 @@ export function Alunos() {
           placeholder="Digite o nome..."
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
+        />
+
+        {!ehProfessor && (
+          <Select
+            label="Status"
+            options={[
+              { value: "ATIVO", label: "Ativo" },
+              { value: "INATIVO", label: "Inativo" },
+            ]}
+            value={filtroStatus}
+            onChange={(e) => setFiltroStatus(e.target.value)}
+          />
+        )}
+
+        <Select
+          label="Turma"
+          options={opcoesTurma}
+          value={filtroTurma}
+          onChange={(e) => setFiltroTurma(e.target.value)}
         />
       </div>
 

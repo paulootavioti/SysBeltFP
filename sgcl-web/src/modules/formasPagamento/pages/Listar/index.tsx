@@ -8,6 +8,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
 import { Modal } from "../../../../components/ui/Modal";
+import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 import { useToast } from "../../../../contexts/toast/useToast";
 import { useFormasPagamento } from "../../hooks/useFormasPagamento";
 import { FormaPagamentoService } from "../../services/FormaPagamentoService";
@@ -23,6 +24,8 @@ export function FormasPagamento() {
   const [modalAberto, setModalAberto] = useState(false);
   const [formaEditando, setFormaEditando] = useState<FormaPagamento | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [formaParaInativar, setFormaParaInativar] = useState<FormaPagamento | null>(null);
+  const [alterandoStatus, setAlterandoStatus] = useState(false);
 
   function handleNovaForma() {
     setFormaEditando(null);
@@ -60,11 +63,15 @@ export function FormasPagamento() {
 
   async function handleAlterarStatus(id: number) {
     try {
+      setAlterandoStatus(true);
       setErro("");
       await FormaPagamentoService.alterarStatus(id);
       await carregarFormasPagamento();
+      setFormaParaInativar(null);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao alterar status da forma de pagamento."));
+    } finally {
+      setAlterandoStatus(false);
     }
   }
 
@@ -91,7 +98,7 @@ export function FormasPagamento() {
             type="button"
             size="sm"
             variant={forma.ativo ? "danger" : "primary"}
-            onClick={() => handleAlterarStatus(forma.id)}
+            onClick={() => (forma.ativo ? setFormaParaInativar(forma) : handleAlterarStatus(forma.id))}
           >
             {forma.ativo ? "Inativar" : "Ativar"}
           </Button>
@@ -138,6 +145,16 @@ export function FormasPagamento() {
           onSubmit={handleSalvarForma}
         />
       </Modal>
+
+      <ConfirmDialog
+        open={formaParaInativar !== null}
+        title="Inativar forma de pagamento"
+        message={`Inativar "${formaParaInativar ? nomeFormaPagamento(formaParaInativar) : ""}"? Ela deixa de aparecer para novas cobranças, mas contratos e mensalidades já vinculados a ela não são afetados retroativamente.`}
+        confirmLabel="Inativar"
+        loading={alterandoStatus}
+        onConfirm={() => formaParaInativar && handleAlterarStatus(formaParaInativar.id)}
+        onCancel={() => setFormaParaInativar(null)}
+      />
     </Layout>
   );
 }

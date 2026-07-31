@@ -15,3 +15,23 @@ export function getIndiceFaixa(faixa: string): number {
 export function formatarData(data: string): string {
   return new Date(data).toLocaleDateString("pt-BR");
 }
+
+const DIA_EM_MS = 1000 * 60 * 60 * 24;
+
+// `agora` é recebido de fora (em vez de sempre chamar Date.now() aqui
+// dentro) pra permitir memoizar um único instante de referência e reusar
+// em várias linhas de uma tabela, sem recalcular nem gerar timestamps
+// levemente diferentes entre uma linha e outra.
+export function formatarTempoRelativo(data: string, agora: number = Date.now()): string {
+  const dias = Math.floor((agora - new Date(data).getTime()) / DIA_EM_MS);
+
+  if (dias <= 0) return "hoje";
+  if (dias === 1) return "1 dia atrás";
+  if (dias < 30) return `${dias} dias atrás`;
+
+  const meses = Math.floor(dias / 30);
+  if (meses < 12) return meses === 1 ? "há 1 mês" : `há ${meses} meses`;
+
+  const anos = Math.floor(dias / 365);
+  return anos === 1 ? "há 1 ano" : `há ${anos} anos`;
+}

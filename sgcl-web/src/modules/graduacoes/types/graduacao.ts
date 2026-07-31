@@ -31,6 +31,9 @@ export interface AlunoElegivel {
   aulasRealizadas?: number;
   aulasRestantes?: number;
   percentualProgresso?: number;
+  grauAtual?: number;
+  faltamParaProximoGrau?: number;
+  aptoGraduacao?: boolean;
 }
 
 // Trilha Infantil (Kids e Teens, até 14 anos)

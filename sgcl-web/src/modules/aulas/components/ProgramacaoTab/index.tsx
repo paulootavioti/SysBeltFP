@@ -8,6 +8,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { Badge } from "../../../../components/ui/Badge";
 import { Modal } from "../../../../components/ui/Modal";
+import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 
 import { useAuth } from "../../../../contexts/useAuth";
 import { AulaService } from "../../services/AulaService";
@@ -53,6 +54,9 @@ export function ProgramacaoTab() {
   const [iniciandoId, setIniciandoId] = useState<number | null>(null);
   const [excluindoId, setExcluindoId] = useState<number | null>(null);
   const [cancelandoId, setCancelandoId] = useState<number | null>(null);
+  const [confirmacao, setConfirmacao] = useState<
+    { tipo: "cancelar" | "excluir"; programacao: AulaProgramada } | null
+  >(null);
 
   const ehAdmin = usuario?.perfil === "ADMIN";
 
@@ -170,10 +174,9 @@ export function ProgramacaoTab() {
     }
   }
 
-  async function handleCancelar(programacao: AulaProgramada) {
-    if (!window.confirm(`Cancelar a aula de ${programacao.turma.nome} em ${formatarDataHora(programacao.data)}?`)) {
-      return;
-    }
+  async function confirmarCancelamento() {
+    if (!confirmacao || confirmacao.tipo !== "cancelar") return;
+    const programacao = confirmacao.programacao;
 
     try {
       setCancelandoId(programacao.id);
@@ -181,6 +184,7 @@ export function ProgramacaoTab() {
       const resultado = await AulaService.cancelarProgramada(programacao.id);
       await carregarProgramacoes();
       setAvisosCancelamento(resultado.avisos);
+      setConfirmacao(null);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao cancelar programação."));
     } finally {
@@ -188,16 +192,16 @@ export function ProgramacaoTab() {
     }
   }
 
-  async function handleExcluir(programacao: AulaProgramada) {
-    if (!window.confirm("Excluir esta programação de aula? Essa ação não pode ser desfeita.")) {
-      return;
-    }
+  async function confirmarExclusao() {
+    if (!confirmacao || confirmacao.tipo !== "excluir") return;
+    const programacao = confirmacao.programacao;
 
     try {
       setExcluindoId(programacao.id);
       setErro("");
       await AulaService.excluirProgramada(programacao.id);
       await carregarProgramacoes();
+      setConfirmacao(null);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao excluir programação."));
     } finally {
@@ -266,7 +270,7 @@ export function ProgramacaoTab() {
                 size="sm"
                 variant="danger"
                 disabled={cancelandoId === p.id}
-                onClick={() => handleCancelar(p)}
+                onClick={() => setConfirmacao({ tipo: "cancelar", programacao: p })}
               >
                 {cancelandoId === p.id ? "Cancelando..." : "Cancelar"}
               </Button>
@@ -279,7 +283,7 @@ export function ProgramacaoTab() {
               size="sm"
               variant="danger"
               disabled={excluindoId === p.id}
-              onClick={() => handleExcluir(p)}
+              onClick={() => setConfirmacao({ tipo: "excluir", programacao: p })}
             >
               {excluindoId === p.id ? "Excluindo..." : "Excluir"}
             </Button>
@@ -382,6 +386,31 @@ export function ProgramacaoTab() {
           />
         )}
       </Modal>
+
+      <ConfirmDialog
+        open={confirmacao?.tipo === "cancelar"}
+        title="Cancelar aula programada"
+        message={
+          confirmacao?.tipo === "cancelar"
+            ? `Cancelar a aula de ${confirmacao.programacao.turma.nome} em ${formatarDataHora(confirmacao.programacao.data)}?`
+            : ""
+        }
+        confirmLabel="Cancelar aula"
+        cancelLabel="Voltar"
+        loading={confirmacao?.tipo === "cancelar" && cancelandoId === confirmacao.programacao.id}
+        onConfirm={confirmarCancelamento}
+        onCancel={() => setConfirmacao(null)}
+      />
+
+      <ConfirmDialog
+        open={confirmacao?.tipo === "excluir"}
+        title="Excluir programação de aula"
+        message="Excluir esta programação de aula? Essa ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        loading={confirmacao?.tipo === "excluir" && excluindoId === confirmacao.programacao.id}
+        onConfirm={confirmarExclusao}
+        onCancel={() => setConfirmacao(null)}
+      />
     </div>
   );
 }

@@ -95,7 +95,12 @@ export class GraduacoesController {
 
     const service = new ListProximasGraduacoesService();
 
-    const resultado = await service.execute(req.user.unidadeId);
+    // por padrão só retorna quem já está apto (usado pelo card do
+    // dashboard); ?todos=true traz todo mundo com o progresso calculado,
+    // usado pela tela "Próximas Graduações".
+    const apenasElegiveis = req.query.todos !== "true";
+
+    const resultado = await service.execute(req.user.unidadeId, apenasElegiveis);
 
     return res.json(resultado);
   }

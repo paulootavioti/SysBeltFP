@@ -10,3 +10,17 @@
   gap: var(--space-2);
   flex-wrap: wrap;
 }
+
+/* Ações que geram um novo registro a partir do modelo atual (versionar,
+   clonar) — mais peso visual que "Editar", sem introduzir uma nova
+   variante no componente Button. */
+.botao-acao-aviso {
+  background: transparent;
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
+}
+
+.botao-acao-aviso:hover:not(:disabled) {
+  background: var(--color-warning);
+  color: #fff;
+}

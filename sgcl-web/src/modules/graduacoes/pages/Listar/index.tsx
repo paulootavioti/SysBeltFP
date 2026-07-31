@@ -10,7 +10,7 @@ import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { useGraduacoes } from "../../hooks/useGraduacoes";
 import { GraduacaoService } from "../../services/GraduacaoService";
-import { formatarData } from "../../utils/helpers";
+import { formatarData, formatarTempoRelativo } from "../../utils/helpers";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { GraduacaoForm } from "../../components/GraduacaoForm";
 import type { Graduacao } from "../../types";
@@ -25,6 +25,9 @@ export function ListarGraduacoes() {
   const graduacoesFiltradas = graduacoes.filter((g) =>
     g.aluno?.nome.toLowerCase().includes(busca.toLowerCase())
   );
+  // instante único de referência pra "Tempo" (evita recomputar Date.now()
+  // pra cada linha da tabela — mesmo padrão usado em TimelineGraduacoes).
+  const [agora] = useState(() => Date.now());
   async function handleRegistrarGraduacao(data: GraduacaoFormData) {
     try {
       setSalvando(true);
@@ -61,8 +64,7 @@ export function ListarGraduacoes() {
     {
       header: "Tempo",
       accessor: "id" as const,
-      render: (grad: Graduacao) =>
-        `${Math.floor((Date.now() - new Date(grad.data).getTime()) / (1000 * 60 * 60 * 24))} dias atrás`,
+      render: (grad: Graduacao) => formatarTempoRelativo(grad.data, agora),
     },
     {
       header: "Ações",

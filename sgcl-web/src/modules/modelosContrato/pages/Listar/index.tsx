@@ -116,12 +116,24 @@ export function ModelosContrato() {
             Editar
           </Button>
           {ehAdmin && (
-            <Button type="button" size="sm" variant="secondary" onClick={() => handleVersionar(m)}>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="botao-acao-aviso"
+              onClick={() => handleVersionar(m)}
+            >
               Nova versão
             </Button>
           )}
           {ehAdmin && (
-            <Button type="button" size="sm" variant="secondary" onClick={() => handleClonar(m)}>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="botao-acao-aviso"
+              onClick={() => handleClonar(m)}
+            >
               Clonar
             </Button>
           )}

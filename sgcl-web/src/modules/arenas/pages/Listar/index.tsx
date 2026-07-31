@@ -4,11 +4,11 @@ import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { useAuth } from "../../../../contexts/useAuth";
 
-import { ArenasTab } from "../../../arenas/components/ArenasTab";
+import { ArenasTab } from "../../components/ArenasTab";
 
 // SUPERADMIN administra unidades a partir do Dashboard — essa rota, pra
 // esse perfil, só existe por compatibilidade com links antigos.
-export function Unidades() {
+export function Arenas() {
   const { usuario } = useAuth();
 
   if (usuario?.perfil === "SUPERADMIN") {
