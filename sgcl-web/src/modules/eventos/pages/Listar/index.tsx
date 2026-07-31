@@ -10,6 +10,7 @@ import { Badge } from "../../../../components/ui/Badge";
 import { Loading } from "../../../../components/ui/Loading";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { EmptyState } from "../../../../components/ui/EmptyState";
+import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 
 import { EventoService, type FiltrosEvento } from "../../services/EventoService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -42,6 +43,7 @@ export function Eventos() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [excluindoId, setExcluindoId] = useState<number | null>(null);
+  const [eventoParaExcluir, setEventoParaExcluir] = useState<Evento | null>(null);
 
   const [busca, setBusca] = useState("");
   const [tipo, setTipo] = useState("");
@@ -76,16 +78,15 @@ export function Eventos() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busca, tipo, status, dataInicial, dataFinal]);
 
-  async function handleExcluir(evento: Evento) {
-    if (!window.confirm(`Excluir "${evento.titulo}"? Essa ação não pode ser desfeita.`)) {
-      return;
-    }
+  async function confirmarExclusaoEvento() {
+    if (!eventoParaExcluir) return;
 
     try {
-      setExcluindoId(evento.id);
+      setExcluindoId(eventoParaExcluir.id);
       setErro("");
-      await EventoService.excluir(String(evento.id));
+      await EventoService.excluir(String(eventoParaExcluir.id));
       await carregar();
+      setEventoParaExcluir(null);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao excluir o evento."));
     } finally {
@@ -157,7 +158,7 @@ export function Eventos() {
                   size="sm"
                   variant="danger"
                   disabled={excluindoId === evento.id}
-                  onClick={() => handleExcluir(evento)}
+                  onClick={() => setEventoParaExcluir(evento)}
                 >
                   {excluindoId === evento.id ? "Excluindo..." : "Excluir"}
                 </Button>
@@ -166,6 +167,16 @@ export function Eventos() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={eventoParaExcluir !== null}
+        title="Excluir campanha/seminário"
+        message={`Excluir "${eventoParaExcluir?.titulo}"? Essa ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        loading={excluindoId === eventoParaExcluir?.id}
+        onConfirm={confirmarExclusaoEvento}
+        onCancel={() => setEventoParaExcluir(null)}
+      />
     </Layout>
   );
 }

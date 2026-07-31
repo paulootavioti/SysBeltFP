@@ -32,3 +32,17 @@
     grid-template-columns: 1fr;
   }
 }
+
+.evento-detalhe-saldo {
+  margin: 0;
+}
+
+/* especificidade (0 classes duplas) precisa superar ".card h2" do
+   componente Card (classe + elemento) pra a cor realmente aparecer. */
+.evento-detalhe-saldo.evento-detalhe-saldo-positivo {
+  color: var(--color-success);
+}
+
+.evento-detalhe-saldo.evento-detalhe-saldo-negativo {
+  color: var(--color-danger);
+}

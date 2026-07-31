@@ -12,5 +12,8 @@ export const inscricaoSchema = z.object({
 });
 
 export const resultadoSchema = z.object({
-  resultado: z.string().min(1, "Informe o resultado."),
+  resultado: z.enum(
+    ["Ouro", "Prata", "Bronze", "Não classificado", "Desclassificado"],
+    { message: "Selecione um resultado válido." }
+  ),
 });

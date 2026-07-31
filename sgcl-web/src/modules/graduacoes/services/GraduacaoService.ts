@@ -28,6 +28,13 @@ export class GraduacaoService {
     return ApiClient.get<AlunoElegivel[]>("/graduacoes/proximas");
   }
 
+  // traz todo mundo (não só quem já está apto), com o progresso calculado —
+  // usado pela tela "Próximas Graduações" pra mostrar a barra de progresso
+  // mesmo de quem ainda não chegou lá.
+  static async listarProgressoGraduacoes() {
+    return ApiClient.get<AlunoElegivel[]>("/graduacoes/proximas?todos=true");
+  }
+
   static async criar(data: GraduacaoFormData) {
     if (data.tipo === "GRAU") {
       return ApiClient.post("/graduacoes/grau", {

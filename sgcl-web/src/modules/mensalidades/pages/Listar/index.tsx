@@ -85,10 +85,10 @@ export function ListarMensalidades() {
     }
   }
 
-  const totalPendente = mensalidades
+  const totalPendente = mensalidadesFiltradas
     .filter((m) => !m.pago && calcularStatusMensalidade(m) !== "CANCELADA" && calcularStatusMensalidade(m) !== "ESTORNADA")
     .reduce((sum, m) => sum + m.valorFinal, 0);
-  const totalPago = mensalidades
+  const totalPago = mensalidadesFiltradas
     .filter((m) => m.pago)
     .reduce((sum, m) => sum + m.valorFinal, 0);
 

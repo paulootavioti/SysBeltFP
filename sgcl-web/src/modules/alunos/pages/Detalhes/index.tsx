@@ -7,6 +7,7 @@ import { Loading } from "../../../../components/ui/Loading";
 import { Button } from "../../../../components/ui/Button";
 import { Tabs } from "../../../../components/ui/Tabs";
 import { Modal } from "../../../../components/ui/Modal";
+import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 
 import { ResponsavelForm } from "../../../responsaveis/components/ResponsavelForm";
@@ -55,6 +56,9 @@ export function AlunoDetalhes() {
     responsavelEditando,
     setResponsavelEditando,
   ] = useState<Responsavel | null>(null);
+
+  const [responsavelParaExcluir, setResponsavelParaExcluir] = useState<Responsavel | null>(null);
+  const [excluindoResponsavel, setExcluindoResponsavel] = useState(false);
 
   async function carregarAluno() {
     if (!id) return;
@@ -125,23 +129,19 @@ export function AlunoDetalhes() {
     }
   }
 
-  async function handleExcluirResponsavel(
-    responsavelId: number
-  ) {
-    if (!aluno) return;
-
-    const confirmar = window.confirm(
-      "Deseja realmente excluir este responsável?"
-    );
-
-    if (!confirmar) return;
+  async function confirmarExclusaoResponsavel() {
+    if (!aluno || !responsavelParaExcluir) return;
 
     try {
+      setExcluindoResponsavel(true);
       setErro("");
-      await ResponsavelService.excluir(responsavelId);
+      await ResponsavelService.excluir(responsavelParaExcluir.id);
       await recarregarAluno();
+      setResponsavelParaExcluir(null);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao excluir responsável."));
+    } finally {
+      setExcluindoResponsavel(false);
     }
   }
 
@@ -270,9 +270,7 @@ export function AlunoDetalhes() {
                 responsaveis={alunoCompleto.responsaveis ?? []}
                 onNovo={handleNovoResponsavel}
                 onEditar={handleEditarResponsavel}
-                onExcluir={(responsavel) =>
-                  handleExcluirResponsavel(responsavel.id)
-                }
+                onExcluir={setResponsavelParaExcluir}
               />
             ),
           },
@@ -310,6 +308,16 @@ export function AlunoDetalhes() {
         onSubmit={handleSalvarResponsavel}
       />
       </Modal>
+
+      <ConfirmDialog
+        open={responsavelParaExcluir !== null}
+        title="Excluir responsável"
+        message={`Deseja realmente excluir o responsável "${responsavelParaExcluir?.nome}"?`}
+        confirmLabel="Excluir"
+        loading={excluindoResponsavel}
+        onConfirm={confirmarExclusaoResponsavel}
+        onCancel={() => setResponsavelParaExcluir(null)}
+      />
     </Layout>
   );
 }

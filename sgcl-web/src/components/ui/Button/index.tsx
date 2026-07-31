@@ -10,11 +10,12 @@ export function Button({
   children,
   variant = "primary",
   size = "md",
+  className,
   ...props
 }: ButtonProps) {
   return (
     <button
-      className={`button button-${variant} button-${size}`}
+      className={`button button-${variant} button-${size}${className ? ` ${className}` : ""}`}
       {...props}
     >
       {children}

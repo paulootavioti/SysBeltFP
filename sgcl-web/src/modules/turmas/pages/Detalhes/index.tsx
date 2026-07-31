@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Button } from "../../../../components/ui/Button";
+import { Input } from "../../../../components/ui/Input";
 import { Select } from "../../../../components/ui/Select";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Table } from "../../../../components/ui/Table";
@@ -33,8 +34,13 @@ export function DetalheTurma() {
   const [erro, setErro] = useState("");
   const [modalAberto, setModalAberto] = useState(false);
   const [alunosDisponiveis, setAlunosDisponiveis] = useState<Aluno[]>([]);
+  const [buscaAluno, setBuscaAluno] = useState("");
   const [alunoSelecionado, setAlunoSelecionado] = useState("");
   const [vinculando, setVinculando] = useState(false);
+
+  const alunosDisponiveisFiltrados = alunosDisponiveis.filter((aluno) =>
+    aluno.nome.toLowerCase().includes(buscaAluno.toLowerCase())
+  );
 
   async function carregarTurma() {
     try {
@@ -56,6 +62,8 @@ export function DetalheTurma() {
 
   async function handleAbrirModal() {
     setModalAberto(true);
+    setBuscaAluno("");
+    setAlunoSelecionado("");
     const alunos = await AlunoService.listar();
     setAlunosDisponiveis(alunos.filter((a) => a.ativo));
   }
@@ -158,9 +166,17 @@ export function DetalheTurma() {
       )}
 
       <Modal open={modalAberto} title="Vincular Aluno" onClose={() => setModalAberto(false)}>
+        <div className="turma-detalhe-vincular-form">
+        <Input
+          label="Buscar aluno"
+          placeholder="Digite o nome..."
+          value={buscaAluno}
+          onChange={(e) => setBuscaAluno(e.target.value)}
+        />
+
         <Select
           label="Aluno"
-          options={alunosDisponiveis.map((aluno) => ({ label: aluno.nome, value: String(aluno.id) }))}
+          options={alunosDisponiveisFiltrados.map((aluno) => ({ label: aluno.nome, value: String(aluno.id) }))}
           value={alunoSelecionado}
           onChange={(e) => setAlunoSelecionado(e.target.value)}
         />
@@ -168,6 +184,7 @@ export function DetalheTurma() {
         <Button type="button" disabled={!alunoSelecionado || vinculando} onClick={handleVincularAluno}>
           {vinculando ? "Vinculando..." : "Vincular"}
         </Button>
+        </div>
       </Modal>
     </Layout>
   );

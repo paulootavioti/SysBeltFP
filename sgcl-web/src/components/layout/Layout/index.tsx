@@ -76,7 +76,7 @@ export function Layout({ children }: LayoutProps) {
       }
 
       const itensVisiveis = entrada.items
-        .filter((item) => item.to !== "/unidades" || usuario?.perfil !== "SUPERADMIN")
+        .filter((item) => item.to !== "/arenas" || usuario?.perfil !== "SUPERADMIN")
         .filter((item) => perfilTemAcesso(usuario?.perfil, item.to));
 
       return itensVisiveis.length > 0 ? { ...entrada, items: itensVisiveis } : null;

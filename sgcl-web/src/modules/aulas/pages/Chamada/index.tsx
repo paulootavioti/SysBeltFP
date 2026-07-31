@@ -151,6 +151,12 @@ export function ChamadaAula() {
             title="Status"
             value={<StatusBadge status={aula.status} />}
           />
+
+          <InfoCard
+            title="Presença"
+            value={`${aula.alunos.filter((registro) => registro.presente).length}/${aula.alunos.length}`}
+            description="alunos com presença marcada"
+          />
         </div>
         
         {aula.aulaCurriculo && (

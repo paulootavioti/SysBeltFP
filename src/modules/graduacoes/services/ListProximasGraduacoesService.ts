@@ -15,15 +15,25 @@ export interface AlunoProximaGraduacao {
   aulasRealizadas: number;
   aulasRestantes: number;
   percentualProgresso: number;
+  grauAtual: number;
+  faltamParaProximoGrau: number;
   aptoGraduacao: boolean;
 }
 
 // Mesma regra de elegibilidade de sempre (apto quando as presenças batem
 // exatamente num múltiplo de `AULAS_POR_GRAU`) — só enriquecida com o
 // progresso dentro do ciclo de faixa (32 aulas = 4 graus), pra alimentar o
-// card "Próximas Graduações" do dashboard.
+// card "Próximas Graduações" do dashboard e a tela de acompanhamento.
+//
+// `apenasElegiveis` (default true, mesmo comportamento de sempre) filtra só
+// quem já pode graduar — usado pelo contador de badge do menu. A tela
+// "Próximas Graduações" passa `false` pra mostrar o progresso de todo mundo,
+// não só de quem já está apto.
 export class ListProximasGraduacoesService {
-  async execute(unidadeId: number | null): Promise<AlunoProximaGraduacao[]> {
+  async execute(
+    unidadeId: number | null,
+    apenasElegiveis = true
+  ): Promise<AlunoProximaGraduacao[]> {
     const alunos = await prisma.aluno.findMany({
       where: { ativo: true, ...escopoUnidade(unidadeId) },
     });
@@ -48,6 +58,10 @@ export class ListProximasGraduacoesService {
         const aulasRestantes = aulasNaFaixaAtual === 0 ? 0 : AULAS_POR_FAIXA - aulasNaFaixaAtual;
         const percentualProgresso = (aulasNaFaixaAtual / AULAS_POR_FAIXA) * 100;
 
+        const grauAtual = Math.floor(aulasNaFaixaAtual / AULAS_POR_GRAU);
+        const restoNoGrau = totalPresencas % AULAS_POR_GRAU;
+        const faltamParaProximoGrau = restoNoGrau === 0 ? 0 : AULAS_POR_GRAU - restoNoGrau;
+
         const trilha = getTrilhaFaixa(calcularIdade(aluno.dataNascimento));
         const faixasDaTrilha = getFaixasDaTrilha(trilha);
         const indiceFaixaAtual = faixasDaTrilha.indexOf(aluno.faixa);
@@ -65,9 +79,11 @@ export class ListProximasGraduacoesService {
           aulasRealizadas: aulasNaFaixaAtual,
           aulasRestantes,
           percentualProgresso,
+          grauAtual,
+          faltamParaProximoGrau,
           aptoGraduacao,
         };
       })
-      .filter((aluno) => aluno.aptoGraduacao);
+      .filter((aluno) => !apenasElegiveis || aluno.aptoGraduacao);
   }
 }

@@ -10,3 +10,17 @@
   gap: var(--space-2);
   flex-wrap: wrap;
 }
+
+/* "Gerar cobranças agora" dispara uma ação de sistema em lote — mais peso
+   visual que um botão de navegação comum, sem introduzir uma nova
+   variante no componente Button. */
+.botao-acao-aviso {
+  background: transparent;
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
+}
+
+.botao-acao-aviso:hover:not(:disabled) {
+  background: var(--color-warning);
+  color: #fff;
+}

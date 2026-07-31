@@ -45,9 +45,9 @@ export function DashboardUnits({ unidades, eventos }: DashboardUnitsProps) {
               type="button"
               className="dashboard-unidade-card"
               // Não existe hoje uma tela de detalhe por unidade (só a
-              // listagem em /unidades) — o card leva pra lá até essa tela
-              // existir.
-              onClick={() => navigate("/unidades")}
+              // listagem de Arenas em /arenas) — o card leva pra lá até
+              // essa tela existir.
+              onClick={() => navigate("/arenas")}
             >
               <div className="dashboard-unidade-cabecalho">
                 <strong>{unidade.nome}</strong>
@@ -92,8 +92,8 @@ export function DashboardUnits({ unidades, eventos }: DashboardUnitsProps) {
       </div>
 
       <div className="dashboard-unidades-rodape">
-        <Button type="button" variant="secondary" onClick={() => navigate("/unidades")}>
-          Ver todas as unidades
+        <Button type="button" variant="secondary" onClick={() => navigate("/arenas")}>
+          Ver todas as arenas
         </Button>
       </div>
     </div>

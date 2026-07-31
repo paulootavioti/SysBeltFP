@@ -9,6 +9,7 @@ import { Table } from "../../../../components/ui/Table";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { Modal } from "../../../../components/ui/Modal";
+import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 
 import { useAuth } from "../../../../contexts/useAuth";
 import { useCompeticoes } from "../../hooks/useCompeticoes";
@@ -31,6 +32,7 @@ export function Competicoes() {
   const [modalAberto, setModalAberto] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [excluindoId, setExcluindoId] = useState<number | null>(null);
+  const [competicaoParaExcluir, setCompeticaoParaExcluir] = useState<Competicao | null>(null);
 
   const ehAdmin = usuario?.perfil === "ADMIN";
 
@@ -48,16 +50,15 @@ export function Competicoes() {
     }
   }
 
-  async function handleExcluirCompeticao(competicao: Competicao) {
-    if (!window.confirm(`Excluir a competição "${competicao.nome}"? Essa ação não pode ser desfeita.`)) {
-      return;
-    }
+  async function confirmarExclusaoCompeticao() {
+    if (!competicaoParaExcluir) return;
 
     try {
-      setExcluindoId(competicao.id);
+      setExcluindoId(competicaoParaExcluir.id);
       setErro("");
-      await CompeticaoService.excluir(competicao.id);
+      await CompeticaoService.excluir(competicaoParaExcluir.id);
       await carregarCompeticoes();
+      setCompeticaoParaExcluir(null);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao excluir competição."));
     } finally {
@@ -93,7 +94,7 @@ export function Competicoes() {
               size="sm"
               variant="danger"
               disabled={excluindoId === competicao.id}
-              onClick={() => handleExcluirCompeticao(competicao)}
+              onClick={() => setCompeticaoParaExcluir(competicao)}
             >
               {excluindoId === competicao.id ? "Excluindo..." : "Excluir"}
             </Button>
@@ -133,6 +134,16 @@ export function Competicoes() {
       >
         <CompeticaoForm loading={salvando} onSubmit={handleCriarCompeticao} />
       </Modal>
+
+      <ConfirmDialog
+        open={competicaoParaExcluir !== null}
+        title="Excluir competição"
+        message={`Excluir a competição "${competicaoParaExcluir?.nome}"? Essa ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        loading={excluindoId === competicaoParaExcluir?.id}
+        onConfirm={confirmarExclusaoCompeticao}
+        onCancel={() => setCompeticaoParaExcluir(null)}
+      />
     </Layout>
   );
 }

@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Button } from "../../../../components/ui/Button";
-import { Input } from "../../../../components/ui/Input";
+import { Select } from "../../../../components/ui/Select";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
@@ -13,7 +13,7 @@ import { Modal } from "../../../../components/ui/Modal";
 import { CompeticaoService } from "../../services/CompeticaoService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { InscricaoForm } from "../../components/InscricaoForm";
-import type { Competicao, Atleta } from "../../types/competicao";
+import { RESULTADOS_COMPETICAO, type Competicao, type Atleta } from "../../types/competicao";
 import type { InscricaoFormData } from "../../schema/inscricao.schema";
 
 import "./styles.css";
@@ -21,6 +21,11 @@ import "./styles.css";
 function formatarData(data: string): string {
   return new Date(data).toLocaleDateString("pt-BR");
 }
+
+const OPCOES_RESULTADO = RESULTADOS_COMPETICAO.map((resultado) => ({
+  value: resultado,
+  label: resultado,
+}));
 
 export function DetalheCompeticao() {
   const { id } = useParams();
@@ -134,9 +139,9 @@ export function DetalheCompeticao() {
               </div>
 
               <div className="competicao-atleta-resultado">
-                <Input
+                <Select
                   label="Resultado"
-                  placeholder="Ex: Ouro, Prata, Bronze..."
+                  options={OPCOES_RESULTADO}
                   value={resultados[atleta.id] ?? ""}
                   onChange={(e) =>
                     setResultados((atual) => ({ ...atual, [atleta.id]: e.target.value }))
