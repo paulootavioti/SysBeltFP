@@ -7,6 +7,7 @@ import { Loading } from "../../../../components/ui/Loading";
 import { Button } from "../../../../components/ui/Button";
 import { Tabs } from "../../../../components/ui/Tabs";
 import { Modal } from "../../../../components/ui/Modal";
+import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 
 import { ResponsavelForm } from "../../../responsaveis/components/ResponsavelForm";
 import { ResponsavelService } from "../../../responsaveis/services/ResponsavelService";
@@ -24,6 +25,7 @@ import { FinanceiroTab } from "../../components/tabs/FinanceiroTab";
 
 import { AlunoService } from "../../services/AlunoService";
 import { useAuth } from "../../../../contexts/useAuth";
+import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 
 import type { AlunoCompleto, AlunoCompletoBasico } from "../../types/alunoCompleto";
 
@@ -41,6 +43,8 @@ export function AlunoDetalhes() {
 
   const [aluno, setAluno] =
     useState<AlunoCompleto | AlunoCompletoBasico | null>(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
 
   const [
     modalResponsavelAberto,
@@ -52,28 +56,43 @@ export function AlunoDetalhes() {
     setResponsavelEditando,
   ] = useState<Responsavel | null>(null);
 
-  useEffect(() => {
-    async function carregarAluno() {
-      if (!id) return;
+  async function carregarAluno() {
+    if (!id) return;
+
+    try {
+      setCarregando(true);
+      setErro("");
 
       const data = ehProfessor
         ? await AlunoService.buscarBasico(Number(id))
         : await AlunoService.buscar(Number(id));
 
       setAluno(data);
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao carregar aluno."));
+    } finally {
+      setCarregando(false);
     }
+  }
 
+  useEffect(() => {
     carregarAluno();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, ehProfessor]);
 
   async function recarregarAluno() {
     if (!aluno) return;
 
-    const alunoAtualizado = ehProfessor
-      ? await AlunoService.buscarBasico(aluno.id)
-      : await AlunoService.buscar(aluno.id);
+    try {
+      setErro("");
+      const alunoAtualizado = ehProfessor
+        ? await AlunoService.buscarBasico(aluno.id)
+        : await AlunoService.buscar(aluno.id);
 
-    setAluno(alunoAtualizado);
+      setAluno(alunoAtualizado);
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao atualizar os dados do aluno."));
+    }
   }
 
   async function handleSalvarResponsavel(
@@ -81,23 +100,29 @@ export function AlunoDetalhes() {
   ) {
     if (!aluno) return;
 
-    if (responsavelEditando) {
-      await ResponsavelService.atualizar(
-        responsavelEditando.id,
-        aluno.id,
-        data
-      );
-    } else {
-      await ResponsavelService.criar(
-        aluno.id,
-        data
-      );
+    try {
+      setErro("");
+
+      if (responsavelEditando) {
+        await ResponsavelService.atualizar(
+          responsavelEditando.id,
+          aluno.id,
+          data
+        );
+      } else {
+        await ResponsavelService.criar(
+          aluno.id,
+          data
+        );
+      }
+
+      await recarregarAluno();
+
+      setResponsavelEditando(null);
+      setModalResponsavelAberto(false);
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao salvar responsável."));
     }
-
-    await recarregarAluno();
-
-    setResponsavelEditando(null);
-    setModalResponsavelAberto(false);
   }
 
   async function handleExcluirResponsavel(
@@ -111,9 +136,13 @@ export function AlunoDetalhes() {
 
     if (!confirmar) return;
 
-    await ResponsavelService.excluir(responsavelId);
-
-    await recarregarAluno();
+    try {
+      setErro("");
+      await ResponsavelService.excluir(responsavelId);
+      await recarregarAluno();
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao excluir responsável."));
+    }
   }
 
   function handleNovoResponsavel() {
@@ -136,7 +165,15 @@ export function AlunoDetalhes() {
   if (!aluno) {
     return (
       <Layout>
-        <Loading />
+        <PageHeader title="Aluno" subtitle="Detalhes do aluno." />
+        {carregando ? (
+          <Loading />
+        ) : (
+          <ErrorMessage
+            message={erro || "Aluno não encontrado."}
+            onRetry={carregarAluno}
+          />
+        )}
       </Layout>
     );
   }
@@ -153,6 +190,8 @@ export function AlunoDetalhes() {
         </div>
 
         <PageHeader title={alunoBasico.nome} subtitle="Dados do aluno." />
+
+        <ErrorMessage message={erro} />
 
         <AlunoResumo aluno={alunoBasico} somenteBasico />
 
@@ -210,6 +249,8 @@ export function AlunoDetalhes() {
         title={alunoCompleto.nome}
         subtitle="Prontuário completo do aluno."
       />
+
+      <ErrorMessage message={erro} />
 
       <AlunoResumo aluno={alunoCompleto} />
 

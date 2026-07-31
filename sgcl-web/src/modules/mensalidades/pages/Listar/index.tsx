@@ -8,6 +8,7 @@ import { Input } from "../../../../components/ui/Input";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Loading } from "../../../../components/ui/Loading";
 import { EmptyState } from "../../../../components/ui/EmptyState";
+import { Pagination } from "../../../../components/ui/Pagination";
 import { useMensalidades } from "../../hooks/useMensalidades";
 import { MensalidadeService } from "../../services/MensalidadeService";
 import { MensalidadeCard } from "../../components/MensalidadeCard";
@@ -15,6 +16,7 @@ import { MotivoModal } from "../../components/MotivoModal";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { calcularStatusMensalidade } from "../../utils/status";
 import { useToast } from "../../../../contexts/toast/useToast";
+import { usePaginacaoCliente } from "../../../../hooks/usePaginacaoCliente";
 import "./styles.css";
 
 type Filtro = "TODAS" | "PENDENTE" | "VENCIDA" | "PAGA" | "CANCELADA" | "ESTORNADA";
@@ -38,6 +40,8 @@ export function ListarMensalidades() {
     .filter((m) =>
       m.aluno?.nome.toLowerCase().includes(busca.toLowerCase())
     );
+
+  const paginacao = usePaginacaoCliente(mensalidadesFiltradas, 12, [filtro, busca]);
 
   async function handleMarcarComoPago(id: number) {
     try {
@@ -140,18 +144,28 @@ export function ListarMensalidades() {
           description="Ajuste os filtros ou cadastre uma nova mensalidade."
         />
       ) : (
-        <div className="mensalidades-grid">
-          {mensalidadesFiltradas.map((mensalidade) => (
-            <MensalidadeCard
-              key={mensalidade.id}
-              mensalidade={mensalidade}
-              onEditar={(id) => navigate(`/mensalidades/${id}`)}
-              onMarcarComoPago={handleMarcarComoPago}
-              onCancelar={(id) => setAcaoComMotivo({ tipo: "CANCELAR", id })}
-              onEstornar={(id) => setAcaoComMotivo({ tipo: "ESTORNAR", id })}
-            />
-          ))}
-        </div>
+        <>
+          <div className="mensalidades-grid">
+            {paginacao.itensDaPagina.map((mensalidade) => (
+              <MensalidadeCard
+                key={mensalidade.id}
+                mensalidade={mensalidade}
+                onEditar={(id) => navigate(`/mensalidades/${id}`)}
+                onMarcarComoPago={handleMarcarComoPago}
+                onCancelar={(id) => setAcaoComMotivo({ tipo: "CANCELAR", id })}
+                onEstornar={(id) => setAcaoComMotivo({ tipo: "ESTORNAR", id })}
+              />
+            ))}
+          </div>
+
+          <Pagination
+            paginaAtual={paginacao.paginaAtual}
+            totalPaginas={paginacao.totalPaginas}
+            totalItens={paginacao.totalItens}
+            itensPorPagina={paginacao.itensPorPagina}
+            onChangePagina={paginacao.irParaPagina}
+          />
+        </>
       )}
 
       <MotivoModal

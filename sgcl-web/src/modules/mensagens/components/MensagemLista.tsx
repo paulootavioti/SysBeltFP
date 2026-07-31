@@ -25,27 +25,21 @@ export function MensagemLista({ carregar, tituloVazio, descricaoVazio }: Mensage
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
 
-  useEffect(() => {
-    let ativo = true;
-
-    async function buscar() {
-      try {
-        setLoading(true);
-        setErro("");
-        const data = await carregar();
-        if (ativo) setMensagens(data);
-      } catch (error) {
-        if (ativo) setErro(getApiErrorMessage(error, "Erro ao carregar mensagens."));
-      } finally {
-        if (ativo) setLoading(false);
-      }
+  async function buscar() {
+    try {
+      setLoading(true);
+      setErro("");
+      const data = await carregar();
+      setMensagens(data);
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao carregar mensagens."));
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     buscar();
-
-    return () => {
-      ativo = false;
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -60,7 +54,7 @@ export function MensagemLista({ carregar, tituloVazio, descricaoVazio }: Mensage
 
   if (loading) return <Loading />;
 
-  if (erro) return <ErrorMessage message={erro} />;
+  if (erro) return <ErrorMessage message={erro} onRetry={buscar} />;
 
   if (mensagens.length === 0) {
     return <EmptyState title={tituloVazio} description={descricaoVazio} />;

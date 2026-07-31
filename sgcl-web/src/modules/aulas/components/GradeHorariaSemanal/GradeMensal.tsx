@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 
 import { Loading } from "../../../../components/ui/Loading";
 import { Tooltip } from "../../../../components/ui/Tooltip";
+import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { AulaService } from "../../services/AulaService";
+import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import type { AulaProgramada } from "../../types";
 
 const DIAS_SEMANA_LABEL = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -52,30 +54,26 @@ export function GradeMensal({ onAgendar, unidadeConsultaId, apenasConsulta = fal
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
 
-  useEffect(() => {
-    let ativo = true;
-
-    async function carregar() {
-      try {
-        setLoading(true);
-        const dados = await AulaService.listarProgramadas({ periodo: "MENSAL", unidadeConsultaId });
-        if (ativo) setItens(dados);
-      } catch {
-        if (ativo) setErro("Não foi possível carregar a grade do mês.");
-      } finally {
-        if (ativo) setLoading(false);
-      }
+  async function carregar() {
+    try {
+      setLoading(true);
+      setErro("");
+      const dados = await AulaService.listarProgramadas({ periodo: "MENSAL", unidadeConsultaId });
+      setItens(dados);
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Não foi possível carregar a grade do mês."));
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     carregar();
-
-    return () => {
-      ativo = false;
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unidadeConsultaId]);
 
   if (loading) return <Loading message="Carregando grade..." />;
-  if (erro) return <p className="grade-semanal-vazio">{erro}</p>;
+  if (erro) return <ErrorMessage message={erro} onRetry={carregar} />;
 
   const hoje = new Date();
   const mesReferencia = hoje.getUTCMonth();

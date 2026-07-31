@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
 import { Input } from "../Input";
+import { Pagination } from "../Pagination";
 
 import "./styles.css";
 
@@ -29,6 +30,16 @@ interface DataTableProps<T> {
   searchKeys?: (keyof T)[];
 
   emptyMessage?: string;
+
+  // Paginação (opcional). Informando `pageSize`, a tabela pagina
+  // `data` no cliente sozinha. Se além disso vier `totalItems`, a
+  // tabela assume que `data` já chegou paginada (ex.: resposta de uma
+  // API paginada no servidor) e só usa `totalItems` pra calcular o
+  // total de páginas, sem fatiar de novo — assim trocar de client-side
+  // pra server-side depois é só passar a página pronta da API.
+  pageSize?: number;
+  totalItems?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export function DataTable<T>({
@@ -42,8 +53,12 @@ export function DataTable<T>({
   searchPlaceholder = "Pesquisar...",
   searchKeys = [],
   emptyMessage = "Nenhum registro encontrado.",
+  pageSize,
+  totalItems,
+  onPageChange,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
   const filteredData = useMemo(() => {
     if (!searchable || !search.trim() || searchKeys.length === 0) {
@@ -64,6 +79,26 @@ export function DataTable<T>({
       })
     );
   }, [data, search, searchable, searchKeys]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  const paginando = !!pageSize;
+  const dadosJaPaginadosExternamente = paginando && totalItems !== undefined;
+  const totalItensReal = totalItems ?? filteredData.length;
+  const totalPaginas = paginando ? Math.max(1, Math.ceil(totalItensReal / pageSize!)) : 1;
+
+  const dadosDaPagina = useMemo(() => {
+    if (!paginando || dadosJaPaginadosExternamente) return filteredData;
+    const inicio = (page - 1) * pageSize!;
+    return filteredData.slice(inicio, inicio + pageSize!);
+  }, [filteredData, paginando, dadosJaPaginadosExternamente, page, pageSize]);
+
+  function handlePageChange(novaPagina: number) {
+    setPage(novaPagina);
+    onPageChange?.(novaPagina);
+  }
 
   return (
     <div className="data-table-wrapper">
@@ -122,11 +157,12 @@ export function DataTable<T>({
             </thead>
 
             <tbody>
-              {filteredData.map((item, rowIndex) => (
+              {dadosDaPagina.map((item, rowIndex) => (
                 <tr key={rowIndex}>
                   {columns.map((column) => (
                     <td
                       key={column.id ?? column.header}
+                      data-label={column.header}
                       style={{
                         textAlign: column.align ?? "left",
                       }}
@@ -145,10 +181,20 @@ export function DataTable<T>({
             </tbody>
           </table>
 
-          <div className="data-table-footer">
-            Total de registros:{" "}
-            <strong>{filteredData.length}</strong>
-          </div>
+          {paginando ? (
+            <Pagination
+              paginaAtual={page}
+              totalPaginas={totalPaginas}
+              onChangePagina={handlePageChange}
+              totalItens={totalItensReal}
+              itensPorPagina={pageSize}
+            />
+          ) : (
+            <div className="data-table-footer">
+              Total de registros:{" "}
+              <strong>{filteredData.length}</strong>
+            </div>
+          )}
         </>
       )}
     </div>

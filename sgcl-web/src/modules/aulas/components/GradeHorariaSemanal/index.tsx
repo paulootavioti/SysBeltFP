@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Loading } from "../../../../components/ui/Loading";
 import { Tooltip } from "../../../../components/ui/Tooltip";
 import { Modal } from "../../../../components/ui/Modal";
+import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
+import { EmptyState } from "../../../../components/ui/EmptyState";
 import { AulaService } from "../../services/AulaService";
 import { ProgramarAulaForm, type ProgramarAulaFormData } from "../ProgramarAulaForm";
 import { GradeMensal } from "./GradeMensal";
@@ -94,12 +96,13 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
   async function carregar() {
     try {
       setLoading(true);
+      setErro("");
       const dados = await AulaService.gradeSemanal(
         unidadeConsultaId ? Number(unidadeConsultaId) : undefined
       );
       setItens(dados);
-    } catch {
-      setErro("Não foi possível carregar a grade horária.");
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Não foi possível carregar a grade horária."));
     } finally {
       setLoading(false);
     }
@@ -204,9 +207,9 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
       ) : loading ? (
         <Loading message="Carregando grade..." />
       ) : erro && itens.length === 0 ? (
-        <p className="grade-semanal-vazio">{erro}</p>
+        <ErrorMessage message={erro} onRetry={carregar} />
       ) : horarios.length === 0 ? (
-        <p className="grade-semanal-vazio">Nenhuma aula programada nesta semana.</p>
+        <EmptyState title="Nenhuma aula programada" description="Não há aulas programadas nesta semana." />
       ) : (
         <div className="grade-semanal-wrapper">
           <table className="grade-semanal-table">

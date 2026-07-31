@@ -21,6 +21,7 @@ import { DashboardKpiCard } from "../../../dashboard/components/DashboardKpiCard
 import { DashboardSection } from "../../../dashboard/components/DashboardSection";
 import { DashboardSectionError } from "../../../dashboard/components/DashboardSectionError";
 import { formatarMoeda, formatarPercentual, formatarData } from "../../../dashboard/utils/formatters";
+import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { ContasTable } from "../../components/ContasTable";
 
 import type { Unidade } from "../../../unidades/types/unidade";
@@ -82,8 +83,8 @@ export function Financeiro() {
       link.download = `financeiro-${tipo.toLowerCase()}.csv`;
       link.click();
       URL.revokeObjectURL(url);
-    } catch {
-      setErroExportar("Erro ao exportar o relatório.");
+    } catch (error) {
+      setErroExportar(getApiErrorMessage(error, "Erro ao exportar o relatório."));
     } finally {
       setExportando(null);
     }

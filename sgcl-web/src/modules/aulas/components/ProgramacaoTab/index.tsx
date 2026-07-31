@@ -17,6 +17,7 @@ import { TransferirAulaForm, type TransferirAulaFormData } from "../TransferirAu
 import { AvisoCancelamentoLista } from "../AvisoCancelamentoLista";
 import { ResumoTurmas } from "../ResumoTurmas";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+import { usePaginacaoCliente } from "../../../../hooks/usePaginacaoCliente";
 import type { AulaProgramada, PeriodoContagem } from "../../types";
 import type { MensagemGerada } from "../../../mensagens/types/mensagem";
 
@@ -39,6 +40,8 @@ export function ProgramacaoTab() {
   const [programacoes, setProgramacoes] = useState<AulaProgramada[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
+
+  const paginacao = usePaginacaoCliente(programacoes, 10, [turmaSelecionada?.id, periodo]);
 
   const [modalAberto, setModalAberto] = useState(false);
   const [programacaoEditando, setProgramacaoEditando] = useState<AulaProgramada | null>(null);
@@ -321,7 +324,17 @@ export function ProgramacaoTab() {
               description="Programe a próxima aula desta turma ou ajuste o período."
             />
           ) : (
-            <Table columns={columns} data={programacoes} />
+            <Table
+              columns={columns}
+              data={paginacao.itensDaPagina}
+              pagination={{
+                paginaAtual: paginacao.paginaAtual,
+                totalPaginas: paginacao.totalPaginas,
+                totalItens: paginacao.totalItens,
+                itensPorPagina: paginacao.itensPorPagina,
+                onChangePagina: paginacao.irParaPagina,
+              }}
+            />
           )}
         </>
       )}

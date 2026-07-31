@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../../../../components/ui/Button";
 import { Badge } from "../../../../components/ui/Badge";
 import { Loading } from "../../../../components/ui/Loading";
+import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
+import { EmptyState } from "../../../../components/ui/EmptyState";
 import { AulaService } from "../../services/AulaService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import type { ItemGradeSemanal } from "../../types";
@@ -24,32 +26,27 @@ export function AulasHoje() {
   const [erro, setErro] = useState("");
   const [iniciandoId, setIniciandoId] = useState<number | null>(null);
 
-  useEffect(() => {
-    let ativo = true;
+  async function carregar() {
+    try {
+      setLoading(true);
+      setErro("");
+      const grade = await AulaService.gradeSemanal();
 
-    async function carregar() {
-      try {
-        setLoading(true);
-        const grade = await AulaService.gradeSemanal();
+      const hoje = new Date().getDay();
+      const doDia = grade
+        .filter((item) => item.diaSemana === hoje)
+        .sort((a, b) => a.horarioInicio.localeCompare(b.horarioInicio));
 
-        const hoje = new Date().getDay();
-        const doDia = grade
-          .filter((item) => item.diaSemana === hoje)
-          .sort((a, b) => a.horarioInicio.localeCompare(b.horarioInicio));
-
-        if (ativo) setItens(doDia);
-      } catch {
-        if (ativo) setErro("Não foi possível carregar as aulas de hoje.");
-      } finally {
-        if (ativo) setLoading(false);
-      }
+      setItens(doDia);
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Não foi possível carregar as aulas de hoje."));
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     carregar();
-
-    return () => {
-      ativo = false;
-    };
   }, []);
 
   async function handleIniciar(id: number) {
@@ -76,7 +73,7 @@ export function AulasHoje() {
     return (
       <div className="aulas-hoje">
         <h2>Aulas de Hoje</h2>
-        <p className="aulas-hoje-vazio">{erro}</p>
+        <ErrorMessage message={erro} onRetry={carregar} />
       </div>
     );
   }
@@ -85,7 +82,7 @@ export function AulasHoje() {
     return (
       <div className="aulas-hoje">
         <h2>Aulas de Hoje</h2>
-        <p className="aulas-hoje-vazio">Nenhuma aula programada para hoje.</p>
+        <EmptyState title="Nenhuma aula programada" description="Não há aulas programadas para hoje." />
       </div>
     );
   }

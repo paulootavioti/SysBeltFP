@@ -33,9 +33,9 @@ export function RelatorioCard({
   useEffect(() => {
     if (!requerAluno) return;
 
-    AlunoService.listar().then((data) =>
-      setAlunos(data.filter((a) => a.ativo))
-    );
+    AlunoService.listar()
+      .then((data) => setAlunos(data.filter((a) => a.ativo)))
+      .catch(() => setAlunos([]));
   }, [requerAluno]);
 
   async function handleGerar() {
