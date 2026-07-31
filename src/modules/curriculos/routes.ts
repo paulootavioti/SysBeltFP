@@ -94,6 +94,27 @@ curriculosRoutes.put(
 );
 
 curriculosRoutes.delete(
+  "/modulos/:id",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  controller.deleteModulo
+);
+
+curriculosRoutes.delete(
+  "/aulas/:id",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  controller.deleteAula
+);
+
+curriculosRoutes.delete(
+  "/tecnicas/:id",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  controller.deleteTecnica
+);
+
+curriculosRoutes.delete(
   "/:id",
   ensureAuthenticated,
   ensureRole(["ADMIN"]),
