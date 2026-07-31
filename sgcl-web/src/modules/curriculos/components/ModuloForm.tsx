@@ -3,12 +3,16 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
+import { Select } from "../../../components/ui/Select";
 import { Button } from "../../../components/ui/Button";
 import { ErrorMessage } from "../../../components/ui/ErrorMessage";
 import { FormGrid } from "../../../components/ui/FormGrid";
 import { FormGridItem } from "../../../components/ui/FormGridItem";
 
 import { moduloSchema, type ModuloFormData } from "../schema/curriculo.schema";
+import { FAIXAS_INFANTIL } from "../../graduacoes/types";
+
+const OPCOES_FAIXA = FAIXAS_INFANTIL.map((faixa) => ({ label: faixa, value: faixa }));
 
 interface ModuloFormProps {
   loading?: boolean;
@@ -39,7 +43,7 @@ export function ModuloForm({ loading = false, initialValues, onSubmit }: ModuloF
           </FormGridItem>
 
           <FormGridItem>
-            <Input label="Faixa" {...register("faixa")} />
+            <Select label="Faixa" options={OPCOES_FAIXA} {...register("faixa")} />
           </FormGridItem>
 
           <FormGridItem span={2}>

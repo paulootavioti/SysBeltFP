@@ -11,6 +11,9 @@ import { UpdateModuloCurriculoService } from "./services/UpdateModuloCurriculoSe
 import { UpdateAulaCurriculoService } from "./services/UpdateAulaCurriculoService";
 import { UpdateTecnicaCurriculoService } from "./services/UpdateTecnicaCurriculoService";
 import { DeleteCurriculoService } from "./services/DeleteCurriculoService";
+import { DeleteModuloCurriculoService } from "./services/DeleteModuloCurriculoService";
+import { DeleteAulaCurriculoService } from "./services/DeleteAulaCurriculoService";
+import { DeleteTecnicaCurriculoService } from "./services/DeleteTecnicaCurriculoService";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 
 export class CurriculosController {
@@ -96,6 +99,30 @@ export class CurriculosController {
 
   async delete(req: Request, res: Response) {
     const service = new DeleteCurriculoService();
+
+    await service.execute(Number(req.params.id), req.user.unidadeId);
+
+    return res.status(204).send();
+  }
+
+  async deleteModulo(req: Request, res: Response) {
+    const service = new DeleteModuloCurriculoService();
+
+    await service.execute(Number(req.params.id), req.user.unidadeId);
+
+    return res.status(204).send();
+  }
+
+  async deleteAula(req: Request, res: Response) {
+    const service = new DeleteAulaCurriculoService();
+
+    await service.execute(Number(req.params.id), req.user.unidadeId);
+
+    return res.status(204).send();
+  }
+
+  async deleteTecnica(req: Request, res: Response) {
+    const service = new DeleteTecnicaCurriculoService();
 
     await service.execute(Number(req.params.id), req.user.unidadeId);
 

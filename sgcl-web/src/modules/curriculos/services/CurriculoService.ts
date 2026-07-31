@@ -55,4 +55,16 @@ export class CurriculoService {
   static async excluir(id: number) {
     return ApiClient.delete(`/curriculos/${id}`);
   }
+
+  static async excluirModulo(id: number) {
+    return ApiClient.delete(`/curriculos/modulos/${id}`);
+  }
+
+  static async excluirAula(id: number) {
+    return ApiClient.delete(`/curriculos/aulas/${id}`);
+  }
+
+  static async excluirTecnica(id: number) {
+    return ApiClient.delete(`/curriculos/tecnicas/${id}`);
+  }
 }
