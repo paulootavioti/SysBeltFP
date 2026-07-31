@@ -19,6 +19,7 @@ import { calcularStatusFinanceiroAluno } from "../../utils/statusFinanceiro";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { useAlunos } from "../../hooks/useAlunos";
 import { useAuth } from "../../../../contexts/useAuth";
+import { usePaginacaoCliente } from "../../../../hooks/usePaginacaoCliente";
 import type { Aluno, AlunoBasico } from "../../types";
 
 import { AlunoService } from "../../services/AlunoService";
@@ -72,6 +73,9 @@ export function Alunos() {
   // pro PROFESSOR o backend já devolve esse recorte (mesmo endpoint) —
   // o cast só ajusta o tipo do lado do cliente pra bater com o que veio.
   const alunosBasicosFiltrados = alunosFiltrados as unknown as AlunoBasico[];
+
+  const paginacaoCompleta = usePaginacaoCliente(alunosFiltrados, 15, [busca]);
+  const paginacaoBasica = usePaginacaoCliente(alunosBasicosFiltrados, 15, [busca]);
 
   const columnsBasicas = [
     {
@@ -209,40 +213,6 @@ export function Alunos() {
         </div>
       )}
 
-      {/* <form
-        onSubmit={salvarAluno}
-        className="alunos-form"
-      >
-        <Input
-          label="Nome"
-          placeholder="Nome do aluno"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-        />
-
-        <Input
-          label="Data de nascimento"
-          type="date"
-          value={dataNascimento}
-          onChange={(e) => setDataNascimento(e.target.value)}
-        />
-
-        <Input
-          label="Telefone"
-          placeholder="(61) 99999-9999"
-          value={telefone}
-          onChange={(e) => setTelefone(e.target.value)}
-        />
-
-        <Button type="submit" disabled={salvando}>
-          {salvando
-            ? "Salvando..."
-            : editandoId
-            ? "Salvar Alterações"
-            : "Cadastrar"}
-        </Button>
-      </form> */}
-
       <ErrorMessage message={erro} />
 
       <div className="alunos-search">
@@ -262,9 +232,29 @@ export function Alunos() {
           description="Cadastre um novo aluno ou ajuste sua pesquisa."
         />
       ) : ehProfessor ? (
-        <Table columns={columnsBasicas} data={alunosBasicosFiltrados} />
+        <Table
+          columns={columnsBasicas}
+          data={paginacaoBasica.itensDaPagina}
+          pagination={{
+            paginaAtual: paginacaoBasica.paginaAtual,
+            totalPaginas: paginacaoBasica.totalPaginas,
+            totalItens: paginacaoBasica.totalItens,
+            itensPorPagina: paginacaoBasica.itensPorPagina,
+            onChangePagina: paginacaoBasica.irParaPagina,
+          }}
+        />
       ) : (
-        <Table columns={columns} data={alunosFiltrados} />
+        <Table
+          columns={columns}
+          data={paginacaoCompleta.itensDaPagina}
+          pagination={{
+            paginaAtual: paginacaoCompleta.paginaAtual,
+            totalPaginas: paginacaoCompleta.totalPaginas,
+            totalItens: paginacaoCompleta.totalItens,
+            itensPorPagina: paginacaoCompleta.itensPorPagina,
+            onChangePagina: paginacaoCompleta.irParaPagina,
+          }}
+        />
       )}
     </Layout>
   );

@@ -24,6 +24,10 @@ interface CrudDataTableProps<T> {
   onDelete?: (item: T) => void;
 
   loading?: boolean;
+
+  pageSize?: number;
+  totalItems?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export function CrudDataTable<T>({
@@ -40,6 +44,9 @@ export function CrudDataTable<T>({
   onEdit,
   onDelete,
   loading = false,
+  pageSize,
+  totalItems,
+  onPageChange,
 }: CrudDataTableProps<T>) {
   const finalColumns: DataTableColumn<T>[] = [
     ...columns,
@@ -86,6 +93,9 @@ export function CrudDataTable<T>({
       columns={finalColumns}
       emptyMessage={emptyMessage}
       loading={loading}
+      pageSize={pageSize}
+      totalItems={totalItems}
+      onPageChange={onPageChange}
     />
   );
 }

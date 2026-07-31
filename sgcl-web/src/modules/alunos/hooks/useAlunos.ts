@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Aluno } from "../types";
-import { AlunoService } from "../services/AlunoService"; 
-//import { id } from "zod/v4/locales";
+import { AlunoService } from "../services/AlunoService";
 
 export function useAlunos() {
   const [alunos, setAlunos] = useState<Aluno[]>([]);

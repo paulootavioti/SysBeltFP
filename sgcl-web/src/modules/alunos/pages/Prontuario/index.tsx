@@ -8,8 +8,10 @@ import { StatusBadge } from "../../../../components/sgcl/feedback/StatusBadge";
 
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Loading } from "../../../../components/ui/Loading";
+import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 
 import { AlunoService } from "../../services/AlunoService";
+import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 
 import "./styles.css";
 
@@ -66,26 +68,32 @@ export function ProntuarioAluno() {
   );
 
   const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState(false);
-  useEffect(() => {
-    async function carregar() {
-      if (!id) return;
-      try {
-        const data =
-          await AlunoService.prontuario<ProntuarioAlunoData>(Number(id));
-        setProntuario(data);
-      } catch {
-        setErro(true);
-      } finally {
-        setLoading(false);
-      }
+  const [erro, setErro] = useState("");
+
+  async function carregar() {
+    if (!id) return;
+    try {
+      setLoading(true);
+      setErro("");
+      const data =
+        await AlunoService.prontuario<ProntuarioAlunoData>(Number(id));
+      setProntuario(data);
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Não foi possível carregar o prontuário do aluno."));
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     carregar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
   if (erro) {
     return (
       <Page>
-        <p>Não foi possível carregar o prontuário do aluno.</p>
+        <ErrorMessage message={erro} onRetry={carregar} />
       </Page>
     );
   }

@@ -6,6 +6,7 @@ import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { formatarData, formatarMoeda } from "../../dashboard/utils/formatters";
 import { calcularStatusMensalidade } from "../../mensalidades/utils/status";
 import { nomeFormaPagamento } from "../../formasPagamento/types";
+import { usePaginacaoCliente } from "../../../hooks/usePaginacaoCliente";
 import type { MensalidadeComAluno } from "../../mensalidades/types";
 
 const STATUS_BADGE = {
@@ -24,6 +25,7 @@ interface ContasTableProps {
 
 export function ContasTable({ contas, emptyTitle, emptyDescription }: ContasTableProps) {
   const navigate = useNavigate();
+  const paginacao = usePaginacaoCliente(contas, 10, [contas]);
 
   if (contas.length === 0) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
@@ -54,5 +56,17 @@ export function ContasTable({ contas, emptyTitle, emptyDescription }: ContasTabl
     },
   ];
 
-  return <Table columns={columns} data={contas} />;
+  return (
+    <Table
+      columns={columns}
+      data={paginacao.itensDaPagina}
+      pagination={{
+        paginaAtual: paginacao.paginaAtual,
+        totalPaginas: paginacao.totalPaginas,
+        totalItens: paginacao.totalItens,
+        itensPorPagina: paginacao.itensPorPagina,
+        onChangePagina: paginacao.irParaPagina,
+      }}
+    />
+  );
 }
