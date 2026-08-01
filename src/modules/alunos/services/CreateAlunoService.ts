@@ -1,5 +1,8 @@
+import { hash } from "bcryptjs";
+
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { gerarSenhaAleatoria } from "../../../shared/utils/gerarSenhaAleatoria";
 
 interface CreateAlunoDTO {
   unidadeId: number;
@@ -106,6 +109,12 @@ export class CreateAlunoService {
       }
     }
 
+    // e-mail informado no cadastro já emite a credencial do Portal da
+    // Família (login direto do aluno) — não depende de uma ação separada
+    // do Admin depois.
+    const senhaPortalGerada = data.email ? gerarSenhaAleatoria() : null;
+    const senhaPortalHash = senhaPortalGerada ? await hash(senhaPortalGerada, 8) : null;
+
     const aluno = await prisma.aluno.create({
       data: {
         unidadeId: data.unidadeId,
@@ -154,9 +163,10 @@ export class CreateAlunoService {
         planoId: toNumberOrNull(data.planoId),
 
         ativo: true,
+        senhaPortal: senhaPortalHash,
       },
     });
 
-    return aluno;
+    return { ...aluno, senhaPortalGerada };
   }
 }

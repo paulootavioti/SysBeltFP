@@ -1,6 +1,9 @@
+import { hash } from "bcryptjs";
+
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
+import { gerarSenhaAleatoria } from "../../../shared/utils/gerarSenhaAleatoria";
 
 interface CreateResponsavelDTO {
   nome: string;
@@ -66,7 +69,12 @@ export class CreateResponsavelService {
       }
     }
 
-    return prisma.responsavel.create({
+    // e-mail informado no cadastro já emite a credencial do Portal da
+    // Família — não depende de uma ação separada do Admin depois.
+    const senhaPortalGerada = data.email ? gerarSenhaAleatoria() : null;
+    const senhaPortalHash = senhaPortalGerada ? await hash(senhaPortalGerada, 8) : null;
+
+    const responsavel = await prisma.responsavel.create({
       data: {
         unidadeId: aluno.unidadeId,
         nome: data.nome,
@@ -113,7 +121,10 @@ export class CreateResponsavelService {
         ativo: true,
 
         alunoId: data.alunoId,
+        senhaPortal: senhaPortalHash,
       },
     });
+
+    return { ...responsavel, senhaPortalGerada };
   }
 }

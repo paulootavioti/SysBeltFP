@@ -1,6 +1,9 @@
+import { hash } from "bcryptjs";
+
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
+import { gerarSenhaAleatoria } from "../../../shared/utils/gerarSenhaAleatoria";
 
 interface UpdateAlunoDTO {
   id: number;
@@ -61,6 +64,7 @@ export class UpdateAlunoService {
   async execute(data: UpdateAlunoDTO, unidadeId: number | null) {
     const aluno = await prisma.aluno.findUnique({
       where: { id: data.id },
+      omit: { senhaPortal: false },
     });
 
     if (!aluno) {
@@ -83,7 +87,13 @@ export class UpdateAlunoService {
       }
     }
 
-    return prisma.aluno.update({
+    // mesma lógica do UpdateResponsavelService: se o aluno ganhou e-mail
+    // agora e ainda não tinha credencial do portal, já emite a senha.
+    const precisaGerarSenha = Boolean(data.email) && !aluno.senhaPortal;
+    const senhaPortalGerada = precisaGerarSenha ? gerarSenhaAleatoria() : null;
+    const senhaPortalHash = senhaPortalGerada ? await hash(senhaPortalGerada, 8) : undefined;
+
+    const atualizado = await prisma.aluno.update({
       where: { id: data.id },
       data: {
         nome: data.nome,
@@ -127,7 +137,10 @@ export class UpdateAlunoService {
         formaPagamento: data.formaPagamento,
         diaVencimento: toNumberOrNull(data.diaVencimento),
         planoId: toNumberOrNull(data.planoId),
+        ...(senhaPortalHash !== undefined ? { senhaPortal: senhaPortalHash } : {}),
       },
     });
+
+    return { ...atualizado, senhaPortalGerada };
   }
 }

@@ -12,6 +12,12 @@ import { ROTA_PADRAO_POR_PERFIL, type Perfil } from "../../shared/constants/aces
 
 import "./styles.css";
 
+// é outro app (outra porta/domínio, outro login — não usa a tabela
+// Usuario) — não dá pra linkar com <Link> do react-router, por isso é um
+// <a> normal.
+const PORTAL_FAMILIA_URL =
+  import.meta.env.VITE_PORTAL_FAMILIA_URL ?? "http://localhost:5175";
+
 export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -72,6 +78,13 @@ export function Login() {
             {carregando ? "Entrando..." : "Entrar"}
           </Button>
         </form>
+
+        <div className="login-portal-familia">
+          <span>É responsável ou aluno?</span>
+          <a href={PORTAL_FAMILIA_URL} target="_blank" rel="noopener noreferrer">
+            Acesse o Portal da Família
+          </a>
+        </div>
       </div>
     </div>
   );

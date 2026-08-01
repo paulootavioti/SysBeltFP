@@ -66,6 +66,24 @@
   width: 100%;
 }
 
+.login-portal-familia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+
+  padding: 0 var(--space-6) var(--space-6);
+  text-align: center;
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
+}
+
+.login-portal-familia a {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 @media (max-width: 480px) {
   .login-brand {
     padding: var(--space-6) var(--space-4) var(--space-5);
@@ -73,5 +91,9 @@
 
   .login-form {
     padding: var(--space-5) var(--space-4);
+  }
+
+  .login-portal-familia {
+    padding: 0 var(--space-4) var(--space-5);
   }
 }

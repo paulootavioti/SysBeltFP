@@ -73,6 +73,11 @@ export interface Aluno {
 
   responsaveis?: Responsavel[];
   mensalidades?: Mensalidade[];
+
+  // só vem preenchido na resposta de criação/edição, quando o backend
+  // acabou de gerar (ou regerar) a senha do Portal da Família — é a
+  // única vez que a senha em texto puro aparece em algum lugar.
+  senhaPortalGerada?: string | null;
 }
 
 // PROFESSOR só recebe do backend esse recorte: nome, apelido, nome do
