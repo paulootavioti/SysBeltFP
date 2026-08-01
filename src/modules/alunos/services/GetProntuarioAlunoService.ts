@@ -2,8 +2,14 @@ import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
+interface Solicitante {
+  id: number;
+  perfil: string;
+  unidadeId: number | null;
+}
+
 export class GetProntuarioAlunoService {
-  async execute(id: number, unidadeId: number | null) {
+  async execute(id: number, solicitante: Solicitante) {
     const aluno = await prisma.aluno.findUnique({
       where: {
         id,
@@ -54,7 +60,14 @@ export class GetProntuarioAlunoService {
       throw new AppError("Aluno não encontrado.");
     }
 
-    garantirAcessoUnidade(unidadeId, aluno.unidadeId, "Aluno não encontrado.");
+    garantirAcessoUnidade(solicitante.unidadeId, aluno.unidadeId, "Aluno não encontrado.");
+
+    // o professor só enxerga o prontuário de alunos das próprias turmas —
+    // e um recorte pedagógico dele (sem dados financeiros/de contato), ao
+    // contrário de ADMIN/RECEPCAO, que acessam a ficha completa.
+    if (solicitante.perfil === "PROFESSOR" && aluno.turma?.professorId !== solicitante.id) {
+      throw new AppError("Você só pode acessar o prontuário de alunos das suas próprias turmas.", 403);
+    }
 
     const totalAulas = aluno.aulas.length;
 
@@ -73,21 +86,46 @@ export class GetProntuarioAlunoService {
     const proximoGrauEm =
       totalPresencas === 0 ? 8 : 8 - (totalPresencas % 8);
 
+    const resumo = {
+      totalAulas,
+      totalPresencas,
+      frequencia:
+        totalAulas > 0
+          ? Math.round((totalPresencas / totalAulas) * 100)
+          : 0,
+
+      faixa: aluno.faixa,
+      grau: aluno.grau,
+      proximoGrauEm:
+        proximoGrauEm === 8 ? 8 : proximoGrauEm,
+    };
+
+    if (solicitante.perfil === "PROFESSOR") {
+      // recorte pedagógico: sem contato/endereço/kimono do aluno, sem
+      // contato dos responsáveis e sem dados financeiros/de competições.
+      return {
+        aluno: {
+          id: aluno.id,
+          nome: aluno.nome,
+          apelido: aluno.apelido,
+          dataNascimento: aluno.dataNascimento,
+          ativo: aluno.ativo,
+        },
+        resumo,
+        comportamento,
+        responsaveis: aluno.responsaveis.map((responsavel) => ({
+          id: responsavel.id,
+          nome: responsavel.nome,
+          parentesco: responsavel.parentesco,
+        })),
+        turma: aluno.turma,
+        graduacoes: aluno.graduacoes,
+      };
+    }
+
     return {
       aluno,
-      resumo: {
-        totalAulas,
-        totalPresencas,
-        frequencia:
-          totalAulas > 0
-            ? Math.round((totalPresencas / totalAulas) * 100)
-            : 0,
-
-        faixa: aluno.faixa,
-        grau: aluno.grau,
-        proximoGrauEm:
-          proximoGrauEm === 8 ? 8 : proximoGrauEm,
-      },
+      resumo,
       comportamento,
       responsaveis: aluno.responsaveis,
       turma: aluno.turma,

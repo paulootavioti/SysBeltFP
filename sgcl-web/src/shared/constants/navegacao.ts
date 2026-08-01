@@ -26,6 +26,7 @@ import {
   LuTrendingUp,
   LuSettings,
   LuCircleHelp,
+  LuClipboardCheck,
 } from "react-icons/lu";
 
 import type { ContadoresMenu } from "../services/NotificacoesService";
@@ -79,6 +80,11 @@ function itemExato(to: string, label: string, icon: IconType, badgeKey?: BadgeKe
 // Dashboard/Relatórios sempre soltos no topo/rodapé.
 export const NAV_TREE: NavEntry[] = [
   itemExato("/dashboard", "Dashboard", LuLayoutDashboard),
+
+  // hub dedicado do perfil PROFESSOR (também visível ao ADMIN) — mesma
+  // razão de ficar solto que Dashboard/Relatórios: não é um módulo de
+  // domínio, é uma tela que reúne o que o professor usa no dia a dia.
+  itemExato("/professor", "Área do Professor", LuClipboardCheck),
 
   {
     kind: "group",

@@ -50,4 +50,18 @@ export class GraduacaoService {
       cobranca: montarCobranca(data),
     });
   }
+
+  // usado pela Área do Professor: cria uma solicitação pendente de
+  // aprovação do Admin, sem promover o aluno de imediato.
+  static async solicitar(data: { alunoId: number; faixa: string; comentario?: string }) {
+    return ApiClient.post<Graduacao>("/graduacoes/solicitar", data);
+  }
+
+  static async aprovar(id: number) {
+    return ApiClient.patch<Graduacao>(`/graduacoes/${id}/aprovar`);
+  }
+
+  static async rejeitar(id: number, motivoRejeicao?: string) {
+    return ApiClient.patch<Graduacao>(`/graduacoes/${id}/rejeitar`, { motivoRejeicao });
+  }
 }

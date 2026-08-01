@@ -18,3 +18,13 @@ export const incrementarGrauSchema = z.object({
   alunoId: z.coerce.number().int().positive("Informe o aluno."),
   cobranca: cobrancaSchema,
 });
+
+export const solicitarGraduacaoSchema = z.object({
+  alunoId: z.coerce.number().int().positive("Informe o aluno."),
+  faixa: z.string().min(1, "Informe a faixa."),
+  comentario: z.string().max(1000).optional(),
+});
+
+export const rejeitarGraduacaoSchema = z.object({
+  motivoRejeicao: z.string().max(1000).optional(),
+});

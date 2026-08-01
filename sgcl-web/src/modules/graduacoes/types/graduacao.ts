@@ -1,3 +1,11 @@
+export type StatusGraduacao = "pendente" | "aprovada" | "rejeitada";
+
+export interface UsuarioResumoGraduacao {
+  id: number;
+  nome: string;
+  apelido?: string | null;
+}
+
 export interface Graduacao {
   id: number;
   faixa: string;
@@ -9,6 +17,14 @@ export interface Graduacao {
     apelido?: string | null;
     grau: number;
   };
+  status: StatusGraduacao;
+  comentario?: string | null;
+  solicitadoPorId?: number | null;
+  solicitadoPor?: UsuarioResumoGraduacao | null;
+  revisadoPorId?: number | null;
+  revisadoPor?: UsuarioResumoGraduacao | null;
+  revisadoEm?: string | null;
+  motivoRejeicao?: string | null;
 }
 
 export interface EvolucaoAluno {

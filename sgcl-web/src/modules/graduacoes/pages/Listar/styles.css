@@ -18,3 +18,53 @@
   padding: var(--space-4);
   margin-bottom: var(--space-4);
 }
+
+.graduacoes-pendentes {
+  margin-bottom: var(--space-5);
+}
+
+.graduacoes-pendentes h2 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-lg);
+  color: var(--color-text);
+}
+
+.graduacoes-pendentes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.graduacoes-pendente-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  flex-wrap: wrap;
+}
+
+.graduacoes-pendente-card strong {
+  color: var(--color-text);
+}
+
+.graduacoes-pendente-faixa {
+  margin-left: var(--space-2);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.graduacoes-pendente-meta,
+.graduacoes-pendente-comentario {
+  margin: 4px 0 0;
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
+}
+
+.graduacoes-pendente-acoes {
+  display: flex;
+  gap: var(--space-2);
+}

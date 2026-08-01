@@ -35,12 +35,14 @@ const alunosController =
     alunosController.aniversariantes
   );
 
-  // prontuário é a ficha médica/completa do aluno — PROFESSOR só enxerga o
-  // recorte básico (nome, apelido, responsável, turma, presenças, graduações).
+  // prontuário é a ficha completa do aluno (contato/endereço/financeiro) —
+  // PROFESSOR só enxerga o recorte pedagógico (nome, apelido, responsável,
+  // turma, presenças, graduações) e só das próprias turmas, ver
+  // GetProntuarioAlunoService.
   alunosRoutes.get(
     "/:id/prontuario",
     ensureAuthenticated,
-    ensureRole(["ADMIN", "RECEPCAO"]),
+    ensureRole(["ADMIN", "RECEPCAO", "PROFESSOR"]),
     alunosController.prontuario
   );
   
