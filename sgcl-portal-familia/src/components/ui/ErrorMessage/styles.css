@@ -1,0 +1,27 @@
+.error-message {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+
+  color: var(--danger);
+  margin-top: 12px;
+  font-weight: 500;
+}
+
+.error-message-retry {
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+  border-radius: var(--radius-md, 6px);
+  padding: 4px 10px;
+  font-size: var(--font-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.error-message-retry:hover {
+  background: var(--danger);
+  color: white;
+}

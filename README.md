@@ -14,11 +14,12 @@ O Sys Belt centraliza a gestão de uma ou mais unidades (filiais) de uma academi
 
 ```
 sysbeltfp/
-├── src/            # backend (API REST — Express + Prisma + PostgreSQL)
-├── sgcl-web/        # frontend (React + TypeScript + Vite)
-├── prisma/          # schema.prisma e migrations
-├── docs/            # documentação completa do projeto
-└── netlify/          # functions usadas no deploy (Netlify)
+├── src/                    # backend (API REST — Express + Prisma + PostgreSQL)
+├── sgcl-web/               # frontend da equipe (React + TypeScript + Vite)
+├── sgcl-portal-familia/    # Portal da Família — app separado (React + TypeScript + Vite)
+├── prisma/                 # schema.prisma e migrations
+├── docs/                   # documentação completa do projeto
+└── netlify/                # functions usadas no deploy (Netlify)
 ```
 
 ## Como rodar localmente
@@ -32,7 +33,7 @@ npm run dev
 
 Servidor em `http://localhost:3333` (configurável via `PORT`). Requer um `.env` com `DATABASE_URL` (PostgreSQL) e `JWT_SECRET` — veja `.env.example`.
 
-### Frontend
+### Frontend (equipe)
 
 ```bash
 cd sgcl-web
@@ -41,6 +42,22 @@ npm run dev
 ```
 
 Aplicação em `http://localhost:5173`.
+
+### Portal da Família (responsáveis e alunos)
+
+App **separado** do frontend da equipe — outro pacote, outra porta, outro login (não usa a tabela `Usuario`, e sim `Responsavel`/`Aluno` com `senhaPortal`). Consome a mesma API do backend (`/portal-familia/*`).
+
+```bash
+cd sgcl-portal-familia
+npm install
+npm run dev
+```
+
+Aplicação em `http://localhost:5175`. O backend já libera CORS para as duas origens (`5173` e `5175`) por padrão — se mudar a porta, ajuste `CORS_ORIGIN` no `.env` do backend.
+
+Para um responsável (ou aluno) acessar o portal, um ADMIN precisa antes definir a senha inicial dele: em `sgcl-web`, na página do aluno → aba **Responsáveis** → botão **"Senha do portal"** (ou, para o aluno logar diretamente, `PATCH /alunos/:id/senha-portal`). Não há fluxo de "esqueci minha senha" nem convite por e-mail nesta primeira versão — **TODO** para a equipe de produto/infra definir esse fluxo.
+
+O botão **"Pagar agora"** dentro do Portal da Família inicia a cobrança pelo gateway de pagamento configurado (`src/modules/pagamentos/gateways`) — como nenhum gateway real está integrado ainda, hoje ele sempre cai no gateway manual (confirmação de pagamento feita à mão pela equipe em Mensalidades). Isso é outro **TODO** explícito: quando um gateway real for habilitado em `FormaPagamento.configuracao`, o botão passa a abrir o checkout de verdade sem precisar mudar nada no frontend.
 
 ### Banco de dados
 
@@ -64,6 +81,8 @@ npx prisma migrate deploy  # aplica migrations em produção (não usar migrate 
 | **ADMIN** | Gestão completa da(s) própria(s) unidade(s) — pode estar vinculado a mais de uma. |
 | **PROFESSOR** | Aulas, chamada, planejamento pedagógico, graduações e competições; dados do Aluno redigidos (sem CPF/endereço/saúde/financeiro); pode dar aula em mais de uma unidade. |
 | **RECEPCAO** | Alunos, turmas, aulas, mensalidades, graduações, competições, planos, mensagens e relatórios da própria unidade. |
+
+Além desses quatro perfis "de equipe" (autenticados em `sgcl-web`), existem contas de **RESPONSAVEL** e **ALUNO** — só acessam o Portal da Família (`sgcl-portal-familia`), nunca `sgcl-web`, e enxergam apenas os dados do(s) aluno(s) vinculado(s) à própria conta (resumo, frequência, mensalidades, agenda e mensagens com a academia).
 
 Detalhes completos da matriz de permissões em [`docs/seguranca.md`](docs/seguranca.md) e [`docs/regras-de-negocio.md`](docs/regras-de-negocio.md).
 

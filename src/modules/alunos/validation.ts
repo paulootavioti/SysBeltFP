@@ -49,3 +49,7 @@ export const alunoSchema = z.object({
   diaVencimento: numeroOuTexto,
   planoId: numeroOuTexto,
 });
+
+export const senhaPortalSchema = z.object({
+  senha: z.string().min(6, "A senha precisa ter pelo menos 6 caracteres."),
+});

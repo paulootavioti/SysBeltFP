@@ -1,0 +1,238 @@
+.portal-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-8);
+}
+
+.portal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.portal-header h1 {
+  margin: 0;
+  font-size: var(--font-xl);
+  color: var(--color-text);
+}
+
+.portal-header p {
+  margin: 4px 0 0;
+  color: var(--color-text-light);
+}
+
+.portal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.portal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: 999px;
+  padding: 6px 14px 6px 6px;
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.portal-chip-iniciais {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: var(--font-xs);
+}
+
+.portal-chip-ativo {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+/* ===== Resumo ===== */
+
+.resumo-tab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.resumo-tab-status {
+  display: flex;
+  align-items: center;
+}
+
+/* ===== Frequência ===== */
+
+.frequencia-tab-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.frequencia-tab-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.frequencia-tab-item span {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+/* ===== Mensalidades ===== */
+
+.mensalidades-tab-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mensalidades-tab-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.mensalidades-tab-item strong {
+  display: block;
+  color: var(--color-text);
+}
+
+.mensalidades-tab-item span {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+.mensalidades-tab-acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mensalidades-tab-confirmacao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mensalidades-tab-confirmacao p {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.mensalidades-tab-confirmacao-nota {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+/* ===== Agenda ===== */
+
+.agenda-tab-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.agenda-tab-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.agenda-tab-data {
+  min-width: 90px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.agenda-tab-item strong {
+  display: block;
+  color: var(--color-text);
+}
+
+.agenda-tab-item span {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+/* ===== Mensagens ===== */
+
+.mensagens-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 640px;
+}
+
+.mensagens-tab-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: var(--space-2);
+}
+
+.mensagens-tab-bolha {
+  max-width: 75%;
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.mensagens-tab-bolha-familia {
+  align-self: flex-end;
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+}
+
+.mensagens-tab-bolha strong {
+  display: block;
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-bottom: 2px;
+}
+
+.mensagens-tab-bolha p {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.mensagens-tab-form {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.mensagens-tab-form textarea {
+  flex: 1;
+}

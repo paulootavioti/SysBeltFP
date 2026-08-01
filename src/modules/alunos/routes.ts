@@ -3,7 +3,7 @@ import { AlunosController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
 import { ensureRole } from "../../shared/middlewares/ensureRole";
 import { validateBody } from "../../shared/middlewares/validateBody";
-import { alunoSchema } from "./validation";
+import { alunoSchema, senhaPortalSchema } from "./validation";
 
 const alunosRoutes = Router();
 
@@ -66,6 +66,14 @@ const alunosController =
     ensureAuthenticated,
     ensureRole(["ADMIN", "RECEPCAO"]),
     alunosController.toggleAtivo
+  );
+
+  alunosRoutes.patch(
+    "/:id/senha-portal",
+    ensureAuthenticated,
+    ensureRole(["ADMIN"]),
+    validateBody(senhaPortalSchema),
+    alunosController.setSenhaPortal
   );
 
   

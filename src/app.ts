@@ -34,10 +34,14 @@ import { modelosContratoRoutes } from "./modules/modelosContrato/routes";
 import { contratosRoutes } from "./modules/contratos/routes";
 import { assinaturaEletronicaRoutes } from "./modules/assinaturaEletronica/routes";
 import { notificacoesRoutes } from "./modules/notificacoes/routes";
+import { portalFamiliaRoutes } from "./modules/portalFamilia/routes";
+import { mensagensFamiliaRoutes } from "./modules/mensagensFamilia/routes";
 
+// 5173 = sgcl-web (admin/staff), 5175 = sgcl-portal-familia (Portal da
+// Família) — dois frontends separados consumindo a mesma API.
 const corsOrigin = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
-  : "http://localhost:5173";
+  : ["http://localhost:5173", "http://localhost:5175"];
 
 export const app = express();
 
@@ -91,6 +95,8 @@ app.use("/modelos-contrato", modelosContratoRoutes);
 app.use("/contratos", contratosRoutes);
 app.use("/assinatura-eletronica", assinaturaEletronicaRoutes);
 app.use("/notificacoes", notificacoesRoutes);
+app.use("/portal-familia", portalFamiliaRoutes);
+app.use("/mensagens-familia", mensagensFamiliaRoutes);
 
 app.use("/auth", authRoutes);
 app.use(errorHandler);

@@ -12,6 +12,7 @@ import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 
 import { ResponsavelForm } from "../../../responsaveis/components/ResponsavelForm";
 import { ResponsavelService } from "../../../responsaveis/services/ResponsavelService";
+import { DefinirSenhaPortalModal } from "../../../responsaveis/components/DefinirSenhaPortalModal";
 
 import type { ResponsavelFormData } from "../../../responsaveis/schema/responsavel.schema";
 import type { Responsavel } from "../../../responsaveis/types/responsavel";
@@ -23,6 +24,7 @@ import { ResponsaveisNomeTab } from "../../components/tabs/ResponsaveisNomeTab";
 import { PresencasTab } from "../../components/tabs/PresencasTab";
 import { GraduacoesTab } from "../../components/tabs/GraduacoesTab";
 import { FinanceiroTab } from "../../components/tabs/FinanceiroTab";
+import { MensagensFamiliaTab } from "../../components/tabs/MensagensFamiliaTab";
 
 import { AlunoService } from "../../services/AlunoService";
 import { useAuth } from "../../../../contexts/useAuth";
@@ -59,6 +61,7 @@ export function AlunoDetalhes() {
 
   const [responsavelParaExcluir, setResponsavelParaExcluir] = useState<Responsavel | null>(null);
   const [excluindoResponsavel, setExcluindoResponsavel] = useState(false);
+  const [responsavelSenhaPortal, setResponsavelSenhaPortal] = useState<Responsavel | null>(null);
 
   async function carregarAluno() {
     if (!id) return;
@@ -271,6 +274,7 @@ export function AlunoDetalhes() {
                 onNovo={handleNovoResponsavel}
                 onEditar={handleEditarResponsavel}
                 onExcluir={setResponsavelParaExcluir}
+                onDefinirSenhaPortal={usuario?.perfil === "ADMIN" ? setResponsavelSenhaPortal : undefined}
               />
             ),
           },
@@ -288,6 +292,11 @@ export function AlunoDetalhes() {
             label: "Financeiro",
             value: "financeiro",
             content: <FinanceiroTab aluno={alunoCompleto} />,
+          },
+          {
+            label: "Mensagens",
+            value: "mensagens",
+            content: <MensagensFamiliaTab aluno={alunoCompleto} />,
           },
         ]}
       />
@@ -317,6 +326,11 @@ export function AlunoDetalhes() {
         loading={excluindoResponsavel}
         onConfirm={confirmarExclusaoResponsavel}
         onCancel={() => setResponsavelParaExcluir(null)}
+      />
+
+      <DefinirSenhaPortalModal
+        responsavel={responsavelSenhaPortal}
+        onClose={() => setResponsavelSenhaPortal(null)}
       />
     </Layout>
   );

@@ -8,6 +8,7 @@ import { ToggleResponsavelAtivoService } from "./services/ToggleResponsavelAtivo
 import { DeleteResponsavelService } from "./services/DeleteResponsavelService";
 
 import { ListResponsaveisByAlunoService } from "./services/ListResponsaveisByAlunoService";
+import { SetSenhaPortalResponsavelService } from "./services/SetSenhaPortalResponsavelService";
 
 export class ResponsaveisController {
 
@@ -81,5 +82,16 @@ export class ResponsaveisController {
     const responsaveis = await service.execute(Number(alunoId), req.user.unidadeId);
 
     return res.json(responsaveis);
+  }
+
+  async setSenhaPortal(req: Request, res: Response) {
+    const { id } = req.params;
+    const { senha } = req.body;
+
+    const service = new SetSenhaPortalResponsavelService();
+
+    const resultado = await service.execute({ id: Number(id), senha }, req.user.unidadeId);
+
+    return res.json(resultado);
   }
 }

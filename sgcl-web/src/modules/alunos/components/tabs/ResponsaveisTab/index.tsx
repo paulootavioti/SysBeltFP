@@ -13,6 +13,7 @@ interface ResponsaveisTabProps {
   onNovo?: () => void;
   onEditar?: (responsavel: Responsavel) => void;
   onExcluir?: (responsavel: Responsavel) => void;
+  onDefinirSenhaPortal?: (responsavel: Responsavel) => void;
 }
 
 export function ResponsaveisTab({
@@ -20,6 +21,7 @@ export function ResponsaveisTab({
   onNovo,
   onEditar,
   onExcluir,
+  onDefinirSenhaPortal,
 }: ResponsaveisTabProps) {
   return (
     <section className="responsaveis-tab">
@@ -68,13 +70,26 @@ export function ResponsaveisTab({
           {
             id: "acoes",
             header: "",
-            width: 180,
+            width: 260,
             align: "center",
             render: (responsavel) => (
-              <Actions
-                onEdit={() => onEditar?.(responsavel)}
-                onDelete={() => onExcluir?.(responsavel)}
-              />
+              <div className="responsaveis-tab-acoes-linha">
+                {onDefinirSenhaPortal && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => onDefinirSenhaPortal(responsavel)}
+                  >
+                    Senha do portal
+                  </Button>
+                )}
+
+                <Actions
+                  onEdit={() => onEditar?.(responsavel)}
+                  onDelete={() => onExcluir?.(responsavel)}
+                />
+              </div>
             ),
           },
         ]}
