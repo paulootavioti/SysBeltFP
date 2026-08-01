@@ -5,6 +5,8 @@ import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Loading } from "../../../../components/ui/Loading";
+import { CredenciaisPortalGeradasModal } from "../../../../components/sgcl/feedback/CredenciaisPortalGeradas";
+import type { CredencialPortalGerada } from "../../../../components/sgcl/feedback/CredenciaisPortalGeradas";
 
 import { AlunoForm } from "../../components/AlunoForm";
 import { AlunoService } from "../../services/AlunoService";
@@ -26,6 +28,7 @@ export function EditarAluno() {
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
+  const [credenciaisGeradas, setCredenciaisGeradas] = useState<CredencialPortalGerada[]>([]);
 
   useEffect(() => {
     async function carregarAluno() {
@@ -55,7 +58,17 @@ export function EditarAluno() {
       setSalvando(true);
       setErro("");
 
-      await AlunoService.editar(Number(id), data);
+      const alunoAtualizado = await AlunoService.editar(Number(id), data);
+      const credenciais: CredencialPortalGerada[] = [];
+
+      if (alunoAtualizado.senhaPortalGerada && alunoAtualizado.email) {
+        credenciais.push({
+          papel: "Aluno",
+          nome: alunoAtualizado.nome,
+          email: alunoAtualizado.email,
+          senha: alunoAtualizado.senhaPortalGerada,
+        });
+      }
 
       if (data.responsavel?.nome) {
         const dadosResponsavel = {
@@ -71,15 +84,27 @@ export function EditarAluno() {
           recebeComunicados: data.responsavel.recebeComunicados ?? true,
         };
 
-        if (data.responsavel.id) {
-          await ResponsavelService.atualizar(data.responsavel.id, Number(id), dadosResponsavel);
-        } else {
-          await ResponsavelService.criar(Number(id), dadosResponsavel);
+        const responsavelSalvo = data.responsavel.id
+          ? await ResponsavelService.atualizar(data.responsavel.id, Number(id), dadosResponsavel)
+          : await ResponsavelService.criar(Number(id), dadosResponsavel);
+
+        if (responsavelSalvo.senhaPortalGerada && responsavelSalvo.email) {
+          credenciais.push({
+            papel: "Responsável",
+            nome: responsavelSalvo.nome,
+            email: responsavelSalvo.email,
+            senha: responsavelSalvo.senhaPortalGerada,
+          });
         }
       }
 
       toast.success("Aluno atualizado com sucesso.");
-      navigate("/alunos");
+
+      if (credenciais.length > 0) {
+        setCredenciaisGeradas(credenciais);
+      } else {
+        navigate("/alunos");
+      }
     } catch (error) {
       const mensagem = getApiErrorMessage(error, "Erro ao editar aluno.");
       setErro(mensagem);
@@ -114,6 +139,14 @@ export function EditarAluno() {
           onSubmit={handleSalvar}
         />
       )}
+
+      <CredenciaisPortalGeradasModal
+        credenciais={credenciaisGeradas}
+        onClose={() => {
+          setCredenciaisGeradas([]);
+          navigate("/alunos");
+        }}
+      />
     </Layout>
   );
 }

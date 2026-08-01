@@ -20,6 +20,7 @@ export class LoginFamiliaService {
     const responsaveis = await prisma.responsavel.findMany({
       where: { email, ativo: true },
       include: { aluno: true },
+      omit: { senhaPortal: false },
     });
 
     for (const responsavel of responsaveis) {
@@ -39,6 +40,7 @@ export class LoginFamiliaService {
 
     const aluno = await prisma.aluno.findFirst({
       where: { email, ativo: true },
+      omit: { senhaPortal: false },
     });
 
     if (aluno?.senhaPortal) {

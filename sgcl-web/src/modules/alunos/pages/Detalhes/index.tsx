@@ -9,6 +9,8 @@ import { Tabs } from "../../../../components/ui/Tabs";
 import { Modal } from "../../../../components/ui/Modal";
 import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
+import { CredenciaisPortalGeradasModal } from "../../../../components/sgcl/feedback/CredenciaisPortalGeradas";
+import type { CredencialPortalGerada } from "../../../../components/sgcl/feedback/CredenciaisPortalGeradas";
 
 import { ResponsavelForm } from "../../../responsaveis/components/ResponsavelForm";
 import { ResponsavelService } from "../../../responsaveis/services/ResponsavelService";
@@ -62,6 +64,7 @@ export function AlunoDetalhes() {
   const [responsavelParaExcluir, setResponsavelParaExcluir] = useState<Responsavel | null>(null);
   const [excluindoResponsavel, setExcluindoResponsavel] = useState(false);
   const [responsavelSenhaPortal, setResponsavelSenhaPortal] = useState<Responsavel | null>(null);
+  const [credenciaisGeradas, setCredenciaisGeradas] = useState<CredencialPortalGerada[]>([]);
 
   async function carregarAluno() {
     if (!id) return;
@@ -110,23 +113,25 @@ export function AlunoDetalhes() {
     try {
       setErro("");
 
-      if (responsavelEditando) {
-        await ResponsavelService.atualizar(
-          responsavelEditando.id,
-          aluno.id,
-          data
-        );
-      } else {
-        await ResponsavelService.criar(
-          aluno.id,
-          data
-        );
-      }
+      const responsavelSalvo = responsavelEditando
+        ? await ResponsavelService.atualizar(responsavelEditando.id, aluno.id, data)
+        : await ResponsavelService.criar(aluno.id, data);
 
       await recarregarAluno();
 
       setResponsavelEditando(null);
       setModalResponsavelAberto(false);
+
+      if (responsavelSalvo.senhaPortalGerada && responsavelSalvo.email) {
+        setCredenciaisGeradas([
+          {
+            papel: "Responsável",
+            nome: responsavelSalvo.nome,
+            email: responsavelSalvo.email,
+            senha: responsavelSalvo.senhaPortalGerada,
+          },
+        ]);
+      }
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao salvar responsável."));
     }
@@ -331,6 +336,11 @@ export function AlunoDetalhes() {
       <DefinirSenhaPortalModal
         responsavel={responsavelSenhaPortal}
         onClose={() => setResponsavelSenhaPortal(null)}
+      />
+
+      <CredenciaisPortalGeradasModal
+        credenciais={credenciaisGeradas}
+        onClose={() => setCredenciaisGeradas([])}
       />
     </Layout>
   );

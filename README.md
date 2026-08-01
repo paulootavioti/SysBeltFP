@@ -55,7 +55,15 @@ npm run dev
 
 Aplicação em `http://localhost:5175`. O backend já libera CORS para as duas origens (`5173` e `5175`) por padrão — se mudar a porta, ajuste `CORS_ORIGIN` no `.env` do backend.
 
-Para um responsável (ou aluno) acessar o portal, um ADMIN precisa antes definir a senha inicial dele: em `sgcl-web`, na página do aluno → aba **Responsáveis** → botão **"Senha do portal"** (ou, para o aluno logar diretamente, `PATCH /alunos/:id/senha-portal`). Não há fluxo de "esqueci minha senha" nem convite por e-mail nesta primeira versão — **TODO** para a equipe de produto/infra definir esse fluxo.
+A tela de login do `sgcl-web` (equipe) tem um link **"Acesse o Portal da Família"** apontando pra essa URL — configurável via `VITE_PORTAL_FAMILIA_URL` (`sgcl-web/.env.local`), útil quando o portal está publicado em outro domínio.
+
+A credencial de acesso ao portal é gerada automaticamente pelo backend, direto do cadastro de aluno/responsável — não é um passo manual separado:
+
+- Ao **cadastrar** um aluno ou responsável com e-mail preenchido, o backend já gera uma senha aleatória, salva o hash e devolve a senha em texto puro **uma única vez** na resposta da criação — o `sgcl-web` mostra essa credencial num modal (com botão de copiar) assim que o cadastro é salvo.
+- Ao **editar** um aluno/responsável que ainda não tinha e-mail e adicionar um agora, a mesma geração automática acontece — não é preciso nenhuma ação extra.
+- Se o aluno/responsável já tem credencial, editar os dados não regenera a senha (evita invalidar um acesso já em uso).
+- Pra **redefinir manualmente** (ex.: o responsável esqueceu a senha), continua existindo o botão **"Senha do portal"** na aba Responsáveis do aluno (ou `PATCH /alunos/:id/senha-portal` / `PATCH /responsaveis/:id/senha-portal`, ambos ADMIN-only) — não há fluxo de "esqueci minha senha" self-service nem convite por e-mail nesta primeira versão, **TODO** para a equipe de produto/infra.
+- O hash da senha (`senhaPortal`) nunca é devolvido pela API em listagens/detalhes — o Prisma Client tem `omit` configurado por padrão pra esse campo (`src/shared/database/prisma.ts`); só `LoginFamiliaService` lê o hash, e só pra comparar no login.
 
 O botão **"Pagar agora"** dentro do Portal da Família inicia a cobrança pelo gateway de pagamento configurado (`src/modules/pagamentos/gateways`) — como nenhum gateway real está integrado ainda, hoje ele sempre cai no gateway manual (confirmação de pagamento feita à mão pela equipe em Mensalidades). Isso é outro **TODO** explícito: quando um gateway real for habilitado em `FormaPagamento.configuracao`, o botão passa a abrir o checkout de verdade sem precisar mudar nada no frontend.
 

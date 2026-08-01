@@ -4,6 +4,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
+import { CredenciaisPortalGeradasModal } from "../../../../components/sgcl/feedback/CredenciaisPortalGeradas";
+import type { CredencialPortalGerada } from "../../../../components/sgcl/feedback/CredenciaisPortalGeradas";
 
 import { AlunoForm } from "../../components/AlunoForm";
 import { AlunoService } from "../../services/AlunoService";
@@ -21,6 +23,7 @@ export function CadastroAluno() {
 
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
+  const [credenciaisGeradas, setCredenciaisGeradas] = useState<CredencialPortalGerada[]>([]);
 
   async function handleSalvar(data: AlunoFormData) {
     try {
@@ -28,9 +31,19 @@ export function CadastroAluno() {
       setErro("");
 
       const novoAluno = await AlunoService.criar(data);
+      const credenciais: CredencialPortalGerada[] = [];
+
+      if (novoAluno.senhaPortalGerada && novoAluno.email) {
+        credenciais.push({
+          papel: "Aluno",
+          nome: novoAluno.nome,
+          email: novoAluno.email,
+          senha: novoAluno.senhaPortalGerada,
+        });
+      }
 
       if (data.responsavel?.nome) {
-        await ResponsavelService.criar(novoAluno.id, {
+        const responsavelCriado = await ResponsavelService.criar(novoAluno.id, {
           nome: data.responsavel.nome,
           apelido: data.responsavel.apelido,
           parentesco: data.responsavel.parentesco || "Não informado",
@@ -42,10 +55,24 @@ export function CadastroAluno() {
           contatoEmergencia: data.responsavel.contatoEmergencia ?? false,
           recebeComunicados: data.responsavel.recebeComunicados ?? true,
         });
+
+        if (responsavelCriado.senhaPortalGerada && responsavelCriado.email) {
+          credenciais.push({
+            papel: "Responsável",
+            nome: responsavelCriado.nome,
+            email: responsavelCriado.email,
+            senha: responsavelCriado.senhaPortalGerada,
+          });
+        }
       }
 
       toast.success("Aluno cadastrado com sucesso.");
-      navigate("/alunos");
+
+      if (credenciais.length > 0) {
+        setCredenciaisGeradas(credenciais);
+      } else {
+        navigate("/alunos");
+      }
     } catch (error) {
       const mensagem = getApiErrorMessage(error, "Erro ao cadastrar aluno.");
       setErro(mensagem);
@@ -71,6 +98,14 @@ export function CadastroAluno() {
       <AlunoForm
         loading={loading}
         onSubmit={handleSalvar}
+      />
+
+      <CredenciaisPortalGeradasModal
+        credenciais={credenciaisGeradas}
+        onClose={() => {
+          setCredenciaisGeradas([]);
+          navigate("/alunos");
+        }}
       />
     </Layout>
   );

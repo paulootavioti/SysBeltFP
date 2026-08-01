@@ -1,13 +1,14 @@
 import { api } from "../../../services/api";
 
 import type { ResponsavelFormData } from "../schema/responsavel.schema";
+import type { Responsavel } from "../types/responsavel";
 
 export class ResponsavelService {
   static async criar(
     alunoId: number,
     data: ResponsavelFormData
   ) {
-    const response = await api.post("/responsaveis", {
+    const response = await api.post<Responsavel>("/responsaveis", {
       alunoId,
       ...data,
     });
@@ -20,14 +21,14 @@ export class ResponsavelService {
     alunoId: number,
     data: ResponsavelFormData
   ) {
-    const response = await api.put(
+    const response = await api.put<Responsavel>(
       `/responsaveis/${id}`,
       {
         alunoId,
         ...data,
       }
     );
-  
+
     return response.data;
   }
 
