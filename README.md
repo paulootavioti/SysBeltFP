@@ -57,6 +57,23 @@ Aplicação em `http://localhost:5175`. O backend já libera CORS para as duas o
 
 A tela de login do `sgcl-web` (equipe) tem um link **"Acesse o Portal da Família"** apontando pra essa URL — configurável via `VITE_PORTAL_FAMILIA_URL` (`sgcl-web/.env.local`), útil quando o portal está publicado em outro domínio.
 
+#### Deploy em produção (Netlify, domínio separado)
+
+O Portal da Família é publicado como um **site Netlify próprio** — mesmo repositório, base directory diferente — porque é um app estaticamente separado do `sgcl-web` e não empacota a função serverless do backend (`sgcl-portal-familia/netlify.toml` cuida só do build + fallback de SPA, sem `[functions]`).
+
+1. **Criar o site**: no Netlify, "Add new site" → "Import an existing project" → o mesmo repositório Git do Sys Belt.
+2. **Configurar o build**: em "Site settings" → "Build & deploy" → "Build settings", defina:
+   - **Base directory**: `sgcl-portal-familia`
+   - **Build command**: `npm ci && npm run build` (já vem de `sgcl-portal-familia/netlify.toml`, mas confirme se o Netlify detectou o `netlify.toml` do subdiretório)
+   - **Publish directory**: `sgcl-portal-familia/dist` (ou só `dist`, já que é relativo à base directory)
+3. **Variável de ambiente obrigatória**: em "Site settings" → "Environment variables", adicione `VITE_API_URL` com a URL **completa e absoluta** do backend (ex.: `https://sysbelt.netlify.app/api`, ou o domínio da API se for diferente). Sem isso o build usa o fallback de desenvolvimento e o portal tenta chamar `/api` no próprio domínio dele, que não existe — toda chamada volta 404.
+4. **Liberar CORS no backend**: no site principal (o que roda a API como Netlify Function), edite `CORS_ORIGIN` em "Environment variables" pra incluir a URL de produção do portal, ex.: `CORS_ORIGIN=https://sysbelt.netlify.app,https://portal.suaacademia.com.br`. Redeploy o site principal depois de mudar isso (variável de ambiente só é lida no build/cold start da function).
+5. **Apontar o link de login pra produção**: ainda no site principal, defina `VITE_PORTAL_FAMILIA_URL` com a URL de produção do portal (ex.: `https://portal.suaacademia.com.br`) e redeploy o `sgcl-web` — senão o link na tela de login continua apontando pra `localhost:5175`.
+6. **Domínio customizado (opcional)**: em "Domain settings" do site do portal, "Add a domain" → configure o CNAME (subdomínio, ex. `portal.suaacademia.com.br`) ou os registros indicados pelo Netlify no seu provedor de DNS. O certificado HTTPS (Let's Encrypt) é emitido automaticamente depois que o DNS propaga.
+7. **Deploy e validação**: dispare um deploy (push na branch de produção, ou "Trigger deploy" manual) e confirme: a tela de login do portal carrega, um responsável/aluno com credencial válida consegue logar, e as 5 abas carregam dados reais.
+
+Nenhuma migration nova é necessária pra esse passo — é só configuração de infraestrutura (dois sites Netlify apontando pro mesmo repositório e pro mesmo backend).
+
 A credencial de acesso ao portal é gerada automaticamente pelo backend, direto do cadastro de aluno/responsável — não é um passo manual separado:
 
 - Ao **cadastrar** um aluno ou responsável com e-mail preenchido, o backend já gera uma senha aleatória, salva o hash e devolve a senha em texto puro **uma única vez** na resposta da criação — o `sgcl-web` mostra essa credencial num modal (com botão de copiar) assim que o cadastro é salvo.
