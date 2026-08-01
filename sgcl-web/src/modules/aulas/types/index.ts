@@ -92,11 +92,13 @@ export interface ItemGradeSemanal {
   id: number;
   turmaId: number;
   turmaNome: string;
+  professorId?: number | null;
   professorApelido?: string | null;
   data: string;
   diaSemana: number;
   horarioInicio: string;
   horarioFim: string;
+  aulaId?: number | null;
   status: "AGENDADA" | "CONCLUIDA" | "NAO_REALIZADA";
 }
 

@@ -47,7 +47,7 @@ export class AlunosController {
 
     const service = new GetProntuarioAlunoService();
 
-    const prontuario = await service.execute(Number(id), req.user.unidadeId);
+    const prontuario = await service.execute(Number(id), req.user);
 
     return res.json(prontuario);
   }

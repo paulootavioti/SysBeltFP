@@ -45,6 +45,10 @@ const DetalheContrato = lazy(() => import("../modules/contratos/pages/Detalhes")
 
 const CentralDeAjuda = lazy(() => import("../modules/ajuda/pages/Central").then((m) => ({ default: m.CentralDeAjuda })));
 
+const AreaDoProfessor = lazy(() =>
+  import("../modules/professor/pages/AreaDoProfessor").then((m) => ({ default: m.AreaDoProfessor }))
+);
+
 const Eventos = lazy(() => import("../modules/eventos/pages/Listar").then((m) => ({ default: m.Eventos })));
 const NovoEvento = lazy(() => import("../modules/eventos/pages/Novo").then((m) => ({ default: m.NovoEvento })));
 const DetalheEvento = lazy(() => import("../modules/eventos/pages/Detalhes").then((m) => ({ default: m.DetalheEvento })));
@@ -377,6 +381,15 @@ export function AppRoutes() {
           element={
             <PrivateRoute>
               <CentralDeAjuda />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/professor"
+          element={
+            <PrivateRoute>
+              <AreaDoProfessor />
             </PrivateRoute>
           }
         />

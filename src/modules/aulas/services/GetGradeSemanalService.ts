@@ -70,12 +70,17 @@ export class GetGradeSemanalService {
       id: programada.id,
       turmaId: programada.turmaId,
       turmaNome: programada.turma.nome,
+      professorId: programada.turma.professorId,
       professorApelido:
         programada.turma.professor?.apelido || programada.turma.professor?.nome || null,
       data: programada.data,
       diaSemana: programada.data.getUTCDay(),
       horarioInicio: programada.turma.horarioInicio,
       horarioFim: programada.turma.horarioFim,
+      // id da Aula já criada (só existe depois de "Iniciar Aula") — deixa o
+      // front linkar direto pra chamada em andamento sem precisar chamar
+      // iniciar de novo.
+      aulaId: programada.aulaId,
       status: calcularStatusExibicao(programada.status, programada.data, referencia),
     }));
   }

@@ -491,6 +491,21 @@ model Graduacao {
 
   alunoId Int
   aluno   Aluno @relation(fields: [alunoId], references: [id])
+
+  // fluxo de aprovação: graduação criada pelo ADMIN entra direto como
+  // "aprovada" (comportamento de sempre); uma solicitação do PROFESSOR
+  // entra "pendente" e só promove o aluno (atualiza Aluno.faixa) quando o
+  // ADMIN aprova.
+  status     String  @default("aprovada")
+  comentario String?
+
+  solicitadoPorId Int?
+  solicitadoPor   Usuario? @relation("GraduacaoSolicitante", fields: [solicitadoPorId], references: [id])
+
+  revisadoPorId  Int?
+  revisadoPor    Usuario?  @relation("GraduacaoRevisor", fields: [revisadoPorId], references: [id])
+  revisadoEm     DateTime?
+  motivoRejeicao String?
 }
 
 model AulaAluno {
@@ -620,6 +635,8 @@ model Usuario {
   turmas             Turma[]
   avisosReconhecidos AvisoReconhecido[]
   aulasSubstituindo  AulaProgramada[]   @relation("AulaProgramadaProfessorSubstituto")
+  graduacoesSolicitadas Graduacao[] @relation("GraduacaoSolicitante")
+  graduacoesRevisadas  Graduacao[] @relation("GraduacaoRevisor")
   // unidades que esse usuário pode acessar — ADMIN e RECEPCAO podem ter
   // mais de uma (só o SUPERADMIN monta essa lista); PROFESSOR sempre tem
   // exatamente uma.

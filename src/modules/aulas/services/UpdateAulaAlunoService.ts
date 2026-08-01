@@ -17,6 +17,12 @@ interface UpdateAulaAlunoDTO {
   observacao?: string | null;
 }
 
+interface Solicitante {
+  id: number;
+  perfil: string;
+  unidadeId: number | null;
+}
+
 const CAMPOS_COMPORTAMENTO = [
   "respeito",
   "valentia",
@@ -26,13 +32,13 @@ const CAMPOS_COMPORTAMENTO = [
 ] as const;
 
 export class UpdateAulaAlunoService {
-  async execute(data: UpdateAulaAlunoDTO, unidadeId: number | null) {
+  async execute(data: UpdateAulaAlunoDTO, solicitante: Solicitante) {
     const registro = await prisma.aulaAluno.findUnique({
       where: {
         id: data.id,
       },
       include: {
-        aula: true,
+        aula: { include: { turma: true } },
         aluno: true,
       },
     });
@@ -41,7 +47,11 @@ export class UpdateAulaAlunoService {
       throw new AppError("Registro da aula não encontrado.");
     }
 
-    garantirAcessoUnidade(unidadeId, registro.aula.unidadeId, "Registro da aula não encontrado.");
+    garantirAcessoUnidade(solicitante.unidadeId, registro.aula.unidadeId, "Registro da aula não encontrado.");
+
+    if (solicitante.perfil === "PROFESSOR" && registro.aula.turma?.professorId !== solicitante.id) {
+      throw new AppError("Você só pode alterar a chamada das suas próprias turmas.", 403);
+    }
 
     if (registro.aula.status === "FINALIZADA") {
       throw new AppError(

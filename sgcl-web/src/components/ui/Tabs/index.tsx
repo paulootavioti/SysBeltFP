@@ -11,15 +11,32 @@ interface TabItem {
 interface TabsProps {
   tabs: TabItem[];
   defaultValue?: string;
+  // modo controlado (opcional) — quando informados, quem decide a aba
+  // ativa é o pai (ex.: um botão "Ver planejamento" numa aba que muda pra
+  // outra). Sem eles, o componente continua gerenciando o estado sozinho.
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 export function Tabs({
   tabs,
   defaultValue,
+  value,
+  onChange,
 }: TabsProps) {
-  const [activeTab, setActiveTab] = useState(
+  const [activeTabInterno, setActiveTabInterno] = useState(
     defaultValue ?? tabs[0]?.value
   );
+
+  const activeTab = value ?? activeTabInterno;
+
+  function selecionar(novoValor: string) {
+    if (onChange) {
+      onChange(novoValor);
+    } else {
+      setActiveTabInterno(novoValor);
+    }
+  }
 
   const selectedTab = tabs.find(
     (tab) => tab.value === activeTab
@@ -37,7 +54,7 @@ export function Tabs({
                 ? "tabs-trigger active"
                 : "tabs-trigger"
             }
-            onClick={() => setActiveTab(tab.value)}
+            onClick={() => selecionar(tab.value)}
           >
             {tab.label}
           </button>

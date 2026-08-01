@@ -75,7 +75,7 @@ export class AulasController {
   async show(req: Request, res: Response) {
     const service = new GetAulaService();
 
-    const aula = await service.execute(Number(req.params.id), req.user.unidadeId);
+    const aula = await service.execute(Number(req.params.id), req.user);
 
     return res.json(aula);
   }
@@ -85,7 +85,7 @@ export class AulasController {
 
     const aula = await service.execute(
       Number(req.params.id),
-      req.user.unidadeId
+      req.user
     );
 
     return res.json(aula);
@@ -99,7 +99,7 @@ export class AulasController {
         id: Number(req.params.id),
         ...req.body,
       },
-      req.user.unidadeId
+      req.user
     );
 
     return res.json(registro);
