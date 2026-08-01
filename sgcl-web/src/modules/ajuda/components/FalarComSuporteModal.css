@@ -1,0 +1,15 @@
+.suporte-modal-confirmacao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.suporte-modal-confirmacao p {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.suporte-modal-confirmacao p.suporte-modal-confirmacao-nota {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}

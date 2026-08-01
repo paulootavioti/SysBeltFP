@@ -25,6 +25,7 @@ import {
   LuBriefcase,
   LuTrendingUp,
   LuSettings,
+  LuCircleHelp,
 } from "react-icons/lu";
 
 import type { ContadoresMenu } from "../services/NotificacoesService";
@@ -160,6 +161,10 @@ export const NAV_TREE: NavEntry[] = [
       item("/usuarios", "Usuários", LuUserCog),
     ],
   },
+
+  // Sempre visível a todos os perfis autenticados — não pertence a
+  // nenhum domínio, por isso fica solta como Dashboard/Relatórios.
+  itemExato("/ajuda", "Central de Ajuda", LuCircleHelp),
 ];
 
 // Índice plano (caminho -> item) — usado pra resolver os favoritos
