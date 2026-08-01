@@ -13,6 +13,7 @@ import { UpdateAlunoService } from "./services/UpdateAlunoService";
 import { ToggleAlunoAtivoService } from "./services/ToggleAlunoAtivoService";
 
 import { GetAlunoCompletoService } from "./services/GetAlunoCompletoService";
+import { SetSenhaPortalAlunoService } from "./services/SetSenhaPortalAlunoService";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 
 
@@ -86,5 +87,16 @@ export class AlunosController {
     const aluno = await service.execute(Number(id), req.user.unidadeId, req.user.perfil);
 
     return res.json(aluno);
+  }
+
+  async setSenhaPortal(req: Request, res: Response) {
+    const { id } = req.params;
+    const { senha } = req.body;
+
+    const service = new SetSenhaPortalAlunoService();
+
+    const resultado = await service.execute({ id: Number(id), senha }, req.user.unidadeId);
+
+    return res.json(resultado);
   }
 }

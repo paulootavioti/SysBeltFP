@@ -100,6 +100,7 @@ model Unidade {
   assinaturas      Assinatura[]
   modelosContrato  ModeloContrato[]
   contratos        Contrato[]
+  mensagensFamilia MensagemFamilia[]
 
   createdAt DateTime @default(now())
 }
@@ -138,6 +139,10 @@ model Aluno {
   whatsapp String?
   email    String?
 
+  // credencial do Portal da Família pra login direto do aluno (perfil
+  // ALUNO) — mesma lógica de senhaPortal do Responsavel.
+  senhaPortal String?
+
   cep         String?
   logradouro  String?
   numero      String?
@@ -167,14 +172,15 @@ model Aluno {
   grau  Int     @default(0)
   ativo Boolean @default(true)
 
-  responsaveis   Responsavel[]
-  mensalidades   Mensalidade[]
-  assinaturas    Assinatura[]
-  graduacoes     Graduacao[]
-  aulas          AulaAluno[]
-  competicoes    CompeticaoAluno[]
-  comportamentos Comportamento[]
-  contratos      Contrato[]
+  responsaveis     Responsavel[]
+  mensalidades     Mensalidade[]
+  assinaturas      Assinatura[]
+  graduacoes       Graduacao[]
+  aulas            AulaAluno[]
+  competicoes      CompeticaoAluno[]
+  comportamentos   Comportamento[]
+  contratos        Contrato[]
+  mensagensFamilia MensagemFamilia[]
 
   turmaId Int?
   turma   Turma? @relation(fields: [turmaId], references: [id])
@@ -207,6 +213,11 @@ model Responsavel {
   telefone String?
   whatsapp String?
   email    String?
+
+  // credencial do Portal da Família — null enquanto o Admin não define uma
+  // senha inicial (ver SetSenhaPortalResponsavelService); sem isso o
+  // responsável não consegue logar no portal.
+  senhaPortal String?
 
   cep         String?
   logradouro  String?
@@ -531,6 +542,27 @@ model AulaAluno {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@unique([aulaId, alunoId])
+}
+
+// chat simples entre a família (Portal da Família) e a academia (staff),
+// por aluno — cada linha é uma mensagem, `remetenteTipo` diferencia o
+// lado que enviou pra renderização (bolha esquerda/direita) e pra decidir
+// quem pode responder onde.
+model MensagemFamilia {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  alunoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id])
+
+  remetenteTipo String // "FAMILIA" | "ACADEMIA"
+  remetenteNome String
+
+  texto String
+
+  createdAt DateTime @default(now())
 }
 
 model Competicao {

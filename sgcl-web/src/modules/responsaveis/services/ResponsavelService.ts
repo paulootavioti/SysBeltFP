@@ -35,6 +35,10 @@ export class ResponsavelService {
     await api.delete(`/responsaveis/${id}`);
   }
 
+  static async definirSenhaPortal(id: number, senha: string) {
+    await api.patch(`/responsaveis/${id}/senha-portal`, { senha });
+  }
+
   static async listarPorAluno(
     alunoId: number
   ) {

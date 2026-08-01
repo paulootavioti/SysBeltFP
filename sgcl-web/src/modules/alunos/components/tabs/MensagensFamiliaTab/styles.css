@@ -1,0 +1,51 @@
+.mensagens-familia-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 640px;
+}
+
+.mensagens-familia-tab-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: var(--space-2);
+}
+
+.mensagens-familia-tab-bolha {
+  max-width: 75%;
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.mensagens-familia-tab-bolha-academia {
+  align-self: flex-end;
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+}
+
+.mensagens-familia-tab-bolha strong {
+  display: block;
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-bottom: 2px;
+}
+
+.mensagens-familia-tab-bolha p {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.mensagens-familia-tab-form {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-end;
+}
+
+.mensagens-familia-tab-form > label {
+  flex: 1;
+}

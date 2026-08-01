@@ -34,3 +34,7 @@ export const responsavelSchema = z.object({
 
   alunoId: z.coerce.number().int("Informe o aluno."),
 });
+
+export const senhaPortalSchema = z.object({
+  senha: z.string().min(6, "A senha precisa ter pelo menos 6 caracteres."),
+});

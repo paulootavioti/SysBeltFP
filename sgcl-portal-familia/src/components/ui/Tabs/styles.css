@@ -1,0 +1,33 @@
+.tabs {
+  width: 100%;
+}
+
+.tabs-list {
+  display: flex;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-6);
+  overflow-x: auto;
+}
+
+.tabs-trigger {
+  border: none;
+  background: transparent;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-text-light);
+
+  border-bottom: 2px solid transparent;
+}
+
+.tabs-trigger.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-accent);
+}
+
+.tabs-content {
+  width: 100%;
+}

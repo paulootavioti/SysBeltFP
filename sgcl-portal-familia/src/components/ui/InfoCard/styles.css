@@ -1,0 +1,27 @@
+.sgcl-info-card {
+  display: grid;
+  gap: var(--space-2);
+
+  padding: var(--space-4);
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.sgcl-info-card span {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+.sgcl-info-card strong {
+  color: var(--color-text);
+  font-size: var(--font-lg);
+}
+
+.sgcl-info-card p {
+  margin: 0;
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
