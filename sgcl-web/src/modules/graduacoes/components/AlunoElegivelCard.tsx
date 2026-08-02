@@ -43,18 +43,19 @@ export function AlunoElegivelCard({
         </span>
       </div>
 
-      {apto ? (
-        <>
-          <div className="aluno-elegivel-aviso">
-            <p>✓ Elegível para promoção!</p>
-            <span>{aluno.presencas} ≥ 8 aulas</span>
-          </div>
-          <Button type="button" onClick={() => onPromover?.(aluno.alunoId, aluno.faixa)}>
-            Promover
-          </Button>
-        </>
-      ) : (
-        <ProgressBar evolucao={paraEvolucao(aluno)} />
+      {apto && (
+        <div className="aluno-elegivel-aviso">
+          <p>✓ Elegível para promoção!</p>
+          <span>{aluno.presencas} ≥ 8 aulas</span>
+        </div>
+      )}
+
+      <ProgressBar evolucao={paraEvolucao(aluno)} />
+
+      {apto && (
+        <Button type="button" onClick={() => onPromover?.(aluno.alunoId, aluno.faixa)}>
+          Promover
+        </Button>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
@@ -28,9 +28,9 @@ import { GraduacoesTab } from "../../components/tabs/GraduacoesTab";
 import { FinanceiroTab } from "../../components/tabs/FinanceiroTab";
 import { MensagensFamiliaTab } from "../../components/tabs/MensagensFamiliaTab";
 
-import { AlunoService } from "../../services/AlunoService";
 import { useAuth } from "../../../../contexts/useAuth";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
+import { useAlunoDetalhes, type ResumoBasicoAluno } from "../../hooks/useAlunoDetalhes";
 
 import type { AlunoCompleto, AlunoCompletoBasico } from "../../types/alunoCompleto";
 
@@ -39,6 +39,7 @@ import "./styles.css";
 export function AlunoDetalhes() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { usuario } = useAuth();
   const [searchParams] = useSearchParams();
 
@@ -52,10 +53,23 @@ export function AlunoDetalhes() {
   // um layout reduzido pra esse perfil.
   const ehProfessor = usuario?.perfil === "PROFESSOR";
 
-  const [aluno, setAluno] =
-    useState<AlunoCompleto | AlunoCompletoBasico | null>(null);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState("");
+  // se veio de Alunos > Listar, a linha clicada já tinha nome/faixa/turma
+  // na mão — usa isso pra mostrar o cabeçalho na hora (ver useAlunoDetalhes).
+  const resumoDaNavegacao = (location.state as { resumoBasico?: ResumoBasicoAluno } | null)?.resumoBasico;
+
+  const {
+    aluno,
+    resumoBasico,
+    carregando,
+    erro: erroCarregamento,
+    recarregar: recarregarAluno,
+  } = useAlunoDetalhes(id, ehProfessor, resumoDaNavegacao);
+
+  // erro de carregar o aluno (do hook) e erro de uma ação nesta tela
+  // (salvar/excluir responsável) são coisas diferentes, mas mostradas no
+  // mesmo lugar — o de carregamento tem prioridade se os dois acontecerem.
+  const [erroAcao, setErroAcao] = useState("");
+  const erro = erroCarregamento || erroAcao;
 
   const [
     modalResponsavelAberto,
@@ -72,52 +86,13 @@ export function AlunoDetalhes() {
   const [responsavelSenhaPortal, setResponsavelSenhaPortal] = useState<Responsavel | null>(null);
   const [credenciaisGeradas, setCredenciaisGeradas] = useState<CredencialPortalGerada[]>([]);
 
-  async function carregarAluno() {
-    if (!id) return;
-
-    try {
-      setCarregando(true);
-      setErro("");
-
-      const data = ehProfessor
-        ? await AlunoService.buscarBasico(Number(id))
-        : await AlunoService.buscar(Number(id));
-
-      setAluno(data);
-    } catch (error) {
-      setErro(getApiErrorMessage(error, "Erro ao carregar aluno."));
-    } finally {
-      setCarregando(false);
-    }
-  }
-
-  useEffect(() => {
-    carregarAluno();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, ehProfessor]);
-
-  async function recarregarAluno() {
-    if (!aluno) return;
-
-    try {
-      setErro("");
-      const alunoAtualizado = ehProfessor
-        ? await AlunoService.buscarBasico(aluno.id)
-        : await AlunoService.buscar(aluno.id);
-
-      setAluno(alunoAtualizado);
-    } catch (error) {
-      setErro(getApiErrorMessage(error, "Erro ao atualizar os dados do aluno."));
-    }
-  }
-
   async function handleSalvarResponsavel(
     data: ResponsavelFormData
   ) {
     if (!aluno) return;
 
     try {
-      setErro("");
+      setErroAcao("");
 
       const responsavelSalvo = responsavelEditando
         ? await ResponsavelService.atualizar(responsavelEditando.id, aluno.id, data)
@@ -139,7 +114,7 @@ export function AlunoDetalhes() {
         ]);
       }
     } catch (error) {
-      setErro(getApiErrorMessage(error, "Erro ao salvar responsável."));
+      setErroAcao(getApiErrorMessage(error, "Erro ao salvar responsável."));
     }
   }
 
@@ -148,12 +123,12 @@ export function AlunoDetalhes() {
 
     try {
       setExcluindoResponsavel(true);
-      setErro("");
+      setErroAcao("");
       await ResponsavelService.excluir(responsavelParaExcluir.id);
       await recarregarAluno();
       setResponsavelParaExcluir(null);
     } catch (error) {
-      setErro(getApiErrorMessage(error, "Erro ao excluir responsável."));
+      setErroAcao(getApiErrorMessage(error, "Erro ao excluir responsável."));
     } finally {
       setExcluindoResponsavel(false);
     }
@@ -176,7 +151,7 @@ export function AlunoDetalhes() {
     setModalResponsavelAberto(false);
   }
 
-  if (!aluno) {
+  if (!resumoBasico) {
     return (
       <Layout>
         <PageHeader title="Aluno" subtitle="Detalhes do aluno." />
@@ -185,7 +160,7 @@ export function AlunoDetalhes() {
         ) : (
           <ErrorMessage
             message={erro || "Aluno não encontrado."}
-            onRetry={carregarAluno}
+            onRetry={recarregarAluno}
           />
         )}
       </Layout>
@@ -233,7 +208,7 @@ export function AlunoDetalhes() {
     );
   }
 
-  const alunoCompleto = aluno as AlunoCompleto;
+  const alunoCompleto = aluno as AlunoCompleto | null;
 
   return (
     <Layout>
@@ -247,71 +222,75 @@ export function AlunoDetalhes() {
         <Button
           type="button"
           variant="secondary"
-          onClick={() => navigate(`/alunos/${alunoCompleto.id}/prontuario`)}
+          onClick={() => navigate(`/alunos/${resumoBasico.id}/prontuario`)}
         >
           Ver Prontuário
         </Button>
         <Button
           type="button"
           variant="secondary"
-          onClick={() => navigate(`/alunos/${alunoCompleto.id}/editar`)}
+          onClick={() => navigate(`/alunos/${resumoBasico.id}/editar`)}
         >
           Editar
         </Button>
       </div>
       <PageHeader
-        title={alunoCompleto.nome}
+        title={resumoBasico.nome}
         subtitle="Prontuário completo do aluno."
       />
 
       <ErrorMessage message={erro} />
 
-      <AlunoResumo aluno={alunoCompleto} />
+      <AlunoResumo aluno={resumoBasico} />
 
-      <Tabs
-        value={abaAtiva}
-        onChange={setAbaAtiva}
-        tabs={[
-          {
-            label: "Dados",
-            value: "dados",
-            content: <DadosTab aluno={alunoCompleto} />,
-          },
-          {
-            label: "Responsáveis",
-            value: "responsaveis",
-            content: (
-              <ResponsaveisTab
-                responsaveis={alunoCompleto.responsaveis ?? []}
-                onNovo={handleNovoResponsavel}
-                onEditar={handleEditarResponsavel}
-                onExcluir={setResponsavelParaExcluir}
-                onDefinirSenhaPortal={usuario?.perfil === "ADMIN" ? setResponsavelSenhaPortal : undefined}
-              />
-            ),
-          },
-          {
-            label: "Presenças",
-            value: "presencas",
-            content: <PresencasTab aluno={alunoCompleto} />,
-          },
-          {
-            label: "Graduações",
-            value: "graduacoes",
-            content: <GraduacoesTab aluno={alunoCompleto} />,
-          },
-          {
-            label: "Financeiro",
-            value: "financeiro",
-            content: <FinanceiroTab aluno={alunoCompleto} />,
-          },
-          {
-            label: "Mensagens",
-            value: "mensagens",
-            content: <MensagensFamiliaTab aluno={alunoCompleto} />,
-          },
-        ]}
-      />
+      {!alunoCompleto ? (
+        <Loading message="Carregando abas..." />
+      ) : (
+        <Tabs
+          value={abaAtiva}
+          onChange={setAbaAtiva}
+          tabs={[
+            {
+              label: "Dados",
+              value: "dados",
+              content: <DadosTab aluno={alunoCompleto} />,
+            },
+            {
+              label: "Responsáveis",
+              value: "responsaveis",
+              content: (
+                <ResponsaveisTab
+                  responsaveis={alunoCompleto.responsaveis ?? []}
+                  onNovo={handleNovoResponsavel}
+                  onEditar={handleEditarResponsavel}
+                  onExcluir={setResponsavelParaExcluir}
+                  onDefinirSenhaPortal={usuario?.perfil === "ADMIN" ? setResponsavelSenhaPortal : undefined}
+                />
+              ),
+            },
+            {
+              label: "Presenças",
+              value: "presencas",
+              content: <PresencasTab aluno={alunoCompleto} />,
+            },
+            {
+              label: "Graduações",
+              value: "graduacoes",
+              content: <GraduacoesTab aluno={alunoCompleto} />,
+            },
+            {
+              label: "Financeiro",
+              value: "financeiro",
+              content: <FinanceiroTab aluno={alunoCompleto} />,
+            },
+            {
+              label: "Mensagens",
+              value: "mensagens",
+              content: <MensagensFamiliaTab aluno={alunoCompleto} />,
+            },
+          ]}
+        />
+      )}
 
       <Modal
         open={modalResponsavelAberto}

@@ -116,6 +116,13 @@
   filter: brightness(0.95);
 }
 
+.grade-item-ocupacao {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
 .grade-item:disabled {
   cursor: default;
 }

@@ -99,9 +99,10 @@ export class AulaService {
     return response.data;
   }
 
-  static async finalizar(id: number) {
+  static async finalizar(id: number, observacoes?: string) {
     const response = await api.patch<Aula>(
-      `/aulas/${id}/finalizar`
+      `/aulas/${id}/finalizar`,
+      { observacoes }
     );
 
     return response.data;

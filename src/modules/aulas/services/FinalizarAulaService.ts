@@ -9,7 +9,7 @@ interface Solicitante {
 }
 
 export class FinalizarAulaService {
-  async execute(id: number, solicitante: Solicitante) {
+  async execute(id: number, solicitante: Solicitante, observacoes?: string) {
     const aula = await prisma.aula.findUnique({
       where: { id },
       include: { turma: true },
@@ -33,6 +33,7 @@ export class FinalizarAulaService {
       where: { id },
       data: {
         status: "FINALIZADA",
+        observacoes: observacoes?.trim() || aula.observacoes,
       },
     });
   }

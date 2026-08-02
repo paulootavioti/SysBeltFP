@@ -1,0 +1,69 @@
+.cadastro-aluno-responsaveis-extras {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.cadastro-aluno-responsaveis-extras-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.cadastro-aluno-responsaveis-extras-cabecalho strong {
+  color: var(--color-text);
+}
+
+.cadastro-aluno-responsaveis-extras-cabecalho p {
+  margin: 4px 0 0;
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+.cadastro-aluno-responsaveis-extras-lista {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cadastro-aluno-responsaveis-extras-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: var(--font-sm);
+}
+
+.cadastro-aluno-responsaveis-extras-parentesco {
+  color: var(--color-text-light);
+}
+
+.cadastro-aluno-responsaveis-extras-lista button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-light);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cadastro-aluno-responsaveis-extras-lista button:hover {
+  background: rgba(0, 0, 0, 0.08);
+}

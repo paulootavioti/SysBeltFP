@@ -9,6 +9,7 @@ import { StatusBadge } from "../../../../components/sgcl/feedback/StatusBadge";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Loading } from "../../../../components/ui/Loading";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
+import { FrequenciaCard } from "../../../../components/ui/FrequenciaBadge";
 
 import { AlunoService } from "../../services/AlunoService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -41,6 +42,8 @@ interface ProntuarioAlunoData {
     faixa: string;
     grau: number;
     frequencia: number;
+    frequenciaMes: number;
+    frequenciaAno: number;
     totalPresencas: number;
     proximoGrauEm: number;
   };
@@ -53,6 +56,17 @@ interface ProntuarioAlunoData {
     disciplina: number;
   };
 
+  comportamentoRegistros: {
+    id: number;
+    data: string;
+    respeito: boolean;
+    valentia: boolean;
+    esforco: boolean;
+    atencao: boolean;
+    disciplina: boolean;
+    observacao?: string | null;
+  }[];
+
   turma?: {
     nome: string;
     horarioInicio?: string;
@@ -60,6 +74,14 @@ interface ProntuarioAlunoData {
 
   responsaveis: ResponsavelProntuario[];
 }
+
+const LABEL_COMPORTAMENTO: Record<"respeito" | "valentia" | "esforco" | "atencao" | "disciplina", string> = {
+  respeito: "Respeito",
+  valentia: "Valentia",
+  esforco: "Esforço",
+  atencao: "Atenção",
+  disciplina: "Disciplina",
+};
 export function ProntuarioAluno() {
   const { id } = useParams();
 
@@ -105,7 +127,7 @@ export function ProntuarioAluno() {
     );
   }
 
-  const { aluno, resumo, comportamento, turma, responsaveis } = prontuario;
+  const { aluno, resumo, comportamento, comportamentoRegistros, turma, responsaveis } = prontuario;
 
   return (
     <Page>
@@ -126,8 +148,8 @@ export function ProntuarioAluno() {
 
         <InfoCard
           title="Frequência"
-          value={`${resumo.frequencia}%`}
-          description={`${resumo.totalPresencas} presenças`}
+          value={<FrequenciaCard frequenciaMes={resumo.frequenciaMes} frequenciaAno={resumo.frequenciaAno} />}
+          description={`${resumo.totalPresencas} presenças no total`}
         />
 
         <InfoCard
@@ -201,6 +223,35 @@ export function ProntuarioAluno() {
           <InfoCard title="Disciplina" value={comportamento.disciplina} />
         </div>
       </Section>
+
+      {comportamentoRegistros.length > 0 && (
+        <Section
+          title="Avaliações de comportamento"
+          description="Registro por aula, com a observação do professor quando houver."
+        >
+          <div className="prontuario-comportamento-lista">
+            {comportamentoRegistros.map((registro) => {
+              const marcados = (Object.keys(LABEL_COMPORTAMENTO) as (keyof typeof LABEL_COMPORTAMENTO)[]).filter(
+                (chave) => registro[chave]
+              );
+
+              return (
+                <div key={registro.id} className="prontuario-comportamento-item">
+                  <div className="prontuario-comportamento-item-topo">
+                    <strong>{new Date(registro.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })}</strong>
+                    {marcados.length > 0 && (
+                      <span className="prontuario-comportamento-tags">
+                        {marcados.map((chave) => LABEL_COMPORTAMENTO[chave]).join(" • ")}
+                      </span>
+                    )}
+                  </div>
+                  {registro.observacao && <p>{registro.observacao}</p>}
+                </div>
+              );
+            })}
+          </div>
+        </Section>
+      )}
     </Page>
   );
 }

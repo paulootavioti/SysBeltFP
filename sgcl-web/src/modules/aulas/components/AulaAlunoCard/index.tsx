@@ -1,5 +1,8 @@
+import { useState } from "react";
+
 import { Checkbox } from "../../../../components/ui/Checkbox";
 import { Button } from "../../../../components/ui/Button";
+import { Textarea } from "../../../../components/ui/Textarea";
 import { BehaviorSelector } from "../BehaviorSelector";
 import { calcularIdade } from "../../../../shared/formatters/data";
 import { linkWhatsapp, formatarTelefoneWhatsapp } from "../../../../shared/utils/linkWhatsapp";
@@ -14,6 +17,14 @@ export function AulaAlunoCard({
   dataAula,
   onChange,
 }: AulaAlunoCardProps) {
+  const [observacaoLocal, setObservacaoLocal] = useState(registro.observacao ?? "");
+
+  function salvarObservacaoSeAlterada() {
+    if (observacaoLocal !== (registro.observacao ?? "")) {
+      onChange(registro, { observacao: observacaoLocal || null });
+    }
+  }
+
   const idade = calcularIdade(registro.aluno.dataNascimento);
   const avaliaComportamento = idade !== null && idade <= 14;
   const menorDeIdade = idade !== null && idade < 18;
@@ -90,6 +101,16 @@ export function AulaAlunoCard({
           }
         />
       )}
+
+      <Textarea
+        label="Observação"
+        placeholder="Alguma observação sobre esse aluno nesta aula? (opcional)"
+        rows={2}
+        disabled={aulaFinalizada}
+        value={observacaoLocal}
+        onChange={(event) => setObservacaoLocal(event.target.value)}
+        onBlur={salvarObservacaoSeAlterada}
+      />
     </article>
   );
 }

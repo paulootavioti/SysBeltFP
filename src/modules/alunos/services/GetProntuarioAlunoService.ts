@@ -1,6 +1,7 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
+import { calcularFrequenciaPorPeriodo } from "../../../shared/utils/calcularFrequencia";
 
 interface Solicitante {
   id: number;
@@ -86,6 +87,33 @@ export class GetProntuarioAlunoService {
     const proximoGrauEm =
       totalPresencas === 0 ? 8 : 8 - (totalPresencas % 8);
 
+    const { frequenciaMes, frequenciaAno } = calcularFrequenciaPorPeriodo(
+      aluno.aulas.map((registro) => ({ presente: registro.presente, data: registro.aula.data }))
+    );
+
+    // registros individuais de avaliação de comportamento (só os que têm
+    // alguma marcação ou observação — não a lista inteira de chamadas).
+    const comportamentoRegistros = aluno.aulas
+      .filter(
+        (registro) =>
+          registro.respeito ||
+          registro.valentia ||
+          registro.esforco ||
+          registro.atencao ||
+          registro.disciplina ||
+          registro.observacao
+      )
+      .map((registro) => ({
+        id: registro.id,
+        data: registro.aula.data,
+        respeito: registro.respeito,
+        valentia: registro.valentia,
+        esforco: registro.esforco,
+        atencao: registro.atencao,
+        disciplina: registro.disciplina,
+        observacao: registro.observacao,
+      }));
+
     const resumo = {
       totalAulas,
       totalPresencas,
@@ -93,6 +121,8 @@ export class GetProntuarioAlunoService {
         totalAulas > 0
           ? Math.round((totalPresencas / totalAulas) * 100)
           : 0,
+      frequenciaMes,
+      frequenciaAno,
 
       faixa: aluno.faixa,
       grau: aluno.grau,
@@ -113,6 +143,7 @@ export class GetProntuarioAlunoService {
         },
         resumo,
         comportamento,
+        comportamentoRegistros,
         responsaveis: aluno.responsaveis.map((responsavel) => ({
           id: responsavel.id,
           nome: responsavel.nome,
@@ -127,6 +158,7 @@ export class GetProntuarioAlunoService {
       aluno,
       resumo,
       comportamento,
+      comportamentoRegistros,
       responsaveis: aluno.responsaveis,
       turma: aluno.turma,
       historicoAulas: aluno.aulas,

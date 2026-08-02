@@ -1,4 +1,4 @@
-import { FaixaSwatch } from "./FaixaSwatch";
+import { TrilhaFaixa } from "../../../components/ui/TrilhaFaixa";
 import type { ModuloCurriculo } from "../types/curriculo";
 
 interface TrilhaFaixasModulosProps {
@@ -14,7 +14,7 @@ export function TrilhaFaixasModulos({ modulos }: TrilhaFaixasModulosProps) {
     <div className="trilha-faixas-modulos">
       {modulos.map((modulo, indice) =>
         modulo.faixa ? (
-          <FaixaSwatch
+          <TrilhaFaixa
             key={modulo.id}
             faixa={modulo.faixa}
             size={18}

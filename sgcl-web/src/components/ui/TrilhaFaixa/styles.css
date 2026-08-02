@@ -1,0 +1,16 @@
+.trilha-faixa {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trilha-faixa-swatch {
+  display: inline-block;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.trilha-faixa-label {
+  color: var(--text);
+  font-size: var(--font-sm, 14px);
+}

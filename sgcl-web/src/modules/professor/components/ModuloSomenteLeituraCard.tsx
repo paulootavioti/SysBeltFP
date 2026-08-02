@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { LuChevronDown, LuChevronRight } from "react-icons/lu";
 
-import { FaixaSwatch } from "../../curriculos/components/FaixaSwatch";
+import { TrilhaFaixa } from "../../../components/ui/TrilhaFaixa";
 import { AulaSomenteLeituraCard } from "./AulaSomenteLeituraCard";
 import type { ModuloCurriculo } from "../../curriculos/types/curriculo";
 
@@ -35,7 +35,7 @@ export function ModuloSomenteLeituraCard({ modulo, expandido, onToggle }: Modulo
       >
         <div className="acordeon-titulo">
           {expandido ? <LuChevronDown size={16} /> : <LuChevronRight size={16} />}
-          <FaixaSwatch faixa={modulo.faixa} />
+          <TrilhaFaixa faixa={modulo.faixa} />
           <h3>{modulo.nome}</h3>
           {modulo.faixa && <span className="modulo-faixa">{modulo.faixa}</span>}
           <span className="acordeon-contagem">

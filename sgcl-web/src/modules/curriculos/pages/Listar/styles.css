@@ -89,12 +89,6 @@
   flex-wrap: wrap;
 }
 
-.faixa-swatch {
-  display: inline-block;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
 .modulo-card {
   border-left: 3px solid var(--primary);
   padding-left: var(--space-3);

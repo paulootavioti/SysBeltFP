@@ -38,8 +38,11 @@ export interface AlunoDaTurma {
   nome: string;
   faixa: string;
   ativo: boolean;
+  frequenciaMes: number;
+  frequenciaAno: number;
 }
 
 export interface TurmaDetalhada extends Turma {
   alunos: AlunoDaTurma[];
+  frequenciaMediaAno: number;
 }
