@@ -85,7 +85,8 @@ export class AulasController {
 
     const aula = await service.execute(
       Number(req.params.id),
-      req.user
+      req.user,
+      req.body?.observacoes
     );
 
     return res.json(aula);

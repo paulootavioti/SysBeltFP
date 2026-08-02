@@ -1,17 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Button } from "../../../../components/ui/Button";
 import { Input } from "../../../../components/ui/Input";
-import { Select } from "../../../../components/ui/Select";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Table } from "../../../../components/ui/Table";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
 import { Modal } from "../../../../components/ui/Modal";
+import { TrilhaFaixa } from "../../../../components/ui/TrilhaFaixa";
+import { FrequenciaBadge } from "../../../../components/ui/FrequenciaBadge";
 
 import { useAuth } from "../../../../contexts/useAuth";
 import { TurmaService } from "../../services/TurmaService";
@@ -35,12 +36,17 @@ export function DetalheTurma() {
   const [modalAberto, setModalAberto] = useState(false);
   const [alunosDisponiveis, setAlunosDisponiveis] = useState<Aluno[]>([]);
   const [buscaAluno, setBuscaAluno] = useState("");
-  const [alunoSelecionado, setAlunoSelecionado] = useState("");
+  const [sugestoesAbertas, setSugestoesAbertas] = useState(false);
+  const [alunoSelecionado, setAlunoSelecionado] = useState<Aluno | null>(null);
   const [vinculando, setVinculando] = useState(false);
+  const comboboxRef = useRef<HTMLDivElement>(null);
 
-  const alunosDisponiveisFiltrados = alunosDisponiveis.filter((aluno) =>
-    aluno.nome.toLowerCase().includes(buscaAluno.toLowerCase())
-  );
+  const sugestoes =
+    buscaAluno.trim().length === 0
+      ? []
+      : alunosDisponiveis
+          .filter((aluno) => aluno.nome.toLowerCase().includes(buscaAluno.toLowerCase()))
+          .slice(0, 8);
 
   async function carregarTurma() {
     try {
@@ -60,12 +66,38 @@ export function DetalheTurma() {
     carregarTurma();
   }, [id]);
 
+  // fecha a lista de sugestões ao clicar fora do combobox.
+  useEffect(() => {
+    function aoClicarFora(event: MouseEvent) {
+      if (comboboxRef.current && !comboboxRef.current.contains(event.target as Node)) {
+        setSugestoesAbertas(false);
+      }
+    }
+
+    document.addEventListener("mousedown", aoClicarFora);
+    return () => document.removeEventListener("mousedown", aoClicarFora);
+  }, []);
+
   async function handleAbrirModal() {
     setModalAberto(true);
     setBuscaAluno("");
-    setAlunoSelecionado("");
+    setAlunoSelecionado(null);
     const alunos = await AlunoService.listar();
     setAlunosDisponiveis(alunos.filter((a) => a.ativo));
+  }
+
+  function selecionarAluno(aluno: Aluno) {
+    setAlunoSelecionado(aluno);
+    setBuscaAluno(aluno.nome);
+    setSugestoesAbertas(false);
+  }
+
+  function alterarBusca(valor: string) {
+    setBuscaAluno(valor);
+    setSugestoesAbertas(true);
+    if (alunoSelecionado && valor !== alunoSelecionado.nome) {
+      setAlunoSelecionado(null);
+    }
   }
 
   async function handleVincularAluno() {
@@ -73,10 +105,11 @@ export function DetalheTurma() {
       if (!id || !alunoSelecionado) return;
       setVinculando(true);
       setErro("");
-      await TurmaService.vincularAluno(Number(id), Number(alunoSelecionado));
+      await TurmaService.vincularAluno(Number(id), alunoSelecionado.id);
       await carregarTurma();
       setModalAberto(false);
-      setAlunoSelecionado("");
+      setAlunoSelecionado(null);
+      setBuscaAluno("");
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao vincular aluno."));
     } finally {
@@ -86,7 +119,16 @@ export function DetalheTurma() {
 
   const columns = [
     { header: "Nome", accessor: "nome" as const },
-    { header: "Faixa", accessor: "faixa" as const },
+    {
+      header: "Faixa",
+      accessor: "faixa" as const,
+      render: (aluno: AlunoDaTurma) => <TrilhaFaixa faixa={aluno.faixa} comLabel />,
+    },
+    {
+      header: "Frequência (ano)",
+      accessor: "frequenciaAno" as const,
+      render: (aluno: AlunoDaTurma) => <FrequenciaBadge label="Ano" percentual={aluno.frequenciaAno} />,
+    },
     {
       header: "Status",
       accessor: "ativo" as const,
@@ -143,6 +185,11 @@ export function DetalheTurma() {
         }`}
       />
 
+      <div className="turma-detalhe-frequencia">
+        <span>Frequência média da turma:</span>
+        <FrequenciaBadge label="Ano" percentual={turma.frequenciaMediaAno} />
+      </div>
+
       <ErrorMessage message={erro} />
 
       {podeGerenciar && turma.ativo && (
@@ -165,25 +212,43 @@ export function DetalheTurma() {
         <Table columns={columns} data={turma.alunos} />
       )}
 
-      <Modal open={modalAberto} title="Vincular Aluno" onClose={() => setModalAberto(false)}>
+      <Modal
+        open={modalAberto}
+        title="Vincular Aluno"
+        onClose={() => setModalAberto(false)}
+      >
         <div className="turma-detalhe-vincular-form">
-        <Input
-          label="Buscar aluno"
-          placeholder="Digite o nome..."
-          value={buscaAluno}
-          onChange={(e) => setBuscaAluno(e.target.value)}
-        />
+          <div className="turma-detalhe-combobox" ref={comboboxRef}>
+            <Input
+              label="Buscar aluno"
+              placeholder="Digite o nome do aluno..."
+              value={buscaAluno}
+              onChange={(e) => alterarBusca(e.target.value)}
+              onFocus={() => setSugestoesAbertas(true)}
+              autoComplete="off"
+            />
 
-        <Select
-          label="Aluno"
-          options={alunosDisponiveisFiltrados.map((aluno) => ({ label: aluno.nome, value: String(aluno.id) }))}
-          value={alunoSelecionado}
-          onChange={(e) => setAlunoSelecionado(e.target.value)}
-        />
+            {sugestoesAbertas && sugestoes.length > 0 && (
+              <ul className="turma-detalhe-combobox-sugestoes">
+                {sugestoes.map((aluno) => (
+                  <li key={aluno.id}>
+                    <button type="button" onClick={() => selecionarAluno(aluno)}>
+                      {aluno.nome}
+                      {aluno.turma?.nome && <span> — turma atual: {aluno.turma.nome}</span>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
 
-        <Button type="button" disabled={!alunoSelecionado || vinculando} onClick={handleVincularAluno}>
-          {vinculando ? "Vinculando..." : "Vincular"}
-        </Button>
+            {sugestoesAbertas && buscaAluno.trim().length > 0 && sugestoes.length === 0 && (
+              <p className="turma-detalhe-combobox-vazio">Nenhum aluno ativo encontrado com esse nome.</p>
+            )}
+          </div>
+
+          <Button type="button" disabled={!alunoSelecionado || vinculando} onClick={handleVincularAluno}>
+            {vinculando ? "Vinculando..." : "Vincular"}
+          </Button>
         </div>
       </Modal>
     </Layout>

@@ -1,6 +1,7 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
+import { calcularFrequenciaPorPeriodo } from "../../../shared/utils/calcularFrequencia";
 
 export class GetAlunoCompletoService {
   async execute(id: number, unidadeId: number | null, perfil?: string) {
@@ -37,6 +38,9 @@ export class GetAlunoCompletoService {
         presencas: aulas
           .filter((registro) => registro.presente)
           .map((registro) => ({ id: registro.id, data: registro.aula.data })),
+        ...calcularFrequenciaPorPeriodo(
+          aulas.map((registro) => ({ presente: registro.presente, data: registro.aula.data }))
+        ),
       };
     }
 
@@ -90,6 +94,9 @@ export class GetAlunoCompletoService {
     return {
       ...aluno,
       presencas,
+      ...calcularFrequenciaPorPeriodo(
+        aluno.aulas.map((registro) => ({ presente: registro.presente, data: registro.aula.data }))
+      ),
     };
   }
 }

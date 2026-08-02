@@ -1,7 +1,7 @@
 import { LuChevronDown, LuChevronRight } from "react-icons/lu";
 
 import { Button } from "../../../components/ui/Button";
-import { FaixaSwatch } from "./FaixaSwatch";
+import { TrilhaFaixa } from "../../../components/ui/TrilhaFaixa";
 import { AulaAccordionCard } from "./AulaAccordionCard";
 
 import type { AulaCurriculo, ModuloCurriculo, TecnicaCurriculo } from "../types/curriculo";
@@ -62,7 +62,7 @@ export function ModuloAccordionCard({
       >
         <div className="acordeon-titulo">
           {expandido ? <LuChevronDown size={16} /> : <LuChevronRight size={16} />}
-          <FaixaSwatch faixa={modulo.faixa} />
+          <TrilhaFaixa faixa={modulo.faixa} />
           <h3>{modulo.nome}</h3>
           {modulo.faixa && <span className="modulo-faixa">{modulo.faixa}</span>}
           <span className="acordeon-contagem">

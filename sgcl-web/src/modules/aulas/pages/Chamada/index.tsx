@@ -10,6 +10,7 @@ import { Button } from "../../../../components/ui/Button";
 import { Checkbox } from "../../../../components/ui/Checkbox";
 import { Modal } from "../../../../components/ui/Modal";
 import { Badge } from "../../../../components/ui/Badge";
+import { Textarea } from "../../../../components/ui/Textarea";
 
 import { Page } from "../../../../components/sgcl/layout/Page";
 import { Section } from "../../../../components/sgcl/layout/Section";
@@ -36,6 +37,8 @@ export function ChamadaAula() {
   const [loading, setLoading] = useState(true);
   const [tecnicaDetalhe, setTecnicaDetalhe] = useState<TecnicaAulaCurriculo | null>(null);
   const [salvandoPlano, setSalvandoPlano] = useState(false);
+  const [observacaoAula, setObservacaoAula] = useState("");
+  const [finalizando, setFinalizando] = useState(false);
 
   useEffect(() => {
     async function carregarAula() {
@@ -44,6 +47,7 @@ export function ChamadaAula() {
       const data = await AulaService.buscar(Number(id));
 
       setAula(data);
+      setObservacaoAula(data.observacoes ?? "");
       setLoading(false);
     }
 
@@ -114,11 +118,16 @@ export function ChamadaAula() {
   async function finalizarAula() {
     if (!aula) return;
 
-    await AulaService.finalizar(aula.id);
+    try {
+      setFinalizando(true);
+      await AulaService.finalizar(aula.id, observacaoAula.trim() || undefined);
 
-    const atualizada = await AulaService.buscar(aula.id);
+      const atualizada = await AulaService.buscar(aula.id);
 
-    setAula(atualizada);
+      setAula(atualizada);
+    } finally {
+      setFinalizando(false);
+    }
   }
 
   if (loading || !aula) {
@@ -237,10 +246,26 @@ export function ChamadaAula() {
 
     </Section>
 
-      {aula.status === "ABERTA" && (
-        <Button type="button" onClick={finalizarAula}>
-          Finalizar Aula
-        </Button>
+      {aula.status === "ABERTA" ? (
+        <Section title="Concluir chamada">
+          <Textarea
+            label="Observação da aula"
+            placeholder="Algo a registrar sobre a aula como um todo? (opcional)"
+            rows={3}
+            value={observacaoAula}
+            onChange={(e) => setObservacaoAula(e.target.value)}
+          />
+
+          <Button type="button" disabled={finalizando} onClick={finalizarAula}>
+            {finalizando ? "Finalizando..." : "Finalizar Aula"}
+          </Button>
+        </Section>
+      ) : (
+        aula.observacoes && (
+          <Section title="Observação da aula">
+            <p className="chamada-observacao-aula">{aula.observacoes}</p>
+          </Section>
+        )
       )}
 
       <Modal

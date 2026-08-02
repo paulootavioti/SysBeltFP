@@ -15,3 +15,37 @@
   gap: var(--space-2);
   flex-wrap: wrap;
 }
+
+.turmas-filtro-ativo {
+  margin-bottom: var(--space-4);
+}
+
+.turmas-filtro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft, #f3f4f6);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.turmas-filtro-chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-light);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.turmas-filtro-chip button:hover {
+  background: rgba(0, 0, 0, 0.08);
+}

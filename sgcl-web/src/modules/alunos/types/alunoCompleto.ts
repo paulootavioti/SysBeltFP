@@ -10,10 +10,14 @@ export interface AlunoCompleto extends Aluno {
   presencas?: Presenca[];
   graduacoes?: Graduacao[];
   mensalidades?: Mensalidade[];
+  frequenciaMes?: number;
+  frequenciaAno?: number;
 }
 
 // versão redigida devolvida pelo backend pra PROFESSOR.
 export interface AlunoCompletoBasico extends AlunoBasico {
   presencas?: Presenca[];
   graduacoes?: Graduacao[];
+  frequenciaMes?: number;
+  frequenciaAno?: number;
 }

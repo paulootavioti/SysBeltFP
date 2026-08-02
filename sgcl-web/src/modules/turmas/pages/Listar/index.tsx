@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
@@ -33,6 +33,35 @@ export function Turmas() {
   const [modalAberto, setModalAberto] = useState(false);
   const [turmaEditando, setTurmaEditando] = useState<Turma | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const turmaFiltradaId = searchParams.get("turma");
+
+  const ocupacaoPorTurma = useMemo(
+    () =>
+      Object.fromEntries(
+        turmas
+          .filter((turma) => turma.limiteAlunos)
+          .map((turma) => [turma.id, `${turma._count?.alunos ?? 0}/${turma.limiteAlunos}`])
+      ),
+    [turmas]
+  );
+
+  const turmaFiltradaNome = turmaFiltradaId
+    ? turmas.find((turma) => String(turma.id) === turmaFiltradaId)?.nome
+    : null;
+
+  const turmasExibidas = turmaFiltradaId
+    ? turmas.filter((turma) => String(turma.id) === turmaFiltradaId)
+    : turmas;
+
+  function limparFiltroGrade() {
+    setSearchParams((atual) => {
+      const proximo = new URLSearchParams(atual);
+      proximo.delete("turma");
+      return proximo;
+    });
+  }
 
   function handleNovaTurma() {
     setTurmaEditando(null);
@@ -151,7 +180,10 @@ export function Turmas() {
       <PageHeader title="Turmas" subtitle="Gestão de turmas e horários." />
 
       <div className="turmas-grade-semanal">
-        <GradeHorariaSemanal />
+        <GradeHorariaSemanal
+          onSelecionarSlot={(turmaId) => setSearchParams({ turma: String(turmaId) })}
+          ocupacaoPorTurma={ocupacaoPorTurma}
+        />
       </div>
 
       {podeGerenciar && (
@@ -164,12 +196,26 @@ export function Turmas() {
 
       <ErrorMessage message={erro} />
 
+      {turmaFiltradaId && (
+        <div className="turmas-filtro-ativo">
+          <span className="turmas-filtro-chip">
+            Turma da grade: {turmaFiltradaNome ?? `#${turmaFiltradaId}`}
+            <button type="button" onClick={limparFiltroGrade} aria-label="Remover filtro de turma">
+              ×
+            </button>
+          </span>
+        </div>
+      )}
+
       {loading ? (
         <Loading />
-      ) : turmas.length === 0 ? (
-        <EmptyState title="Nenhuma turma cadastrada" description="Cadastre a primeira turma." />
+      ) : turmasExibidas.length === 0 ? (
+        <EmptyState
+          title="Nenhuma turma encontrada"
+          description={turmaFiltradaId ? "Remova o filtro pra ver todas as turmas." : "Cadastre a primeira turma."}
+        />
       ) : (
-        <Table columns={columns} data={turmas} />
+        <Table columns={columns} data={turmasExibidas} />
       )}
 
       <Modal

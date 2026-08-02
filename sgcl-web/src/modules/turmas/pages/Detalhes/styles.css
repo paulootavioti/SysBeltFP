@@ -20,3 +20,60 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+.turma-detalhe-frequencia {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+.turma-detalhe-combobox {
+  display: flex;
+  flex-direction: column;
+}
+
+/* fica no fluxo normal (não position:absolute) — assim empurra o botão
+   "Vincular" pra baixo em vez de sobrepor ele quando a lista aparece. */
+.turma-detalhe-combobox-sugestoes {
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.1));
+
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.turma-detalhe-combobox-sugestoes li button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  font-size: var(--font-sm);
+  cursor: pointer;
+}
+
+.turma-detalhe-combobox-sugestoes li button:hover {
+  background: var(--color-background);
+}
+
+.turma-detalhe-combobox-sugestoes li button span {
+  color: var(--color-text-light);
+}
+
+.turma-detalhe-combobox-vazio {
+  margin: 4px 0 0;
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}

@@ -25,7 +25,15 @@ export function ProximasGraduacoes() {
   const [alunoSelecionado, setAlunoSelecionado] = useState<AlunoElegivel | null>(null);
 
   const totalElegiveis = alunos.filter((aluno) => aluno.aptoGraduacao).length;
-  const paginacao = usePaginacaoCliente(alunos, 12);
+
+  // mais perto da graduação primeiro: elegíveis (podem promover já) antes
+  // dos demais, e dentro de cada grupo, quem já acumulou mais aulas.
+  const alunosOrdenados = [...alunos].sort((a, b) => {
+    if (a.aptoGraduacao !== b.aptoGraduacao) return a.aptoGraduacao ? -1 : 1;
+    return b.presencas - a.presencas;
+  });
+
+  const paginacao = usePaginacaoCliente(alunosOrdenados, 12);
 
   async function carregarProximas() {
     try {

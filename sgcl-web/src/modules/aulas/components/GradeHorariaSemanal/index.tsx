@@ -19,6 +19,13 @@ import "./styles.css";
 
 interface GradeHorariaSemanalProps {
   compacta?: boolean;
+  // por padrão, clicar num item da grade navega pra tela da turma — quem
+  // usa a grade acima de uma listagem de turmas (ver Turmas > Listar) pode
+  // sobrescrever isso pra filtrar a lista abaixo em vez de navegar.
+  onSelecionarSlot?: (turmaId: number) => void;
+  // "18/20 alunos" por turma, pra mostrar embaixo do nome no bloco da
+  // grade — opcional, calculado por quem já tem essa contagem à mão.
+  ocupacaoPorTurma?: Record<number, string>;
 }
 
 const DIAS_SEMANA = [
@@ -67,7 +74,7 @@ function paraDatetimeLocal(data: Date, horario: string): string {
 // global de "unidade visualizada") não usam esse seletor local.
 const PERFIS_COM_CONSULTA_CROSS_UNIT = ["ADMIN", "PROFESSOR"];
 
-export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalProps) {
+export function GradeHorariaSemanal({ compacta = false, onSelecionarSlot, ocupacaoPorTurma }: GradeHorariaSemanalProps) {
   const navigate = useNavigate();
   const { usuario } = useAuth();
 
@@ -242,10 +249,20 @@ export function GradeHorariaSemanal({ compacta = false }: GradeHorariaSemanalPro
                             <button
                               type="button"
                               className={`grade-item ${CLASSE_STATUS[item.status]}`}
-                              onClick={apenasConsulta ? undefined : () => navigate(`/turmas/${item.turmaId}`)}
+                              onClick={
+                                apenasConsulta
+                                  ? undefined
+                                  : () =>
+                                      onSelecionarSlot
+                                        ? onSelecionarSlot(item.turmaId)
+                                        : navigate(`/turmas/${item.turmaId}`)
+                              }
                               disabled={apenasConsulta}
                             >
                               {item.turmaNome}
+                              {ocupacaoPorTurma?.[item.turmaId] && (
+                                <span className="grade-item-ocupacao">{ocupacaoPorTurma[item.turmaId]}</span>
+                              )}
                             </button>
                           </Tooltip>
                         ))}
