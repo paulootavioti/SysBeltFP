@@ -8,6 +8,7 @@ import { PagarMensalidadeFamiliaService } from "./services/PagarMensalidadeFamil
 import { GetAgendaFamiliaService } from "./services/GetAgendaFamiliaService";
 import { ListMensagensFamiliaService } from "./services/ListMensagensFamiliaService";
 import { EnviarMensagemFamiliaService } from "./services/EnviarMensagemFamiliaService";
+import { GetMensagensNaoLidasFamiliaService } from "./services/GetMensagensNaoLidasFamiliaService";
 import { garantirAlunoNoEscopo } from "./utils/garantirAlunoNoEscopo";
 import { prisma } from "../../shared/database/prisma";
 
@@ -86,9 +87,16 @@ export class PortalFamiliaController {
     garantirAlunoNoEscopo(req.familia!.alunoIds, alunoId);
 
     const service = new ListMensagensFamiliaService();
-    const mensagens = await service.execute(alunoId);
+    const mensagens = await service.execute(alunoId, null, "FAMILIA");
 
     return res.json(mensagens);
+  }
+
+  async mensagensNaoLidas(req: Request, res: Response) {
+    const service = new GetMensagensNaoLidasFamiliaService();
+    const naoLidas = await service.execute(req.familia!.alunoIds);
+
+    return res.json(naoLidas);
   }
 
   async enviarMensagem(req: Request, res: Response) {

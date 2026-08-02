@@ -66,6 +66,13 @@ O acesso é recalculado a cada login **e a cada requisição** a partir da idade
 - **A mesma pessoa pode ser, ao mesmo tempo, aluno maior de idade (conta própria) e responsável por outro aluno** (ex.: irmão mais novo) — nesse caso a sessão soma os dois vínculos automaticamente e o seletor de filho no topo mostra os dois. Provar a senha de uma identidade não dá acesso à outra: se as senhas forem diferentes, é preciso logar separadamente com cada uma para ver os dados correspondentes.
 - Se a senha bater mas o resultado não der acesso a nenhum aluno (ex.: um responsável cujos filhos já são todos maiores de idade, ou um aluno menor tentando logar direto), o login falha com uma mensagem específica explicando o motivo, em vez de um genérico "senha inválida".
 
+#### Avisos de mensagens não lidas
+
+O chat família↔academia (`MensagemFamilia`) tem um flag `lida` que vira `true` quando o outro lado abre a conversa (ver `ListMensagensFamiliaService`) — isso alimenta indicadores nos dois apps, sem polling agressivo (mesmo intervalo de 60s já usado pelos outros badges):
+
+- **`sgcl-web`**: item **"Mensagens da Família"** no menu (grupo Comunicação) mostra um badge com o total de mensagens da família ainda não lidas na unidade, e leva pra uma tela de inbox (`/mensagens-familia`) — uma linha por aluno com conversa, com prévia da última mensagem e contagem de não lidas, ordenada pela mais recente. Clicar numa linha abre `/alunos/:id?tab=mensagens` já na aba certa.
+- **Portal da Família**: os chips do seletor de filho mostram um numerozinho quando aquele aluno tem mensagem nova da academia, e a aba "Mensagens" também ganha esse indicador enquanto não for aberta.
+
 #### Deploy em produção (Netlify, domínio separado)
 
 O Portal da Família é publicado como um **site Netlify próprio** — mesmo repositório, base directory diferente — porque é um app estaticamente separado do `sgcl-web` e não empacota a função serverless do backend (`sgcl-portal-familia/netlify.toml` cuida só do build + fallback de SPA, sem `[functions]`).

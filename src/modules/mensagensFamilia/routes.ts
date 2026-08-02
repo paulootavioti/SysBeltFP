@@ -27,4 +27,13 @@ mensagensFamiliaRoutes.post(
   controller.enviar
 );
 
+// inbox: uma linha por aluno com conversa, pra equipe achar rápido quem
+// mandou mensagem sem precisar abrir aluno por aluno.
+mensagensFamiliaRoutes.get(
+  "/conversas",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "RECEPCAO"]),
+  controller.listarConversas
+);
+
 export { mensagensFamiliaRoutes };

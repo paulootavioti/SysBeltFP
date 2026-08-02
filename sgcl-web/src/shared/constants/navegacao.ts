@@ -27,6 +27,7 @@ import {
   LuSettings,
   LuCircleHelp,
   LuClipboardCheck,
+  LuInbox,
 } from "react-icons/lu";
 
 import type { ContadoresMenu } from "../services/NotificacoesService";
@@ -141,7 +142,10 @@ export const NAV_TREE: NavEntry[] = [
     id: "comunicacao",
     label: "Comunicação",
     icon: LuMessageCircle,
-    items: [item("/mensagens", "Mensagens", LuMessageCircle)],
+    items: [
+      item("/mensagens", "Mensagens", LuMessageCircle),
+      item("/mensagens-familia", "Mensagens da Família", LuInbox, "mensagensFamiliaNaoLidas"),
+    ],
   },
 
   {

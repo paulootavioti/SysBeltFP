@@ -7,11 +7,15 @@ import { LoginFamiliaService } from "./LoginFamiliaService";
 import { GetResumoFamiliaService } from "./GetResumoFamiliaService";
 import { ListMensagensFamiliaService } from "./ListMensagensFamiliaService";
 import { EnviarMensagemFamiliaService } from "./EnviarMensagemFamiliaService";
+import { GetMensagensNaoLidasFamiliaService } from "./GetMensagensNaoLidasFamiliaService";
+import { ListConversasFamiliaService } from "../../mensagensFamilia/services/ListConversasFamiliaService";
 
 const loginService = new LoginFamiliaService();
 const resumoService = new GetResumoFamiliaService();
 const listMensagensService = new ListMensagensFamiliaService();
 const enviarMensagemService = new EnviarMensagemFamiliaService();
+const naoLidasService = new GetMensagensNaoLidasFamiliaService();
+const listConversasService = new ListConversasFamiliaService();
 
 let unidadeId: number;
 
@@ -258,5 +262,76 @@ describe("Mensagens da família", () => {
         texto: "   ",
       })
     ).rejects.toThrow(AppError);
+  });
+
+  it("marca mensagens da família como lidas quando a academia visualiza a conversa", async () => {
+    const aluno = await prisma.aluno.create({
+      data: { unidadeId, nome: "TESTE_VITEST_PORTAL_CHAT_LIDA_ACADEMIA", dataNascimento: new Date("2015-01-01") },
+    });
+
+    await enviarMensagemService.execute({
+      alunoId: aluno.id,
+      remetenteTipo: "FAMILIA",
+      remetenteNome: "Mãe",
+      texto: "Mensagem não lida",
+    });
+
+    const antesConversas = await listConversasService.execute(unidadeId);
+    expect(antesConversas.find((c) => c.aluno.id === aluno.id)?.naoLidas).toBe(1);
+
+    // a academia abre a conversa (mesmo endpoint que a aba da equipe chama)
+    await listMensagensService.execute(aluno.id, unidadeId, "ACADEMIA");
+
+    const depoisConversas = await listConversasService.execute(unidadeId);
+    expect(depoisConversas.find((c) => c.aluno.id === aluno.id)?.naoLidas).toBe(0);
+  });
+
+  it("marca mensagens da academia como lidas quando a família visualiza a conversa", async () => {
+    const aluno = await prisma.aluno.create({
+      data: { unidadeId, nome: "TESTE_VITEST_PORTAL_CHAT_LIDA_FAMILIA", dataNascimento: new Date("2015-01-01") },
+    });
+
+    await enviarMensagemService.execute({
+      alunoId: aluno.id,
+      remetenteTipo: "ACADEMIA",
+      remetenteNome: "Recepção",
+      texto: "Resposta da academia",
+    });
+
+    expect((await naoLidasService.execute([aluno.id]))[0]?.naoLidas).toBe(1);
+
+    // a família abre a conversa (mesmo endpoint que o Portal chama)
+    await listMensagensService.execute(aluno.id, null, "FAMILIA");
+
+    expect(await naoLidasService.execute([aluno.id])).toEqual([]);
+  });
+
+  it("ListConversasFamiliaService lista uma linha por aluno, com não lidas e ordenada pela mensagem mais recente", async () => {
+    const alunoRecente = await prisma.aluno.create({
+      data: { unidadeId, nome: "TESTE_VITEST_PORTAL_CONVERSA_RECENTE", dataNascimento: new Date("2015-01-01") },
+    });
+    const alunoAntigo = await prisma.aluno.create({
+      data: { unidadeId, nome: "TESTE_VITEST_PORTAL_CONVERSA_ANTIGA", dataNascimento: new Date("2015-01-01") },
+    });
+
+    await enviarMensagemService.execute({
+      alunoId: alunoAntigo.id,
+      remetenteTipo: "FAMILIA",
+      remetenteNome: "Pai",
+      texto: "Mensagem mais antiga",
+    });
+    await enviarMensagemService.execute({
+      alunoId: alunoRecente.id,
+      remetenteTipo: "FAMILIA",
+      remetenteNome: "Mãe",
+      texto: "Mensagem mais recente",
+    });
+
+    const conversas = await listConversasService.execute(unidadeId);
+    const relevantes = conversas.filter((c) => [alunoRecente.id, alunoAntigo.id].includes(c.aluno.id));
+
+    expect(relevantes[0].aluno.id).toBe(alunoRecente.id);
+    expect(relevantes[0].naoLidas).toBe(1);
+    expect(relevantes[1].aluno.id).toBe(alunoAntigo.id);
   });
 });

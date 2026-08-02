@@ -30,6 +30,8 @@ portalFamiliaRoutes.get("/agenda/:alunoId", ensureAuthenticatedFamilia, controll
 
 portalFamiliaRoutes.get("/mensagens/:alunoId", ensureAuthenticatedFamilia, controller.listarMensagens);
 
+portalFamiliaRoutes.get("/mensagens-nao-lidas", ensureAuthenticatedFamilia, controller.mensagensNaoLidas);
+
 portalFamiliaRoutes.post(
   "/mensagens",
   ensureAuthenticatedFamilia,

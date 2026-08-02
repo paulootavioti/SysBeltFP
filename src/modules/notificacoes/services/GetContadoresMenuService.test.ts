@@ -10,6 +10,7 @@ let unidadeBId: number;
 let alunoAId: number;
 
 async function limpar() {
+  await prisma.mensagemFamilia.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } });
   await prisma.contrato.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } });
   await prisma.modeloContrato.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } });
   await prisma.mensalidade.deleteMany({ where: { aluno: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } });
@@ -107,5 +108,36 @@ describe("GetContadoresMenuService", () => {
 
     const contadoresA = await service.execute(unidadeAId);
     expect(contadoresA.graduacoesPendentes).toBe(1);
+  });
+
+  it("conta mensagens da família não lidas, só as enviadas pela família e só da própria unidade", async () => {
+    await prisma.mensagemFamilia.create({
+      data: { unidadeId: unidadeAId, alunoId: alunoAId, remetenteTipo: "FAMILIA", remetenteNome: "Mãe", texto: "Oi" },
+    });
+    await prisma.mensagemFamilia.create({
+      data: {
+        unidadeId: unidadeAId,
+        alunoId: alunoAId,
+        remetenteTipo: "FAMILIA",
+        remetenteNome: "Mãe",
+        texto: "Já lida",
+        lida: true,
+      },
+    });
+    await prisma.mensagemFamilia.create({
+      data: {
+        unidadeId: unidadeAId,
+        alunoId: alunoAId,
+        remetenteTipo: "ACADEMIA",
+        remetenteNome: "Recepção",
+        texto: "Resposta da academia, não conta",
+      },
+    });
+
+    const contadoresA = await service.execute(unidadeAId);
+    const contadoresB = await service.execute(unidadeBId);
+
+    expect(contadoresA.mensagensFamiliaNaoLidas).toBe(1);
+    expect(contadoresB.mensagensFamiliaNaoLidas).toBe(0);
   });
 });

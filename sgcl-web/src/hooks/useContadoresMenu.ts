@@ -6,6 +6,7 @@ const CONTADORES_VAZIOS: ContadoresMenu = {
   mensalidadesVencidas: 0,
   contratosAguardandoAssinatura: 0,
   graduacoesPendentes: 0,
+  mensagensFamiliaNaoLidas: 0,
 };
 
 const INTERVALO_ATUALIZACAO_MS = 60000;

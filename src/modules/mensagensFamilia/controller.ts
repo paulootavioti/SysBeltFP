@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { prisma } from "../../shared/database/prisma";
 import { ListMensagensFamiliaService } from "../portalFamilia/services/ListMensagensFamiliaService";
 import { EnviarMensagemFamiliaService } from "../portalFamilia/services/EnviarMensagemFamiliaService";
+import { ListConversasFamiliaService } from "./services/ListConversasFamiliaService";
 
 export class MensagensFamiliaController {
   async list(req: Request, res: Response) {
@@ -10,9 +11,17 @@ export class MensagensFamiliaController {
 
     const service = new ListMensagensFamiliaService();
 
-    const mensagens = await service.execute(Number(alunoId), req.user.unidadeId);
+    const mensagens = await service.execute(Number(alunoId), req.user.unidadeId, "ACADEMIA");
 
     return res.json(mensagens);
+  }
+
+  async listarConversas(req: Request, res: Response) {
+    const service = new ListConversasFamiliaService();
+
+    const conversas = await service.execute(req.user.unidadeId);
+
+    return res.json(conversas);
   }
 
   async enviar(req: Request, res: Response) {
