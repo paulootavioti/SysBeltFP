@@ -7,7 +7,7 @@ import { GetFotoService } from "./services/GetFotoService";
 // "financeiro" guarda comprovantes de pagamento e "contratos" guarda o
 // contrato assinado (imagem ou PDF, em ambos) — os demais prefixos
 // continuam sendo só foto de perfil.
-const PREFIXOS_PERMITIDOS = ["alunos", "responsaveis", "usuarios", "financeiro", "contratos"] as const;
+const PREFIXOS_PERMITIDOS = ["alunos", "responsaveis", "usuarios", "financeiro", "contratos", "produtos"] as const;
 
 export class UploadsController {
   async uploadFoto(req: Request, res: Response) {
