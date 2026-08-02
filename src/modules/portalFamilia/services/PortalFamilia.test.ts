@@ -15,6 +15,13 @@ const enviarMensagemService = new EnviarMensagemFamiliaService();
 
 let unidadeId: number;
 
+function dataComIdade(idade: number): Date {
+  const data = new Date();
+  data.setFullYear(data.getFullYear() - idade);
+  data.setDate(data.getDate() - 1);
+  return data;
+}
+
 async function limpar() {
   await prisma.mensagemFamilia.deleteMany({ where: { aluno: { nome: { startsWith: "TESTE_VITEST_PORTAL_" } } } });
   await prisma.aulaAluno.deleteMany({ where: { aluno: { nome: { startsWith: "TESTE_VITEST_PORTAL_" } } } });
@@ -107,6 +114,81 @@ describe("LoginFamiliaService", () => {
     expect(sessao.alunos).toEqual([
       expect.objectContaining({ id: aluno.id }),
     ]);
+  });
+
+  it("aluno menor de idade não consegue logar diretamente mesmo com a senha correta", async () => {
+    const senhaHash = await hash("senha789", 8);
+    await prisma.aluno.create({
+      data: {
+        unidadeId,
+        nome: "TESTE_VITEST_PORTAL_ALUNO_MENOR",
+        dataNascimento: dataComIdade(15),
+        email: "aluno.menor@teste-vitest-portal.com",
+        senhaPortal: senhaHash,
+      },
+    });
+
+    await expect(
+      loginService.execute({ email: "aluno.menor@teste-vitest-portal.com", senha: "senha789" })
+    ).rejects.toThrow(AppError);
+  });
+
+  it("responsável perde acesso a um aluno que já é maior de idade", async () => {
+    const senhaHash = await hash("senha321", 8);
+    const filhoAdulto = await prisma.aluno.create({
+      data: { unidadeId, nome: "TESTE_VITEST_PORTAL_FILHO_ADULTO", dataNascimento: dataComIdade(19) },
+    });
+
+    await prisma.responsavel.create({
+      data: {
+        unidadeId,
+        nome: "TESTE_VITEST_PORTAL_MAE_2",
+        email: "mae2@teste-vitest-portal.com",
+        senhaPortal: senhaHash,
+        alunoId: filhoAdulto.id,
+      },
+    });
+
+    await expect(
+      loginService.execute({ email: "mae2@teste-vitest-portal.com", senha: "senha321" })
+    ).rejects.toThrow(AppError);
+  });
+
+  it("mesma pessoa acessa a própria conta de aluno adulto e a do irmão menor pelo qual é responsável", async () => {
+    const senhaHash = await hash("senhaUnica", 8);
+
+    const irmaoMaisNovo = await prisma.aluno.create({
+      data: { unidadeId, nome: "TESTE_VITEST_PORTAL_IRMAO_MENOR", dataNascimento: dataComIdade(12) },
+    });
+
+    const irmaoMaisVelho = await prisma.aluno.create({
+      data: {
+        unidadeId,
+        nome: "TESTE_VITEST_PORTAL_IRMAO_MAIOR",
+        dataNascimento: dataComIdade(20),
+        email: "irmaomaisvelho@teste-vitest-portal.com",
+        senhaPortal: senhaHash,
+      },
+    });
+
+    await prisma.responsavel.create({
+      data: {
+        unidadeId,
+        nome: "TESTE_VITEST_PORTAL_IRMAO_MAIOR",
+        email: "irmaomaisvelho@teste-vitest-portal.com",
+        senhaPortal: senhaHash,
+        alunoId: irmaoMaisNovo.id,
+      },
+    });
+
+    const sessao = await loginService.execute({
+      email: "irmaomaisvelho@teste-vitest-portal.com",
+      senha: "senhaUnica",
+    });
+
+    expect(sessao.alunos.map((aluno) => aluno.id).sort()).toEqual(
+      [irmaoMaisNovo.id, irmaoMaisVelho.id].sort()
+    );
   });
 });
 

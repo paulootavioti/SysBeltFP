@@ -57,6 +57,15 @@ Aplicação em `http://localhost:5175`. O backend já libera CORS para as duas o
 
 A tela de login do `sgcl-web` (equipe) tem um link **"Acesse o Portal da Família"** apontando pra essa URL — configurável via `VITE_PORTAL_FAMILIA_URL` (`sgcl-web/.env.local`), útil quando o portal está publicado em outro domínio.
 
+#### Regra de maioridade (quem acessa o quê)
+
+O acesso é recalculado a cada login **e a cada requisição** a partir da idade atual do aluno (nunca fica cravado na sessão) — implementado em `src/modules/portalFamilia/utils/calcularEscopoFamilia.ts`, reaproveitado tanto no login quanto no middleware `ensureAuthenticatedFamilia`:
+
+- **Aluno com 18 anos ou mais** é responsável por si mesmo: só a própria conta dele (login direto, `senhaPortal` do próprio `Aluno`) acessa o portal a partir daí. Qualquer `Responsavel` vinculado a esse aluno perde o acesso a ele especificamente no exato dia em que ele completa 18 anos — a senha do responsável continua válida, só não abre mais aquele aluno.
+- **Aluno menor de 18 anos** só é acessado pelos responsáveis vinculados — o login direto do próprio aluno fica bloqueado mesmo que ele tenha uma credencial válida (`senhaPortal` gerada fica "dormente" até ele fazer 18 anos).
+- **A mesma pessoa pode ser, ao mesmo tempo, aluno maior de idade (conta própria) e responsável por outro aluno** (ex.: irmão mais novo) — nesse caso a sessão soma os dois vínculos automaticamente e o seletor de filho no topo mostra os dois. Provar a senha de uma identidade não dá acesso à outra: se as senhas forem diferentes, é preciso logar separadamente com cada uma para ver os dados correspondentes.
+- Se a senha bater mas o resultado não der acesso a nenhum aluno (ex.: um responsável cujos filhos já são todos maiores de idade, ou um aluno menor tentando logar direto), o login falha com uma mensagem específica explicando o motivo, em vez de um genérico "senha inválida".
+
 #### Deploy em produção (Netlify, domínio separado)
 
 O Portal da Família é publicado como um **site Netlify próprio** — mesmo repositório, base directory diferente — porque é um app estaticamente separado do `sgcl-web` e não empacota a função serverless do backend (`sgcl-portal-familia/netlify.toml` cuida só do build + fallback de SPA, sem `[functions]`).
