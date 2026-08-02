@@ -3,6 +3,8 @@ import { sign, SignOptions } from "jsonwebtoken";
 
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
+import { calcularIdade } from "../../mensagens/utils";
+import { calcularEscopoFamilia } from "../utils/calcularEscopoFamilia";
 
 interface LoginFamiliaDTO {
   email: string;
@@ -23,55 +25,61 @@ export class LoginFamiliaService {
       omit: { senhaPortal: false },
     });
 
+    let comoResponsavel = false;
+
     for (const responsavel of responsaveis) {
-      if (!responsavel.senhaPortal) continue;
-
-      const senhaCorreta = await compare(senha, responsavel.senhaPortal);
-
-      if (senhaCorreta) {
-        return this.gerarSessao({
-          tipo: "RESPONSAVEL",
-          email,
-          nome: responsavel.nome,
-          alunos: responsaveis.map((item) => item.aluno),
-        });
+      if (responsavel.senhaPortal && (await compare(senha, responsavel.senhaPortal))) {
+        comoResponsavel = true;
+        break;
       }
     }
 
-    const aluno = await prisma.aluno.findFirst({
+    const alunoProprio = await prisma.aluno.findFirst({
       where: { email, ativo: true },
       omit: { senhaPortal: false },
     });
 
-    if (aluno?.senhaPortal) {
-      const senhaCorreta = await compare(senha, aluno.senhaPortal);
+    const comoAluno = Boolean(
+      alunoProprio?.senhaPortal && (await compare(senha, alunoProprio.senhaPortal))
+    );
 
-      if (senhaCorreta) {
-        return this.gerarSessao({
-          tipo: "ALUNO",
-          email,
-          nome: aluno.nome,
-          alunos: [aluno],
-        });
-      }
+    if (!comoResponsavel && !comoAluno) {
+      throw new AppError("E-mail ou senha inválidos.");
     }
 
-    throw new AppError("E-mail ou senha inválidos.");
+    const escopo = calcularEscopoFamilia({ comoAluno, comoResponsavel, alunoProprio, responsaveis });
+
+    if (escopo.alunos.length === 0) {
+      // a senha bateu, mas a regra de maioridade zerou o escopo — dá pra
+      // explicar exatamente por quê, em vez de um genérico "acesso negado".
+      if (comoAluno && alunoProprio && calcularIdade(alunoProprio.dataNascimento) < 18) {
+        throw new AppError(
+          "Alunos menores de 18 anos não acessam o portal diretamente. Peça a um responsável para acessar por ele."
+        );
+      }
+
+      throw new AppError(
+        "Os alunos vinculados a este acesso já são maiores de idade — eles agora acessam o portal com a própria conta."
+      );
+    }
+
+    return this.gerarSessao({ email, comoAluno, comoResponsavel, escopo });
   }
 
   private gerarSessao(dados: {
-    tipo: "RESPONSAVEL" | "ALUNO";
     email: string;
-    nome: string;
-    alunos: { id: number; nome: string; apelido: string | null; fotoUrl: string | null }[];
+    comoAluno: boolean;
+    comoResponsavel: boolean;
+    escopo: ReturnType<typeof calcularEscopoFamilia>;
   }) {
     const jwtSecret = process.env.JWT_SECRET as string;
     const jwtExpiresIn = (process.env.JWT_EXPIRES_IN || "7d") as SignOptions["expiresIn"];
 
     const token = sign(
       {
-        tipo: dados.tipo,
         email: dados.email,
+        comoAluno: dados.comoAluno,
+        comoResponsavel: dados.comoResponsavel,
       },
       jwtSecret,
       {
@@ -80,15 +88,13 @@ export class LoginFamiliaService {
       }
     );
 
-    const alunosUnicos = Array.from(new Map(dados.alunos.map((aluno) => [aluno.id, aluno])).values());
-
     return {
       usuario: {
-        tipo: dados.tipo,
-        nome: dados.nome,
+        tipo: dados.escopo.tipo,
+        nome: dados.escopo.nome,
         email: dados.email,
       },
-      alunos: alunosUnicos.map((aluno) => ({
+      alunos: dados.escopo.alunos.map((aluno) => ({
         id: aluno.id,
         nome: aluno.nome,
         apelido: aluno.apelido,
