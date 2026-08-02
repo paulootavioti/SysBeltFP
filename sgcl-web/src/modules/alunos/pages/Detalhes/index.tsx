@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
@@ -40,6 +40,12 @@ export function AlunoDetalhes() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { usuario } = useAuth();
+  const [searchParams] = useSearchParams();
+
+  // permite abrir direto numa aba específica (ex.: /alunos/1?tab=mensagens),
+  // usado pelo inbox de Mensagens da Família — sem isso o link sempre cairia
+  // na primeira aba e a pessoa teria que clicar em "Mensagens" de novo.
+  const [abaAtiva, setAbaAtiva] = useState(searchParams.get("tab") || "dados");
 
   // PROFESSOR só recebe do backend o recorte básico (nome, apelido,
   // responsável, turma, presenças, graduações) — a tela inteira renderiza
@@ -263,7 +269,8 @@ export function AlunoDetalhes() {
       <AlunoResumo aluno={alunoCompleto} />
 
       <Tabs
-        defaultValue="dados"
+        value={abaAtiva}
+        onChange={setAbaAtiva}
         tabs={[
           {
             label: "Dados",

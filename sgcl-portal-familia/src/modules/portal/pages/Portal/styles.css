@@ -61,6 +61,20 @@
   background: var(--color-accent-soft);
 }
 
+.portal-chip-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: var(--font-xs);
+  font-weight: 700;
+}
+
 /* ===== Resumo ===== */
 
 .resumo-tab-grid {

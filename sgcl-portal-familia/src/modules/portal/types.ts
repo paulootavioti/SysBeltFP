@@ -65,3 +65,8 @@ export interface Mensagem {
   texto: string;
   createdAt: string;
 }
+
+export interface NaoLidasPorAluno {
+  alunoId: number;
+  naoLidas: number;
+}

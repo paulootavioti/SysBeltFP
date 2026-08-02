@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../../../contexts/useAuth";
+import { useContadorMensagens } from "../../../../hooks/useContadorMensagens";
 import { Button } from "../../../../components/ui/Button";
 import { Tabs } from "../../../../components/ui/Tabs";
 import { EmptyState } from "../../../../components/ui/EmptyState";
+import { Badge } from "../../../../components/ui/Badge";
 
 import { ResumoTab } from "../../components/ResumoTab";
 import { FrequenciaTab } from "../../components/FrequenciaTab";
@@ -16,6 +18,7 @@ import "./styles.css";
 export function Portal() {
   const navigate = useNavigate();
   const { usuario, alunos, alunoSelecionadoId, selecionarAluno, logout } = useAuth();
+  const naoLidasPorAluno = useContadorMensagens();
 
   function handleLogout() {
     logout();
@@ -46,6 +49,9 @@ export function Portal() {
             >
               <span className="portal-chip-iniciais">{aluno.iniciais}</span>
               {aluno.apelido || aluno.nome}
+              {!!naoLidasPorAluno[aluno.id] && (
+                <span className="portal-chip-badge">{naoLidasPorAluno[aluno.id]}</span>
+              )}
             </button>
           ))}
         </div>
@@ -61,7 +67,18 @@ export function Portal() {
             { value: "frequencia", label: "Frequência", content: <FrequenciaTab alunoId={alunoSelecionadoId} /> },
             { value: "mensalidades", label: "Mensalidades", content: <MensalidadesTab alunoId={alunoSelecionadoId} /> },
             { value: "agenda", label: "Agenda", content: <AgendaTab alunoId={alunoSelecionadoId} /> },
-            { value: "mensagens", label: "Mensagens", content: <MensagensTab alunoId={alunoSelecionadoId} /> },
+            {
+              value: "mensagens",
+              label: (
+                <>
+                  Mensagens
+                  {!!naoLidasPorAluno[alunoSelecionadoId] && (
+                    <Badge variant="info">{naoLidasPorAluno[alunoSelecionadoId]}</Badge>
+                  )}
+                </>
+              ),
+              content: <MensagensTab alunoId={alunoSelecionadoId} />,
+            },
           ]}
         />
       )}

@@ -4,6 +4,7 @@ export interface ContadoresMenu {
   mensalidadesVencidas: number;
   contratosAguardandoAssinatura: number;
   graduacoesPendentes: number;
+  mensagensFamiliaNaoLidas: number;
 }
 
 export class NotificacoesService {

@@ -562,6 +562,11 @@ model MensagemFamilia {
 
   texto String
 
+  // marcada como lida quando o outro lado da conversa abre a tela de
+  // mensagens daquele aluno (ver ListMensagensFamiliaService) — alimenta
+  // os badges de "mensagens não lidas" na equipe e no Portal da Família.
+  lida Boolean @default(false)
+
   createdAt DateTime @default(now())
 }
 

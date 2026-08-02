@@ -6,3 +6,11 @@ export interface MensagemFamilia {
   texto: string;
   createdAt: string;
 }
+
+export interface ConversaFamiliaResumo {
+  aluno: { id: number; nome: string; apelido: string | null; fotoUrl: string | null };
+  ultimaMensagem: string;
+  ultimaMensagemEm: string;
+  ultimoRemetenteTipo: "FAMILIA" | "ACADEMIA";
+  naoLidas: number;
+}

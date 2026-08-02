@@ -4,6 +4,7 @@ import type {
   Frequencia,
   Mensagem,
   Mensalidade,
+  NaoLidasPorAluno,
   Resumo,
   ResultadoPagamento,
 } from "../types";
@@ -43,6 +44,11 @@ export class PortalService {
 
   static async enviarMensagem(alunoId: number, texto: string) {
     const response = await api.post<Mensagem>("/portal-familia/mensagens", { alunoId, texto });
+    return response.data;
+  }
+
+  static async mensagensNaoLidas() {
+    const response = await api.get<NaoLidasPorAluno[]>("/portal-familia/mensagens-nao-lidas");
     return response.data;
   }
 }
