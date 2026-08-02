@@ -16,6 +16,71 @@
   gap: var(--space-2);
 }
 
+/* mobile/tablet: nav de categorias é uma fila de chips com scroll
+   horizontal, fixa no topo do conteúdo. Vira coluna lateral de 250px
+   grudada (sticky) só a partir do desktop — ver breakpoints documentados
+   em styles/variables.css. */
+.ajuda-layout {
+  display: block;
+}
+
+.ajuda-categorias-nav {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.ajuda-categoria-chip {
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  min-height: var(--tap-target-min);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ajuda-categoria-chip:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.ajuda-conteudo {
+  min-width: 0;
+}
+
+@media (min-width: 1025px) {
+  .ajuda-layout {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  .ajuda-categorias-nav {
+    flex-direction: column;
+    overflow-x: visible;
+    margin-bottom: 0;
+    padding-bottom: 0;
+
+    position: sticky;
+    top: var(--space-4);
+  }
+
+  .ajuda-categoria-chip {
+    width: 100%;
+    text-align: left;
+    border-radius: var(--radius-md);
+  }
+}
+
 .ajuda-categoria {
   margin-bottom: var(--space-6);
 }

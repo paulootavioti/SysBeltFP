@@ -50,3 +50,16 @@
 .modal-content {
   padding: var(--space-5);
 }
+
+/* mobile: modal ocupa quase a largura toda da tela — com o padding do
+   overlay em telas de 375-390px sobraria pouco espaço útil pro
+   conteúdo, especialmente em modais com formulário. */
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: var(--space-2);
+  }
+
+  .modal {
+    max-width: 92vw;
+  }
+}

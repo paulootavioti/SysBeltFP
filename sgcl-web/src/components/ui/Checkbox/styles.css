@@ -2,6 +2,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-height: var(--tap-target-min);
 
   font-size: var(--font-sm);
   color: var(--color-text);
@@ -10,7 +11,8 @@
 }
 
 .checkbox {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
   cursor: pointer;
 }

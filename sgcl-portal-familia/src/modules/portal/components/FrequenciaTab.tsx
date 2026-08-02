@@ -4,6 +4,7 @@ import { Loading } from "../../../components/ui/Loading";
 import { ErrorMessage } from "../../../components/ui/ErrorMessage";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { Badge } from "../../../components/ui/Badge";
+import { GraficoAproveitamento } from "./GraficoAproveitamento";
 
 import { PortalService } from "../services/PortalService";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
@@ -33,19 +34,23 @@ export function FrequenciaTab({ alunoId }: FrequenciaTabProps) {
   }
 
   return (
-    <div className="frequencia-tab-lista">
-      {registros.map((registro) => (
-        <div key={registro.id} className="frequencia-tab-item">
-          <div>
-            <strong>{new Date(registro.data).toLocaleDateString("pt-BR")}</strong>
-            {registro.turmaNome && <span> — {registro.turmaNome}</span>}
-          </div>
+    <div className="frequencia-tab-conteudo">
+      <GraficoAproveitamento registros={registros} />
 
-          <Badge variant={registro.presente ? "success" : "danger"}>
-            {registro.presente ? "Presente" : "Falta"}
-          </Badge>
-        </div>
-      ))}
+      <div className="frequencia-tab-lista">
+        {registros.map((registro) => (
+          <div key={registro.id} className="frequencia-tab-item">
+            <div>
+              <strong>{new Date(registro.data).toLocaleDateString("pt-BR")}</strong>
+              {registro.turmaNome && <span> — {registro.turmaNome}</span>}
+            </div>
+
+            <Badge variant={registro.presente ? "success" : "danger"}>
+              {registro.presente ? "Presente" : "Falta"}
+            </Badge>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
