@@ -28,6 +28,7 @@ import {
   LuCircleHelp,
   LuClipboardCheck,
   LuInbox,
+  LuShoppingBag,
 } from "react-icons/lu";
 
 import type { ContadoresMenu } from "../services/NotificacoesService";
@@ -134,6 +135,7 @@ export const NAV_TREE: NavEntry[] = [
       item("/planos", "Planos", LuCreditCard),
       item("/contratos", "Contratos", LuFileText, "contratosAguardandoAssinatura"),
       item("/modelos-contrato", "Modelos de Contrato", LuFileStack),
+      item("/loja", "Loja", LuShoppingBag),
     ],
   },
 

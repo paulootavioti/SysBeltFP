@@ -1,0 +1,71 @@
+.loja-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.loja-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-4);
+}
+
+.loja-search {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+.loja-filtros-ativos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.loja-filtro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px var(--space-2);
+  border-radius: var(--radius-full, 999px);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-sm);
+}
+
+.loja-filtro-chip button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--font-md);
+  line-height: 1;
+  color: var(--color-text-light);
+}
+
+.loja-produto-celula {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.loja-produto-titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+.loja-produto-variantes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.loja-table-acoes {
+  display: flex;
+  gap: var(--space-2);
+}

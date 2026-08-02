@@ -73,6 +73,23 @@ enum TipoAssinaturaContrato {
   PRESENCIAL
 }
 
+// Categorias fixas do catálogo da loja — lista fechada pedida pelo produto.
+enum CategoriaProduto {
+  KIMONO
+  RASHGUARD
+  BERMUDA
+  FAIXA
+  PATCH
+  CHAVEIRO
+  PULSEIRA
+  OUTROS
+}
+
+enum TipoMovimentacaoEstoque {
+  ENTRADA
+  SAIDA
+}
+
 model Unidade {
   id Int @id @default(autoincrement())
 
@@ -101,6 +118,7 @@ model Unidade {
   modelosContrato  ModeloContrato[]
   contratos        Contrato[]
   mensagensFamilia MensagemFamilia[]
+  produtos         Produto[]
 
   createdAt DateTime @default(now())
 }
@@ -732,6 +750,61 @@ model Plano {
   contratos   Contrato[]
 
   createdAt DateTime @default(now())
+}
+
+// Catálogo da loja (kimonos, rashguards, faixas, patches etc). Estoque
+// sempre por variante (tamanho/cor), nunca no produto — um produto sem
+// variantes cadastradas não tem estoque nenhum.
+model Produto {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  nome       String
+  categoria  CategoriaProduto
+  preco      Float
+  descricao  String?
+  ativo      Boolean @default(true)
+  imagemUrl  String?
+
+  variantes ProdutoVariante[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model ProdutoVariante {
+  id Int @id @default(autoincrement())
+
+  produtoId Int
+  produto   Produto @relation(fields: [produtoId], references: [id])
+
+  tamanho String
+  cor     String?
+  estoque Int     @default(0)
+
+  movimentacoes MovimentacaoEstoque[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+// Auditoria de toda entrada/saída de estoque. Populado a partir da venda
+// pelo Portal da Família (fase seguinte) — nesta fase o modelo existe mas
+// ainda não é escrito por nenhum fluxo (CRUD de produto só ajusta
+// ProdutoVariante.estoque diretamente).
+model MovimentacaoEstoque {
+  id Int @id @default(autoincrement())
+
+  varianteId Int
+  variante   ProdutoVariante @relation(fields: [varianteId], references: [id])
+
+  tipo      TipoMovimentacaoEstoque
+  quantidade Int
+  motivo    String
+
+  data DateTime @default(now())
 }
 
 model Aula {

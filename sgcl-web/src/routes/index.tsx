@@ -44,6 +44,7 @@ const FormasPagamento = lazy(() => import("../modules/formasPagamento/pages/List
 const Assinaturas = lazy(() => import("../modules/assinaturas/pages/Listar").then((m) => ({ default: m.Assinaturas })));
 const ModelosContrato = lazy(() => import("../modules/modelosContrato/pages/Listar").then((m) => ({ default: m.ModelosContrato })));
 const Contratos = lazy(() => import("../modules/contratos/pages/Listar").then((m) => ({ default: m.Contratos })));
+const Loja = lazy(() => import("../modules/loja/pages/Listar").then((m) => ({ default: m.Loja })));
 const DetalheContrato = lazy(() => import("../modules/contratos/pages/Detalhes").then((m) => ({ default: m.DetalheContrato })));
 
 const CentralDeAjuda = lazy(() => import("../modules/ajuda/pages/Central").then((m) => ({ default: m.CentralDeAjuda })));
@@ -348,6 +349,15 @@ export function AppRoutes() {
           element={
             <PrivateRoute>
               <FormasPagamento />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/loja"
+          element={
+            <PrivateRoute>
+              <Loja />
             </PrivateRoute>
           }
         />
