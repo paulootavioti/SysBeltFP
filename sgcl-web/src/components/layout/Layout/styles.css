@@ -77,6 +77,12 @@
 
   padding:4px;
 
+  min-width:var(--tap-target-min);
+
+  min-height:var(--tap-target-min);
+
+  justify-content:center;
+
   align-items:center;
 
 }
@@ -437,6 +443,12 @@
 
   padding:4px;
 
+  min-width:var(--tap-target-min);
+
+  min-height:var(--tap-target-min);
+
+  justify-content:center;
+
   align-items:center;
 
   flex-shrink:0;
@@ -463,7 +475,7 @@
 
 }
 
-@media (max-width: 900px){
+@media (max-width: 1024px){
 
   .sidebar{
 
@@ -534,6 +546,16 @@
   .botao-sair-texto{
 
     display:none;
+
+  }
+
+  /* drawer virou o alvo principal de toque no mobile — cada link/cabeçalho
+     de grupo precisa do hit target mínimo, mesmo que no desktop (mouse)
+     a versão mais compacta continue de pé. */
+  .sidebar-link,
+  .sidebar-grupo-cabecalho{
+
+    min-height:var(--tap-target-min);
 
   }
 

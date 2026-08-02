@@ -38,6 +38,13 @@
 }
 
 .modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap-target-min);
+  min-height: var(--tap-target-min);
+  margin: calc(var(--tap-target-min) / -4);
+
   border: none;
   background: transparent;
   cursor: pointer;
@@ -49,4 +56,32 @@
 
 .modal-content {
   padding: var(--space-5);
+}
+
+/* mobile: o modal vira uma bottom sheet — desliza de baixo, ocupa a
+   largura toda, só os cantos de cima arredondados. Mais fácil de
+   alcançar e fecha com o mesmo gesto de "puxar pra baixo" que o resto
+   do sistema operacional já usa. */
+@media (max-width: 640px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    max-height: 85dvh;
+    animation: modal-subir 0.2s ease-out;
+  }
+
+  @keyframes modal-subir {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
 }

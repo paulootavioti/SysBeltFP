@@ -123,3 +123,20 @@
   margin-bottom: 0;
   color: var(--color-text-light);
 }
+
+/* mobile: botão de enviar gruda no rodapé da tela, sempre à mão — sem
+   isso, num formulário mais longo (comentário com várias linhas) seria
+   preciso rolar até o fim pra confirmar. Mantém a cor normal do botão
+   (só a posição muda) — sombra faz a separação do conteúdo por trás. */
+@media (max-width: 640px) {
+  .professor-graduacao-form button[type="submit"] {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    width: 100%;
+
+    margin: 0 calc(var(--space-3) * -1) calc(var(--space-3) * -1);
+    border-radius: 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.12);
+  }
+}

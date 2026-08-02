@@ -48,3 +48,14 @@
   background: var(--color-danger);
   color: #fff;
 }
+
+/* mobile precisa do hit target mínimo — em tablet/desktop o app admin
+   não é mobile-first (uso majoritariamente com mouse/teclado), então
+   mantém o tamanho denso de sempre: útil pra telas com bastante coisa
+   junta, como botões de ação empilhados em linha de tabela. */
+@media (max-width: 640px) {
+  .button-md,
+  .button-sm {
+    min-height: var(--tap-target-min);
+  }
+}

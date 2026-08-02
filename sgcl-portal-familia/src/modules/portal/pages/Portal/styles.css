@@ -4,6 +4,15 @@
   padding: var(--space-5) var(--space-4) var(--space-8);
 }
 
+/* mobile: a barra de abas vira uma barra fixa no rodapé (ver Tabs/styles.css)
+   — precisa de espaço reservado no fim da página pra ela não tampar o
+   último item do conteúdo. */
+@media (max-width: 640px) {
+  .portal-page {
+    padding-bottom: calc(var(--portal-bottom-nav-height) + var(--space-6) + env(safe-area-inset-bottom));
+  }
+}
+
 .portal-header {
   display: flex;
   align-items: center;
@@ -14,13 +23,39 @@
 
 .portal-header h1 {
   margin: 0;
-  font-size: var(--font-xl);
+  font-size: var(--font-lg);
   color: var(--color-text);
 }
 
 .portal-header p {
   margin: 4px 0 0;
   color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+@media (min-width: 641px) {
+  .portal-header h1 {
+    font-size: var(--font-xl);
+  }
+
+  .portal-header p {
+    font-size: var(--font-md);
+  }
+}
+
+/* ===== Seletor de filho: chips (>1 filho) ou dropdown (>2, só mobile) ===== */
+
+.portal-select-aluno {
+  display: block;
+  width: 100%;
+  min-height: var(--tap-target-min);
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-md);
 }
 
 .portal-chips {
@@ -30,14 +65,32 @@
   margin-bottom: var(--space-5);
 }
 
+/* essa classe extra só existe quando >2 filhos (junto com .portal-chips
+   no mesmo elemento) — precisa vir DEPOIS de .portal-chips no arquivo
+   pra vencer o empate de especificidade e esconder de fato no mobile. */
+.portal-chips-tablet-acima {
+  display: none;
+}
+
+@media (min-width: 641px) {
+  .portal-select-aluno {
+    display: none;
+  }
+
+  .portal-chips-tablet-acima {
+    display: flex;
+  }
+}
+
 .portal-chip {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  min-height: var(--tap-target-min);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   border-radius: 999px;
-  padding: 6px 14px 6px 6px;
+  padding: 8px 16px 8px 8px;
   font-size: var(--font-sm);
   color: var(--color-text);
   cursor: pointer;
@@ -47,8 +100,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: var(--color-accent-soft);
   color: var(--color-primary);
@@ -75,12 +129,61 @@
   font-weight: 700;
 }
 
+/* ===== Label das abas (ícone + texto) ===== */
+
+.portal-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.portal-tab-label svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .portal-tab-label {
+    flex-direction: column;
+    gap: 2px;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .portal-tab-label svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* rótulo mais longo ("Mensalidades") não cabe inteiro em 1/5 de uma
+     tela de 375px — trunca com reticências em vez de estourar a barra. */
+  .portal-tab-label span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .portal-tab-label .badge {
+    position: absolute;
+    top: 2px;
+    right: calc(50% - 22px);
+  }
+}
+
 /* ===== Resumo ===== */
 
 .resumo-tab-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--space-4);
+}
+
+@media (min-width: 641px) {
+  .resumo-tab-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
 }
 
 .resumo-tab-status {
@@ -89,6 +192,12 @@
 }
 
 /* ===== Frequência ===== */
+
+.frequencia-tab-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
 
 .frequencia-tab-lista {
   display: flex;
@@ -101,6 +210,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  min-height: var(--tap-target-min);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -110,6 +220,62 @@
 .frequencia-tab-item span {
   color: var(--color-text-light);
   font-size: var(--font-sm);
+}
+
+/* ===== Gráfico de aproveitamento mensal ===== */
+
+.grafico-aproveitamento-titulo {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.grafico-aproveitamento-scroll {
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+}
+
+.grafico-aproveitamento-barras {
+  display: flex;
+  gap: var(--space-3);
+  width: max-content;
+  min-width: 100%;
+}
+
+.grafico-aproveitamento-coluna {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  width: 32px;
+  flex-shrink: 0;
+}
+
+.grafico-aproveitamento-valor {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  font-variant-numeric: tabular-nums;
+}
+
+.grafico-aproveitamento-trilha {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.grafico-aproveitamento-barra {
+  width: 20px;
+  min-height: 4px;
+  background: var(--color-accent);
+  border-radius: 4px 4px 0 0;
+}
+
+.grafico-aproveitamento-mes {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
 }
 
 /* ===== Mensalidades ===== */
@@ -249,4 +415,21 @@
 
 .mensagens-tab-form textarea {
   flex: 1;
+  min-height: var(--tap-target-min);
+}
+
+/* mobile: o campo de mensagem gruda logo acima da barra de abas inferior,
+   sempre visível — inclusive quando o teclado abre, já que "bottom" fica
+   relativo à viewport visível (dvh) e não à altura total da página. */
+@media (max-width: 640px) {
+  .mensagens-tab-form {
+    position: sticky;
+    bottom: calc(var(--portal-bottom-nav-height) + env(safe-area-inset-bottom));
+    z-index: 10;
+
+    margin: 0 calc(var(--space-4) * -1) calc(var(--space-4) * -1);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+  }
 }

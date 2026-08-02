@@ -27,4 +27,11 @@
     flex-direction: column;
     align-items: flex-start;
   }
+
+  /* toggle de presença é a ação mais repetida da tela — linha alta o
+     bastante pro toque, sem precisar de mira fina no celular. */
+  .aula-aluno-card-header .checkbox-wrapper {
+    min-height: 56px;
+    width: 100%;
+  }
 }

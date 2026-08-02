@@ -43,7 +43,22 @@
   --font-lg: 20px;
   --font-xl: 24px;
 
+  /* ===== Hit target mínimo (toque) ===== */
+
+  --tap-target-min: 44px;
+
 }
+
+/*
+ * ===== Breakpoints =====
+ * CSS não permite var() dentro de @media, então isso aqui é referência —
+ * use os valores literais abaixo nas media queries:
+ *   - mobile:  até 640px            → @media (max-width: 640px)
+ *   - tablet:  641px a 1024px       → @media (min-width: 641px) and (max-width: 1024px)
+ *   - desktop: acima de 1024px      → @media (min-width: 1025px)
+ * Pra "até tablet incluso" (ex.: esconder algo só no desktop), use
+ * @media (max-width: 1024px).
+ */
 
 :root {
   --primary: var(--color-primary);
