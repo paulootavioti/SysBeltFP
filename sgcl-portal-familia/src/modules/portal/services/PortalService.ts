@@ -2,9 +2,12 @@ import { api } from "../../../services/api";
 import type {
   Agenda,
   Frequencia,
+  ItemCarrinho,
   Mensagem,
   Mensalidade,
   NaoLidasPorAluno,
+  Pedido,
+  Produto,
   Resumo,
   ResultadoPagamento,
 } from "../types";
@@ -49,6 +52,21 @@ export class PortalService {
 
   static async mensagensNaoLidas() {
     const response = await api.get<NaoLidasPorAluno[]>("/portal-familia/mensagens-nao-lidas");
+    return response.data;
+  }
+
+  static async loja(alunoId: number) {
+    const response = await api.get<Produto[]>(`/portal-familia/loja/${alunoId}`);
+    return response.data;
+  }
+
+  static async criarPedido(alunoId: number, itens: ItemCarrinho[]) {
+    const response = await api.post<Pedido>("/portal-familia/loja/pedidos", { alunoId, itens });
+    return response.data;
+  }
+
+  static async listarPedidos(alunoId: number) {
+    const response = await api.get<Pedido[]>(`/portal-familia/loja/pedidos/${alunoId}`);
     return response.data;
   }
 }

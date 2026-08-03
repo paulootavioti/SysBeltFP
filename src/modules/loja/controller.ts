@@ -1,11 +1,14 @@
 import { Request, Response } from "express";
-import { CategoriaProduto } from "@prisma/client";
+import { CategoriaProduto, StatusPedido } from "@prisma/client";
 
 import { CreateProdutoService } from "./services/CreateProdutoService";
 import { UpdateProdutoService } from "./services/UpdateProdutoService";
 import { ListProdutosService } from "./services/ListProdutosService";
 import { ToggleAtivoProdutoService } from "./services/ToggleAtivoProdutoService";
 import { GetLojaKpisService } from "./services/GetLojaKpisService";
+import { ListPedidosService } from "./services/ListPedidosService";
+import { MarcarPedidoEntregueService } from "./services/MarcarPedidoEntregueService";
+import { CancelarPedidoService } from "./services/CancelarPedidoService";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 
 export class LojaController {
@@ -58,6 +61,39 @@ export class LojaController {
     const kpis = await service.execute(req.user.unidadeId);
 
     return res.json(kpis);
+  }
+
+  async listPedidos(req: Request, res: Response) {
+    const service = new ListPedidosService();
+
+    const { status, busca } = req.query;
+
+    const pedidos = await service.execute(req.user.unidadeId, {
+      status: typeof status === "string" ? (status as StatusPedido) : undefined,
+      busca: typeof busca === "string" ? busca : undefined,
+    });
+
+    return res.json(pedidos);
+  }
+
+  async marcarPedidoEntregue(req: Request, res: Response) {
+    const { id } = req.params;
+
+    const service = new MarcarPedidoEntregueService();
+
+    const pedido = await service.execute(Number(id), req.user.unidadeId);
+
+    return res.json(pedido);
+  }
+
+  async cancelarPedido(req: Request, res: Response) {
+    const { id } = req.params;
+
+    const service = new CancelarPedidoService();
+
+    const pedido = await service.execute(Number(id), req.user.unidadeId);
+
+    return res.json(pedido);
   }
 
 }

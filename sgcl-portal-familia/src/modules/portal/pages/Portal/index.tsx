@@ -1,5 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { LuLayoutDashboard, LuCalendarCheck, LuWallet, LuCalendarDays, LuMessageCircle } from "react-icons/lu";
+import {
+  LuLayoutDashboard,
+  LuCalendarCheck,
+  LuWallet,
+  LuCalendarDays,
+  LuMessageCircle,
+  LuShoppingBag,
+} from "react-icons/lu";
 
 import { useAuth } from "../../../../contexts/useAuth";
 import { useContadorMensagens } from "../../../../hooks/useContadorMensagens";
@@ -13,6 +20,7 @@ import { FrequenciaTab } from "../../components/FrequenciaTab";
 import { MensalidadesTab } from "../../components/MensalidadesTab";
 import { AgendaTab } from "../../components/AgendaTab";
 import { MensagensTab } from "../../components/MensagensTab";
+import { LojaTab } from "../../components/LojaTab";
 
 import "./styles.css";
 
@@ -111,6 +119,7 @@ export function Portal() {
               content: <MensalidadesTab alunoId={alunoSelecionadoId} />,
             },
             { value: "agenda", label: tabLabel(LuCalendarDays, "Agenda"), content: <AgendaTab alunoId={alunoSelecionadoId} /> },
+            { value: "loja", label: tabLabel(LuShoppingBag, "Loja"), content: <LojaTab alunoId={alunoSelecionadoId} /> },
             {
               value: "mensagens",
               label: tabLabel(LuMessageCircle, "Mensagens", naoLidasPorAluno[alunoSelecionadoId]),

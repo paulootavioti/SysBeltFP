@@ -3,7 +3,12 @@ import { Router } from "express";
 import { PortalFamiliaController } from "./controller";
 import { ensureAuthenticatedFamilia } from "./middlewares/ensureAuthenticatedFamilia";
 import { validateBody } from "../../shared/middlewares/validateBody";
-import { loginFamiliaSchema, pagarMensalidadeFamiliaSchema, enviarMensagemFamiliaSchema } from "./validation";
+import {
+  loginFamiliaSchema,
+  pagarMensalidadeFamiliaSchema,
+  enviarMensagemFamiliaSchema,
+  criarPedidoFamiliaSchema,
+} from "./validation";
 
 const portalFamiliaRoutes = Router();
 
@@ -38,5 +43,16 @@ portalFamiliaRoutes.post(
   validateBody(enviarMensagemFamiliaSchema),
   controller.enviarMensagem
 );
+
+portalFamiliaRoutes.get("/loja/:alunoId", ensureAuthenticatedFamilia, controller.loja);
+
+portalFamiliaRoutes.post(
+  "/loja/pedidos",
+  ensureAuthenticatedFamilia,
+  validateBody(criarPedidoFamiliaSchema),
+  controller.criarPedido
+);
+
+portalFamiliaRoutes.get("/loja/pedidos/:alunoId", ensureAuthenticatedFamilia, controller.listarPedidos);
 
 export { portalFamiliaRoutes };

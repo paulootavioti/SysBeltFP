@@ -468,3 +468,225 @@
     border-top: 1px solid var(--color-border);
   }
 }
+
+/* ===== Loja ===== */
+
+.loja-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.loja-tab-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.loja-tab-categorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.loja-tab-acoes-topo {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.loja-tab-chip {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full, 999px);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 6px 12px;
+  font-size: var(--font-sm);
+  cursor: pointer;
+}
+
+.loja-tab-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loja-tab-chip-ativo {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary, #fff);
+}
+
+.loja-tab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+}
+
+.loja-tab-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.loja-tab-card-imagem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  background: var(--color-bg, var(--color-surface));
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.loja-tab-card-imagem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.loja-tab-card-imagem-placeholder {
+  font-size: 2.5rem;
+}
+
+.loja-tab-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.loja-tab-card-info strong {
+  color: var(--color-text);
+}
+
+.loja-tab-card-info span {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+.loja-tab-card-preco {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.loja-tab-detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.loja-tab-variantes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.loja-tab-quantidade {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--font-sm);
+  color: var(--color-text);
+}
+
+.loja-tab-quantidade input {
+  width: 80px;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.loja-tab-carrinho {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.loja-tab-carrinho-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-2);
+}
+
+.loja-tab-carrinho-item strong {
+  display: block;
+  color: var(--color-text);
+}
+
+.loja-tab-carrinho-item span {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+.loja-tab-carrinho-item-acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.loja-tab-carrinho-item-acoes input {
+  width: 56px;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.loja-tab-carrinho-remover {
+  border: none;
+  background: none;
+  color: var(--color-danger);
+  font-size: 1.25rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.loja-tab-carrinho-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-md);
+}
+
+.loja-tab-confirmacao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.loja-tab-confirmacao-nota {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+.loja-tab-pedidos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.loja-tab-pedido-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.loja-tab-pedido-item-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.loja-tab-pedido-item span {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}

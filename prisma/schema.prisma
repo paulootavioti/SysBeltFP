@@ -119,6 +119,7 @@ model Unidade {
   contratos        Contrato[]
   mensagensFamilia MensagemFamilia[]
   produtos         Produto[]
+  pedidos          Pedido[]
 
   createdAt DateTime @default(now())
 }
@@ -205,6 +206,7 @@ model Aluno {
   comportamentos   Comportamento[]
   contratos        Contrato[]
   mensagensFamilia MensagemFamilia[]
+  pedidos          Pedido[]
 
   turmaId Int?
   turma   Turma? @relation(fields: [turmaId], references: [id])
@@ -792,6 +794,7 @@ model ProdutoVariante {
   estoque Int     @default(0)
 
   movimentacoes MovimentacaoEstoque[]
+  itensPedido   ItemPedido[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -812,6 +815,47 @@ model MovimentacaoEstoque {
   motivo    String
 
   data DateTime @default(now())
+}
+
+enum StatusPedido {
+  AGUARDANDO_RETIRADA
+  ENTREGUE
+  CANCELADO
+}
+
+// Pedido da Vitrine do Portal da Família — pagamento segue o mesmo gateway
+// manual das mensalidades (ver PagarMensalidadeFamiliaService): o checkout
+// já confirma o pedido e decrementa o estoque; "AGUARDANDO_RETIRADA" é o
+// status inicial (aguardando o aluno buscar o produto na unidade).
+model Pedido {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  alunoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id])
+
+  total  Float
+  status StatusPedido @default(AGUARDANDO_RETIRADA)
+
+  itens ItemPedido[]
+
+  criadoEm   DateTime  @default(now())
+  entregueEm DateTime?
+}
+
+model ItemPedido {
+  id Int @id @default(autoincrement())
+
+  pedidoId Int
+  pedido   Pedido @relation(fields: [pedidoId], references: [id])
+
+  varianteId Int
+  variante   ProdutoVariante @relation(fields: [varianteId], references: [id])
+
+  quantidade    Int
+  precoUnitario Float
 }
 
 model Aula {
