@@ -15,6 +15,7 @@ const TIPOS_PERMITIDOS_POR_PREFIXO: Record<string, string[]> = {
   financeiro: [...TIPOS_IMAGEM, "application/pdf"],
   contratos: [...TIPOS_IMAGEM, "application/pdf"],
   produtos: TIPOS_IMAGEM,
+  treinos: TIPOS_IMAGEM,
 };
 
 const EXTENSAO_POR_TIPO: Record<string, string> = {
@@ -28,7 +29,7 @@ const EXTENSAO_POR_TIPO: Record<string, string> = {
 interface UploadFotoDTO {
   buffer: Buffer;
   mimetype: string;
-  prefixo: "alunos" | "responsaveis" | "usuarios" | "financeiro" | "contratos" | "produtos";
+  prefixo: "alunos" | "responsaveis" | "usuarios" | "financeiro" | "contratos" | "produtos" | "treinos";
 }
 
 export class UploadFotoService {

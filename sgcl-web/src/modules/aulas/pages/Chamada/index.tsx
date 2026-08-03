@@ -18,6 +18,7 @@ import { InfoCard } from "../../../../components/sgcl/cards/InfoCard";
 import { StatusBadge } from "../../../../components/sgcl/feedback/StatusBadge";
 
 import { AulaService } from "../../services/AulaService";
+import { FotoTreinoBloco } from "../../../fotosTreino/components/FotoTreinoBloco";
 
 import type { Aula, AulaAluno, TecnicaAulaCurriculo } from "../../types";
 
@@ -244,6 +245,13 @@ export function ChamadaAula() {
         />
       ))}
 
+    </Section>
+
+    <Section
+      title="Foto do treino de hoje"
+      description="Publique fotos da aula na galeria — famílias com presença confirmada veem no Portal da Família."
+    >
+      <FotoTreinoBloco aulaId={aula.id} dataAula={aula.data} horarioInicio={aula.turma?.horarioInicio} />
     </Section>
 
       {aula.status === "ABERTA" ? (

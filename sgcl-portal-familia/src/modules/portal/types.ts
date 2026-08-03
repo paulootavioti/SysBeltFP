@@ -26,11 +26,18 @@ export interface Resumo {
   } | null;
 }
 
+export interface FotoTreinoFrequencia {
+  id: number;
+  url: string;
+  legenda: string;
+}
+
 export interface Frequencia {
   id: number;
   data: string;
   turmaNome: string | null;
   presente: boolean;
+  fotos: FotoTreinoFrequencia[];
 }
 
 export interface Mensalidade {

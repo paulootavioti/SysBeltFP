@@ -56,6 +56,7 @@ export interface Aluno {
   faixa: string;
   grau: number;
   ativo: boolean;
+  autorizaUsoImagem: boolean;
 
   turmaId?: number | null;
   turma?: {

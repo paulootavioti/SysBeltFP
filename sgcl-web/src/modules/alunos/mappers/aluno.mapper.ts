@@ -49,6 +49,8 @@ export function alunoParaFormulario(aluno?: Partial<Aluno>) {
 
     fotoUrl: aluno?.fotoUrl ?? "",
 
+    autorizaUsoImagem: aluno?.autorizaUsoImagem ?? true,
+
     responsavel: {
       id: primeiroResponsavel?.id,
       nome: primeiroResponsavel?.nome ?? "",
