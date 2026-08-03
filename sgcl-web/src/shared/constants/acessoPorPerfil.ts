@@ -31,6 +31,7 @@ const REGRAS_ACESSO: RegraAcesso[] = [
   { prefixo: "/mensagens-familia", perfis: ["ADMIN", "RECEPCAO"] },
   { prefixo: "/metas", perfis: ["ADMIN"] },
   { prefixo: "/eventos", perfis: ["ADMIN", "RECEPCAO"] },
+  { prefixo: "/leads", perfis: ["ADMIN", "RECEPCAO"] },
   { prefixo: "/professor", perfis: ["ADMIN", "PROFESSOR"] },
 ];
 

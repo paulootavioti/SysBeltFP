@@ -38,6 +38,8 @@ import { assinaturaEletronicaRoutes } from "./modules/assinaturaEletronica/route
 import { notificacoesRoutes } from "./modules/notificacoes/routes";
 import { portalFamiliaRoutes } from "./modules/portalFamilia/routes";
 import { mensagensFamiliaRoutes } from "./modules/mensagensFamilia/routes";
+import { publicoRoutes } from "./modules/publico/routes";
+import { leadsRoutes } from "./modules/leads/routes";
 
 // 5173 = sgcl-web (admin/staff), 5175 = sgcl-portal-familia (Portal da
 // Família) — dois frontends separados consumindo a mesma API.
@@ -101,6 +103,8 @@ app.use("/assinatura-eletronica", assinaturaEletronicaRoutes);
 app.use("/notificacoes", notificacoesRoutes);
 app.use("/portal-familia", portalFamiliaRoutes);
 app.use("/mensagens-familia", mensagensFamiliaRoutes);
+app.use("/publico", publicoRoutes);
+app.use("/leads", leadsRoutes);
 
 app.use("/auth", authRoutes);
 app.use(errorHandler);
