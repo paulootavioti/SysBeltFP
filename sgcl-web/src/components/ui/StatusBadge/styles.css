@@ -7,7 +7,7 @@
 
   padding: 6px 12px;
 
-  border-radius: 999px;
+  border-radius: var(--radius-full, 999px);
 
   font-size: var(--font-sm);
 
@@ -15,36 +15,36 @@
 }
 
 .status-ativo {
-  background: rgba(22, 163, 74, .15);
+  background: var(--color-success-bg, #e7f6ec);
   color: var(--success);
 }
 
 .status-inativo {
-  background: rgba(220, 38, 38, .15);
+  background: var(--color-error-bg, #fdecea);
   color: var(--danger);
 }
 
 .status-pago {
-  background: rgba(22, 163, 74, .15);
+  background: var(--color-success-bg, #e7f6ec);
   color: var(--success);
 }
 
 .status-pendente {
-  background: rgba(217, 119, 6, .15);
+  background: var(--color-warning-bg, #F6EED0);
   color: var(--warning);
 }
 
 .status-vencido {
-  background: rgba(220, 38, 38, .15);
+  background: var(--color-error-bg, #fdecea);
   color: var(--danger);
 }
 
 .status-cancelado {
-  background: rgba(107, 114, 128, .15);
-  color: var(--text-muted, #6b7280);
+  background: var(--color-neutral-bg, #f3f4f6);
+  color: var(--color-neutral-text, #374151);
 }
 
 .status-estornado {
-  background: rgba(217, 119, 6, .15);
+  background: var(--color-warning-bg, #F6EED0);
   color: var(--warning);
 }

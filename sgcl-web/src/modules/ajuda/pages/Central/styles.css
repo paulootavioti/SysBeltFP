@@ -1,3 +1,8 @@
+.ajuda-central-container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
 .ajuda-barra-ferramentas {
   display: flex;
   align-items: flex-end;

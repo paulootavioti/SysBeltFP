@@ -49,6 +49,19 @@
   color: #fff;
 }
 
+.button-danger:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.button-marca {
+  background: var(--color-accent);
+  color: var(--color-primary);
+}
+
+.button-marca:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
 /* mobile precisa do hit target mínimo — em tablet/desktop o app admin
    não é mobile-first (uso majoritariamente com mouse/teclado), então
    mantém o tamanho denso de sempre: útil pra telas com bastante coisa

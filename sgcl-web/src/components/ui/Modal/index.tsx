@@ -8,6 +8,9 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   onClose: () => void;
+  // sm = 420px (confirmação), md = 560px (formulário, padrão),
+  // lg = 600px (formulário com repeater/mais campos).
+  size?: "sm" | "md" | "lg";
 }
 
 const SELETOR_FOCAVEL =
@@ -18,6 +21,7 @@ export function Modal({
   title,
   children,
   onClose,
+  size = "md",
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const elementoAnteriorRef = useRef<HTMLElement | null>(null);
@@ -73,7 +77,7 @@ export function Modal({
   return (
     <div className="modal-overlay">
       <div
-        className="modal"
+        className={`modal modal-${size}`}
         ref={modalRef}
         role="dialog"
         aria-modal="true"

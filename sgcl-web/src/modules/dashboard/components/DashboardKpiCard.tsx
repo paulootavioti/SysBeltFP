@@ -20,7 +20,7 @@ export function DashboardKpiCard({
   semDados,
 }: DashboardKpiCardProps) {
   return (
-    <Card titulo={titulo} valor={semDados ? "—" : valor}>
+    <Card titulo={titulo} valor={semDados ? "—" : valor} className="dashboard-kpi-card">
       {semDados ? (
         <p className="dashboard-kpi-complemento dashboard-kpi-sem-dados">Sem dados no período.</p>
       ) : (

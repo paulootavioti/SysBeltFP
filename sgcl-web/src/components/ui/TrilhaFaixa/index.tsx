@@ -13,7 +13,7 @@ interface TrilhaFaixaProps {
 // círculo colorido pela paleta de faixas (mesma usada no Planejamento
 // Pedagógico) — reaproveitado em qualquer lugar que mostre a faixa de um
 // aluno: Alunos > Listar/Detalhes, Turmas > Detalhes, Currículo.
-export function TrilhaFaixa({ faixa, size = 14, comLabel = false, title, className }: TrilhaFaixaProps) {
+export function TrilhaFaixa({ faixa, size = 18, comLabel = false, title, className }: TrilhaFaixaProps) {
   if (!faixa) return null;
 
   const cor = CORES_FAIXA[faixa];
@@ -27,7 +27,7 @@ export function TrilhaFaixa({ faixa, size = 14, comLabel = false, title, classNa
           width: size,
           height: size,
           background: cor?.background ?? "#9CA3AF",
-          border: !cor || faixa === "Branca" ? "1px solid var(--border)" : undefined,
+          border: "1.5px solid #d8d2c2",
         }}
       />
       {comLabel && <span className="trilha-faixa-label">{faixa}</span>}

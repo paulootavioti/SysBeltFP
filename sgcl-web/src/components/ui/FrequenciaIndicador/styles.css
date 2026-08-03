@@ -1,0 +1,43 @@
+.frequencia-indicador-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.frequencia-indicador-label {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.frequencia-indicador-valor {
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
+}
+
+.frequencia-indicador-barra {
+  width: 100%;
+  height: 10px;
+  background: var(--color-border, #E7E3D8);
+  border-radius: var(--radius-full, 999px);
+  overflow: hidden;
+}
+
+.frequencia-indicador-preenchimento {
+  height: 100%;
+  border-radius: var(--radius-full, 999px);
+  transition: width 0.3s ease;
+}
+
+.frequencia-indicador-success {
+  background: var(--color-success);
+}
+
+.frequencia-indicador-warning {
+  background: var(--color-warning);
+}
+
+.frequencia-indicador-danger {
+  background: var(--color-danger);
+}

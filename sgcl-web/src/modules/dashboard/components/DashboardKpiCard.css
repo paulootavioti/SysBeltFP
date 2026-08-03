@@ -1,3 +1,42 @@
+/* Grid compartilhado por toda tela que mostra KPIs (Dashboard, Financeiro,
+   Loja) — 4 colunas, gap 14px, empilha em coluna única no mobile. Substitui
+   as 3 implementações que existiam antes (.dashboard-grid, .financeiro-kpis,
+   .loja-kpis), cada uma com um breakpoint responsivo diferente. */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: var(--space-4);
+}
+
+@media (max-width: 1023px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 599px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* :first-child = o <p> do label, sempre renderizado antes do <h2> e do
+   complemento pelo Card — não pode ser "p" genérico, senão pega também
+   o .dashboard-kpi-complemento (não deve ficar uppercase). */
+.dashboard-kpi-card > p:first-child {
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-light);
+}
+
+.dashboard-kpi-card h2 {
+  font-size: 26px;
+  font-weight: 700;
+}
+
 .dashboard-kpi-complemento {
   font-size: var(--font-xs);
   color: var(--color-text-light);

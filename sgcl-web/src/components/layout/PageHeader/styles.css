@@ -1,5 +1,14 @@
 .page-header{
   margin-bottom:24px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:var(--space-3, 16px);
+  flex-wrap:wrap;
+}
+
+.page-header-texto{
+  min-width:0;
 }
 
 .page-header h1{
@@ -8,7 +17,7 @@
 
   color:var(--text);
 
-  font-size:30px;
+  font-size:26px;
 
 }
 
@@ -18,4 +27,8 @@
 
   color:var(--text-light);
 
+}
+
+.page-header-acao{
+  flex-shrink:0;
 }

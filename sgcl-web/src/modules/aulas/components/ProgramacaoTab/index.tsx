@@ -11,6 +11,7 @@ import { Modal } from "../../../../components/ui/Modal";
 import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 
 import { useAuth } from "../../../../contexts/useAuth";
+import { useToast } from "../../../../contexts/toast/useToast";
 import { AulaService } from "../../services/AulaService";
 import { ProgramarAulaForm, type ProgramarAulaFormData } from "../ProgramarAulaForm";
 import { EditarProgramacaoForm, type EditarProgramacaoFormData } from "../EditarProgramacaoForm";
@@ -34,6 +35,7 @@ function formatarDataHora(data: string) {
 export function ProgramacaoTab() {
   const navigate = useNavigate();
   const { usuario } = useAuth();
+  const toast = useToast();
 
   const [turmaSelecionada, setTurmaSelecionada] = useState<{ id: number; nome: string } | null>(null);
   const [periodo, setPeriodo] = useState<PeriodoContagem>("SEMANAL");
@@ -106,7 +108,7 @@ export function ProgramacaoTab() {
           diasSemana: data.diasSemana as number[],
           observacoes: data.observacoes || undefined,
         });
-        window.alert(
+        toast.success(
           `${resultado.criadas} aula(s) programada(s) com sucesso.` +
             (resultado.ignoradasPorDuplicidade > 0
               ? ` ${resultado.ignoradasPorDuplicidade} data(s) já tinham programação e foram ignoradas.`

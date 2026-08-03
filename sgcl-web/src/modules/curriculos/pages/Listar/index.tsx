@@ -8,6 +8,7 @@ import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Loading } from "../../../../components/ui/Loading";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Modal } from "../../../../components/ui/Modal";
+import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 
 import { useAuth } from "../../../../contexts/useAuth";
 import { useCurriculos } from "../../hooks/useCurriculos";
@@ -43,12 +44,20 @@ type ModalState =
 
 type ExcluindoAlvo = { tipo: "curriculo" | "modulo" | "aula" | "tecnica"; id: number } | null;
 
+interface ConfirmacaoExclusao {
+  tipo: "curriculo" | "modulo" | "aula" | "tecnica";
+  id: number;
+  mensagem: string;
+  executar: () => Promise<void>;
+}
+
 export function Curriculos() {
   const { usuario } = useAuth();
   const { curriculos, loading, erro, setErro, carregarCurriculos } = useCurriculos();
   const [modal, setModal] = useState<ModalState>(null);
   const [salvando, setSalvando] = useState(false);
   const [excluindo, setExcluindo] = useState<ExcluindoAlvo>(null);
+  const [confirmacaoExclusao, setConfirmacaoExclusao] = useState<ConfirmacaoExclusao | null>(null);
   const [busca, setBusca] = useState("");
   const [modulosAbertos, setModulosAbertos] = useState<Record<number, boolean>>({});
   const [aulasAbertas, setAulasAbertas] = useState<Record<number, boolean>>({});
@@ -202,84 +211,90 @@ export function Curriculos() {
     }
   }
 
-  async function handleExcluirCurriculo(curriculo: Curriculo) {
-    if (
-      !window.confirm(
-        `Excluir o currículo "${curriculo.nome}"? Todos os módulos, aulas e técnicas dele também serão apagados. Essa ação não pode ser desfeita.`
-      )
-    ) {
-      return;
-    }
-
-    try {
-      setExcluindo({ tipo: "curriculo", id: curriculo.id });
-      setErro("");
-      await CurriculoService.excluir(curriculo.id);
-      await carregarCurriculos();
-    } catch (error) {
-      setErro(getApiErrorMessage(error, "Erro ao excluir currículo."));
-    } finally {
-      setExcluindo(null);
-    }
+  function handleExcluirCurriculo(curriculo: Curriculo) {
+    setConfirmacaoExclusao({
+      tipo: "curriculo",
+      id: curriculo.id,
+      mensagem: `Excluir o currículo "${curriculo.nome}"? Todos os módulos, aulas e técnicas dele também serão apagados. Essa ação não pode ser desfeita.`,
+      executar: async () => {
+        try {
+          setExcluindo({ tipo: "curriculo", id: curriculo.id });
+          setErro("");
+          await CurriculoService.excluir(curriculo.id);
+          await carregarCurriculos();
+        } catch (error) {
+          setErro(getApiErrorMessage(error, "Erro ao excluir currículo."));
+        } finally {
+          setExcluindo(null);
+        }
+      },
+    });
   }
 
-  async function handleExcluirModulo(modulo: ModuloCurriculo) {
-    if (
-      !window.confirm(
-        `Excluir o módulo "${modulo.nome}"? Todas as aulas e técnicas dele também serão apagadas. Essa ação não pode ser desfeita.`
-      )
-    ) {
-      return;
-    }
-
-    try {
-      setExcluindo({ tipo: "modulo", id: modulo.id });
-      setErro("");
-      await CurriculoService.excluirModulo(modulo.id);
-      await carregarCurriculos();
-    } catch (error) {
-      setErro(getApiErrorMessage(error, "Erro ao excluir módulo."));
-    } finally {
-      setExcluindo(null);
-    }
+  function handleExcluirModulo(modulo: ModuloCurriculo) {
+    setConfirmacaoExclusao({
+      tipo: "modulo",
+      id: modulo.id,
+      mensagem: `Excluir o módulo "${modulo.nome}"? Todas as aulas e técnicas dele também serão apagadas. Essa ação não pode ser desfeita.`,
+      executar: async () => {
+        try {
+          setExcluindo({ tipo: "modulo", id: modulo.id });
+          setErro("");
+          await CurriculoService.excluirModulo(modulo.id);
+          await carregarCurriculos();
+        } catch (error) {
+          setErro(getApiErrorMessage(error, "Erro ao excluir módulo."));
+        } finally {
+          setExcluindo(null);
+        }
+      },
+    });
   }
 
-  async function handleExcluirAula(aula: AulaCurriculo) {
-    if (
-      !window.confirm(
-        `Excluir a aula "${aula.titulo}"? As técnicas dela também serão apagadas. Essa ação não pode ser desfeita.`
-      )
-    ) {
-      return;
-    }
-
-    try {
-      setExcluindo({ tipo: "aula", id: aula.id });
-      setErro("");
-      await CurriculoService.excluirAula(aula.id);
-      await carregarCurriculos();
-    } catch (error) {
-      setErro(getApiErrorMessage(error, "Erro ao excluir aula."));
-    } finally {
-      setExcluindo(null);
-    }
+  function handleExcluirAula(aula: AulaCurriculo) {
+    setConfirmacaoExclusao({
+      tipo: "aula",
+      id: aula.id,
+      mensagem: `Excluir a aula "${aula.titulo}"? As técnicas dela também serão apagadas. Essa ação não pode ser desfeita.`,
+      executar: async () => {
+        try {
+          setExcluindo({ tipo: "aula", id: aula.id });
+          setErro("");
+          await CurriculoService.excluirAula(aula.id);
+          await carregarCurriculos();
+        } catch (error) {
+          setErro(getApiErrorMessage(error, "Erro ao excluir aula."));
+        } finally {
+          setExcluindo(null);
+        }
+      },
+    });
   }
 
-  async function handleExcluirTecnica(tecnica: TecnicaCurriculo) {
-    if (!window.confirm(`Excluir a técnica "${tecnica.nome}"? Essa ação não pode ser desfeita.`)) {
-      return;
-    }
+  function handleExcluirTecnica(tecnica: TecnicaCurriculo) {
+    setConfirmacaoExclusao({
+      tipo: "tecnica",
+      id: tecnica.id,
+      mensagem: `Excluir a técnica "${tecnica.nome}"? Essa ação não pode ser desfeita.`,
+      executar: async () => {
+        try {
+          setExcluindo({ tipo: "tecnica", id: tecnica.id });
+          setErro("");
+          await CurriculoService.excluirTecnica(tecnica.id);
+          await carregarCurriculos();
+        } catch (error) {
+          setErro(getApiErrorMessage(error, "Erro ao excluir técnica."));
+        } finally {
+          setExcluindo(null);
+        }
+      },
+    });
+  }
 
-    try {
-      setExcluindo({ tipo: "tecnica", id: tecnica.id });
-      setErro("");
-      await CurriculoService.excluirTecnica(tecnica.id);
-      await carregarCurriculos();
-    } catch (error) {
-      setErro(getApiErrorMessage(error, "Erro ao excluir técnica."));
-    } finally {
-      setExcluindo(null);
-    }
+  async function confirmarExclusao() {
+    if (!confirmacaoExclusao) return;
+    await confirmacaoExclusao.executar();
+    setConfirmacaoExclusao(null);
   }
 
   if (loading) {
@@ -514,6 +529,16 @@ export function Curriculos() {
           }
         />
       </Modal>
+
+      <ConfirmDialog
+        open={confirmacaoExclusao !== null}
+        title="Excluir"
+        message={confirmacaoExclusao?.mensagem ?? ""}
+        confirmLabel="Excluir"
+        loading={confirmacaoExclusao !== null && estaExcluindo(confirmacaoExclusao.tipo, confirmacaoExclusao.id)}
+        onConfirm={confirmarExclusao}
+        onCancel={() => setConfirmacaoExclusao(null)}
+      />
     </Layout>
   );
 }

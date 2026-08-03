@@ -133,7 +133,7 @@ export function Financeiro() {
         ) : dashboard.erro ? (
           <DashboardSectionError mensagem={dashboard.erro} onTentarNovamente={recarregarDashboard} />
         ) : !kpis ? null : (
-          <div className="financeiro-kpis">
+          <div className="kpi-grid">
             <DashboardKpiCard titulo="Receita Prevista" valor={formatarMoeda(kpis.receitaPrevista)} />
             <DashboardKpiCard titulo="Receita Recebida" valor={formatarMoeda(kpis.receitaRecebida)} />
             <DashboardKpiCard
