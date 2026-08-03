@@ -1,5 +1,12 @@
 [build]
-  command = "npm ci --include=dev && npx prisma generate && npx prisma migrate deploy && cd sgcl-web && npm ci --include=dev && npm run build"
+  # `prisma migrate deploy` usa uma trava de sessão (pg_advisory_lock) que
+  # não funciona de forma confiável através de um pooler/PgBouncer (ex. Neon
+  # "-pooler") — causa timeouts intermitentes (erro P1002). Rodamos só esse
+  # comando com DATABASE_URL trocado pra DIRECT_DATABASE_URL (conexão direta,
+  # sem pooler) quando ela existir; sem essa variável definida, cai no mesmo
+  # DATABASE_URL de sempre (nenhuma mudança de comportamento). Ver README,
+  # seção "Banco de dados", pra configurar DIRECT_DATABASE_URL.
+  command = "npm ci --include=dev && npx prisma generate && DATABASE_URL=${DIRECT_DATABASE_URL:-$DATABASE_URL} npx prisma migrate deploy && cd sgcl-web && npm ci --include=dev && npm run build"
   publish = "sgcl-web/dist"
 
 [build.environment]

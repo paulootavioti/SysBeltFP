@@ -120,6 +120,16 @@ npx prisma generate        # regenera o Prisma Client
 npx prisma migrate deploy  # aplica migrations em produção (não usar migrate dev em prod)
 ```
 
+#### `DATABASE_URL` pooled vs. `DIRECT_DATABASE_URL` (erro P1002 em produção)
+
+Se `npx prisma migrate deploy` falhar em produção com `Error: P1002` / "Timed out trying to acquire a postgres advisory lock", o motivo normalmente é o `DATABASE_URL` apontar pra uma conexão via pooler (PgBouncer) — no Neon, hostname com `-pooler`. Esse tipo de conexão não preserva sessão entre queries, e a trava usada pelo `migrate deploy` (`pg_advisory_lock`) é de sessão — então ela pode nunca "ver" a própria liberação e travar até o timeout.
+
+A correção é usar uma conexão **direta** (sem pooler) só para o passo de migrations, via a variável `DIRECT_DATABASE_URL` (ver `.env.example`) — o `netlify.toml` já troca `DATABASE_URL` por ela especificamente na chamada de `prisma migrate deploy`, sem afetar o resto do build nem exigir a variável no `prisma generate`:
+
+1. No provedor do banco (ex. Neon → "Connection Details"), copie o connection string **sem** `-pooler` no hostname (mesmo usuário/senha/banco do `DATABASE_URL`).
+2. No Netlify, em "Site settings" → "Environment variables" do projeto que roda o backend, adicione `DIRECT_DATABASE_URL` com esse valor, em todos os contextos de deploy.
+3. Redeploy. Sem essa variável definida, o build usa `DATABASE_URL` como antes — então não quebra nada enquanto você não configura, só continua sujeito ao mesmo erro intermitente.
+
 ## Stack
 
 - **Backend**: Node.js, Express, TypeScript, Prisma ORM, PostgreSQL, JWT, Zod
