@@ -207,19 +207,54 @@
 
 .frequencia-tab-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  min-height: var(--tap-target-min);
+  flex-direction: column;
+  gap: var(--space-2);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-3);
 }
 
+.frequencia-tab-item-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--tap-target-min);
+}
+
 .frequencia-tab-item span {
   color: var(--color-text-light);
   font-size: var(--font-sm);
+}
+
+.frequencia-tab-fotos {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.frequencia-tab-fotos-aviso {
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
+}
+
+.frequencia-tab-lightbox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.frequencia-tab-lightbox-imagem {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+}
+
+.frequencia-tab-lightbox-download {
+  color: var(--color-primary, inherit);
+  font-weight: 600;
 }
 
 /* ===== Gráfico de aproveitamento mensal ===== */

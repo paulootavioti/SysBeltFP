@@ -23,6 +23,7 @@ const ACCEPT_POR_PREFIXO: Record<PrefixoUpload, string> = {
   financeiro: "image/*,application/pdf",
   contratos: "image/*,application/pdf",
   produtos: "image/*",
+  treinos: "image/*",
 };
 
 export function ImageUpload({

@@ -43,6 +43,7 @@ export const alunoSchema = z.object({
   faixa: z.string().nullish(),
   grau: numeroOuTexto,
   ativo: z.boolean().nullish(),
+  autorizaUsoImagem: z.boolean().nullish(),
 
   turmaId: numeroOuTexto,
   formaPagamento: z.string().nullish(),

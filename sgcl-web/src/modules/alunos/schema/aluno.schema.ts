@@ -70,6 +70,8 @@ export const alunoSchema = z
 
     fotoUrl: z.string().optional(),
 
+    autorizaUsoImagem: z.boolean().optional(),
+
     responsavel: z
       .object({
         id: z.number().optional(),

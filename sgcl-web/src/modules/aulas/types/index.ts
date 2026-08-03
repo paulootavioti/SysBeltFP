@@ -3,6 +3,8 @@ export interface TurmaResumo {
   nome: string;
   professor?: { id: number; nome: string; apelido?: string | null } | null;
   arena?: { id: number; nome: string } | null;
+  horarioInicio?: string;
+  horarioFim?: string;
 }
 
 export interface TecnicaAulaCurriculo {

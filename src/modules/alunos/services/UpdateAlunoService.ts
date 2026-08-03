@@ -46,6 +46,7 @@ interface UpdateAlunoDTO {
   fotoUrl?: string | null;
 
   turmaId?: string | number | null;
+  autorizaUsoImagem?: boolean | null;
 
   formaPagamento?: string | null;
   diaVencimento?: string | number | null;
@@ -133,6 +134,9 @@ export class UpdateAlunoService {
 
         fotoUrl: data.fotoUrl,
         turmaId: toNumberOrNull(data.turmaId),
+        ...(data.autorizaUsoImagem !== null && data.autorizaUsoImagem !== undefined
+          ? { autorizaUsoImagem: data.autorizaUsoImagem }
+          : {}),
 
         formaPagamento: data.formaPagamento,
         diaVencimento: toNumberOrNull(data.diaVencimento),

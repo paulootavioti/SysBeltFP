@@ -29,6 +29,13 @@ export function DadosTab({ aluno }: DadosTabProps) {
       <p><strong>Escola:</strong> {aluno.escola || "-"}</p>
       <p><strong>Série:</strong> {aluno.serieEscolar || "-"}</p>
       <p><strong>Turno:</strong> {aluno.turnoEscolar || "-"}</p>
+
+      {aluno.autorizaUsoImagem !== undefined && (
+        <p>
+          <strong>Autoriza uso de imagem:</strong>{" "}
+          {aluno.autorizaUsoImagem ? "Sim" : "Não"}
+        </p>
+      )}
     </div>
   );
 }

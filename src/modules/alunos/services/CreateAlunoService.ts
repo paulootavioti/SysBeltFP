@@ -45,6 +45,7 @@ interface CreateAlunoDTO {
 
   faixa?: string | null;
   turmaId?: string | number | null;
+  autorizaUsoImagem?: boolean | null;
 
   formaPagamento?: string | null;
   diaVencimento?: string | number | null;
@@ -157,6 +158,7 @@ export class CreateAlunoService {
 
         faixa: data.faixa ?? "Branca",
         turmaId,
+        autorizaUsoImagem: data.autorizaUsoImagem ?? true,
 
         formaPagamento: data.formaPagamento,
         diaVencimento: toNumberOrNull(data.diaVencimento),

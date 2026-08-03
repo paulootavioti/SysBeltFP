@@ -6,7 +6,12 @@ export class GetFrequenciaFamiliaService {
       where: { alunoId },
       include: {
         aula: {
-          include: { turma: true },
+          include: {
+            turma: true,
+            // só entra na resposta quando o aluno esteve presente (checagem
+            // abaixo) — faltas nunca recebem foto, mesmo que a aula tenha.
+            fotos: { select: { id: true, url: true, legenda: true }, orderBy: { publicadaEm: "desc" } },
+          },
         },
       },
       orderBy: {
@@ -19,6 +24,7 @@ export class GetFrequenciaFamiliaService {
       data: registro.aula.data,
       turmaNome: registro.aula.turma?.nome ?? null,
       presente: registro.presente,
+      fotos: registro.presente ? registro.aula.fotos : [],
     }));
   }
 }

@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "../../../../components/ui/Button";
 import { ImageUpload } from "../../../../components/ui/ImageUpload";
+import { Checkbox } from "../../../../components/ui/Checkbox";
 import { FormSection } from "../../../../components/ui/FormSection";
 import { Tabs } from "../../../../components/ui/Tabs";
 
@@ -86,6 +87,11 @@ export function AlunoForm({ aluno, loading, onSubmit }: AlunoFormProps) {
                       prefixo="alunos"
                       valorAtual={methods.watch("fotoUrl")}
                       onChange={(url) => methods.setValue("fotoUrl", url)}
+                    />
+                    <Checkbox
+                      label="Autoriza uso de imagem em fotos de treino publicadas (galeria pública do site)"
+                      checked={methods.watch("autorizaUsoImagem") ?? true}
+                      onChange={(e) => methods.setValue("autorizaUsoImagem", e.target.checked)}
                     />
                   </FormSection>
                 </>

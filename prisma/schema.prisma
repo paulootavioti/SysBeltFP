@@ -190,6 +190,12 @@ model Aluno {
   grau  Int     @default(0)
   ativo Boolean @default(true)
 
+  // consentimento de imagem — controla se fotos de treino em que o aluno
+  // aparece podem ser marcadas como visíveis na landing pública (a
+  // exibição privada no Portal da Família, restrita à própria família,
+  // não depende disso).
+  autorizaUsoImagem Boolean @default(true)
+
   responsaveis     Responsavel[]
   mensalidades     Mensalidade[]
   assinaturas      Assinatura[]
@@ -697,6 +703,7 @@ model Usuario {
   // exatamente uma.
   unidadesVinculadas UsuarioUnidade[]
   auditLogs          AuditLog[]
+  fotosTreinoPublicadas FotoTreino[]
 
   createdAt DateTime @default(now())
 }
@@ -829,10 +836,34 @@ model Aula {
   jogosRealizados    String[]           @default([])
   tecnicasRealizadas TecnicaCurriculo[] @relation("AulaTecnicasRealizadas")
 
+  fotos FotoTreino[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
   status AulaStatus @default(ABERTA)
+}
+
+// foto publicada a partir da chamada de uma aula — a legenda é gerada a
+// partir do horário/dia da aula (editável antes de publicar).
+// `visivelNaLanding` controla se ela também aparece na galeria pública do
+// site da academia; sem isso, fica só no Portal da Família, restrita às
+// famílias com presença confirmada nessa aula.
+model FotoTreino {
+  id Int @id @default(autoincrement())
+
+  aulaId Int
+  aula   Aula @relation(fields: [aulaId], references: [id])
+
+  url     String
+  legenda String
+
+  publicadaPorId Int
+  publicadaPor   Usuario @relation(fields: [publicadaPorId], references: [id])
+
+  publicadaEm DateTime @default(now())
+
+  visivelNaLanding Boolean @default(false)
 }
 
 model Tecnica {
