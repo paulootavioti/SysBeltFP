@@ -1,21 +1,16 @@
 import { prisma } from "../../../shared/database/prisma";
-import { AppError } from "../../../shared/errors/AppError";
 
-// Vitrine consumida pela família: só produtos ativos da unidade do aluno,
-// com as variantes (a família escolhe tamanho/cor a partir delas). Sem
-// paginação — catálogo de loja física costuma ser pequeno o suficiente pra
-// não precisar (mesmo teto informal que o resto do módulo loja).
+// Vitrine consumida pela família: a loja é única pro sistema todo, então
+// mostra produtos ativos de qualquer unidade (a família escolhe de qual
+// unidade quer comprar — cada produto carrega sua unidade de origem, que é
+// onde o pedido precisa ser retirado). Sem paginação — catálogo de loja
+// física costuma ser pequeno o suficiente pra não precisar (mesmo teto
+// informal que o resto do módulo loja).
 export class GetLojaFamiliaService {
-  async execute(alunoId: number) {
-    const aluno = await prisma.aluno.findUnique({ where: { id: alunoId }, select: { unidadeId: true } });
-
-    if (!aluno) {
-      throw new AppError("Aluno não encontrado.", 404);
-    }
-
+  async execute() {
     return prisma.produto.findMany({
-      where: { unidadeId: aluno.unidadeId, ativo: true },
-      include: { variantes: true },
+      where: { ativo: true },
+      include: { variantes: true, unidade: { select: { id: true, nome: true } } },
       orderBy: { nome: "asc" },
     });
   }

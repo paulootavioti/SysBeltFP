@@ -123,7 +123,7 @@ export class PortalFamiliaController {
     garantirAlunoNoEscopo(req.familia!.alunoIds, alunoId);
 
     const service = new GetLojaFamiliaService();
-    const produtos = await service.execute(alunoId);
+    const produtos = await service.execute();
 
     return res.json(produtos);
   }

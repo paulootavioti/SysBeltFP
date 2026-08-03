@@ -82,27 +82,32 @@ export function LojaTab({ alunoId }: LojaTabProps) {
     setVarianteSelecionadaId(null);
   }
 
-  function adicionarAoCarrinho() {
+  const unidadeCarrinho = carrinho[0]?.produto.unidade ?? null;
+  const conflitoUnidade =
+    unidadeCarrinho !== null && produtoDetalhe !== null && unidadeCarrinho.id !== produtoDetalhe.unidade.id;
+
+  function adicionarAoCarrinho(carrinhoBase: ItemCarrinhoUI[] = carrinho) {
     if (!produtoDetalhe || !varianteSelecionadaId) return;
 
     const variante = produtoDetalhe.variantes.find((v) => v.id === varianteSelecionadaId);
     if (!variante) return;
 
-    setCarrinho((atual) => {
-      const existente = atual.find((item) => item.variante.id === variante.id);
+    const existente = carrinhoBase.find((item) => item.variante.id === variante.id);
 
-      if (existente) {
-        return atual.map((item) =>
+    const novoCarrinho = existente
+      ? carrinhoBase.map((item) =>
           item.variante.id === variante.id
             ? { ...item, quantidade: Math.min(item.quantidade + quantidadeSelecionada, variante.estoque) }
             : item
-        );
-      }
+        )
+      : [...carrinhoBase, { variante, produto: produtoDetalhe, quantidade: quantidadeSelecionada }];
 
-      return [...atual, { variante, produto: produtoDetalhe, quantidade: quantidadeSelecionada }];
-    });
-
+    setCarrinho(novoCarrinho);
     fecharDetalhe();
+  }
+
+  function esvaziarCarrinhoEAdicionar() {
+    adicionarAoCarrinho([]);
   }
 
   function removerDoCarrinho(varianteId: number) {
@@ -211,6 +216,7 @@ export function LojaTab({ alunoId }: LojaTabProps) {
                 <div className="loja-tab-card-info">
                   <strong>{produto.nome}</strong>
                   <span>{CATEGORIA_PRODUTO_LABEL[produto.categoria]}</span>
+                  <Badge variant="info">{produto.unidade.nome}</Badge>
                   <span className="loja-tab-card-preco">R$ {produto.preco.toFixed(2)}</span>
                 </div>
 
@@ -232,6 +238,7 @@ export function LojaTab({ alunoId }: LojaTabProps) {
       <Modal open={produtoDetalhe !== null} title={produtoDetalhe?.nome ?? ""} onClose={fecharDetalhe}>
         {produtoDetalhe && (
           <div className="loja-tab-detalhe">
+            <Badge variant="info">{produtoDetalhe.unidade.nome}</Badge>
             {produtoDetalhe.descricao && <p>{produtoDetalhe.descricao}</p>}
             <p className="loja-tab-card-preco">R$ {produtoDetalhe.preco.toFixed(2)}</p>
 
@@ -264,9 +271,21 @@ export function LojaTab({ alunoId }: LojaTabProps) {
               </label>
             )}
 
-            <Button type="button" disabled={!varianteSelecionadaId} onClick={adicionarAoCarrinho}>
-              Adicionar ao carrinho
-            </Button>
+            {conflitoUnidade ? (
+              <div className="loja-tab-conflito-unidade">
+                <p>
+                  Seu carrinho tem produtos da unidade <strong>{unidadeCarrinho?.nome}</strong>. Como a retirada é
+                  feita na unidade de origem do produto, um pedido só pode ter itens de uma unidade por vez.
+                </p>
+                <Button type="button" variant="secondary" onClick={esvaziarCarrinhoEAdicionar}>
+                  Esvaziar carrinho e adicionar este produto
+                </Button>
+              </div>
+            ) : (
+              <Button type="button" disabled={!varianteSelecionadaId} onClick={() => adicionarAoCarrinho()}>
+                Adicionar ao carrinho
+              </Button>
+            )}
           </div>
         )}
       </Modal>
@@ -288,6 +307,12 @@ export function LojaTab({ alunoId }: LojaTabProps) {
           <EmptyState title="Carrinho vazio" description="Adicione produtos da loja para continuar." />
         ) : (
           <div className="loja-tab-carrinho">
+            {unidadeCarrinho && (
+              <p className="loja-tab-carrinho-unidade">
+                Retirada em: <strong>{unidadeCarrinho.nome}</strong>
+              </p>
+            )}
+
             {carrinho.map((item) => (
               <div key={item.variante.id} className="loja-tab-carrinho-item">
                 <div>
