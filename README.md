@@ -90,6 +90,18 @@ O Portal da Família é publicado como um **site Netlify próprio** — mesmo re
 
 Nenhuma migration nova é necessária pra esse passo — é só configuração de infraestrutura (dois sites Netlify apontando pro mesmo repositório e pro mesmo backend).
 
+#### Deploy da landing page da academia (`landing-academia/`, Netlify, domínio separado)
+
+Site estático (HTML/CSS/JS sem build) pra uma unidade específica captar leads e mostrar equipe/galeria/loja/horários — mesma convenção de site Netlify próprio usada pro Portal da Família, com `landing-academia/netlify.toml` (`publish = "."`, sem função serverless).
+
+1. **Criar o site**: no Netlify, "Add new site" → "Import an existing project" → o mesmo repositório Git.
+2. **Configurar o build**: em "Site settings" → "Build & deploy" → "Build settings", defina **Base directory**: `landing-academia` (sem build command — é HTML/CSS/JS estático, `netlify.toml` já cuida do `publish`).
+3. **Apontar `script.js` pro backend e pro portal**: edite `landing-academia/script.js` e troque os placeholders `API_BASE_URL` e `PORTAL_FAMILIA_URL` pelas URLs reais de produção (ex.: `https://sysbelt.netlify.app/api` e `https://portal.suaacademia.com.br`), commite e faça o deploy.
+4. **Escolher a unidade exibida no site**: no site principal (backend), defina a variável de ambiente `UNIDADE_PUBLICA_ID` com o `id` da unidade (academia) cujos dados (equipe, horários, loja, galeria) esse site deve mostrar — todos os endpoints `/publico/*` são escopados só por essa unidade, sem seletor de tenant. Sem essa variável, os endpoints públicos respondem 503.
+5. **Liberar CORS no backend**: ainda no site principal, edite `CORS_ORIGIN` em "Environment variables" pra incluir a URL de produção da landing, ex.: `CORS_ORIGIN=https://sysbelt.netlify.app,https://portal.suaacademia.com.br,https://suaacademia.com.br`. Redeploy o site principal depois de mudar isso.
+6. **Conteúdo estático a revisar antes de publicar**: `landing-academia/index.html` tem fotos de banco de imagens (seção "Sobre" e "Localização"), depoimentos de exemplo e endereço/telefone fictícios (`Rua Exemplo, 123`, `(11) 99999-9999`) — troque pelo conteúdo real da academia antes de divulgar o link. Equipe, galeria, loja em destaque e horários já vêm dinâmicos da API, não precisam de edição manual.
+7. **Domínio customizado (opcional)** e **deploy e validação**: mesmos passos 6 e 7 do Portal da Família acima — configure o CNAME se quiser um domínio próprio, dispare o deploy e confirme que a página carrega equipe/galeria/loja/horários reais e que o formulário de contato envia o lead com sucesso.
+
 A credencial de acesso ao portal é gerada automaticamente pelo backend, direto do cadastro de aluno/responsável — não é um passo manual separado:
 
 - Ao **cadastrar** um aluno ou responsável com e-mail preenchido, o backend já gera uma senha aleatória, salva o hash e devolve a senha em texto puro **uma única vez** na resposta da criação — o `sgcl-web` mostra essa credencial num modal (com botão de copiar) assim que o cadastro é salvo.
@@ -107,6 +119,16 @@ npx prisma migrate dev     # cria/aplica migrations em desenvolvimento
 npx prisma generate        # regenera o Prisma Client
 npx prisma migrate deploy  # aplica migrations em produção (não usar migrate dev em prod)
 ```
+
+#### `DATABASE_URL` pooled vs. `DIRECT_DATABASE_URL` (erro P1002 em produção)
+
+Se `npx prisma migrate deploy` falhar em produção com `Error: P1002` / "Timed out trying to acquire a postgres advisory lock", o motivo normalmente é o `DATABASE_URL` apontar pra uma conexão via pooler (PgBouncer) — no Neon, hostname com `-pooler`. Esse tipo de conexão não preserva sessão entre queries, e a trava usada pelo `migrate deploy` (`pg_advisory_lock`) é de sessão — então ela pode nunca "ver" a própria liberação e travar até o timeout.
+
+A correção é usar uma conexão **direta** (sem pooler) só para o passo de migrations, via a variável `DIRECT_DATABASE_URL` (ver `.env.example`) — o `netlify.toml` já troca `DATABASE_URL` por ela especificamente na chamada de `prisma migrate deploy`, sem afetar o resto do build nem exigir a variável no `prisma generate`:
+
+1. No provedor do banco (ex. Neon → "Connection Details"), copie o connection string **sem** `-pooler` no hostname (mesmo usuário/senha/banco do `DATABASE_URL`).
+2. No Netlify, em "Site settings" → "Environment variables" do projeto que roda o backend, adicione `DIRECT_DATABASE_URL` com esse valor, em todos os contextos de deploy.
+3. Redeploy. Sem essa variável definida, o build usa `DATABASE_URL` como antes — então não quebra nada enquanto você não configura, só continua sujeito ao mesmo erro intermitente.
 
 ## Stack
 
