@@ -3,11 +3,13 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { CriarPedidoFamiliaService } from "../../portalFamilia/services/CriarPedidoFamiliaService";
+import { GetLojaFamiliaService } from "../../portalFamilia/services/GetLojaFamiliaService";
 import { ListPedidosService } from "./ListPedidosService";
 import { MarcarPedidoEntregueService } from "./MarcarPedidoEntregueService";
 import { CancelarPedidoService } from "./CancelarPedidoService";
 
 const criarPedidoService = new CriarPedidoFamiliaService();
+const getLojaFamiliaService = new GetLojaFamiliaService();
 const listService = new ListPedidosService();
 const entregarService = new MarcarPedidoEntregueService();
 const cancelarService = new CancelarPedidoService();
@@ -16,6 +18,7 @@ let unidadeAId: number;
 let unidadeBId: number;
 let alunoAId: number;
 let varianteId: number;
+let varianteBId: number;
 
 async function limpar() {
   await prisma.itemPedido.deleteMany({
@@ -57,6 +60,18 @@ beforeEach(async () => {
     include: { variantes: true },
   });
   varianteId = produto.variantes[0].id;
+
+  const produtoB = await prisma.produto.create({
+    data: {
+      unidadeId: unidadeBId,
+      nome: "TESTE_PEDIDO_RASHGUARD",
+      categoria: "RASHGUARD",
+      preco: 150,
+      variantes: { create: [{ tamanho: "M", estoque: 5 }] },
+    },
+    include: { variantes: true },
+  });
+  varianteBId = produtoB.variantes[0].id;
 });
 afterAll(limpar);
 
@@ -82,6 +97,40 @@ describe("CriarPedidoFamiliaService", () => {
 
   it("rejeita carrinho vazio", async () => {
     await expect(criarPedidoService.execute(alunoAId, [])).rejects.toThrow(AppError);
+  });
+
+  it("permite comprar produto de outra unidade e registra o pedido na unidade do produto", async () => {
+    const pedido = await criarPedidoService.execute(alunoAId, [{ varianteId: varianteBId, quantidade: 1 }]);
+
+    expect(pedido.unidadeId).toBe(unidadeBId);
+
+    const listaA = await listService.execute(unidadeAId);
+    expect(listaA).toHaveLength(0);
+
+    const listaB = await listService.execute(unidadeBId);
+    expect(listaB).toHaveLength(1);
+  });
+
+  it("rejeita carrinho com produtos de unidades diferentes", async () => {
+    await expect(
+      criarPedidoService.execute(alunoAId, [
+        { varianteId, quantidade: 1 },
+        { varianteId: varianteBId, quantidade: 1 },
+      ])
+    ).rejects.toThrow(AppError);
+  });
+});
+
+describe("GetLojaFamiliaService", () => {
+  it("lista produtos ativos de todas as unidades, com a unidade de cada um", async () => {
+    const produtos = await getLojaFamiliaService.execute();
+
+    const nomes = produtos.map((p) => p.nome);
+    expect(nomes).toContain("TESTE_PEDIDO_KIMONO");
+    expect(nomes).toContain("TESTE_PEDIDO_RASHGUARD");
+
+    const rashguard = produtos.find((p) => p.nome === "TESTE_PEDIDO_RASHGUARD");
+    expect(rashguard?.unidade.id).toBe(unidadeBId);
   });
 });
 

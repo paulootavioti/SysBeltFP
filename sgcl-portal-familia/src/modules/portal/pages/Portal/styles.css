@@ -559,6 +559,10 @@
   gap: 2px;
 }
 
+.loja-tab-card-info .badge {
+  align-self: flex-start;
+}
+
 .loja-tab-card-info strong {
   color: var(--color-text);
 }
@@ -600,10 +604,32 @@
   border-radius: var(--radius-sm);
 }
 
+.loja-tab-conflito-unidade {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-warning, #e0a800);
+  border-radius: var(--radius-sm);
+  background: var(--color-warning-bg, rgba(224, 168, 0, 0.1));
+}
+
+.loja-tab-conflito-unidade p {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--color-text);
+}
+
 .loja-tab-carrinho {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+
+.loja-tab-carrinho-unidade {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
 }
 
 .loja-tab-carrinho-item {

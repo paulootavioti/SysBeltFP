@@ -3,10 +3,10 @@
 
   // ===== Configuração — ajuste antes de publicar =====
   // URL da API do SysBeltFP (mesmo backend usado por sgcl-web/sgcl-portal-familia).
-  var API_BASE_URL = "https://SEU-BACKEND.netlify.app/.netlify/functions/api";
+  var API_BASE_URL = "https://sysbeltfp.netlify.app/api";
   // URL do Portal da Família — "Ver loja completa" leva pra lá, já que o
   // catálogo completo (com carrinho/checkout) só existe autenticado.
-  var PORTAL_FAMILIA_URL = "https://SEU-PORTAL-FAMILIA.netlify.app";
+  var PORTAL_FAMILIA_URL = "https://sysbeltportalfamilia.netlify.app";
 
   // ===== Menu mobile =====
   var navToggle = document.getElementById("navToggle");

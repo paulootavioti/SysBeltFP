@@ -14,6 +14,13 @@ interface ItemCarrinhoDTO {
 // hora. Quando um gateway de verdade existir, este service passa a
 // aguardar a confirmação do pagamento antes de baixar o estoque, sem mudar
 // a rota nem o frontend.
+//
+// A loja é única pro sistema todo: a família pode comprar produtos de
+// qualquer unidade. Mas a retirada é física — quem baixa o estoque é a
+// unidade dona do produto — então um pedido só pode conter itens de uma
+// única unidade (Pedido.unidadeId é essa unidade, não a do aluno). Carrinho
+// misturando unidades diferentes é rejeitado; a família finaliza a compra
+// de uma unidade e faz um segundo pedido para a outra.
 export class CriarPedidoFamiliaService {
   async execute(alunoId: number, itens: ItemCarrinhoDTO[]) {
     if (itens.length === 0) {
@@ -35,7 +42,7 @@ export class CriarPedidoFamiliaService {
     for (const item of itens) {
       const variante = variantes.find((v) => v.id === item.varianteId);
 
-      if (!variante || variante.produto.unidadeId !== aluno.unidadeId || !variante.produto.ativo) {
+      if (!variante || !variante.produto.ativo) {
         throw new AppError("Produto não encontrado.", 404);
       }
 
@@ -50,6 +57,16 @@ export class CriarPedidoFamiliaService {
       }
     }
 
+    const unidadesDoCarrinho = new Set(variantes.map((v) => v.produto.unidadeId));
+
+    if (unidadesDoCarrinho.size > 1) {
+      throw new AppError(
+        "O carrinho tem produtos de unidades diferentes. Finalize a compra dos produtos de uma unidade antes de adicionar produtos de outra."
+      );
+    }
+
+    const unidadeIdPedido = [...unidadesDoCarrinho][0];
+
     const total = itens.reduce((soma, item) => {
       const variante = variantes.find((v) => v.id === item.varianteId)!;
       return soma + variante.produto.preco * item.quantidade;
@@ -58,7 +75,7 @@ export class CriarPedidoFamiliaService {
     const pedido = await prisma.$transaction(async (tx) => {
       const novoPedido = await tx.pedido.create({
         data: {
-          unidadeId: aluno.unidadeId,
+          unidadeId: unidadeIdPedido,
           alunoId: aluno.id,
           total,
           itens: {

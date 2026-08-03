@@ -1,7 +1,10 @@
+import { useNavigate } from "react-router-dom";
+
 import { Layout } from "../../components/layout/Layout";
 import { PageHeader } from "../../components/layout/PageHeader";
 import { Loading } from "../../components/ui/Loading";
 import { PeriodoSelector } from "../../components/ui/PeriodoSelector";
+import { Button } from "../../components/ui/Button";
 
 import { useDashboard } from "../../modules/dashboard/hooks/useDashboard";
 import { DashboardSection } from "../../modules/dashboard/components/DashboardSection";
@@ -27,6 +30,7 @@ const RUBRICA_PERIODO: Record<PeriodoOpcao, string> = {
 };
 
 export function Dashboard() {
+  const navigate = useNavigate();
   const {
     periodo,
     definirPeriodo,
@@ -36,12 +40,15 @@ export function Dashboard() {
     graduacoes,
     metas,
     eventos,
+    loja,
+    podeVerLoja,
     recarregarResumoPeriodo,
     recarregarUnidades,
     recarregarAlertas,
     recarregarGraduacoes,
     recarregarMetas,
     recarregarEventos,
+    recarregarLoja,
   } = useDashboard();
 
   const kpis = resumoPeriodo.dados?.kpis;
@@ -167,6 +174,34 @@ export function Dashboard() {
           <DashboardGraduations alunos={graduacoes.dados ?? []} />
         )}
       </DashboardSection>
+
+      {podeVerLoja && (
+        <DashboardSection
+          titulo="Loja"
+          subtitulo="Catálogo de produtos e estoque."
+          acao={
+            <Button type="button" variant="secondary" size="sm" onClick={() => navigate("/loja")}>
+              Ver loja
+            </Button>
+          }
+        >
+          {loja.carregando && !loja.dados ? (
+            <Loading />
+          ) : loja.erro ? (
+            <DashboardSectionError mensagem={loja.erro} onTentarNovamente={recarregarLoja} />
+          ) : loja.dados ? (
+            <div className="dashboard-grid">
+              <DashboardKpiCard titulo="Produtos ativos" valor={String(loja.dados.produtosAtivos)} />
+              <DashboardKpiCard titulo="Unidades em estoque" valor={String(loja.dados.unidadesEmEstoque)} />
+              <DashboardKpiCard
+                titulo="Produtos com estoque baixo"
+                valor={String(loja.dados.produtosComEstoqueBaixo)}
+              />
+              <DashboardKpiCard titulo="Valor total em estoque" valor={formatarMoeda(loja.dados.valorTotalEstoque)} />
+            </div>
+          ) : null}
+        </DashboardSection>
+      )}
 
       <DashboardSection titulo="Unidades e Arenas" subtitulo="Situação operacional de cada unidade.">
         {unidades.carregando && !unidades.dados ? (

@@ -4,12 +4,16 @@ import { DashboardService } from "../services/DashboardService";
 import { GraduacaoService } from "../../graduacoes/services/GraduacaoService";
 import { MetaService } from "../../metas/services/MetaService";
 import { EventoService } from "../../eventos/services/EventoService";
+import { LojaService } from "../../loja/services/LojaService";
 import { getApiErrorMessage } from "../../../shared/utils/getApiErrorMessage";
+import { useAuth } from "../../../contexts/useAuth";
+import { perfilTemAcesso } from "../../../shared/constants/acessoPorPerfil";
 
 import type { AlertaDashboard, DashboardResumoPeriodo, PeriodoOpcao, UnidadeDashboard } from "../types";
 import type { AlunoElegivel } from "../../graduacoes/types";
 import type { MetaDashboard } from "../../metas/types";
 import type { Evento } from "../../eventos/types";
+import type { LojaKpis } from "../../loja/types";
 
 export interface SecaoEstado<T> {
   dados: T | null;
@@ -60,6 +64,9 @@ export function useSecaoDashboard<T>(
 }
 
 export function useDashboard() {
+  const { usuario } = useAuth();
+  const podeVerLoja = perfilTemAcesso(usuario?.perfil, "/loja");
+
   const [periodo, setPeriodo] = useState<PeriodoOpcao>("MENSAL");
 
   const [resumoPeriodo, recarregarResumoPeriodo] = useSecaoDashboard(
@@ -98,6 +105,15 @@ export function useDashboard() {
     []
   );
 
+  // A loja é gerida só por ADMIN/SUPERADMIN — pros demais perfis a seção nem
+  // é renderizada, então evita a chamada (que voltaria 403) resolvendo pra
+  // null direto.
+  const [loja, recarregarLoja] = useSecaoDashboard<LojaKpis | null>(
+    () => (podeVerLoja ? LojaService.kpis() : Promise.resolve(null)),
+    "Erro ao carregar os indicadores da loja.",
+    [podeVerLoja]
+  );
+
   const recarregarTudo = useCallback(() => {
     recarregarResumoPeriodo();
     recarregarUnidades();
@@ -105,7 +121,16 @@ export function useDashboard() {
     recarregarGraduacoes();
     recarregarMetas();
     recarregarEventos();
-  }, [recarregarResumoPeriodo, recarregarUnidades, recarregarAlertas, recarregarGraduacoes, recarregarMetas, recarregarEventos]);
+    recarregarLoja();
+  }, [
+    recarregarResumoPeriodo,
+    recarregarUnidades,
+    recarregarAlertas,
+    recarregarGraduacoes,
+    recarregarMetas,
+    recarregarEventos,
+    recarregarLoja,
+  ]);
 
   return {
     periodo,
@@ -116,12 +141,15 @@ export function useDashboard() {
     graduacoes,
     metas,
     eventos,
+    loja,
+    podeVerLoja,
     recarregarResumoPeriodo,
     recarregarUnidades,
     recarregarAlertas,
     recarregarGraduacoes,
     recarregarMetas,
     recarregarEventos,
+    recarregarLoja,
     recarregarTudo,
   };
 }

@@ -114,6 +114,7 @@ export interface Produto {
   descricao?: string | null;
   imagemUrl?: string | null;
   variantes: ProdutoVariante[];
+  unidade: { id: number; nome: string };
 }
 
 export interface ItemCarrinho {
