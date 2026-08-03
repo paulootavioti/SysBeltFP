@@ -14,6 +14,10 @@ async function limpar() {
   await prisma.contrato.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } });
   await prisma.modeloContrato.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } });
   await prisma.mensalidade.deleteMany({ where: { aluno: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } });
+  await prisma.itemPedido.deleteMany({ where: { pedido: { unidade: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } } });
+  await prisma.pedido.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } });
+  await prisma.produtoVariante.deleteMany({ where: { produto: { unidade: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } } });
+  await prisma.produto.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } });
   await prisma.aulaAluno.deleteMany({ where: { aluno: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } });
   await prisma.aula.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } } });
   await prisma.aluno.deleteMany({ where: { nome: { startsWith: "TESTE_CONTADORESMENU_" } } });
@@ -139,5 +143,42 @@ describe("GetContadoresMenuService", () => {
 
     expect(contadoresA.mensagensFamiliaNaoLidas).toBe(1);
     expect(contadoresB.mensagensFamiliaNaoLidas).toBe(0);
+  });
+
+  it("conta pedidos aguardando retirada só da própria unidade", async () => {
+    const produto = await prisma.produto.create({
+      data: {
+        unidadeId: unidadeAId,
+        nome: "TESTE_CONTADORESMENU_PRODUTO",
+        categoria: "KIMONO",
+        preco: 100,
+        variantes: { create: [{ tamanho: "Único", estoque: 5 }] },
+      },
+      include: { variantes: true },
+    });
+
+    await prisma.pedido.create({
+      data: {
+        unidadeId: unidadeAId,
+        alunoId: alunoAId,
+        total: 100,
+        itens: { create: [{ varianteId: produto.variantes[0].id, quantidade: 1, precoUnitario: 100 }] },
+      },
+    });
+    await prisma.pedido.create({
+      data: {
+        unidadeId: unidadeAId,
+        alunoId: alunoAId,
+        total: 100,
+        status: "ENTREGUE",
+        itens: { create: [{ varianteId: produto.variantes[0].id, quantidade: 1, precoUnitario: 100 }] },
+      },
+    });
+
+    const contadoresA = await service.execute(unidadeAId);
+    const contadoresB = await service.execute(unidadeBId);
+
+    expect(contadoresA.pedidosAguardandoRetirada).toBe(1);
+    expect(contadoresB.pedidosAguardandoRetirada).toBe(0);
   });
 });

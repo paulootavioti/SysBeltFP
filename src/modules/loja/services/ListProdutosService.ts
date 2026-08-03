@@ -18,7 +18,7 @@ export class ListProdutosService {
         ...(filtros.categoria ? { categoria: filtros.categoria } : {}),
         ...(filtros.ativo !== undefined ? { ativo: filtros.ativo } : {}),
       },
-      include: { variantes: true },
+      include: { variantes: true, unidade: { select: { id: true, nome: true } } },
       take: LIMITE_PADRAO_LISTAGEM,
       orderBy: { nome: "asc" },
     });

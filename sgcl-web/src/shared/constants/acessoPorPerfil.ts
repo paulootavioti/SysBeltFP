@@ -8,8 +8,11 @@ interface RegraAcesso {
 // Espelha as permissões (ensureRole) já aplicadas no backend, módulo a
 // módulo, pra que o menu e as rotas nunca ofereçam algo que a API recusaria.
 const REGRAS_ACESSO: RegraAcesso[] = [
-  // SUPERADMIN administra unidades pelo Dashboard; essa rota é a tela de
-  // Arenas (tatames/espaços) da própria unidade dos demais perfis.
+  // Cadastro de unidades (academias/filiais) — só o SUPERADMIN administra
+  // isso (acesso liberado pelo bypass em perfilTemAcesso, abaixo).
+  { prefixo: "/unidades", perfis: [] },
+  // Arenas (tatames/espaços) da própria unidade — ADMIN/RECEPCAO cuidam
+  // da própria unidade; SUPERADMIN também acessa (bypass) pra dar suporte.
   { prefixo: "/arenas", perfis: ["ADMIN", "RECEPCAO"] },
   { prefixo: "/dashboard", perfis: ["ADMIN"] },
   { prefixo: "/alunos", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },

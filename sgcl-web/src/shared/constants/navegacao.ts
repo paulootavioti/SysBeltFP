@@ -30,6 +30,7 @@ import {
   LuInbox,
   LuShoppingBag,
   LuUserPlus,
+  LuBuilding2,
 } from "react-icons/lu";
 
 import type { ContadoresMenu } from "../services/NotificacoesService";
@@ -136,7 +137,7 @@ export const NAV_TREE: NavEntry[] = [
       item("/planos", "Planos", LuCreditCard),
       item("/contratos", "Contratos", LuFileText, "contratosAguardandoAssinatura"),
       item("/modelos-contrato", "Modelos de Contrato", LuFileStack),
-      item("/loja", "Loja", LuShoppingBag),
+      item("/loja", "Loja", LuShoppingBag, "pedidosAguardandoRetirada"),
     ],
   },
 
@@ -171,6 +172,9 @@ export const NAV_TREE: NavEntry[] = [
     label: "Configurações",
     icon: LuSettings,
     items: [
+      // "Unidades" só é visível pro SUPERADMIN (ver acessoPorPerfil.ts) —
+      // é quem administra as unidades/filiais do sistema como um todo.
+      item("/unidades", "Unidades", LuBuilding2),
       item("/arenas", "Arenas", LuDoorOpen),
       item("/usuarios", "Usuários", LuUserCog),
     ],

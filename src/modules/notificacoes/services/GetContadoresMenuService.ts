@@ -7,6 +7,7 @@ export interface ContadoresMenu {
   contratosAguardandoAssinatura: number;
   graduacoesPendentes: number;
   mensagensFamiliaNaoLidas: number;
+  pedidosAguardandoRetirada: number;
 }
 
 const listProximasGraduacoesService = new ListProximasGraduacoesService();
@@ -19,25 +20,34 @@ const listProximasGraduacoesService = new ListProximasGraduacoesService();
 // em toda troca de página (ver useContadoresMenu no frontend).
 export class GetContadoresMenuService {
   async execute(unidadeId: number | null): Promise<ContadoresMenu> {
-    const [mensalidadesVencidas, contratosAguardandoAssinatura, proximasGraduacoes, mensagensFamiliaNaoLidas] =
-      await Promise.all([
-        prisma.mensalidade.count({
-          where: { pago: false, vencimento: { lt: new Date() }, ...escopoUnidade(unidadeId) },
-        }),
-        prisma.contrato.count({
-          where: { situacao: "PENDENTE_ASSINATURA", ...escopoUnidade(unidadeId) },
-        }),
-        listProximasGraduacoesService.execute(unidadeId),
-        prisma.mensagemFamilia.count({
-          where: { remetenteTipo: "FAMILIA", lida: false, ...escopoUnidade(unidadeId) },
-        }),
-      ]);
+    const [
+      mensalidadesVencidas,
+      contratosAguardandoAssinatura,
+      proximasGraduacoes,
+      mensagensFamiliaNaoLidas,
+      pedidosAguardandoRetirada,
+    ] = await Promise.all([
+      prisma.mensalidade.count({
+        where: { pago: false, vencimento: { lt: new Date() }, ...escopoUnidade(unidadeId) },
+      }),
+      prisma.contrato.count({
+        where: { situacao: "PENDENTE_ASSINATURA", ...escopoUnidade(unidadeId) },
+      }),
+      listProximasGraduacoesService.execute(unidadeId),
+      prisma.mensagemFamilia.count({
+        where: { remetenteTipo: "FAMILIA", lida: false, ...escopoUnidade(unidadeId) },
+      }),
+      prisma.pedido.count({
+        where: { status: "AGUARDANDO_RETIRADA", ...escopoUnidade(unidadeId) },
+      }),
+    ]);
 
     return {
       mensalidadesVencidas,
       contratosAguardandoAssinatura,
       graduacoesPendentes: proximasGraduacoes.length,
       mensagensFamiliaNaoLidas,
+      pedidosAguardandoRetirada,
     };
   }
 }
