@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { LuShirt, LuAward, LuTag, LuKeyRound, LuGem, LuPackage } from "react-icons/lu";
 import type { IconType } from "react-icons";
 
@@ -44,6 +45,7 @@ const ICONE_POR_CATEGORIA: Record<string, IconType> = {
 
 export function Loja() {
   const toast = useToast();
+  const navigate = useNavigate();
 
   const [busca, setBusca] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("");
@@ -223,6 +225,9 @@ export function Loja() {
       )}
 
       <div className="loja-acoes">
+        <Button type="button" variant="secondary" onClick={() => navigate("/loja/pedidos")}>
+          Pedidos
+        </Button>
         <Button type="button" onClick={handleNovoProduto}>
           + Novo Produto
         </Button>

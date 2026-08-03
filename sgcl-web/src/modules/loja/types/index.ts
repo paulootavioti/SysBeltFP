@@ -48,3 +48,30 @@ export interface LojaKpis {
   produtosComEstoqueBaixo: number;
   valorTotalEstoque: number;
 }
+
+export type StatusPedido = "AGUARDANDO_RETIRADA" | "ENTREGUE" | "CANCELADO";
+
+export const STATUS_PEDIDO_LABEL: Record<StatusPedido, string> = {
+  AGUARDANDO_RETIRADA: "Aguardando retirada",
+  ENTREGUE: "Entregue",
+  CANCELADO: "Cancelado",
+};
+
+export interface ItemPedido {
+  id: number;
+  varianteId: number;
+  quantidade: number;
+  precoUnitario: number;
+  variante: ProdutoVariante & { produto: Pick<Produto, "id" | "nome" | "categoria"> };
+}
+
+export interface Pedido {
+  id: number;
+  unidadeId: number;
+  aluno: { id: number; nome: string; apelido?: string | null };
+  total: number;
+  status: StatusPedido;
+  itens: ItemPedido[];
+  criadoEm: string;
+  entregueEm?: string | null;
+}

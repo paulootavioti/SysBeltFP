@@ -9,6 +9,9 @@ import { GetAgendaFamiliaService } from "./services/GetAgendaFamiliaService";
 import { ListMensagensFamiliaService } from "./services/ListMensagensFamiliaService";
 import { EnviarMensagemFamiliaService } from "./services/EnviarMensagemFamiliaService";
 import { GetMensagensNaoLidasFamiliaService } from "./services/GetMensagensNaoLidasFamiliaService";
+import { GetLojaFamiliaService } from "./services/GetLojaFamiliaService";
+import { CriarPedidoFamiliaService } from "./services/CriarPedidoFamiliaService";
+import { ListPedidosFamiliaService } from "./services/ListPedidosFamiliaService";
 import { garantirAlunoNoEscopo } from "./utils/garantirAlunoNoEscopo";
 import { prisma } from "../../shared/database/prisma";
 
@@ -113,5 +116,35 @@ export class PortalFamiliaController {
     });
 
     return res.status(201).json(mensagem);
+  }
+
+  async loja(req: Request, res: Response) {
+    const alunoId = Number(req.params.alunoId);
+    garantirAlunoNoEscopo(req.familia!.alunoIds, alunoId);
+
+    const service = new GetLojaFamiliaService();
+    const produtos = await service.execute(alunoId);
+
+    return res.json(produtos);
+  }
+
+  async criarPedido(req: Request, res: Response) {
+    const alunoId = Number(req.body.alunoId);
+    garantirAlunoNoEscopo(req.familia!.alunoIds, alunoId);
+
+    const service = new CriarPedidoFamiliaService();
+    const pedido = await service.execute(alunoId, req.body.itens);
+
+    return res.status(201).json(pedido);
+  }
+
+  async listarPedidos(req: Request, res: Response) {
+    const alunoId = Number(req.params.alunoId);
+    garantirAlunoNoEscopo(req.familia!.alunoIds, alunoId);
+
+    const service = new ListPedidosFamiliaService();
+    const pedidos = await service.execute(alunoId);
+
+    return res.json(pedidos);
   }
 }

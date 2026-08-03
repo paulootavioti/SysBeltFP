@@ -77,3 +77,63 @@ export interface NaoLidasPorAluno {
   alunoId: number;
   naoLidas: number;
 }
+
+export type CategoriaProduto =
+  | "KIMONO"
+  | "RASHGUARD"
+  | "BERMUDA"
+  | "FAIXA"
+  | "PATCH"
+  | "CHAVEIRO"
+  | "PULSEIRA"
+  | "OUTROS";
+
+export const CATEGORIA_PRODUTO_LABEL: Record<CategoriaProduto, string> = {
+  KIMONO: "Kimono",
+  RASHGUARD: "Rashguard",
+  BERMUDA: "Bermuda",
+  FAIXA: "Faixa",
+  PATCH: "Patch",
+  CHAVEIRO: "Chaveiro",
+  PULSEIRA: "Pulseira/Band",
+  OUTROS: "Outros",
+};
+
+export interface ProdutoVariante {
+  id: number;
+  tamanho: string;
+  cor?: string | null;
+  estoque: number;
+}
+
+export interface Produto {
+  id: number;
+  nome: string;
+  categoria: CategoriaProduto;
+  preco: number;
+  descricao?: string | null;
+  imagemUrl?: string | null;
+  variantes: ProdutoVariante[];
+}
+
+export interface ItemCarrinho {
+  varianteId: number;
+  quantidade: number;
+}
+
+export interface ItemPedido {
+  id: number;
+  varianteId: number;
+  quantidade: number;
+  precoUnitario: number;
+  variante: ProdutoVariante & { produto: Pick<Produto, "id" | "nome" | "categoria" | "imagemUrl"> };
+}
+
+export interface Pedido {
+  id: number;
+  total: number;
+  status: "AGUARDANDO_RETIRADA" | "ENTREGUE" | "CANCELADO";
+  criadoEm: string;
+  entregueEm?: string | null;
+  itens: ItemPedido[];
+}

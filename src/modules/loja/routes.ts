@@ -21,4 +21,10 @@ lojaRoutes.put("/produtos/:id", validateBody(produtoSchema), lojaController.upda
 
 lojaRoutes.patch("/produtos/:id/ativo", lojaController.toggleAtivo);
 
+lojaRoutes.get("/pedidos", lojaController.listPedidos);
+
+lojaRoutes.patch("/pedidos/:id/entregar", lojaController.marcarPedidoEntregue);
+
+lojaRoutes.patch("/pedidos/:id/cancelar", lojaController.cancelarPedido);
+
 export { lojaRoutes };

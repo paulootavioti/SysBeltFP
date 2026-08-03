@@ -1,11 +1,16 @@
 import { ApiClient } from "../../../shared/api/ApiClient";
-import type { LojaKpis, Produto } from "../types";
+import type { LojaKpis, Pedido, Produto, StatusPedido } from "../types";
 import type { ProdutoFormData, VarianteFormData } from "../schema/produto.schema";
 
 export interface FiltrosProdutos {
   busca?: string;
   categoria?: string;
   ativo?: string;
+}
+
+export interface FiltrosPedidos {
+  status?: StatusPedido;
+  busca?: string;
 }
 
 interface ProdutoPayload extends ProdutoFormData {
@@ -37,5 +42,22 @@ export class LojaService {
 
   static async alterarStatus(id: number) {
     return ApiClient.patch<Produto>(`/loja/produtos/${id}/ativo`);
+  }
+
+  static async listarPedidos(filtros: FiltrosPedidos = {}) {
+    const params = new URLSearchParams();
+    if (filtros.status) params.set("status", filtros.status);
+    if (filtros.busca) params.set("busca", filtros.busca);
+
+    const query = params.toString();
+    return ApiClient.get<Pedido[]>(`/loja/pedidos${query ? `?${query}` : ""}`);
+  }
+
+  static async marcarPedidoEntregue(id: number) {
+    return ApiClient.patch<Pedido>(`/loja/pedidos/${id}/entregar`);
+  }
+
+  static async cancelarPedido(id: number) {
+    return ApiClient.patch<Pedido>(`/loja/pedidos/${id}/cancelar`);
   }
 }
