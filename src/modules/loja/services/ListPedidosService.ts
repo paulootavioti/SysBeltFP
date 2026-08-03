@@ -18,6 +18,7 @@ export class ListPedidosService {
         ...(filtros.busca ? { aluno: { nome: { contains: filtros.busca, mode: "insensitive" } } } : {}),
       },
       include: {
+        unidade: { select: { id: true, nome: true } },
         aluno: { select: { id: true, nome: true, apelido: true } },
         itens: { include: { variante: { include: { produto: true } } } },
       },

@@ -30,6 +30,7 @@ export interface ProdutoVariante {
 export interface Produto {
   id: number;
   unidadeId: number;
+  unidade: { id: number; nome: string };
   nome: string;
   categoria: CategoriaProduto;
   preco: number;
@@ -68,6 +69,7 @@ export interface ItemPedido {
 export interface Pedido {
   id: number;
   unidadeId: number;
+  unidade: { id: number; nome: string };
   aluno: { id: number; nome: string; apelido?: string | null };
   total: number;
   status: StatusPedido;

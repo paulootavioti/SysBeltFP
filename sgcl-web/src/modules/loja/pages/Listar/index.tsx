@@ -19,6 +19,7 @@ import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 import { DashboardKpiCard } from "../../../dashboard/components/DashboardKpiCard";
 import { formatarMoeda } from "../../../dashboard/utils/formatters";
 import { useToast } from "../../../../contexts/toast/useToast";
+import { useAuth } from "../../../../contexts/useAuth";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 
 import { useProdutos } from "../../hooks/useProdutos";
@@ -46,6 +47,8 @@ const ICONE_POR_CATEGORIA: Record<string, IconType> = {
 export function Loja() {
   const toast = useToast();
   const navigate = useNavigate();
+  const { usuario } = useAuth();
+  const ehSuperadmin = usuario?.perfil === "SUPERADMIN";
 
   const [busca, setBusca] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("");
@@ -175,6 +178,15 @@ export function Loja() {
       accessor: "categoria" as const,
       render: (produto: Produto) => CATEGORIA_PRODUTO_LABEL[produto.categoria],
     },
+    ...(ehSuperadmin
+      ? [
+          {
+            header: "Unidade",
+            accessor: "unidade" as const,
+            render: (produto: Produto) => produto.unidade.nome,
+          },
+        ]
+      : []),
     {
       header: "Status",
       accessor: "ativo" as const,

@@ -66,18 +66,13 @@ export function Layout({ children }: LayoutProps) {
     });
   }
 
-  // SUPERADMIN administra unidades pelo Dashboard (que já tem item
-  // próprio no menu), então "Arenas" (dentro de Configurações) some
-  // daqui pra esse perfil.
   const arvoreVisivel = useMemo<NavEntry[]>(() => {
     return NAV_TREE.map((entrada): NavEntry | null => {
       if (entrada.kind === "item") {
         return perfilTemAcesso(usuario?.perfil, entrada.to) ? entrada : null;
       }
 
-      const itensVisiveis = entrada.items
-        .filter((item) => item.to !== "/arenas" || usuario?.perfil !== "SUPERADMIN")
-        .filter((item) => perfilTemAcesso(usuario?.perfil, item.to));
+      const itensVisiveis = entrada.items.filter((item) => perfilTemAcesso(usuario?.perfil, item.to));
 
       return itensVisiveis.length > 0 ? { ...entrada, items: itensVisiveis } : null;
     }).filter((entrada): entrada is NavEntry => entrada !== null);
