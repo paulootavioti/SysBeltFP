@@ -1,0 +1,12 @@
+.leads-filtros {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+  max-width: 260px;
+}
+
+.leads-status-select {
+  min-width: 160px;
+}

@@ -120,6 +120,7 @@ model Unidade {
   mensagensFamilia MensagemFamilia[]
   produtos         Produto[]
   pedidos          Pedido[]
+  leads            Lead[]
 
   createdAt DateTime @default(now())
 }
@@ -856,6 +857,30 @@ model ItemPedido {
 
   quantidade    Int
   precoUnitario Float
+}
+
+enum StatusLead {
+  NOVO
+  CONTACTADO
+  CONVERTIDO
+}
+
+// Lead captado pelo formulário da landing page pública (site institucional
+// da unidade — ver src/modules/publico). Sempre criado sem autenticação,
+// escopado por UNIDADE_PUBLICA_ID.
+model Lead {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  nome      String
+  contato   String
+  interesse String
+
+  status StatusLead @default(NOVO)
+
+  criadoEm DateTime @default(now())
 }
 
 model Aula {
