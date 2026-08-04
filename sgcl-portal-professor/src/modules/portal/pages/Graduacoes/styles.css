@@ -1,0 +1,98 @@
+.graduacoes-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.graduacoes-conteudo {
+  flex: 1;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.graduacoes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.graduacao-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 56px;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  text-align: left;
+}
+
+.graduacao-item:disabled {
+  opacity: 0.55;
+}
+
+.graduacao-item-ativo {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.graduacao-item strong {
+  display: block;
+  font-size: 14.5px;
+  color: var(--color-text);
+}
+
+.graduacao-item span:not(.graduacao-item-presencas) {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.graduacao-item-presencas {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+}
+
+.graduacoes-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.graduacoes-aviso {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.graduacoes-resumo {
+  padding: var(--space-3);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-md);
+}
+
+.graduacoes-resumo p {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--color-text);
+}
+
+.graduacoes-sucesso {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--color-success);
+}
+
+.graduacoes-botao {
+  width: 100%;
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../../../contexts/useAuth";
 import { Loading } from "../../../../components/ui/Loading";
@@ -11,13 +11,13 @@ import type { AulasHojeResponse, AulaHojeItem } from "../../types";
 
 import "./styles.css";
 
-const SGCL_WEB_URL = import.meta.env.VITE_SGCL_WEB_URL ?? "http://localhost:5173";
-
+// Telas nativas dentro do próprio Portal — consomem o backend direto (mesmo
+// token já autenticado aqui), sem abrir outro app nem pedir login de novo.
 const ATALHOS = [
-  { titulo: "Planejamento", descricao: "Currículo (leitura)", href: `${SGCL_WEB_URL}/planejamento` },
-  { titulo: "Prontuários", descricao: "Ficha dos alunos", href: `${SGCL_WEB_URL}/alunos` },
-  { titulo: "Graduações", descricao: "Solicitar/consultar", href: `${SGCL_WEB_URL}/graduacoes` },
-  { titulo: "Minhas turmas", descricao: "Grade completa", href: `${SGCL_WEB_URL}/professor` },
+  { titulo: "Planejamento", descricao: "Currículo (leitura)", to: "/planejamento" },
+  { titulo: "Prontuários", descricao: "Ficha dos alunos", to: "/prontuarios" },
+  { titulo: "Graduações", descricao: "Solicitar/consultar", to: "/graduacoes" },
+  { titulo: "Minhas turmas", descricao: "Grade completa", to: "/turmas" },
 ];
 
 function iniciais(nome: string) {
@@ -189,14 +189,14 @@ export function Home() {
 
         <section className="home-secao">
           <h3>Preparação e análise</h3>
-          <p className="home-secao-subtitulo">Abre o sistema completo — para usar fora do horário de aula</p>
+          <p className="home-secao-subtitulo">Para usar fora do horário de aula</p>
 
           <div className="home-grid-atalhos">
             {ATALHOS.map((atalho) => (
-              <a key={atalho.titulo} className="home-atalho" href={atalho.href} target="_blank" rel="noopener noreferrer">
+              <Link key={atalho.titulo} className="home-atalho" to={atalho.to}>
                 <strong>{atalho.titulo}</strong>
                 <span>{atalho.descricao}</span>
-              </a>
+              </Link>
             ))}
           </div>
         </section>
