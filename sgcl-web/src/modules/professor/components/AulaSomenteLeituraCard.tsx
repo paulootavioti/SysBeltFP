@@ -1,6 +1,5 @@
-import { LuChevronDown, LuChevronRight } from "react-icons/lu";
-
 import { Badge } from "../../../components/ui/Badge";
+import { Accordion } from "../../../components/ui/Accordion";
 import type { AulaCurriculo } from "../../curriculos/types/curriculo";
 
 interface AulaSomenteLeituraCardProps {
@@ -22,30 +21,19 @@ export function AulaSomenteLeituraCard({ aula, expandida, onToggle }: AulaSoment
 
   return (
     <div className="aula-curriculo-card">
-      <div
-        className="aula-curriculo-header acordeon-cabecalho"
-        role="button"
-        tabIndex={0}
-        aria-expanded={expandida}
-        onClick={onToggle}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onToggle();
-          }
-        }}
-      >
-        <div className="acordeon-titulo">
-          {expandida ? <LuChevronDown size={16} /> : <LuChevronRight size={16} />}
-          <h4>{aula.titulo}</h4>
-          {aula.duracaoMinutos != null && <span className="acordeon-meta">⏱ {aula.duracaoMinutos} min</span>}
-          <span className="acordeon-contagem">
-            {aula.tecnicas.length} técnica{aula.tecnicas.length === 1 ? "" : "s"}
+      <Accordion
+        aberto={expandida}
+        onToggle={onToggle}
+        titulo={
+          <span className="acordeon-titulo">
+            <h4>{aula.titulo}</h4>
+            {aula.duracaoMinutos != null && <span className="acordeon-meta">⏱ {aula.duracaoMinutos} min</span>}
+            <span className="acordeon-contagem">
+              {aula.tecnicas.length} técnica{aula.tecnicas.length === 1 ? "" : "s"}
+            </span>
           </span>
-        </div>
-      </div>
-
-      {expandida && (
+        }
+      >
         <div className="aula-curriculo-body">
           {aula.objetivo && <p>🎯 {aula.objetivo}</p>}
           {aula.descricao && <p>{aula.descricao}</p>}
@@ -70,7 +58,7 @@ export function AulaSomenteLeituraCard({ aula, expandida, onToggle }: AulaSoment
             </div>
           )}
         </div>
-      )}
+      </Accordion>
     </div>
   );
 }

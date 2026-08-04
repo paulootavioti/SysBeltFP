@@ -13,6 +13,7 @@ import { StatusBadge } from "../../../../components/ui/StatusBadge";
 import { Modal } from "../../../../components/ui/Modal";
 import { TrilhaFaixa } from "../../../../components/ui/TrilhaFaixa";
 import { FrequenciaBadge } from "../../../../components/ui/FrequenciaBadge";
+import { FrequenciaIndicador } from "../../../../components/ui/FrequenciaIndicador";
 
 import { useAuth } from "../../../../contexts/useAuth";
 import { TurmaService } from "../../services/TurmaService";
@@ -186,8 +187,7 @@ export function DetalheTurma() {
       />
 
       <div className="turma-detalhe-frequencia">
-        <span>Frequência média da turma:</span>
-        <FrequenciaBadge label="Ano" percentual={turma.frequenciaMediaAno} />
+        <FrequenciaIndicador label="Frequência média da turma (ano)" percentual={turma.frequenciaMediaAno} />
       </div>
 
       <ErrorMessage message={erro} />
