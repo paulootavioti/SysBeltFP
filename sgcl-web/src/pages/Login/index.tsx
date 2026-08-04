@@ -17,6 +17,8 @@ import "./styles.css";
 // <a> normal.
 const PORTAL_FAMILIA_URL =
   import.meta.env.VITE_PORTAL_FAMILIA_URL ?? "http://localhost:5175";
+const PORTAL_PROFESSOR_URL =
+  import.meta.env.VITE_PORTAL_PROFESSOR_URL ?? "http://localhost:5176";
 
 export function Login() {
   const { login } = useAuth();
@@ -79,10 +81,29 @@ export function Login() {
           </Button>
         </form>
 
-        <div className="login-portal-familia">
-          <span>É responsável ou aluno?</span>
-          <a href={PORTAL_FAMILIA_URL} target="_blank" rel="noopener noreferrer">
-            Acesse o Portal da Família
+        <div className="login-portais">
+          <div className="login-portais-divisor">
+            <span>Outros acessos</span>
+          </div>
+
+          <a className="login-portal-card" href={PORTAL_PROFESSOR_URL}
+             target="_blank" rel="noopener noreferrer">
+            <span className="login-portal-icone" aria-hidden="true">🥋</span>
+            <span className="login-portal-texto">
+              <strong>Portal do Professor</strong>
+              <span>Para ministrar aulas pelo celular</span>
+            </span>
+            <span className="login-portal-seta" aria-hidden="true">›</span>
+          </a>
+
+          <a className="login-portal-card" href={PORTAL_FAMILIA_URL}
+             target="_blank" rel="noopener noreferrer">
+            <span className="login-portal-icone" aria-hidden="true">👨‍👩‍👦</span>
+            <span className="login-portal-texto">
+              <strong>Portal da Família</strong>
+              <span>Para responsáveis e alunos</span>
+            </span>
+            <span className="login-portal-seta" aria-hidden="true">›</span>
           </a>
         </div>
       </div>

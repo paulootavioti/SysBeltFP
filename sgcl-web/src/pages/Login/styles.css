@@ -66,22 +66,88 @@
   width: 100%;
 }
 
-.login-portal-familia {
+.login-portais {
+  padding: 0 var(--space-6) var(--space-6);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
+}
 
-  padding: 0 var(--space-6) var(--space-6);
-  text-align: center;
-  font-size: var(--font-sm);
+.login-portais-divisor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.login-portais-divisor::before,
+.login-portais-divisor::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.login-portais-divisor span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
   color: var(--color-text-light);
 }
 
-.login-portal-familia a {
-  color: var(--color-primary);
+.login-portal-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  min-height: 64px;
+
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.login-portal-card:hover {
+  border-color: var(--color-accent);
+  background: var(--color-background);
+}
+
+.login-portal-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+  font-size: 18px;
+}
+
+.login-portal-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.login-portal-texto strong {
+  font-size: var(--font-sm);
   font-weight: 600;
-  text-decoration: underline;
+}
+
+.login-portal-texto span {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.login-portal-seta {
+  flex-shrink: 0;
+  color: var(--color-accent);
+  font-size: 18px;
 }
 
 @media (max-width: 480px) {
@@ -93,7 +159,7 @@
     padding: var(--space-5) var(--space-4);
   }
 
-  .login-portal-familia {
+  .login-portais {
     padding: 0 var(--space-4) var(--space-5);
   }
 }
