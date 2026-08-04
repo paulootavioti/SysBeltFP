@@ -1,5 +1,6 @@
-import { LuChevronDown, LuChevronRight, LuThumbsDown, LuThumbsUp } from "react-icons/lu";
+import { LuThumbsDown, LuThumbsUp } from "react-icons/lu";
 
+import { Accordion } from "../../../components/ui/Accordion";
 import type { ArtigoAjuda, Feedback } from "../types";
 
 interface ArtigoCardProps {
@@ -13,29 +14,16 @@ interface ArtigoCardProps {
 export function ArtigoCard({ artigo, expandido, onToggle, feedback, onFeedback }: ArtigoCardProps) {
   return (
     <article className="artigo-card">
-      <div
-        className="artigo-card-cabecalho"
-        role="button"
-        tabIndex={0}
-        aria-expanded={expandido}
-        onClick={onToggle}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onToggle();
-          }
-        }}
-      >
-        <div className="artigo-card-titulo">
-          {expandido ? <LuChevronDown size={16} /> : <LuChevronRight size={16} />}
-          <div>
+      <Accordion
+        aberto={expandido}
+        onToggle={onToggle}
+        titulo={
+          <span className="artigo-card-titulo">
             <h3>{artigo.titulo}</h3>
             <p>{artigo.resumo}</p>
-          </div>
-        </div>
-      </div>
-
-      {expandido && (
+          </span>
+        }
+      >
         <div className="artigo-card-corpo">
           <ol>
             {artigo.conteudo.map((passo, indice) => (
@@ -65,7 +53,7 @@ export function ArtigoCard({ artigo, expandido, onToggle, feedback, onFeedback }
             {feedback && <span className="artigo-card-feedback-obrigado">Obrigado pelo feedback!</span>}
           </div>
         </div>
-      )}
+      </Accordion>
     </article>
   );
 }
