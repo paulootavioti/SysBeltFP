@@ -67,6 +67,12 @@ a { color: inherit; text-decoration: none; }
 
 .wordmark-sep { color: #D62828; }
 
+.topbar-direita {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
 .nav {
   display: flex;
   align-items: center;
@@ -88,6 +94,7 @@ a { color: inherit; text-decoration: none; }
   padding: 10px 18px;
   border-radius: 999px;
   font-weight: 700 !important;
+  font-size: 14px;
   opacity: 1 !important;
 }
 .nav-cta:hover { background: #b91f1f; }
@@ -98,7 +105,7 @@ a { color: inherit; text-decoration: none; }
   gap: 5px;
   background: none;
   border: none;
-  padding: 8px;
+  padding: 14px;
   cursor: pointer;
 }
 .nav-toggle span {
@@ -126,7 +133,19 @@ a { color: inherit; text-decoration: none; }
   }
   .nav.nav-open { display: flex; }
   .nav a { padding: 12px 0; width: 100%; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
-  .nav-cta { margin-top: 12px; text-align: center; }
+
+  /* pill do header some no mobile — wordmark + hambúrguer já não cabem
+     numa linha de 375px junto com ela, e a barra fixa (.cta-fixa-mobile,
+     mesma largura de tela) já cobre "CTA sempre visível" sem depender
+     de rolar até o header. */
+  .nav-cta { display: none; }
+}
+
+@media (max-width: 420px) {
+  /* "Weberty Viana" some primeiro pra abrir espaço pro hambúrguer;
+     "CIA DE LUTAS" sozinho já identifica a marca. */
+  .wordmark-sub,
+  .wordmark-sep { display: none; }
 }
 
 /* ===== Hero ===== */
@@ -192,7 +211,9 @@ a { color: inherit; text-decoration: none; }
 .secao-clara .btn-outline:hover { border-color: #0D0B08; }
 
 /* ===== Seções ===== */
-.secao { padding: 88px 0; }
+/* compensa o header sticky de 72px — sem isso o título da seção fica
+   escondido atrás do header ao navegar por âncora (#sobre, #modalidades...). */
+.secao { padding: 88px 0; scroll-margin-top: 72px; }
 .secao-clara { background: #FAF9F6; }
 .secao-branca { background: #fff; }
 .secao-escura { background: #0D0B08; color: #FAF9F6; }
@@ -224,10 +245,36 @@ a { color: inherit; text-decoration: none; }
   border-radius: 16px;
 }
 
+/* placeholder visível pra imagens que a academia ainda precisa enviar —
+   de propósito NÃO parece uma foto real, pra ficar óbvio que precisa de
+   conteúdo antes de publicar (ver TODOs correspondentes no index.html). */
+.placeholder-imagem {
+  width: 100%;
+  height: 360px;
+  border-radius: 16px;
+  border: 2px dashed rgba(13, 11, 8, 0.2);
+  background: rgba(13, 11, 8, 0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 24px;
+}
+.placeholder-imagem span { font-size: 32px; }
+.placeholder-imagem p {
+  color: #726C60;
+  font-size: 13.5px;
+  font-weight: 600;
+  max-width: 220px;
+}
+
 @media (max-width: 860px) {
   .secao-duas-colunas { grid-template-columns: 1fr; gap: 32px; }
   .secao-imagem { order: -1; }
-  .secao-imagem img { height: 240px; }
+  .secao-imagem img,
+  .placeholder-imagem { height: 240px; }
 }
 
 /* ===== Modalidades ===== */
@@ -444,6 +491,7 @@ a { color: inherit; text-decoration: none; }
   color: #D62828;
   text-align: center;
 }
+.formulario-status-sucesso { color: #4ade80; }
 
 /* ===== Estados de carregamento/vazio ===== */
 .estado-carregando,
@@ -463,4 +511,32 @@ a { color: inherit; text-decoration: none; }
   padding: 28px 0;
   text-align: center;
   font-size: 13px;
+}
+
+/* ===== Barra de CTA fixa (mobile) ===== */
+.cta-fixa-mobile {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .cta-fixa-mobile {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 90;
+    background: #0D0B08;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+  }
+  .cta-fixa-mobile .btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 14px 20px;
+  }
+
+  /* espaço reservado no fim da página pra barra fixa não tampar o footer. */
+  .rodape { padding-bottom: calc(28px + 64px + env(safe-area-inset-bottom)); }
 }

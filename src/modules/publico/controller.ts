@@ -4,9 +4,17 @@ import { GetEquipePublicaService } from "./services/GetEquipePublicaService";
 import { GetHorariosPublicoService } from "./services/GetHorariosPublicoService";
 import { GetProdutosDestaquePublicoService } from "./services/GetProdutosDestaquePublicoService";
 import { GetGaleriaPublicaService } from "./services/GetGaleriaPublicaService";
+import { GetModalidadesPublicoService } from "./services/GetModalidadesPublicoService";
 import { CriarLeadPublicoService } from "./services/CriarLeadPublicoService";
 
 export class PublicoController {
+  async modalidades(req: Request, res: Response) {
+    const service = new GetModalidadesPublicoService();
+    const modalidades = await service.execute();
+
+    return res.json(modalidades);
+  }
+
   async equipe(req: Request, res: Response) {
     const service = new GetEquipePublicaService();
     const equipe = await service.execute();

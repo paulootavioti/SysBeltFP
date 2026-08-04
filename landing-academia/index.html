@@ -6,6 +6,16 @@
   <title>Cia de Lutas Weberty Viana — Jiu-Jitsu, Grappling e Autodefesa</title>
   <meta name="description" content="Treine Jiu-Jitsu, Grappling e Autodefesa na Cia de Lutas Weberty Viana. Agende sua aula experimental gratuita." />
 
+  <!-- Open Graph — og:image e og:url dependem de asset/domínio reais, que
+       ainda não existem neste repo; preencha antes de divulgar o link em
+       redes sociais (ver README, seção de deploy da landing). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Cia de Lutas Weberty Viana" />
+  <meta property="og:title" content="Cia de Lutas Weberty Viana — Jiu-Jitsu, Grappling e Autodefesa" />
+  <meta property="og:description" content="Treine Jiu-Jitsu, Grappling e Autodefesa na Cia de Lutas Weberty Viana. Agende sua aula experimental gratuita." />
+  <meta property="og:locale" content="pt_BR" />
+  <!-- TODO: og:url (domínio de produção) e og:image (foto real da equipe/tatame, mínimo 1200x630) -->
+
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230D0B08'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23D62828' stroke-width='5'/%3E%3C/svg%3E" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -13,6 +23,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- Schema.org — endereço/telefone/horário abaixo são placeholders,
+       mesmos do corpo da página (seção #local); troque pelos dados reais
+       junto com o resto do conteúdo antes de publicar. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SportsActivityLocation",
+    "name": "Cia de Lutas Weberty Viana",
+    "description": "Academia de Jiu-Jitsu, Grappling e Autodefesa para todas as idades.",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Rua Exemplo, 123",
+      "addressLocality": "Cidade",
+      "addressRegion": "UF",
+      "addressCountry": "BR"
+    },
+    "telephone": "+5511999999999",
+    "openingHours": "Mo-Fr 07:00-21:00"
+  }
+  </script>
 </head>
 <body>
 
@@ -23,22 +54,28 @@
     <div class="wrap topbar-inner">
       <a class="wordmark" href="#topo">
         <span class="wordmark-mark" aria-hidden="true"></span>
-        CIA DE LUTAS <span class="wordmark-sep">·</span> Weberty Viana
+        CIA DE LUTAS <span class="wordmark-sep">·</span>
+        <span class="wordmark-sub">Weberty Viana</span>
       </a>
 
-      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="nav" aria-label="Abrir menu">
-        <span></span><span></span><span></span>
-      </button>
+      <div class="topbar-direita">
+        <nav class="nav" id="nav" aria-label="Navegação principal">
+          <a href="#sobre">Sobre</a>
+          <a href="#modalidades">Modalidades</a>
+          <a href="#equipe">Equipe</a>
+          <a href="#galeria">Galeria</a>
+          <a href="#loja">Loja</a>
+          <a href="#local">Local</a>
+        </nav>
 
-      <nav class="nav" id="nav" aria-label="Navegação principal">
-        <a href="#sobre">Sobre</a>
-        <a href="#modalidades">Modalidades</a>
-        <a href="#equipe">Equipe</a>
-        <a href="#galeria">Galeria</a>
-        <a href="#loja">Loja</a>
-        <a href="#local">Local</a>
+        <!-- fora da nav de propósito: precisa continuar visível mesmo com o
+             menu hambúrguer fechado no mobile (ver styles.css .nav-cta). -->
         <a class="nav-cta" href="#contato">Aula Experimental</a>
-      </nav>
+
+        <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="nav" aria-label="Abrir menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -74,8 +111,13 @@
             faixa etária e nível, num ambiente pensado para quem está começando e para quem já compete.
           </p>
         </div>
+        <!-- TODO: substituir por foto real da equipe/tatame da academia
+             (nunca imagem de banco genérica) — ver README, deploy da landing. -->
         <div class="secao-imagem">
-          <img src="https://images.unsplash.com/photo-1555597673-b21d5c935865?w=800&q=80" alt="Equipe treinando no tatame" loading="lazy" />
+          <div class="placeholder-imagem" role="img" aria-label="Espaço reservado para foto da equipe/tatame">
+            <span aria-hidden="true">📷</span>
+            <p>Foto da equipe — envie o material real</p>
+          </div>
         </div>
       </div>
     </section>
@@ -84,27 +126,8 @@
     <section class="secao secao-branca" id="modalidades">
       <div class="wrap">
         <h2 class="secao-titulo-central">Modalidades</h2>
-        <div class="grid-modalidades">
-          <article class="card-modalidade">
-            <h3>Jiu-Jitsu Kids</h3>
-            <p class="card-modalidade-faixa">4 a 13 anos</p>
-            <p>Disciplina, respeito e defesa pessoal num ambiente lúdico e seguro para crianças.</p>
-          </article>
-          <article class="card-modalidade">
-            <h3>Jiu-Jitsu Adulto</h3>
-            <p class="card-modalidade-faixa">14+ anos</p>
-            <p>Técnica, condicionamento e evolução constante — do iniciante ao competidor.</p>
-          </article>
-          <article class="card-modalidade">
-            <h3>Grappling</h3>
-            <p class="card-modalidade-faixa">Sem kimono</p>
-            <p>Luta agarrada sem kimono, ritmo intenso e foco em transições e finalizações.</p>
-          </article>
-          <article class="card-modalidade">
-            <h3>Autodefesa</h3>
-            <p class="card-modalidade-faixa">Todas as idades</p>
-            <p>Técnicas práticas de defesa pessoal baseadas nos fundamentos do Jiu-Jitsu.</p>
-          </article>
+        <div class="grid-modalidades" id="modalidadesGrid">
+          <p class="estado-carregando">Carregando modalidades...</p>
         </div>
       </div>
     </section>
@@ -120,6 +143,9 @@
     </section>
 
     <!-- ===== 6. Depoimentos ===== -->
+    <!-- TODO: os 3 depoimentos abaixo são conteúdo de protótipo — trocar
+         por depoimentos reais e autorizados pelos alunos/responsáveis
+         antes de publicar (ver README, deploy da landing). -->
     <section class="secao secao-escura" id="depoimentos">
       <div class="wrap">
         <h2 class="secao-titulo-central secao-titulo-claro">O que dizem sobre a gente</h2>
@@ -178,8 +204,13 @@
             <a href="tel:+5511999999999">(11) 99999-9999</a>
           </p>
         </div>
+        <!-- TODO: substituir por foto real da fachada (ou mapa embutido)
+             — ver README, deploy da landing. -->
         <div class="secao-imagem">
-          <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&q=80" alt="Fachada da academia" loading="lazy" />
+          <div class="placeholder-imagem" role="img" aria-label="Espaço reservado para foto da fachada">
+            <span aria-hidden="true">📍</span>
+            <p>Foto da fachada — envie o material real</p>
+          </div>
         </div>
       </div>
     </section>
@@ -225,6 +256,12 @@
       <p>© <span id="anoAtual">2026</span> Cia de Lutas Weberty Viana. Todos os direitos reservados.</p>
     </div>
   </footer>
+
+  <!-- barra de CTA fixa só no mobile — o objetivo principal de conversão
+       não deve exigir rolagem até o header ou até o formulário. -->
+  <div class="cta-fixa-mobile">
+    <a class="btn btn-primary" href="#contato">Agendar aula experimental</a>
+  </div>
 
   <script src="script.js"></script>
 </body>

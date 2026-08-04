@@ -26,6 +26,23 @@
     });
   }
 
+  // ===== Instrumentação de conversão =====
+  // Sem plataforma de analytics configurada neste projeto ainda — dispara
+  // pro padrão window.dataLayer (convenção GA4/GTM, funciona assim que uma
+  // conta real for plugada) e também um CustomEvent no document, pra
+  // qualquer outra ferramenta escutar sem precisar mexer neste arquivo.
+  function registrarConversao(nomeEvento, detalhes) {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(Object.assign({ event: nomeEvento }, detalhes || {}));
+    document.dispatchEvent(new CustomEvent(nomeEvento, { detail: detalhes || {} }));
+  }
+
+  document.querySelectorAll(".hero-ctas a").forEach(function (link) {
+    link.addEventListener("click", function () {
+      registrarConversao("landing_cta_hero_click", { destino: link.getAttribute("href"), texto: link.textContent.trim() });
+    });
+  });
+
   var anoAtual = document.getElementById("anoAtual");
   if (anoAtual) {
     anoAtual.textContent = String(new Date().getFullYear());
@@ -34,6 +51,34 @@
   var linkLojaCompleta = document.getElementById("linkLojaCompleta");
   if (linkLojaCompleta) {
     linkLojaCompleta.href = PORTAL_FAMILIA_URL;
+  }
+
+  // ===== Modalidades (#modalidades) =====
+  var modalidadesGrid = document.getElementById("modalidadesGrid");
+  if (modalidadesGrid) {
+    fetch(API_BASE_URL + "/publico/modalidades")
+      .then(function (res) { return res.json(); })
+      .then(function (modalidades) {
+        if (!Array.isArray(modalidades) || modalidades.length === 0) {
+          modalidadesGrid.innerHTML = "<p class=\"estado-vazio\">Em breve.</p>";
+          return;
+        }
+
+        modalidadesGrid.innerHTML = modalidades
+          .map(function (modalidade) {
+            return (
+              '<article class="card-modalidade">' +
+              "<h3>" + escapeHtml(modalidade.nome) + "</h3>" +
+              '<p class="card-modalidade-faixa">' + escapeHtml(modalidade.publico) + "</p>" +
+              "<p>" + escapeHtml(modalidade.descricao) + "</p>" +
+              "</article>"
+            );
+          })
+          .join("");
+      })
+      .catch(function () {
+        modalidadesGrid.innerHTML = "<p class=\"estado-vazio\">Não foi possível carregar as modalidades.</p>";
+      });
   }
 
   // ===== Equipe (#equipe) =====
@@ -166,6 +211,7 @@
       var botao = formLead.querySelector('button[type="submit"]');
 
       formLeadStatus.textContent = "";
+      formLeadStatus.classList.remove("formulario-status-sucesso");
       if (botao) botao.disabled = true;
 
       fetch(API_BASE_URL + "/publico/leads", {
@@ -183,7 +229,9 @@
         })
         .then(function () {
           formLeadStatus.textContent = "Recebemos seus dados — vamos entrar em contato em breve!";
+          formLeadStatus.classList.add("formulario-status-sucesso");
           formLead.reset();
+          registrarConversao("landing_lead_enviado", { interesse: dados.get("interesse") });
         })
         .catch(function () {
           formLeadStatus.textContent = "Não foi possível enviar agora. Tente novamente em instantes.";
