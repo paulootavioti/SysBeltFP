@@ -7,8 +7,10 @@ import { GetEquipePublicaService } from "./GetEquipePublicaService";
 import { GetHorariosPublicoService } from "./GetHorariosPublicoService";
 import { GetProdutosDestaquePublicoService } from "./GetProdutosDestaquePublicoService";
 import { GetGaleriaPublicaService } from "./GetGaleriaPublicaService";
+import { GetModalidadesPublicoService } from "./GetModalidadesPublicoService";
 import { CriarLeadPublicoService } from "./CriarLeadPublicoService";
 
+const modalidadesService = new GetModalidadesPublicoService();
 const equipeService = new GetEquipePublicaService();
 const horariosService = new GetHorariosPublicoService();
 const produtosService = new GetProdutosDestaquePublicoService();
@@ -48,6 +50,20 @@ describe("obterUnidadePublicaId", () => {
   it("lança 503 quando a env var não está configurada", () => {
     delete process.env.UNIDADE_PUBLICA_ID;
     expect(() => obterUnidadePublicaId()).toThrow(AppError);
+  });
+});
+
+describe("GetModalidadesPublicoService", () => {
+  it("retorna a lista fixa das 4 modalidades, sem depender de unidade", async () => {
+    const modalidades = await modalidadesService.execute();
+
+    expect(modalidades).toHaveLength(4);
+    expect(modalidades.map((m) => m.nome)).toEqual([
+      "Jiu-Jitsu Kids",
+      "Jiu-Jitsu Adulto",
+      "Grappling",
+      "Autodefesa",
+    ]);
   });
 });
 

@@ -12,6 +12,8 @@ const publicoRoutes = Router();
 
 const publicoController = new PublicoController();
 
+publicoRoutes.get("/modalidades", publicoController.modalidades);
+
 publicoRoutes.get("/equipe", publicoController.equipe);
 
 publicoRoutes.get("/horarios", publicoController.horarios);
