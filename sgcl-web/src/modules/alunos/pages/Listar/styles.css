@@ -34,62 +34,10 @@
   flex-wrap: wrap;
 }
 
-.alunos-search {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
-
-.alunos-search > .input-wrapper {
-  flex: 2 1 260px;
-}
-
-.alunos-search > .select-wrapper {
-  flex: 1 1 160px;
-}
-
 .alunos-actions {
   display: flex;
   justify-content: flex-end;
   margin-bottom: var(--space-4);
-}
-
-.alunos-filtros-ativos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-}
-
-.alunos-filtro-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 6px 4px 12px;
-  border-radius: 999px;
-  background: var(--accent-soft, #f3f4f6);
-  color: var(--text);
-  font-size: 13px;
-}
-
-.alunos-filtro-chip button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--text-light);
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.alunos-filtro-chip button:hover {
-  background: rgba(0, 0, 0, 0.08);
 }
 
 .alunos-selecionar-todos {

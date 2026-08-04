@@ -1,7 +1,8 @@
-import { LuChevronDown, LuChevronRight, LuX } from "react-icons/lu";
+import { LuX } from "react-icons/lu";
 
 import { Button } from "../../../components/ui/Button";
 import { Badge } from "../../../components/ui/Badge";
+import { Accordion } from "../../../components/ui/Accordion";
 
 import type { AulaCurriculo, TecnicaCurriculo } from "../types/curriculo";
 
@@ -44,46 +45,36 @@ export function AulaAccordionCard({
 
   return (
     <div className="aula-curriculo-card">
-      <div
-        className="aula-curriculo-header acordeon-cabecalho"
-        role="button"
-        tabIndex={0}
-        aria-expanded={expandida}
-        onClick={onToggle}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onToggle();
-          }
-        }}
-      >
-        <div className="acordeon-titulo">
-          {expandida ? <LuChevronDown size={16} /> : <LuChevronRight size={16} />}
-          <h4>{aula.titulo}</h4>
-          {aula.duracaoMinutos != null && <span className="acordeon-meta">⏱ {aula.duracaoMinutos} min</span>}
-          <span className="acordeon-contagem">
-            {aula.tecnicas.length} técnica{aula.tecnicas.length === 1 ? "" : "s"}
+      <Accordion
+        aberto={expandida}
+        onToggle={onToggle}
+        titulo={
+          <span className="acordeon-titulo">
+            <h4>{aula.titulo}</h4>
+            {aula.duracaoMinutos != null && <span className="acordeon-meta">⏱ {aula.duracaoMinutos} min</span>}
+            <span className="acordeon-contagem">
+              {aula.tecnicas.length} técnica{aula.tecnicas.length === 1 ? "" : "s"}
+            </span>
           </span>
-        </div>
-
-        <div className="curriculos-card-acoes" onClick={(e) => e.stopPropagation()}>
-          <Button type="button" variant="secondary" onClick={onEditar}>
-            Editar
-          </Button>
-
-          <Button type="button" variant="secondary" onClick={onNovaTecnica}>
-            + Técnica
-          </Button>
-
-          {ehAdmin && (
-            <Button type="button" variant="danger" disabled={excluindo} onClick={onExcluir}>
-              {excluindo ? "Excluindo..." : "Excluir"}
+        }
+        acoes={
+          <div className="curriculos-card-acoes">
+            <Button type="button" variant="secondary" onClick={onEditar}>
+              Editar
             </Button>
-          )}
-        </div>
-      </div>
 
-      {expandida && (
+            <Button type="button" variant="secondary" onClick={onNovaTecnica}>
+              + Técnica
+            </Button>
+
+            {ehAdmin && (
+              <Button type="button" variant="danger" disabled={excluindo} onClick={onExcluir}>
+                {excluindo ? "Excluindo..." : "Excluir"}
+              </Button>
+            )}
+          </div>
+        }
+      >
         <div className="aula-curriculo-body">
           {aula.objetivo && <p>🎯 {aula.objetivo}</p>}
           {aula.descricao && <p>{aula.descricao}</p>}
@@ -128,7 +119,7 @@ export function AulaAccordionCard({
             </div>
           )}
         </div>
-      )}
+      </Accordion>
     </div>
   );
 }

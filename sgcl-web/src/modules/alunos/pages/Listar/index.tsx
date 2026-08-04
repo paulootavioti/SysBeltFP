@@ -5,9 +5,9 @@ import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 
 import { Button } from "../../../../components/ui/Button";
-import { Input } from "../../../../components/ui/Input";
 import { Select } from "../../../../components/ui/Select";
 import { Checkbox } from "../../../../components/ui/Checkbox";
+import { FilterBar, type FilterBarSelect } from "../../../../components/ui/FilterBar";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Table } from "../../../../components/ui/Table";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
@@ -219,7 +219,7 @@ export function Alunos() {
       header: "Ações",
       accessor: "id" as const,
       render: (aluno: AlunoBasico) => (
-        <Button type="button" size="sm" onClick={() => navigate(`/alunos/${aluno.id}`)}>
+        <Button type="button" variant="secondary" size="sm" onClick={() => navigate(`/alunos/${aluno.id}`)}>
           Detalhes
         </Button>
       ),
@@ -296,6 +296,7 @@ export function Alunos() {
         <div className="alunos-table-actions">
           <Button
             type="button"
+            variant="secondary"
             size="sm"
             onClick={() =>
               navigate(`/alunos/${aluno.id}`, {
@@ -359,46 +360,30 @@ export function Alunos() {
 
       <ErrorMessage message={erro} />
 
-      <div className="alunos-search">
-        <Input
-          label="Pesquisar aluno"
-          placeholder="Digite o nome..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-        />
-
-        {!ehProfessor && (
-          <Select
-            label="Status"
-            options={[
+      <FilterBar
+        buscaLabel="Pesquisar aluno"
+        buscaPlaceholder="Digite o nome..."
+        buscaValue={busca}
+        onBuscaChange={setBusca}
+        selects={[
+          !ehProfessor && {
+            label: "Status",
+            options: [
               { value: "ATIVO", label: "Ativo" },
               { value: "INATIVO", label: "Inativo" },
-            ]}
-            value={filtroStatus}
-            onChange={(e) => setFiltroStatus(e.target.value)}
-          />
-        )}
-
-        <Select
-          label="Turma"
-          options={opcoesTurma}
-          value={filtroTurma}
-          onChange={(e) => setFiltroTurma(e.target.value)}
-        />
-      </div>
-
-      {filtrosAtivos.length > 0 && (
-        <div className="alunos-filtros-ativos">
-          {filtrosAtivos.map((filtro) => (
-            <span key={filtro.chave} className="alunos-filtro-chip">
-              {filtro.rotulo}
-              <button type="button" onClick={filtro.limpar} aria-label={`Remover filtro ${filtro.rotulo}`}>
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
+            ],
+            value: filtroStatus,
+            onChange: (value: string) => setFiltroStatus(value),
+          },
+          {
+            label: "Turma",
+            options: opcoesTurma,
+            value: filtroTurma,
+            onChange: (value: string) => setFiltroTurma(value),
+          },
+        ].filter((select): select is FilterBarSelect => !!select)}
+        filtrosAtivos={filtrosAtivos}
+      />
 
       {!ehProfessor && !loading && paginacaoCompleta.itensDaPagina.length > 0 && (
         <div className="alunos-selecionar-todos">
