@@ -1,0 +1,101 @@
+.etapa-foto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.etapa-foto-area {
+  height: 190px;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.etapa-foto-area img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.etapa-foto-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+  padding: 0 var(--space-5);
+  text-align: center;
+}
+
+.etapa-foto-placeholder span[aria-hidden] {
+  font-size: 32px;
+}
+
+.etapa-foto-input-oculto {
+  display: none;
+}
+
+.etapa-foto-campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.etapa-foto-campo span:first-child {
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
+}
+
+.etapa-foto-campo input {
+  min-height: var(--tap-target-min);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.etapa-foto-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.etapa-foto-checkbox input {
+  margin-top: 3px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.etapa-foto-checkbox > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.etapa-foto-checkbox strong {
+  font-size: 14.5px;
+  color: var(--color-text);
+}
+
+.etapa-foto-checkbox-apoio {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.etapa-foto-erro {
+  color: var(--color-danger);
+  font-size: var(--font-sm);
+  margin: 0;
+}

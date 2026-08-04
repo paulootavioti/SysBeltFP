@@ -43,6 +43,35 @@ npm run dev
 
 Aplicação em `http://localhost:5173`.
 
+### Portal do Professor
+
+App **separado** do `sgcl-web`, focado só no momento da aula (mobile-first, coluna única de largura de celular, sem sidebar/bottom tab bar). Diferente do Portal da Família: o professor **já é um `Usuario`** (perfil `PROFESSOR`) — reaproveita o mesmo login do `sgcl-web` (`POST /auth/login`), sem credencial nova. Depois do login, só perfis `PROFESSOR`/`ADMIN`/`SUPERADMIN` entram; qualquer outro perfil recebe uma mensagem explicando pra usar o `sgcl-web`. Consome a mesma API do backend (`/portal-professor/*`, além de reaproveitar `/aulas/programadas/:id/iniciar` e `/uploads` + `/fotos-treino` já existentes).
+
+```bash
+cd sgcl-portal-professor
+npm install
+npm run dev
+```
+
+Aplicação em `http://localhost:5176`. O backend já libera CORS pras três origens (`5173`, `5175`, `5176`) por padrão — se mudar a porta, ajuste `CORS_ORIGIN` no `.env` do backend (ver `.env.example`).
+
+A tela Home mostra a próxima aula do dia (ou a de hoje já em andamento, se o professor saiu e voltou), a lista de outras aulas do dia, e atalhos pro `sgcl-web` (Planejamento, Prontuários, Graduações, Minhas turmas) pra uso fora do horário de aula. "Iniciar aula" entra no Modo Aula: um fluxo linear de 4 etapas (Presença → Plano → Notas → Foto) com cronômetro, sem menu — só avançar/voltar ou pular direto pelo stepper. Ao finalizar, mostra um resumo (presença, técnicas executadas, o que foi registrado) e volta pra Home.
+
+Robustez pensada pro tatame: o estado da aula (etapa atual + início do cronômetro) fica salvo em `localStorage`, então recarregar a página ou fechar e reabrir a aba retoma exatamente de onde parou — nada se perde. Marcações de presença/técnica/observação que falharem por falta de conexão entram numa fila local e são reenviadas automaticamente assim que a conexão volta (evento `online` do navegador). A tela é mantida acesa durante a aula via Screen Wake Lock API, com degradação silenciosa em navegadores sem suporte.
+
+#### Deploy em produção (Netlify, domínio separado)
+
+Mesma convenção dos outros dois: site Netlify próprio, mesmo repositório, base directory diferente (`sgcl-portal-professor/netlify.toml` cuida do build + fallback de SPA, sem `[functions]`).
+
+1. **Criar o site**: no Netlify, "Add new site" → "Import an existing project" → o mesmo repositório Git do Sys Belt.
+2. **Configurar o build**: em "Site settings" → "Build & deploy" → "Build settings": **Base directory** `sgcl-portal-professor`, **Build command** `npm ci && npm run build`, **Publish directory** `dist` (relativo à base directory).
+3. **Variáveis de ambiente**: em "Site settings" → "Environment variables", adicione `VITE_API_URL` com a URL completa do backend (ex.: `https://sysbelt.netlify.app/api` — sem isso o build usa o fallback de desenvolvimento e toda chamada volta 404) e `VITE_SGCL_WEB_URL` com a URL de produção do `sgcl-web` (pros atalhos de "Preparação e análise" abrirem o sistema completo, não `localhost:5173`).
+4. **Liberar CORS no backend**: no site principal, edite `CORS_ORIGIN` pra incluir a URL de produção deste portal, ex.: `CORS_ORIGIN=https://sysbelt.netlify.app,https://portal.suaacademia.com.br,https://professor.suaacademia.com.br`. Redeploy o site principal depois.
+5. **Apontar o link de login pra produção**: ainda no site principal, defina `VITE_PORTAL_PROFESSOR_URL` com a URL de produção deste portal e redeploy o `sgcl-web` — senão o cartão "Portal do Professor" na tela de login continua apontando pra `localhost:5176`.
+6. **Domínio customizado (opcional)** e **deploy e validação**: mesmos passos do Portal da Família — configure o CNAME se quiser um domínio próprio, dispare o deploy e confirme que um professor consegue logar, ver a aula do dia e completar o fluxo (presença → plano → notas → foto → finalizar) fim a fim.
+
+Nenhuma migration adicional é necessária pra publicar esse app — já foi aplicada junto com o resto deste patch (`NotaAula`, ver seção Banco de dados).
+
 ### Portal da Família (responsáveis e alunos)
 
 App **separado** do frontend da equipe — outro pacote, outra porta, outro login (não usa a tabela `Usuario`, e sim `Responsavel`/`Aluno` com `senhaPortal`). Consome a mesma API do backend (`/portal-familia/*`).

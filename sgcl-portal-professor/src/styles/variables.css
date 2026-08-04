@@ -1,0 +1,96 @@
+:root {
+
+  /* ===== Cores ===== */
+  /* Paleta: preto, dourado e branco */
+
+  --color-primary: #17140F;
+  --color-secondary: #2B2620;
+
+  --color-accent: #C9A227;
+  --color-accent-light: #E4C86B;
+  --color-accent-soft: #F6EED0;
+
+  --color-success: #1b7f3a;
+  --color-success-bg: #e7f6ec;
+  --color-warning: #8a6d1a;
+  --color-warning-bg: var(--color-accent-soft);
+  --color-danger: #B3261E;
+  --color-error-bg: #fdecea;
+  --color-neutral-text: #374151;
+  --color-neutral-bg: #f3f4f6;
+
+  --color-background: #FAF9F6;
+
+  --color-surface: #FFFFFF;
+
+  --color-border: #E7E3D8;
+
+  --color-text: #17140F;
+  --color-text-light: #726C60;
+  --color-text-tertiary: #A39C8C;
+
+  /* ===== Bordas ===== */
+
+  --radius-sm: 4px;
+  --radius-sm-plus: 7px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+  --radius-thumb: 10px;
+
+  /* ===== Espaçamentos extras ===== */
+
+  --space-7: 56px;
+  --space-8: 64px;
+
+  /* ===== Tipografia ===== */
+
+  --font-xs: 12px;
+  --font-sm: 14px;
+  --font-md: 16px;
+  --font-lg: 20px;
+  /* --font-xl fica só em typography.css (30px) — declarar aqui de novo
+     criava um valor duplicado e conflitante (era 24px, nunca usado de
+     fato porque typography.css carrega depois e sobrescreve). */
+
+  /* ===== Hit target mínimo (toque) ===== */
+
+  --tap-target-min: 44px;
+
+  /* ===== Barra de navegação inferior (mobile) ===== */
+
+  --portal-bottom-nav-height: 64px;
+
+}
+
+/*
+ * ===== Breakpoints =====
+ * CSS não permite var() dentro de @media, então isso aqui é referência —
+ * use os valores literais abaixo nas media queries:
+ *   - mobile:  até 640px            → @media (max-width: 640px)
+ *   - tablet:  641px a 1024px       → @media (min-width: 641px) and (max-width: 1024px)
+ *   - desktop: acima de 1024px      → @media (min-width: 1025px)
+ * Este app é mobile-first: a maior parte do CSS já é o layout de
+ * celular por padrão, com @media (min-width: 641px) ligando o
+ * comportamento de tablet/desktop quando necessário.
+ */
+
+:root {
+  --primary: var(--color-primary);
+  --secondary: var(--color-secondary);
+  --accent: var(--color-accent);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --danger: var(--color-danger);
+
+  --background: var(--color-background);
+  --surface: var(--color-surface);
+  --border: var(--color-border);
+
+  --text: var(--color-text);
+  --text-light: var(--color-text-light);
+
+  --radius: var(--radius-lg);
+  --shadow: var(--shadow-sm);
+}

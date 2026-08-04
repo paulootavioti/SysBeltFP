@@ -1,0 +1,18 @@
+[build]
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+
+# Fallback de SPA: qualquer rota cai no index.html (React Router cuida do resto).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
