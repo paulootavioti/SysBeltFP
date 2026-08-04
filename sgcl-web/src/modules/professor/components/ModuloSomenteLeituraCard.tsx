@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { LuChevronDown, LuChevronRight } from "react-icons/lu";
 
 import { TrilhaFaixa } from "../../../components/ui/TrilhaFaixa";
+import { Accordion } from "../../../components/ui/Accordion";
 import { AulaSomenteLeituraCard } from "./AulaSomenteLeituraCard";
 import type { ModuloCurriculo } from "../../curriculos/types/curriculo";
 
@@ -20,31 +20,20 @@ export function ModuloSomenteLeituraCard({ modulo, expandido, onToggle }: Modulo
 
   return (
     <div className="modulo-card">
-      <div
-        className="modulo-card-header acordeon-cabecalho"
-        role="button"
-        tabIndex={0}
-        aria-expanded={expandido}
-        onClick={onToggle}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onToggle();
-          }
-        }}
-      >
-        <div className="acordeon-titulo">
-          {expandido ? <LuChevronDown size={16} /> : <LuChevronRight size={16} />}
-          <TrilhaFaixa faixa={modulo.faixa} />
-          <h3>{modulo.nome}</h3>
-          {modulo.faixa && <span className="modulo-faixa">{modulo.faixa}</span>}
-          <span className="acordeon-contagem">
-            {modulo.aulas.length} aula{modulo.aulas.length === 1 ? "" : "s"}
+      <Accordion
+        aberto={expandido}
+        onToggle={onToggle}
+        titulo={
+          <span className="acordeon-titulo">
+            <TrilhaFaixa faixa={modulo.faixa} />
+            <h3>{modulo.nome}</h3>
+            {modulo.faixa && <span className="modulo-faixa">{modulo.faixa}</span>}
+            <span className="acordeon-contagem">
+              {modulo.aulas.length} aula{modulo.aulas.length === 1 ? "" : "s"}
+            </span>
           </span>
-        </div>
-      </div>
-
-      {expandido && (
+        }
+      >
         <div className="modulo-card-body">
           {modulo.descricao && <p className="modulo-descricao">{modulo.descricao}</p>}
 
@@ -61,7 +50,7 @@ export function ModuloSomenteLeituraCard({ modulo, expandido, onToggle }: Modulo
             ))
           )}
         </div>
-      )}
+      </Accordion>
     </div>
   );
 }

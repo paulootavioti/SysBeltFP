@@ -9,7 +9,7 @@ import { StatusBadge } from "../../../../components/sgcl/feedback/StatusBadge";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Loading } from "../../../../components/ui/Loading";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
-import { FrequenciaCard } from "../../../../components/ui/FrequenciaBadge";
+import { FrequenciaIndicador } from "../../../../components/ui/FrequenciaIndicador";
 
 import { AlunoService } from "../../services/AlunoService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -148,7 +148,12 @@ export function ProntuarioAluno() {
 
         <InfoCard
           title="Frequência"
-          value={<FrequenciaCard frequenciaMes={resumo.frequenciaMes} frequenciaAno={resumo.frequenciaAno} />}
+          value={
+            <div className="prontuario-frequencia-indicadores">
+              <FrequenciaIndicador label="Mês" percentual={resumo.frequenciaMes} />
+              <FrequenciaIndicador label="Ano" percentual={resumo.frequenciaAno} />
+            </div>
+          }
           description={`${resumo.totalPresencas} presenças no total`}
         />
 

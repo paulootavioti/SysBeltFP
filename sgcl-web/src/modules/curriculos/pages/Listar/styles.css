@@ -95,34 +95,6 @@
   margin-bottom: var(--space-3);
 }
 
-/* .acordeon-cabecalho (com :hover/:focus-visible) e .acordeon-titulo svg
-   continuam em uso por professor/components/{Modulo,Aula}SomenteLeituraCard
-   — mirrors read-only que ainda usam o header hand-rolled (role="button" +
-   swap de ícone); migração deles é fase 4 (Área do Professor), não aqui. */
-.acordeon-cabecalho {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  width: 100%;
-  flex-wrap: wrap;
-  cursor: pointer;
-  background: none;
-  border: none;
-  text-align: left;
-  padding: 4px 0;
-  border-radius: var(--radius-sm);
-}
-
-.acordeon-cabecalho:hover {
-  background: var(--background);
-}
-
-.acordeon-cabecalho:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
 .acordeon-titulo {
   display: flex;
   align-items: center;
@@ -130,11 +102,6 @@
   min-width: 0;
   flex: 1 1 220px;
   flex-wrap: wrap;
-}
-
-.acordeon-titulo svg {
-  flex-shrink: 0;
-  color: var(--text-light);
 }
 
 .acordeon-titulo h3,
