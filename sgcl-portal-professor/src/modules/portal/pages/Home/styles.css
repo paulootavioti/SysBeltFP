@@ -1,0 +1,242 @@
+.home-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-header {
+  background: var(--color-primary);
+  padding: var(--space-6) var(--space-4) var(--space-5);
+}
+
+.home-header-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.home-eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent-light);
+}
+
+.home-header h1 {
+  margin: 0;
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: #fff;
+}
+
+.home-avatar {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--color-accent);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: var(--font-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-data {
+  margin: var(--space-3) 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--font-sm);
+  text-transform: capitalize;
+}
+
+.home-conteudo {
+  flex: 1;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ===== Card da próxima aula ===== */
+.home-card-proxima {
+  background: var(--color-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  color: #fff;
+}
+
+.home-card-proxima-vazia {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.home-card-proxima-marcador {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #4ade80;
+}
+
+.home-card-proxima-marcador-neutro {
+  color: var(--color-text-light);
+}
+
+.home-card-proxima-bolinha {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+}
+
+.home-card-proxima h2 {
+  margin: var(--space-3) 0 4px;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.home-card-proxima-info {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.home-card-proxima-vazia .home-card-proxima-info {
+  color: var(--color-text-light);
+}
+
+.home-card-proxima-plano {
+  margin: var(--space-3) 0 0;
+  display: inline-block;
+  background: var(--color-accent-soft);
+  color: #5a4a10;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+}
+
+.home-card-proxima-botao {
+  width: 100%;
+  margin-top: var(--space-5);
+}
+
+/* ===== Também hoje ===== */
+.home-secao h3 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-md);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.home-secao-subtitulo {
+  margin: -8px 0 var(--space-3);
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.home-lista-hoje {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.home-item-hoje {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 56px;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  text-align: left;
+}
+
+.home-item-hoje:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.home-item-hoje-horario {
+  flex-shrink: 0;
+  font-weight: 800;
+  color: var(--color-accent);
+  font-size: var(--font-sm);
+  min-width: 44px;
+}
+
+.home-item-hoje-texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-item-hoje-texto strong {
+  font-size: 14.5px;
+  color: var(--color-text);
+}
+
+.home-item-hoje-texto span {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.home-item-hoje-chip {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-bg);
+  color: var(--color-neutral-text);
+}
+
+.home-item-hoje-chip-em_andamento {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.home-item-hoje-chip-concluida {
+  background: var(--color-neutral-bg);
+  color: var(--color-text-light);
+}
+
+/* ===== Preparação e análise ===== */
+.home-grid-atalhos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.home-atalho {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  min-height: 64px;
+  justify-content: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.home-atalho strong {
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.home-atalho span {
+  font-size: 11px;
+  color: var(--color-text-light);
+}

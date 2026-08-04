@@ -208,6 +208,7 @@ model Aluno {
   contratos        Contrato[]
   mensagensFamilia MensagemFamilia[]
   pedidos          Pedido[]
+  notasAula        NotaAula[]
 
   turmaId Int?
   turma   Turma? @relation(fields: [turmaId], references: [id])
@@ -696,17 +697,18 @@ model Usuario {
 
   ativo Boolean @default(true)
 
-  turmas             Turma[]
-  avisosReconhecidos AvisoReconhecido[]
-  aulasSubstituindo  AulaProgramada[]   @relation("AulaProgramadaProfessorSubstituto")
-  graduacoesSolicitadas Graduacao[] @relation("GraduacaoSolicitante")
-  graduacoesRevisadas  Graduacao[] @relation("GraduacaoRevisor")
+  turmas                Turma[]
+  avisosReconhecidos    AvisoReconhecido[]
+  aulasSubstituindo     AulaProgramada[]   @relation("AulaProgramadaProfessorSubstituto")
+  graduacoesSolicitadas Graduacao[]        @relation("GraduacaoSolicitante")
+  graduacoesRevisadas   Graduacao[]        @relation("GraduacaoRevisor")
   // unidades que esse usuário pode acessar — ADMIN e RECEPCAO podem ter
   // mais de uma (só o SUPERADMIN monta essa lista); PROFESSOR sempre tem
   // exatamente uma.
-  unidadesVinculadas UsuarioUnidade[]
-  auditLogs          AuditLog[]
+  unidadesVinculadas    UsuarioUnidade[]
+  auditLogs             AuditLog[]
   fotosTreinoPublicadas FotoTreino[]
+  notasAulaCriadas      NotaAula[]
 
   createdAt DateTime @default(now())
 }
@@ -771,12 +773,12 @@ model Produto {
   unidadeId Int
   unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  nome       String
-  categoria  CategoriaProduto
-  preco      Float
-  descricao  String?
-  ativo      Boolean @default(true)
-  imagemUrl  String?
+  nome      String
+  categoria CategoriaProduto
+  preco     Float
+  descricao String?
+  ativo     Boolean          @default(true)
+  imagemUrl String?
 
   variantes ProdutoVariante[]
 
@@ -811,9 +813,9 @@ model MovimentacaoEstoque {
   varianteId Int
   variante   ProdutoVariante @relation(fields: [varianteId], references: [id])
 
-  tipo      TipoMovimentacaoEstoque
+  tipo       TipoMovimentacaoEstoque
   quantidade Int
-  motivo    String
+  motivo     String
 
   data DateTime @default(now())
 }
@@ -906,6 +908,7 @@ model Aula {
   tecnicasRealizadas TecnicaCurriculo[] @relation("AulaTecnicasRealizadas")
 
   fotos FotoTreino[]
+  notas NotaAula[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -933,6 +936,29 @@ model FotoTreino {
   publicadaEm DateTime @default(now())
 
   visivelNaLanding Boolean @default(false)
+}
+
+// nota rápida sobre um aluno específico, registrada pelo professor durante
+// a aula (Portal do Professor, etapa "Notas") — alimenta o prontuário do
+// aluno. `tag` é uma das 4 opções rápidas do app ("Evoluiu bem", "Precisa
+// atenção", "Ótima atitude", "Faltou foco"); `texto` é o complemento livre
+// opcional. Ao menos um dos dois deve vir preenchido (validado no service).
+model NotaAula {
+  id Int @id @default(autoincrement())
+
+  aulaId Int
+  aula   Aula @relation(fields: [aulaId], references: [id])
+
+  alunoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id])
+
+  tag   String?
+  texto String?
+
+  criadoPorId Int
+  criadoPor   Usuario @relation(fields: [criadoPorId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 model Tecnica {

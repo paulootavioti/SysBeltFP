@@ -1,0 +1,107 @@
+.etapa-notas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.etapa-notas-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.etapa-notas-eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-light);
+}
+
+.etapa-notas-subtitulo {
+  margin: 0 0 var(--space-3);
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.etapa-notas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.etapa-notas-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 56px;
+  width: 100%;
+  padding: var(--space-3);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+
+.etapa-notas-nome {
+  font-size: 14.5px;
+  color: var(--color-text);
+}
+
+.etapa-notas-chip {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-bg);
+  color: var(--color-neutral-text);
+}
+
+.etapa-notas-chip-preenchido {
+  background: var(--color-accent-soft);
+  color: #7a621a;
+}
+
+.etapa-notas-vazio {
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+}
+
+.etapa-notas-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.etapa-notas-tag {
+  padding: 10px 14px;
+  min-height: 40px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.etapa-notas-tag-selecionada {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: #5a4a10;
+}
+
+.etapa-notas-sheet-acoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.etapa-notas-sheet-acoes button {
+  width: 100%;
+}

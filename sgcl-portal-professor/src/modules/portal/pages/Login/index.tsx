@@ -1,0 +1,80 @@
+import { useState } from "react";
+import type { FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { useAuth } from "../../../../contexts/useAuth";
+
+import { Input } from "../../../../components/ui/Input";
+import { Button } from "../../../../components/ui/Button";
+import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
+
+import { getApiErrorMessage } from "../../../../utils/getApiErrorMessage";
+
+import "./styles.css";
+
+export function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
+  const [carregando, setCarregando] = useState(false);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+
+    try {
+      setCarregando(true);
+      setErro("");
+      await login(email, senha);
+      navigate("/home");
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "E-mail ou senha inválidos."));
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  return (
+    <div className="login-page">
+      <div className="login-brand">
+        <span className="login-brand-selo">SB</span>
+        <h1>Portal do Professor</h1>
+        <p>Sys Belt — Sistema Faixa Preta</p>
+      </div>
+
+      <form className="login-form" onSubmit={handleSubmit}>
+        <Input
+          label="E-mail"
+          type="email"
+          placeholder="seu@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          required
+        />
+
+        <Input
+          label="Senha"
+          type="password"
+          placeholder="••••••••"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+          autoComplete="current-password"
+          required
+        />
+
+        <ErrorMessage message={erro} />
+
+        <Button type="submit" disabled={carregando}>
+          {carregando ? "Entrando..." : "Entrar"}
+        </Button>
+
+        <p className="login-mesmo-acesso">
+          Use o mesmo login e senha do sistema completo (sgcl-web) — não é uma credencial nova.
+        </p>
+      </form>
+    </div>
+  );
+}

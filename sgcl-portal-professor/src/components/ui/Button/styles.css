@@ -1,0 +1,59 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+/* alvo de toque do app: botão de ação principal com 16-17px de padding
+   vertical e fonte 16px/700 (professor usando no tatame, precisa ser
+   grande e sem margem pra erro). */
+.button-md {
+  min-height: var(--tap-target-min);
+  padding: 17px var(--space-4);
+  font-size: var(--font-md);
+}
+
+.button-sm {
+  min-height: var(--tap-target-min);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-sm);
+  border-radius: var(--radius-md);
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.button-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--color-secondary);
+}
+
+.button-secondary {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: var(--color-accent-soft);
+}
+
+.button-danger {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+.button-danger:hover:not(:disabled) {
+  filter: brightness(0.9);
+}

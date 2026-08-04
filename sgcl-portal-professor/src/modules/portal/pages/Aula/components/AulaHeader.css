@@ -1,0 +1,79 @@
+.aula-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--color-primary);
+  padding: var(--space-3) var(--space-4);
+}
+
+.aula-header-topo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.aula-header-sair {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 0;
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  min-height: 36px;
+}
+
+.aula-header-titulo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.aula-header-titulo strong {
+  color: #fff;
+  font-size: 14.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aula-header-titulo span {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aula-header-cronometro {
+  flex-shrink: 0;
+  color: var(--color-accent-light);
+  font-weight: 800;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.aula-header-stepper {
+  display: flex;
+  gap: 6px;
+  margin-top: var(--space-3);
+}
+
+.aula-header-pilula {
+  flex: 1;
+  min-height: 36px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.aula-header-pilula-ativa {
+  background: var(--color-accent);
+  color: var(--color-primary);
+}

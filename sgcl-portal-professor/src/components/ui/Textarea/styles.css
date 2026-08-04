@@ -1,0 +1,29 @@
+.textarea-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.textarea-wrapper span {
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 96px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-sm);
+  font-family: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
+  resize: vertical;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
