@@ -95,6 +95,10 @@
   margin-bottom: var(--space-3);
 }
 
+/* .acordeon-cabecalho (com :hover/:focus-visible) e .acordeon-titulo svg
+   continuam em uso por professor/components/{Modulo,Aula}SomenteLeituraCard
+   — mirrors read-only que ainda usam o header hand-rolled (role="button" +
+   swap de ícone); migração deles é fase 4 (Área do Professor), não aqui. */
 .acordeon-cabecalho {
   display: flex;
   align-items: center;
@@ -133,8 +137,8 @@
   color: var(--text-light);
 }
 
-.modulo-card-header h3,
-.aula-curriculo-header h4 {
+.acordeon-titulo h3,
+.acordeon-titulo h4 {
   margin: 0;
   color: var(--text);
 }

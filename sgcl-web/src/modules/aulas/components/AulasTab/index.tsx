@@ -7,6 +7,7 @@ import { Badge } from "../../../../components/ui/Badge";
 import { Modal } from "../../../../components/ui/Modal";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
+import { FilterBar } from "../../../../components/ui/FilterBar";
 
 import { useAuth } from "../../../../contexts/useAuth";
 import { AulaService } from "../../services/AulaService";
@@ -32,8 +33,18 @@ export function AulasTab() {
   const [erro, setErro] = useState("");
   const [aulaParaExcluir, setAulaParaExcluir] = useState<Aula | null>(null);
   const [excluindo, setExcluindo] = useState(false);
+  const [busca, setBusca] = useState("");
 
   const ehAdmin = usuario?.perfil === "ADMIN";
+
+  const aulasFiltradas = aulas.filter((aula) => {
+    const termo = busca.toLowerCase().trim();
+    if (!termo) return true;
+    return (
+      (aula.professor ?? "").toLowerCase().includes(termo) ||
+      aula.status.toLowerCase().includes(termo)
+    );
+  });
 
   async function carregarAulas() {
     if (!turmaSelecionada) return;
@@ -120,14 +131,18 @@ export function AulasTab() {
             <h2>{turmaSelecionada.nome}</h2>
           </div>
 
+          <FilterBar
+            buscaLabel="Pesquisar aula"
+            buscaPlaceholder="Professor ou status..."
+            buscaValue={busca}
+            onBuscaChange={setBusca}
+          />
+
           <CrudDataTable
             title={turmaSelecionada.nome}
             description="Aulas iniciadas no sistema para esta turma."
-            data={aulas}
+            data={aulasFiltradas}
             loading={loading}
-            searchable
-            searchPlaceholder="Pesquisar aula..."
-            searchKeys={["professor", "status"]}
             onEdit={(aula) => {
               navigate(`/aulas/${aula.id}/chamada`);
             }}

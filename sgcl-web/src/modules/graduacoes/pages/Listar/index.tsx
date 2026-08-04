@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Button } from "../../../../components/ui/Button";
-import { Input } from "../../../../components/ui/Input";
 import { Badge } from "../../../../components/ui/Badge";
+import { FilterBar } from "../../../../components/ui/FilterBar";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Table } from "../../../../components/ui/Table";
 import { EmptyState } from "../../../../components/ui/EmptyState";
@@ -107,6 +107,17 @@ export function ListarGraduacoes() {
       <PageHeader
         title="Graduações"
         subtitle="Histórico de promoções e progressão de faixas."
+        action={
+          podeRegistrarDireto && (
+            <Button
+              type="button"
+              variant={mostrarForm ? "secondary" : "primary"}
+              onClick={() => setMostrarForm((valor) => !valor)}
+            >
+              {mostrarForm ? "Cancelar" : "+ Registrar Graduação"}
+            </Button>
+          )
+        }
       />
       <ErrorMessage message={erro} />
 
@@ -114,23 +125,12 @@ export function ListarGraduacoes() {
         <SolicitacoesPendentesGraduacao solicitacoes={solicitacoesPendentes} onAtualizar={carregarGraduacoes} />
       )}
 
-      <div className="graduacoes-toolbar">
-        <Input
-          label="Buscar aluno"
-          placeholder="Digite o nome..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-        />
-        {podeRegistrarDireto && (
-          <Button
-            type="button"
-            variant={mostrarForm ? "secondary" : "primary"}
-            onClick={() => setMostrarForm((valor) => !valor)}
-          >
-            {mostrarForm ? "Cancelar" : "+ Registrar Graduação"}
-          </Button>
-        )}
-      </div>
+      <FilterBar
+        buscaLabel="Buscar aluno"
+        buscaPlaceholder="Digite o nome..."
+        buscaValue={busca}
+        onBuscaChange={setBusca}
+      />
       {mostrarForm && podeRegistrarDireto && (
         <div className="graduacoes-form">
           <GraduacaoForm loading={salvando} onSubmit={handleRegistrarGraduacao} />

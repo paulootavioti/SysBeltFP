@@ -1,7 +1,6 @@
-import { LuChevronDown, LuChevronRight } from "react-icons/lu";
-
 import { Button } from "../../../components/ui/Button";
 import { TrilhaFaixa } from "../../../components/ui/TrilhaFaixa";
+import { Accordion } from "../../../components/ui/Accordion";
 import { AulaAccordionCard } from "./AulaAccordionCard";
 
 import type { AulaCurriculo, ModuloCurriculo, TecnicaCurriculo } from "../types/curriculo";
@@ -47,47 +46,37 @@ export function ModuloAccordionCard({
 }: ModuloAccordionCardProps) {
   return (
     <div className="modulo-card">
-      <div
-        className="modulo-card-header acordeon-cabecalho"
-        role="button"
-        tabIndex={0}
-        aria-expanded={expandido}
-        onClick={onToggle}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onToggle();
-          }
-        }}
-      >
-        <div className="acordeon-titulo">
-          {expandido ? <LuChevronDown size={16} /> : <LuChevronRight size={16} />}
-          <TrilhaFaixa faixa={modulo.faixa} />
-          <h3>{modulo.nome}</h3>
-          {modulo.faixa && <span className="modulo-faixa">{modulo.faixa}</span>}
-          <span className="acordeon-contagem">
-            {modulo.aulas.length} aula{modulo.aulas.length === 1 ? "" : "s"}
+      <Accordion
+        aberto={expandido}
+        onToggle={onToggle}
+        titulo={
+          <span className="acordeon-titulo">
+            <TrilhaFaixa faixa={modulo.faixa} />
+            <h3>{modulo.nome}</h3>
+            {modulo.faixa && <span className="modulo-faixa">{modulo.faixa}</span>}
+            <span className="acordeon-contagem">
+              {modulo.aulas.length} aula{modulo.aulas.length === 1 ? "" : "s"}
+            </span>
           </span>
-        </div>
-
-        <div className="curriculos-card-acoes" onClick={(e) => e.stopPropagation()}>
-          <Button type="button" variant="secondary" onClick={onEditar}>
-            Editar
-          </Button>
-
-          <Button type="button" variant="secondary" onClick={onNovaAula}>
-            + Aula
-          </Button>
-
-          {ehAdmin && (
-            <Button type="button" variant="danger" disabled={excluindo} onClick={onExcluir}>
-              {excluindo ? "Excluindo..." : "Excluir"}
+        }
+        acoes={
+          <div className="curriculos-card-acoes">
+            <Button type="button" variant="secondary" onClick={onEditar}>
+              Editar
             </Button>
-          )}
-        </div>
-      </div>
 
-      {expandido && (
+            <Button type="button" variant="secondary" onClick={onNovaAula}>
+              + Aula
+            </Button>
+
+            {ehAdmin && (
+              <Button type="button" variant="danger" disabled={excluindo} onClick={onExcluir}>
+                {excluindo ? "Excluindo..." : "Excluir"}
+              </Button>
+            )}
+          </div>
+        }
+      >
         <div className="modulo-card-body">
           {modulo.descricao && <p className="modulo-descricao">{modulo.descricao}</p>}
 
@@ -112,7 +101,7 @@ export function ModuloAccordionCard({
             ))
           )}
         </div>
-      )}
+      </Accordion>
     </div>
   );
 }

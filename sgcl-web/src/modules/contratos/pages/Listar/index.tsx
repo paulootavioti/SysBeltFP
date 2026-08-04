@@ -83,7 +83,7 @@ export function Contratos() {
       accessor: "id" as const,
       render: (c: Contrato) => (
         <div className="contratos-table-actions">
-          <Button type="button" size="sm" onClick={() => navigate(`/contratos/${c.id}`)}>
+          <Button type="button" variant="secondary" size="sm" onClick={() => navigate(`/contratos/${c.id}`)}>
             Ver Detalhes
           </Button>
         </div>
