@@ -55,7 +55,7 @@ npm run dev
 
 Aplicação em `http://localhost:5175`. O backend já libera CORS para as duas origens (`5173` e `5175`) por padrão — se mudar a porta, ajuste `CORS_ORIGIN` no `.env` do backend.
 
-A tela de login do `sgcl-web` (equipe) tem um link **"Acesse o Portal da Família"** apontando pra essa URL — configurável via `VITE_PORTAL_FAMILIA_URL` (`sgcl-web/.env.local`), útil quando o portal está publicado em outro domínio.
+A tela de login do `sgcl-web` (equipe) lista **dois portais** em "Outros acessos": **Portal do Professor** e **Portal da Família**, cada um com sua própria variável de ambiente — `VITE_PORTAL_PROFESSOR_URL` e `VITE_PORTAL_FAMILIA_URL` (ambas em `sgcl-web/.env.local`), úteis quando cada portal está publicado em domínios diferentes.
 
 #### Regra de maioridade (quem acessa o quê)
 
