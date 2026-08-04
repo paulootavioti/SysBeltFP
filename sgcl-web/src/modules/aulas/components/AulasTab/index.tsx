@@ -6,6 +6,7 @@ import { CrudDataTable } from "../../../../components/ui/CrudDataTable";
 import { Badge } from "../../../../components/ui/Badge";
 import { Modal } from "../../../../components/ui/Modal";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
+import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 
 import { useAuth } from "../../../../contexts/useAuth";
 import { AulaService } from "../../services/AulaService";
@@ -29,6 +30,8 @@ export function AulasTab() {
   const [modalAberto, setModalAberto] = useState(false);
   const [iniciando, setIniciando] = useState(false);
   const [erro, setErro] = useState("");
+  const [aulaParaExcluir, setAulaParaExcluir] = useState<Aula | null>(null);
+  const [excluindo, setExcluindo] = useState(false);
 
   const ehAdmin = usuario?.perfil === "ADMIN";
 
@@ -70,17 +73,23 @@ export function AulasTab() {
     }
   }
 
-  async function handleExcluirAula(aula: Aula) {
-    if (!window.confirm("Excluir esta aula? Os registros de chamada dela também serão apagados. Essa ação não pode ser desfeita.")) {
-      return;
-    }
+  function handleExcluirAula(aula: Aula) {
+    setAulaParaExcluir(aula);
+  }
+
+  async function confirmarExclusaoAula() {
+    if (!aulaParaExcluir) return;
 
     try {
+      setExcluindo(true);
       setErro("");
-      await AulaService.excluir(aula.id);
+      await AulaService.excluir(aulaParaExcluir.id);
+      setAulaParaExcluir(null);
       await carregarAulas();
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao excluir aula."));
+    } finally {
+      setExcluindo(false);
     }
   }
 
@@ -149,6 +158,16 @@ export function AulasTab() {
       <Modal open={modalAberto} title="Iniciar aula avulsa" onClose={() => setModalAberto(false)}>
         <IniciarAulaForm loading={iniciando} onSubmit={handleIniciarAula} />
       </Modal>
+
+      <ConfirmDialog
+        open={aulaParaExcluir !== null}
+        title="Excluir aula"
+        message="Excluir esta aula? Os registros de chamada dela também serão apagados. Essa ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        loading={excluindo}
+        onConfirm={confirmarExclusaoAula}
+        onCancel={() => setAulaParaExcluir(null)}
+      />
     </div>
   );
 }

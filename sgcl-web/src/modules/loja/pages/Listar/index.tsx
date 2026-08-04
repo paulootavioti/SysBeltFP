@@ -228,7 +228,7 @@ export function Loja() {
       <PageHeader title="Loja" subtitle="Catálogo de produtos e controle de estoque da academia." />
 
       {kpis && (
-        <div className="loja-kpis">
+        <div className="kpi-grid">
           <DashboardKpiCard titulo="Produtos ativos" valor={String(kpis.produtosAtivos)} />
           <DashboardKpiCard titulo="Unidades em estoque" valor={String(kpis.unidadesEmEstoque)} />
           <DashboardKpiCard titulo="Produtos com estoque baixo" valor={String(kpis.produtosComEstoqueBaixo)} />
@@ -301,6 +301,7 @@ export function Loja() {
         open={modalAberto}
         title={produtoEditando ? "Editar Produto" : "Novo Produto"}
         onClose={() => setModalAberto(false)}
+        size="lg"
       >
         <ProdutoForm
           key={produtoEditando?.id ?? "novo-produto"}

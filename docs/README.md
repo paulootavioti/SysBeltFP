@@ -331,7 +331,7 @@ Arquivos principais:
 - [`regras-de-negocio.md`](regras-de-negocio.md) — regras de negócio (RN)
 - [`seguranca.md`](seguranca.md) — segurança e controle de acesso
 - [`modelo-pedagogico.md`](modelo-pedagogico.md) — modelo pedagógico
-- [`design-system.md`](design-system.md) — design system do frontend
+- [`ux-padrao.md`](ux-padrao.md) — padrão de UX/UI (paleta, tipografia, componentes)
 - [`deploy.md`](deploy.md) — processo de deploy
 - [`testes.md`](testes.md) — estratégia de testes
 - [`changelog.md`](changelog.md) — histórico de versões

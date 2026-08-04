@@ -13,7 +13,6 @@
 
 .modal {
   width: 100%;
-  max-width: 720px;
 
   background: var(--color-surface);
   border-radius: var(--radius-lg);
@@ -21,6 +20,20 @@
 
   max-height: 90vh;
   overflow-y: auto;
+}
+
+/* sm = confirmação, md = formulário (padrão), lg = formulário com
+   repeater/mais campos. */
+.modal-sm {
+  max-width: 420px;
+}
+
+.modal-md {
+  max-width: 560px;
+}
+
+.modal-lg {
+  max-width: 600px;
 }
 
 .modal-header {
@@ -34,7 +47,7 @@
 
 .modal-header h2 {
   margin: 0;
-  font-size: var(--font-lg);
+  font-size: 18px;
 }
 
 .modal-close {

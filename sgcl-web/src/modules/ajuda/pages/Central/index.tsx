@@ -51,24 +51,25 @@ export function CentralDeAjuda() {
 
   return (
     <Layout>
-      <PageHeader
-        title="Central de Ajuda"
-        subtitle="Artigos por categoria, tour guiado e canal direto com o suporte."
-      />
-
-      <div className="ajuda-barra-ferramentas">
-        <Input
-          placeholder="Buscar por título ou resumo..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
+      <div className="ajuda-central-container">
+        <PageHeader
+          title="Central de Ajuda"
+          subtitle="Artigos por categoria, tour guiado e canal direto com o suporte."
         />
 
-        <Button type="button" variant="secondary" onClick={() => setTourAberto(true)}>
-          <LuCompass size={16} /> Iniciar tour guiado
-        </Button>
-      </div>
+        <div className="ajuda-barra-ferramentas">
+          <Input
+            placeholder="Buscar por título ou resumo..."
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+          />
 
-      <div className="ajuda-layout">
+          <Button type="button" variant="secondary" onClick={() => setTourAberto(true)}>
+            <LuCompass size={16} /> Iniciar tour guiado
+          </Button>
+        </div>
+
+        <div className="ajuda-layout">
         <nav className="ajuda-categorias-nav" aria-label="Categorias">
           {CATEGORIAS_AJUDA.map((categoria) => (
             <button
@@ -116,16 +117,17 @@ export function CentralDeAjuda() {
         </div>
       </div>
 
-      <section className="ajuda-suporte">
-        <LuMessageCircleQuestion size={28} />
-        <div>
-          <h2>Não encontrou o que precisava?</h2>
-          <p>Fale diretamente com a nossa equipe de suporte.</p>
-        </div>
-        <Button type="button" onClick={() => setSuporteAberto(true)}>
-          Falar com o suporte
-        </Button>
-      </section>
+        <section className="ajuda-suporte">
+          <LuMessageCircleQuestion size={28} />
+          <div>
+            <h2>Não encontrou o que precisava?</h2>
+            <p>Fale diretamente com a nossa equipe de suporte.</p>
+          </div>
+          <Button type="button" onClick={() => setSuporteAberto(true)}>
+            Falar com o suporte
+          </Button>
+        </section>
+      </div>
 
       <TourGuiadoModal open={tourAberto} onClose={() => setTourAberto(false)} />
       <FalarComSuporteModal open={suporteAberto} onClose={() => setSuporteAberto(false)} />

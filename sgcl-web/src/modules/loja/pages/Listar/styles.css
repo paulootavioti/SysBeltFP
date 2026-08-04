@@ -1,9 +1,5 @@
-.loja-kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
+/* Grid de KPIs — ver .kpi-grid em DashboardKpiCard.css, compartilhado com
+   Dashboard e Financeiro. */
 
 .loja-acoes {
   display: flex;

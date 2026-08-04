@@ -27,7 +27,7 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   return (
-    <Modal open={open} title={title} onClose={onCancel}>
+    <Modal open={open} title={title} onClose={onCancel} size="sm">
       <p className="confirm-dialog-mensagem">{message}</p>
 
       <div className="confirm-dialog-acoes">

@@ -5,7 +5,7 @@
 
 .sidebar{
 
-  width:280px;
+  width:230px;
   flex-shrink:0;
 
   background:var(--primary);
@@ -410,7 +410,7 @@
 
 .header{
 
-  height:72px;
+  height:68px;
   flex-shrink:0;
 
   background:white;
@@ -472,6 +472,8 @@
 .page{
 
   padding:24px;
+  max-width:1180px;
+  margin:0 auto;
 
 }
 

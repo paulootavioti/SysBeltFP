@@ -72,7 +72,7 @@ export function Dashboard() {
         ) : resumoPeriodo.erro ? (
           <DashboardSectionError mensagem={resumoPeriodo.erro} onTentarNovamente={recarregarResumoPeriodo} />
         ) : !kpis ? null : (
-          <div className="dashboard-grid" style={{ opacity: resumoPeriodo.carregando ? 0.6 : 1 }}>
+          <div className="kpi-grid" style={{ opacity: resumoPeriodo.carregando ? 0.6 : 1 }}>
             <DashboardKpiCard
               titulo="Receita no Período"
               valor={formatarMoeda(kpis.receita)}
@@ -190,7 +190,7 @@ export function Dashboard() {
           ) : loja.erro ? (
             <DashboardSectionError mensagem={loja.erro} onTentarNovamente={recarregarLoja} />
           ) : loja.dados ? (
-            <div className="dashboard-grid">
+            <div className="kpi-grid">
               <DashboardKpiCard titulo="Produtos ativos" valor={String(loja.dados.produtosAtivos)} />
               <DashboardKpiCard titulo="Unidades em estoque" valor={String(loja.dados.unidadesEmEstoque)} />
               <DashboardKpiCard

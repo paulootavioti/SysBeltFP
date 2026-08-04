@@ -110,7 +110,7 @@ export const NAV_TREE: NavEntry[] = [
     items: [
       item("/planejamento", "Planejamento Pedagógico", LuBookOpen),
       itemExato("/graduacoes", "Graduações", LuAward),
-      item("/graduacoes/proximas", "Próximas Promoções", LuStar, "graduacoesPendentes"),
+      item("/graduacoes/proximas", "Próximas Graduações", LuStar, "graduacoesPendentes"),
       item("/competicoes", "Competições", LuTrophy),
     ],
   },
@@ -121,7 +121,7 @@ export const NAV_TREE: NavEntry[] = [
     label: "Gestão Financeira",
     icon: LuPiggyBank,
     items: [
-      itemExato("/financeiro", "Visão Geral", LuPiggyBank),
+      itemExato("/financeiro", "Financeiro", LuPiggyBank),
       item("/mensalidades", "Mensalidades", LuWallet, "mensalidadesVencidas"),
       item("/assinaturas", "Assinaturas", LuRepeat),
       item("/financeiro/formas-pagamento", "Formas de Pagamento", LuBanknote),

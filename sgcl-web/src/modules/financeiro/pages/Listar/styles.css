@@ -1,8 +1,5 @@
-.financeiro-kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-3);
-}
+/* Grid de KPIs — ver .kpi-grid em DashboardKpiCard.css, compartilhado com
+   Dashboard e Loja. */
 
 .financeiro-toolbar {
   display: flex;
