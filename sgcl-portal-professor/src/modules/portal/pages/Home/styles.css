@@ -162,11 +162,6 @@
   text-align: left;
 }
 
-.home-item-hoje:disabled {
-  cursor: default;
-  opacity: 0.7;
-}
-
 .home-item-hoje-horario {
   flex-shrink: 0;
   font-weight: 800;

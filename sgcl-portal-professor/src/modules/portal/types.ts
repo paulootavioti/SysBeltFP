@@ -111,6 +111,16 @@ export interface AulaDetalhe {
   notas: NotaAula[];
 }
 
+export interface FotoTreino {
+  id: number;
+  aulaId: number;
+  url: string;
+  legenda: string;
+  publicadaEm: string;
+  visivelNaLanding: boolean;
+  publicadaPor?: { id: number; nome: string } | null;
+}
+
 export interface ResumoAula {
   aulaId: number;
   turmaNome: string | null;

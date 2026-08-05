@@ -1,5 +1,5 @@
 import { api } from "../../../services/api";
-import type { AulasHojeResponse, AulaDetalhe, ResumoAula } from "../types";
+import type { AulasHojeResponse, AulaDetalhe, ResumoAula, FotoTreino } from "../types";
 
 export class PortalProfessorService {
   static async hoje() {
@@ -50,6 +50,14 @@ export class PortalProfessorService {
     const response = await api.post(`/portal-professor/aulas/${aulaId}/foto`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
+    return response.data;
+  }
+
+  // não é uma rota /portal-professor/* — reaproveita o módulo fotosTreino
+  // (mesmo usado pela Chamada do sgcl-web), que já restringe o professor às
+  // fotos das próprias turmas.
+  static async listarFotos(aulaId: number) {
+    const response = await api.get<FotoTreino[]>("/fotos-treino", { params: { aulaId } });
     return response.data;
   }
 

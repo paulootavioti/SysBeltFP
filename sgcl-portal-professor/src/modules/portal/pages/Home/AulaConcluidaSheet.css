@@ -1,0 +1,213 @@
+.aula-concluida {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.aula-concluida-horario {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
+}
+
+/* ===== KPIs ===== */
+.aula-concluida-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.aula-concluida-kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-3);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.aula-concluida-kpi strong {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.aula-concluida-kpi span {
+  font-size: 11px;
+  color: var(--color-text-light);
+}
+
+.aula-concluida-plano,
+.aula-concluida-observacao {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--color-text);
+}
+
+.aula-concluida-plano strong,
+.aula-concluida-observacao strong {
+  color: var(--color-text-light);
+  font-weight: 700;
+}
+
+/* ===== Seções ===== */
+.aula-concluida-secao h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.aula-concluida-apoio {
+  margin: 0 0 var(--space-3);
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.aula-concluida-vazio {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
+}
+
+/* ===== Galeria ===== */
+.aula-concluida-galeria {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.aula-concluida-foto {
+  margin: 0;
+  position: relative;
+  border-radius: var(--radius-thumb);
+  overflow: hidden;
+  aspect-ratio: 1;
+  /* segura o tile enquanto a imagem carrega (ou se ela falhar), em vez de
+     colapsar a altura e quebrar a grade */
+  background: var(--color-neutral-bg);
+}
+
+.aula-concluida-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.aula-concluida-foto figcaption {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-soft);
+  color: #5a4a10;
+}
+
+/* ===== Upload ===== */
+.aula-concluida-area {
+  width: 100%;
+  height: 170px;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aula-concluida-area img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.aula-concluida-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-light);
+  font-size: var(--font-sm);
+  padding: 0 var(--space-5);
+  text-align: center;
+}
+
+.aula-concluida-placeholder span[aria-hidden] {
+  font-size: 32px;
+}
+
+.aula-concluida-input-oculto {
+  display: none;
+}
+
+.aula-concluida-campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.aula-concluida-campo span:first-child {
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
+}
+
+.aula-concluida-campo input {
+  min-height: var(--tap-target-min);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.aula-concluida-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.aula-concluida-checkbox input {
+  margin-top: 3px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.aula-concluida-checkbox > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aula-concluida-checkbox strong {
+  font-size: 14.5px;
+  color: var(--color-text);
+}
+
+.aula-concluida-checkbox-apoio {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.aula-concluida-acoes {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.aula-concluida-acoes .button {
+  flex: 1;
+}
