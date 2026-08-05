@@ -11,28 +11,6 @@
   background: var(--color-surface);
 }
 
-.site-footer-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.site-footer-mark {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: var(--color-primary);
-  color: var(--color-accent);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
-
 .site-footer-brand p {
   margin: 0;
   display: flex;
@@ -48,8 +26,9 @@
   color: var(--color-text-light);
 }
 
-.site-footer-socials nav {
+.site-footer-socials {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
 }
 
@@ -76,13 +55,30 @@
   fill: currentColor;
 }
 
+/* selo da marca, entre os dois links — não é clicável */
+.site-footer-mark {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--color-primary);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
 .site-footer-copy {
   margin: 0;
   font-size: 11px;
   color: var(--color-text-light);
 }
 
-/* mobile: empilha e centraliza, mantendo o alvo de toque dos ícones */
+/* mobile: empilha e centraliza, com alvo de toque de 44px nos links */
 @media (max-width: 640px) {
   .site-footer {
     flex-direction: column;
