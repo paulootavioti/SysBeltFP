@@ -1,4 +1,5 @@
 import { UploadFotoService } from "../../uploads/services/UploadFotoService";
+import { assinarUrlFoto } from "../../uploads/services/assinarUrlFoto";
 import { PublicarFotosTreinoService } from "../../fotosTreino/services/PublicarFotosTreinoService";
 
 interface Solicitante {
@@ -31,6 +32,12 @@ export class PublicarFotoAulaProfessorService {
       solicitante
     );
 
-    return { foto: resultado.fotos[0], familiasPresentes: resultado.familiasPresentes };
+    const foto = resultado.fotos[0];
+
+    return {
+      // devolve já assinada pro app conseguir exibir a foto recém-enviada
+      foto: { ...foto, url: assinarUrlFoto(foto.url) },
+      familiasPresentes: resultado.familiasPresentes,
+    };
   }
 }

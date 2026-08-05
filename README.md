@@ -191,6 +191,31 @@ Na `landing-academia/` (site estático) o rodapé traz o copyright da **academia
 
 O ano do copyright vem de `new Date().getFullYear()` (nos apps React) e do `script.js` via `#anoAtual` (na landing), nunca escrito à mão — senão envelhece sozinho na virada do ano.
 
+## Controle de acesso (catraca)
+
+Módulo agnóstico de fabricante: o Sys Belt é dono do **cadastro e das regras** (quem entra, com matrícula ativa e mensalidade em dia); o equipamento é dono do **reconhecimento** (facial, biometria, cartão, QR, PIN). Nenhuma regra de negócio conhece marca de catraca — a escolha do fabricante é o campo `DispositivoAcesso.provedor`, resolvido em `src/modules/controleAcesso/providers`, no mesmo padrão já usado em pagamentos e assinatura eletrônica.
+
+Isso cobre os dois modelos de mercado sem mudar as regras:
+
+- **Equipamento que decide localmente** (Control iD, Henry, Intelbras, Hikvision, ZKTeco, Toletus, Madis): guarda os templates e libera sozinho; o sistema sincroniza as pessoas e recebe os eventos em `POST /controle-acesso/dispositivos/:id/eventos`.
+- **Equipamento que consulta o servidor** a cada passagem: chama `POST /controle-acesso/dispositivos/:id/autorizar` e o motor de regras responde na hora.
+
+A catraca não faz login: identifica-se pelo id do dispositivo mais o header `x-dispositivo-segredo`, definido no cadastro (comparação em tempo constante).
+
+**Nenhuma integração real de fabricante existe ainda** — todos os providers nomeados herdam de `StubAccessControlProvider` e falham de forma explícita (`ProvedorAcessoNaoImplementadoError`) em vez de fingir sucesso. Sem provedor configurado, o sistema usa o provider manual: a recepção libera e o evento fica registrado igual. Para integrar um fabricante, crie a classe herdando do stub, implemente os métodos que aquele equipamento suporta e registre em `providers/index.ts`.
+
+O motor de regras (`AutorizarAcessoService`) nega por: credencial inexistente/revogada/expirada, matrícula inativa e mensalidade vencida. **Saída é sempre liberada** — ninguém fica preso lá dentro. Toda passagem (autorizada ou não) vira um `EventoAcesso` com o payload cru do fabricante, servindo de trilha de auditoria.
+
+### Antes de ligar reconhecimento facial
+
+A foto de perfil que já existe **não serve** como base de reconhecimento: é enquadramento livre, sem captura controlada nem prova de vivacidade. Ela pode ser o ponto de partida do cadastro no equipamento, não a base da comparação.
+
+Dado biométrico é **dado pessoal sensível** (LGPD, art. 5º, II): exige consentimento específico e destacado, finalidade declarada e política de retenção — com atenção redobrada aos alunos menores de idade. O `Aluno.autorizaUsoImagem` de hoje cobre foto de divulgação, **não** biometria; um consentimento próprio precisa ser adicionado antes de habilitar o cadastro facial. Por isso o template biométrico não é guardado no banco: fica no equipamento, e o sistema só referencia o id dele (`CredencialAcesso.provedorPessoaId`).
+
+## Fotos servidas por URL assinada
+
+As imagens ficam atrás de `GET /uploads/:prefixo/:arquivo`. Um `<img>` nunca envia header `Authorization`, então exigir autenticação ali fazia toda foto exibida com `<img>` voltar 401 (era por isso que a foto do treino não aparecia). A rota agora aceita **URL assinada** (`?exp=&sig=`, HMAC sobre chave+expiração, validade de 6h) ou o header, o que mantém funcionando quem busca a imagem via axios (`AuthenticatedImage` no sgcl-web). Os services devolvem a url já assinada; nos frontends, `resolverUrlUpload` prefixa a base da API, necessário porque os portais rodam em outro domínio.
+
 ## Documentação
 
 Toda a documentação do projeto está em [`docs/`](docs/), começando por [`docs/README.md`](docs/README.md).

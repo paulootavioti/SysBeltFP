@@ -8,6 +8,7 @@ import { Button } from "../../../components/ui/Button";
 import { Modal } from "../../../components/ui/Modal";
 import { GraficoAproveitamento } from "./GraficoAproveitamento";
 
+import { resolverUrlUpload } from "../../../utils/resolverUrlUpload";
 import { PortalService } from "../services/PortalService";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import type { Frequencia, FotoTreinoFrequencia } from "../types";
@@ -77,8 +78,8 @@ export function FrequenciaTab({ alunoId }: FrequenciaTabProps) {
       <Modal open={fotoAberta !== null} title={fotoAberta?.legenda ?? "Foto do treino"} onClose={() => setFotoAberta(null)}>
         {fotoAberta && (
           <div className="frequencia-tab-lightbox">
-            <img src={fotoAberta.url} alt={fotoAberta.legenda} className="frequencia-tab-lightbox-imagem" />
-            <a href={fotoAberta.url} download className="frequencia-tab-lightbox-download">
+            <img src={resolverUrlUpload(fotoAberta.url)} alt={fotoAberta.legenda} className="frequencia-tab-lightbox-imagem" />
+            <a href={resolverUrlUpload(fotoAberta.url)} download className="frequencia-tab-lightbox-download">
               Baixar foto
             </a>
           </div>
