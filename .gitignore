@@ -4,4 +4,9 @@ node_modules
 /src/generated/prisma
 /dist
 prisma/dev.db
-.DS_Store
+.DS_Store*.patch
+*.patch
+*.tar.gz
+*.patch
+*.patch
+*.tar.gz
