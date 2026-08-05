@@ -13,6 +13,7 @@ import { SeletorUnidadeVisualizada } from "../SeletorUnidadeVisualizada";
 import { SeletorUnidadeAtiva } from "../SeletorUnidadeAtiva";
 import { NavItemLink } from "./NavItemLink";
 import { NavGroupSection } from "./NavGroupSection";
+import { SiteFooter } from "../SiteFooter";
 import "./styles.css";
 
 interface LayoutProps {
@@ -196,6 +197,8 @@ export function Layout({ children }: LayoutProps) {
         </header>
 
         <div className="page">{children}</div>
+
+        <SiteFooter />
       </main>
     </div>
   );

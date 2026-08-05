@@ -7,6 +7,7 @@ import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { ErrorMessage } from "../../components/ui/ErrorMessage";
 
+import { SiteFooter } from "../../components/layout/SiteFooter";
 import { getApiErrorMessage } from "../../shared/utils/getApiErrorMessage";
 import { ROTA_PADRAO_POR_PERFIL, type Perfil } from "../../shared/constants/acessoPorPerfil";
 
@@ -107,6 +108,8 @@ export function Login() {
           </a>
         </div>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }
