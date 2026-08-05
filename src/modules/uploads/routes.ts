@@ -3,6 +3,7 @@ import multer from "multer";
 
 import { UploadsController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+import { ensureFotoAutorizada } from "../../shared/middlewares/ensureFotoAutorizada";
 import { ensureRole } from "../../shared/middlewares/ensureRole";
 
 const uploadsRoutes = Router();
@@ -22,9 +23,11 @@ uploadsRoutes.post(
   controller.uploadFoto
 );
 
+// aceita URL assinada (usada por <img>) ou header Authorization — ver
+// ensureFotoAutorizada.
 uploadsRoutes.get(
   "/:prefixo/:arquivo",
-  ensureAuthenticated,
+  ensureFotoAutorizada,
   controller.getFoto
 );
 

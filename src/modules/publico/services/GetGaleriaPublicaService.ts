@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { obterUnidadePublicaId } from "../../../shared/utils/unidadePublica";
+import { assinarUrlFoto } from "../../uploads/services/assinarUrlFoto";
 
 const FOTOS_POR_PAGINA = 8;
 
@@ -16,6 +17,8 @@ export class GetGaleriaPublicaService {
       take: FOTOS_POR_PAGINA,
     });
 
-    return fotos;
+    // a landing é pública e exibe com <img> — sem a url assinada, a leitura
+    // da imagem cairia no 401 da rota de uploads.
+    return fotos.map((foto) => ({ ...foto, url: assinarUrlFoto(foto.url) }));
   }
 }

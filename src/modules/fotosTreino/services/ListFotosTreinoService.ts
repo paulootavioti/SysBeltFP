@@ -1,6 +1,7 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
+import { assinarUrlFoto } from "../../uploads/services/assinarUrlFoto";
 
 interface Solicitante {
   id: number;
@@ -25,10 +26,14 @@ export class ListFotosTreinoService {
       throw new AppError("Você só pode ver fotos das suas próprias turmas.", 403);
     }
 
-    return prisma.fotoTreino.findMany({
+    const fotos = await prisma.fotoTreino.findMany({
       where: { aulaId },
       include: { publicadaPor: { select: { id: true, nome: true } } },
       orderBy: { publicadaEm: "desc" },
     });
+
+    // url assinada: é o que permite exibir com <img> em qualquer um dos apps,
+    // inclusive nos que rodam em outro domínio.
+    return fotos.map((foto) => ({ ...foto, url: assinarUrlFoto(foto.url) }));
   }
 }

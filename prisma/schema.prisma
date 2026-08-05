@@ -123,6 +123,9 @@ model Unidade {
   leads            Lead[]
 
   createdAt DateTime @default(now())
+
+  dispositivosAcesso DispositivoAcesso[]
+  eventosAcesso      EventoAcesso[]
 }
 
 // qualquer sala, tatame ou área usada pra ministrar aulas — uma unidade
@@ -222,6 +225,9 @@ model Aluno {
   createdAt DateTime @default(now())
   //updatedAt         DateTime         @updatedAt
   updatedAt DateTime @default(now()) @updatedAt
+
+  credenciaisAcesso CredencialAcesso[]
+  eventosAcesso     EventoAcesso[]
 }
 
 model Responsavel {
@@ -711,6 +717,9 @@ model Usuario {
   notasAulaCriadas      NotaAula[]
 
   createdAt DateTime @default(now())
+
+  credenciaisAcesso CredencialAcesso[]
+  eventosAcesso     EventoAcesso[]
 }
 
 // vínculo N:N entre Usuario e Unidade — permite ADMIN/RECEPCAO trabalharem
@@ -1146,4 +1155,136 @@ model Evento {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+}
+
+// ===== Controle de acesso físico (catraca / leitora) =====
+//
+// O Sys Belt é dono do CADASTRO e das REGRAS; o equipamento é dono do
+// RECONHECIMENTO. Por isso nada aqui é específico de fabricante — a marca
+// entra só como `Dispositivo.provedor`, resolvido em
+// src/modules/controleAcesso/providers.
+
+enum TipoCredencialAcesso {
+  FACIAL
+  BIOMETRIA
+  CARTAO
+  QRCODE
+  PIN
+}
+
+enum SentidoAcesso {
+  ENTRADA
+  SAIDA
+}
+
+/// Uma catraca/leitora instalada numa unidade.
+model DispositivoAcesso {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  nome        String
+  localizacao String?
+
+  /// nome do provedor (CONTROL_ID, HENRY, ...). Nulo = liberação manual na recepção.
+  provedor String?
+
+  /// host, porta, credenciais de API do equipamento — formato livre por fabricante.
+  configuracao Json?
+
+  /// segredo compartilhado que o equipamento usa pra assinar o webhook de evento.
+  segredoWebhook String?
+
+  ativo Boolean @default(true)
+
+  ultimoContatoEm DateTime?
+
+  credenciais CredencialAcesso[]
+  eventos     EventoAcesso[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([unidadeId])
+}
+
+/// Vínculo entre uma pessoa (aluno ou usuário) e a forma como ela se
+/// identifica no equipamento. O template biométrico em si NÃO é guardado
+/// aqui — fica no equipamento; o sistema só referencia o id dele.
+model CredencialAcesso {
+  id Int @id @default(autoincrement())
+
+  /// exatamente um dos dois é preenchido.
+  alunoId Int?
+  aluno   Aluno? @relation(fields: [alunoId], references: [id])
+
+  usuarioId Int?
+  usuario   Usuario? @relation(fields: [usuarioId], references: [id])
+
+  dispositivoId Int?
+  dispositivo   DispositivoAcesso? @relation(fields: [dispositivoId], references: [id])
+
+  tipo TipoCredencialAcesso
+
+  /// número do cartão / conteúdo do QR / PIN. Nulo em FACIAL e BIOMETRIA,
+  /// que vivem no equipamento.
+  valor String?
+
+  /// id da pessoa dentro do equipamento, devolvido por sincronizarPessoa.
+  provedorPessoaId String?
+
+  ativo Boolean @default(true)
+
+  validoAte DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  eventos EventoAcesso[]
+
+  @@index([alunoId])
+  @@index([usuarioId])
+  @@index([dispositivoId])
+}
+
+/// Toda passagem (ou tentativa) pela catraca. Serve de trilha de auditoria e
+/// alimenta a frequência.
+model EventoAcesso {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  dispositivoId Int?
+  dispositivo   DispositivoAcesso? @relation(fields: [dispositivoId], references: [id])
+
+  credencialId Int?
+  credencial   CredencialAcesso? @relation(fields: [credencialId], references: [id])
+
+  alunoId Int?
+  aluno   Aluno? @relation(fields: [alunoId], references: [id])
+
+  usuarioId Int?
+  usuario   Usuario? @relation(fields: [usuarioId], references: [id])
+
+  sentido    SentidoAcesso @default(ENTRADA)
+  autorizado Boolean
+
+  /// por que foi negado (ou como foi liberado) — texto pronto pra tela.
+  motivo String?
+
+  ocorridoEm DateTime @default(now())
+
+  /// id do evento no equipamento, usado pra não gravar duplicado em reenvio.
+  provedorEventoId String?
+
+  /// payload cru do fabricante, pra auditoria e depuração da integração.
+  payload Json?
+
+  createdAt DateTime @default(now())
+
+  @@unique([dispositivoId, provedorEventoId])
+  @@index([unidadeId, ocorridoEm])
+  @@index([alunoId])
 }

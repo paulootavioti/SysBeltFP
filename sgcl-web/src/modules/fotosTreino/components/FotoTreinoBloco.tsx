@@ -17,6 +17,7 @@ import { FotosTreinoService } from "../services/FotosTreinoService";
 import type { FotoTreino } from "../types";
 
 import "./FotoTreinoBloco.css";
+import { resolverUrlUpload } from "../../../shared/utils/resolverUrlUpload";
 
 interface FotoTreinoBlocoProps {
   aulaId: number;
@@ -165,7 +166,7 @@ export function FotoTreinoBloco({ aulaId, dataAula, horarioInicio }: FotoTreinoB
         <div className="foto-treino-lista">
           {fotos.map((foto) => (
             <div key={foto.id} className="foto-treino-item">
-              <img src={foto.url} alt={foto.legenda} className="foto-treino-imagem" />
+              <img src={resolverUrlUpload(foto.url)} alt={foto.legenda} className="foto-treino-imagem" />
               <p className="foto-treino-legenda">{foto.legenda}</p>
               <div className="foto-treino-tags">
                 <Badge variant={foto.visivelNaLanding ? "success" : "neutral"}>

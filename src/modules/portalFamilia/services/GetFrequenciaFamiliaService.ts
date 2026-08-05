@@ -1,4 +1,5 @@
 import { prisma } from "../../../shared/database/prisma";
+import { assinarUrlFoto } from "../../uploads/services/assinarUrlFoto";
 
 export class GetFrequenciaFamiliaService {
   async execute(alunoId: number) {
@@ -24,7 +25,11 @@ export class GetFrequenciaFamiliaService {
       data: registro.aula.data,
       turmaNome: registro.aula.turma?.nome ?? null,
       presente: registro.presente,
-      fotos: registro.presente ? registro.aula.fotos : [],
+      // url assinada: o Portal da Família roda em outro domínio e exibe a
+      // foto com <img>, que não manda header de autenticação.
+      fotos: registro.presente
+        ? registro.aula.fotos.map((foto) => ({ ...foto, url: assinarUrlFoto(foto.url) }))
+        : [],
     }));
   }
 }
