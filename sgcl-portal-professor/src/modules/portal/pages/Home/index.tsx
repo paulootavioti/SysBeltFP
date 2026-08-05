@@ -7,6 +7,7 @@ import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Button } from "../../../../components/ui/Button";
 import { PortalProfessorService } from "../../services/PortalProfessorService";
 import { getApiErrorMessage } from "../../../../utils/getApiErrorMessage";
+import { AulaConcluidaSheet } from "./AulaConcluidaSheet";
 import type { AulasHojeResponse, AulaHojeItem } from "../../types";
 
 import "./styles.css";
@@ -37,15 +38,9 @@ function formatarTempo(minutos: number) {
 function ItemHoje({ item, onClique }: { item: AulaHojeItem; onClique: (item: AulaHojeItem) => void }) {
   const rotuloStatus =
     item.status === "CONCLUIDA" ? "Concluída" : item.status === "EM_ANDAMENTO" ? "Em andamento" : "Depois";
-  const clicavel = item.status !== "CONCLUIDA";
 
   return (
-    <button
-      type="button"
-      className="home-item-hoje"
-      onClick={() => clicavel && onClique(item)}
-      disabled={!clicavel}
-    >
+    <button type="button" className="home-item-hoje" onClick={() => onClique(item)}>
       <span className="home-item-hoje-horario">{item.horarioInicio}</span>
       <span className="home-item-hoje-texto">
         <strong>{item.turmaNome}</strong>
@@ -64,6 +59,7 @@ export function Home() {
   const [carregando, setCarregando] = useState(true);
   const [iniciando, setIniciando] = useState(false);
   const [erro, setErro] = useState("");
+  const [aulaConcluida, setAulaConcluida] = useState<AulaHojeItem | null>(null);
 
   useEffect(() => {
     carregar();
@@ -88,6 +84,14 @@ export function Home() {
   }
 
   async function handleIniciarAula(item: AulaHojeItem) {
+    // aula já finalizada não volta pro Modo Aula — abre o painel de
+    // consulta, onde dá pra rever o que foi registrado e ainda publicar
+    // uma foto depois do treino.
+    if (item.status === "CONCLUIDA") {
+      setAulaConcluida(item);
+      return;
+    }
+
     if (item.aulaId) {
       navigate(`/aula/${item.aulaId}`);
       return;
@@ -201,6 +205,8 @@ export function Home() {
           </div>
         </section>
       </main>
+
+      <AulaConcluidaSheet item={aulaConcluida} onClose={() => setAulaConcluida(null)} />
     </div>
   );
 }
