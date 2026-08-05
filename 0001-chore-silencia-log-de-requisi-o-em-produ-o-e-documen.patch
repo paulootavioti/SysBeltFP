@@ -1,0 +1,88 @@
+From 03c5581cf7328329edefb59cb836a568524e1cd2 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 22 Jul 2026 02:19:37 +0000
+Subject: [PATCH 1/6] =?UTF-8?q?chore:=20silencia=20log=20de=20requisi?=
+ =?UTF-8?q?=C3=A7=C3=A3o=20em=20produ=C3=A7=C3=A3o=20e=20documenta=20expir?=
+ =?UTF-8?q?a=C3=A7=C3=A3o=20do=20JWT?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Log de REQ: agora só roda com NODE_ENV=development (netlify.toml define
+NODE_ENV=production no build). Comentário no LoginService explica por que
+não há refresh token: ensureAuthenticated já revalida o usuário no banco
+a cada requisição, então um token vazado só é útil até a conta ser
+desativada, não até a expiração natural.
+---
+ netlify.toml                              |  1 +
+ package.json                              |  2 +-
+ src/app.ts                                | 10 ++++++----
+ src/modules/auth/services/LoginService.ts |  6 ++++++
+ 4 files changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/netlify.toml b/netlify.toml
+index 9409e31..ac7f6dc 100644
+--- a/netlify.toml
++++ b/netlify.toml
+@@ -4,6 +4,7 @@
+ 
+ [build.environment]
+   NODE_VERSION = "20"
++  NODE_ENV = "production"
+ 
+ [functions]
+   directory = "netlify/functions"
+diff --git a/package.json b/package.json
+index a2641ad..471b41d 100644
+--- a/package.json
++++ b/package.json
+@@ -3,7 +3,7 @@
+   "version": "1.0.0",
+   "main": "index.js",
+   "scripts": {
+-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
++    "dev": "NODE_ENV=development ts-node-dev --respawn --transpile-only src/server.ts",
+     "build": "tsc",
+     "start": "node dist/server.js",
+     "typecheck": "tsc --noEmit",
+diff --git a/src/app.ts b/src/app.ts
+index 7edaa6b..4c87651 100644
+--- a/src/app.ts
++++ b/src/app.ts
+@@ -28,10 +28,12 @@ const corsOrigin = process.env.CORS_ORIGIN
+ 
+ export const app = express();
+ 
+-app.use((req, res, next) => {
+-  console.log("REQ:", req.method, req.url);
+-  next();
+-});
++if (process.env.NODE_ENV !== "production") {
++  app.use((req, res, next) => {
++    console.log("REQ:", req.method, req.url);
++    next();
++  });
++}
+ 
+ app.use(cors({
+   origin: corsOrigin
+diff --git a/src/modules/auth/services/LoginService.ts b/src/modules/auth/services/LoginService.ts
+index cb9efb0..68580b4 100644
+--- a/src/modules/auth/services/LoginService.ts
++++ b/src/modules/auth/services/LoginService.ts
+@@ -55,6 +55,12 @@ export class LoginService {
+     const jwtSecret =
+       process.env.JWT_SECRET as string;
+ 
++    // Sem refresh token de propósito: ensureAuthenticated já revalida o
++    // usuário (existência + ativo) no banco a cada requisição, então um
++    // token vazado só é útil até um admin desativar a conta em Usuários —
++    // não até a expiração natural. Se quiser uma janela mais curta,
++    // ajuste JWT_EXPIRES_IN nas variáveis de ambiente (não precisa mexer
++    // no código).
+     const jwtExpiresIn =
+       (process.env.JWT_EXPIRES_IN || "7d") as SignOptions["expiresIn"];
+ 
+-- 
+2.43.0
+

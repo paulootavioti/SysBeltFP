@@ -1,0 +1,166 @@
+From 93aff87d34b1dbbb1341792f6b4df33bd3a4b018 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 22 Jul 2026 14:59:58 +0000
+Subject: [PATCH 5/6] fix: corrige erros de lint que bloqueavam o CI
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Separa o hook useAuth e o AuthContext em arquivos próprios: o eslint
+  (react-refresh/only-export-components) reclama de um arquivo exportar
+  componente e não-componente juntos, o que quebra o Fast Refresh.
+- Remove a variável 'error' não usada nos catches de useGraduacoes e
+  useMensalidades.
+---
+ .../src/components/layout/Layout/index.tsx    |  2 +-
+ sgcl-web/src/contexts/AuthContext.tsx         | 24 +++----------------
+ sgcl-web/src/contexts/authContextData.ts      | 17 +++++++++++++
+ sgcl-web/src/contexts/useAuth.ts              |  6 +++++
+ .../modules/graduacoes/hooks/useGraduacoes.ts |  2 +-
+ .../mensalidades/hooks/useMensalidades.ts     |  2 +-
+ sgcl-web/src/pages/Login/index.tsx            |  2 +-
+ sgcl-web/src/routes/PrivateRoute.tsx          |  2 +-
+ 8 files changed, 31 insertions(+), 26 deletions(-)
+ create mode 100644 sgcl-web/src/contexts/authContextData.ts
+ create mode 100644 sgcl-web/src/contexts/useAuth.ts
+
+diff --git a/sgcl-web/src/components/layout/Layout/index.tsx b/sgcl-web/src/components/layout/Layout/index.tsx
+index 1465228..7743083 100644
+--- a/sgcl-web/src/components/layout/Layout/index.tsx
++++ b/sgcl-web/src/components/layout/Layout/index.tsx
+@@ -1,6 +1,6 @@
+ import type { ReactNode } from "react";
+ import { useEffect, useState } from "react";
+-import { useAuth } from "../../../contexts/AuthContext";
++import { useAuth } from "../../../contexts/useAuth";
+ import { NavLink, useLocation, useNavigate } from "react-router-dom";
+ import { Button } from "../../ui/Button";
+ import {
+diff --git a/sgcl-web/src/contexts/AuthContext.tsx b/sgcl-web/src/contexts/AuthContext.tsx
+index c8601b1..a5636f5 100644
+--- a/sgcl-web/src/contexts/AuthContext.tsx
++++ b/sgcl-web/src/contexts/AuthContext.tsx
+@@ -1,22 +1,8 @@
+-import { createContext, useContext, useState } from "react";
++import { useState } from "react";
+ import type { ReactNode } from "react";
+ import { api } from "../services/api";
+-
+-type Usuario = {
+-  id: number;
+-  nome: string;
+-  email: string;
+-  perfil: string;
+-};
+-
+-type AuthContextData = {
+-  usuario: Usuario | null;
+-  token: string | null;
+-  login: (email: string, senha: string) => Promise<void>;
+-  logout: () => void;
+-};
+-
+-const AuthContext = createContext({} as AuthContextData);
++import { AuthContext } from "./authContextData";
++import type { Usuario } from "./authContextData";
+ 
+ type AuthProviderProps = {
+   children: ReactNode;
+@@ -83,8 +69,4 @@ export function AuthProvider({ children }: AuthProviderProps) {
+       {children}
+     </AuthContext.Provider>
+   );
+-}
+-
+-export function useAuth() {
+-  return useContext(AuthContext);
+ }
+\ No newline at end of file
+diff --git a/sgcl-web/src/contexts/authContextData.ts b/sgcl-web/src/contexts/authContextData.ts
+new file mode 100644
+index 0000000..5851dfa
+--- /dev/null
++++ b/sgcl-web/src/contexts/authContextData.ts
+@@ -0,0 +1,17 @@
++import { createContext } from "react";
++
++export type Usuario = {
++  id: number;
++  nome: string;
++  email: string;
++  perfil: string;
++};
++
++export type AuthContextData = {
++  usuario: Usuario | null;
++  token: string | null;
++  login: (email: string, senha: string) => Promise<void>;
++  logout: () => void;
++};
++
++export const AuthContext = createContext({} as AuthContextData);
+diff --git a/sgcl-web/src/contexts/useAuth.ts b/sgcl-web/src/contexts/useAuth.ts
+new file mode 100644
+index 0000000..f3f4c9d
+--- /dev/null
++++ b/sgcl-web/src/contexts/useAuth.ts
+@@ -0,0 +1,6 @@
++import { useContext } from "react";
++import { AuthContext } from "./authContextData";
++
++export function useAuth() {
++  return useContext(AuthContext);
++}
+diff --git a/sgcl-web/src/modules/graduacoes/hooks/useGraduacoes.ts b/sgcl-web/src/modules/graduacoes/hooks/useGraduacoes.ts
+index eac5cef..70eb1f9 100644
+--- a/sgcl-web/src/modules/graduacoes/hooks/useGraduacoes.ts
++++ b/sgcl-web/src/modules/graduacoes/hooks/useGraduacoes.ts
+@@ -13,7 +13,7 @@ export function useGraduacoes() {
+       setErro("");
+       const data = await GraduacaoService.listar();
+       setGraduacoes(data);
+-    } catch (error) {
++    } catch {
+       setErro("Erro ao carregar graduações.");
+     } finally {
+       setLoading(false);
+diff --git a/sgcl-web/src/modules/mensalidades/hooks/useMensalidades.ts b/sgcl-web/src/modules/mensalidades/hooks/useMensalidades.ts
+index 0982797..85736cd 100644
+--- a/sgcl-web/src/modules/mensalidades/hooks/useMensalidades.ts
++++ b/sgcl-web/src/modules/mensalidades/hooks/useMensalidades.ts
+@@ -13,7 +13,7 @@ export function useMensalidades() {
+       setErro("");
+       const data = await MensalidadeService.listar();
+       setMensalidades(data);
+-    } catch (error) {
++    } catch {
+       setErro("Erro ao carregar mensalidades.");
+     } finally {
+       setLoading(false);
+diff --git a/sgcl-web/src/pages/Login/index.tsx b/sgcl-web/src/pages/Login/index.tsx
+index 69b25fc..5d98141 100644
+--- a/sgcl-web/src/pages/Login/index.tsx
++++ b/sgcl-web/src/pages/Login/index.tsx
+@@ -1,7 +1,7 @@
+ import { useState } from "react";
+ import { useNavigate } from "react-router-dom";
+ 
+-import { useAuth } from "../../contexts/AuthContext";
++import { useAuth } from "../../contexts/useAuth";
+ 
+ import { Input } from "../../components/ui/Input";
+ import { Button } from "../../components/ui/Button";
+diff --git a/sgcl-web/src/routes/PrivateRoute.tsx b/sgcl-web/src/routes/PrivateRoute.tsx
+index 1c022c7..dcf54e0 100644
+--- a/sgcl-web/src/routes/PrivateRoute.tsx
++++ b/sgcl-web/src/routes/PrivateRoute.tsx
+@@ -1,5 +1,5 @@
+ import { Navigate } from "react-router-dom";
+-import { useAuth } from "../contexts/AuthContext";
++import { useAuth } from "../contexts/useAuth";
+ 
+ interface PrivateRouteProps {
+   children: React.ReactNode;
+-- 
+2.43.0
+
