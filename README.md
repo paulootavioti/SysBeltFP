@@ -181,6 +181,16 @@ Além desses quatro perfis "de equipe" (autenticados em `sgcl-web`), existem con
 
 Detalhes completos da matriz de permissões em [`docs/seguranca.md`](docs/seguranca.md) e [`docs/regras-de-negocio.md`](docs/regras-de-negocio.md).
 
+## Rodapé de assinatura
+
+Os três apps React (`sgcl-web`, `sgcl-portal-familia`, `sgcl-portal-professor`) renderizam um rodapé com a assinatura do desenvolvedor e links de redes sociais. Ele é um **componente React** (`SiteFooter`), não markup solto no `index.html` — assim fica dentro do controle do roteador e respeita o layout de cada app.
+
+Aparece em todas as telas, com uma exceção: o **Modo Aula** (`/aula/:id`) do Portal do Professor, que é um fluxo imersivo pensado pro tatame e não deve ter nada além das 4 etapas. A regra vive num único lugar (`sgcl-portal-professor/src/App.tsx`); a tela de resumo (`/aula/:id/resumo`) mantém o rodapé, por já ser a saída desse fluxo.
+
+Na `landing-academia/` (site estático) o rodapé traz o copyright da **academia** em primeiro plano, com a assinatura do desenvolvedor como linha secundária — é o site institucional do cliente, então a marca dele vem primeiro.
+
+O ano do copyright vem de `new Date().getFullYear()` (nos apps React) e do `script.js` via `#anoAtual` (na landing), nunca escrito à mão — senão envelhece sozinho na virada do ano.
+
 ## Documentação
 
 Toda a documentação do projeto está em [`docs/`](docs/), começando por [`docs/README.md`](docs/README.md).
