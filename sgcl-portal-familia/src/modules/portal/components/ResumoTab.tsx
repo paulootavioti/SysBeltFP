@@ -8,6 +8,7 @@ import { InfoCard } from "../../../components/ui/InfoCard";
 import { PortalService } from "../services/PortalService";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import type { Resumo } from "../types";
+import { formatarData } from "../../../utils/formatarData";
 
 const BADGE_STATUS: Record<string, { label: string; variant: "warning" | "success" | "danger" | "neutral" }> = {
   ABERTA: { label: "Em aberto", variant: "warning" },
@@ -55,7 +56,7 @@ export function ResumoTab({ alunoId }: ResumoTabProps) {
         value={mensalidade ? `R$ ${mensalidade.valor.toFixed(2)}` : "Em dia"}
         description={
           mensalidade
-            ? `Vence em ${new Date(mensalidade.vencimento).toLocaleDateString("pt-BR")}`
+            ? `Vence em ${formatarData(mensalidade.vencimento)}`
             : "Nenhuma pendência"
         }
       />
@@ -70,7 +71,7 @@ export function ResumoTab({ alunoId }: ResumoTabProps) {
         title="Próxima aula"
         value={
           proximaAula
-            ? `${new Date(proximaAula.data).toLocaleDateString("pt-BR")} — ${proximaAula.horarioInicio}`
+            ? `${formatarData(proximaAula.data)} — ${proximaAula.horarioInicio}`
             : "Sem aula agendada"
         }
         description={proximaAula ? proximaAula.turmaNome : undefined}

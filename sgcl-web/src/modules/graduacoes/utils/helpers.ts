@@ -12,9 +12,9 @@ export function getIndiceFaixa(faixa: string): number {
   return FAIXAS_INFANTIL.indexOf(faixa);
 }
 
-export function formatarData(data: string): string {
-  return new Date(data).toLocaleDateString("pt-BR");
-}
+// Reexporta o formatador compartilhado pra não quebrar quem já importa
+// `formatarData` daqui — a implementação vive em shared/utils.
+export { formatarData } from "../../../shared/utils/formatarData";
 
 const DIA_EM_MS = 1000 * 60 * 60 * 24;
 

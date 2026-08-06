@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "../../../../../components/ui/Button";
 import "./Etapa4Foto.css";
+import { formatarDataExtenso } from "../../../../../utils/formatarData";
 
 interface Etapa4FotoProps {
   totalPresentes: number;
@@ -11,7 +12,7 @@ interface Etapa4FotoProps {
 }
 
 function diaDaSemana(data: string) {
-  return new Date(data).toLocaleDateString("pt-BR", { weekday: "long" });
+  return formatarDataExtenso(data, { weekday: "long" });
 }
 
 export function Etapa4Foto({ totalPresentes, horarioInicio, data, onPublicar }: Etapa4FotoProps) {

@@ -17,10 +17,7 @@ import { RESULTADOS_COMPETICAO, type Competicao, type Atleta } from "../../types
 import type { InscricaoFormData } from "../../schema/inscricao.schema";
 
 import "./styles.css";
-
-function formatarData(data: string): string {
-  return new Date(data).toLocaleDateString("pt-BR");
-}
+import { formatarData } from "../../../../shared/utils/formatarData";
 
 const OPCOES_RESULTADO = RESULTADOS_COMPETICAO.map((resultado) => ({
   value: resultado,

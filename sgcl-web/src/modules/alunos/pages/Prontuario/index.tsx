@@ -15,6 +15,7 @@ import { AlunoService } from "../../services/AlunoService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 
 import "./styles.css";
+import { formatarData } from "../../../../shared/utils/formatarData";
 
 interface ResponsavelProntuario {
   id: number;
@@ -176,7 +177,7 @@ export function ProntuarioAluno() {
         <div className="prontuario-card">
           <p>
             <strong>Data de nascimento:</strong>{" "}
-            {new Date(aluno.dataNascimento).toLocaleDateString("pt-BR")}
+            {formatarData(aluno.dataNascimento)}
           </p>
           <p>
             <strong>Telefone:</strong> {aluno.telefone || "-"}
@@ -243,7 +244,7 @@ export function ProntuarioAluno() {
               return (
                 <div key={registro.id} className="prontuario-comportamento-item">
                   <div className="prontuario-comportamento-item-topo">
-                    <strong>{new Date(registro.data).toLocaleDateString("pt-BR", { timeZone: "UTC" })}</strong>
+                    <strong>{formatarData(registro.data)}</strong>
                     {marcados.length > 0 && (
                       <span className="prontuario-comportamento-tags">
                         {marcados.map((chave) => LABEL_COMPORTAMENTO[chave]).join(" • ")}

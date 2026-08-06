@@ -5,9 +5,8 @@ import { useAuth } from "../../../contexts/useAuth";
 import { calcularStatusMensalidade } from "../utils/status";
 import { nomeFormaPagamento } from "../../formasPagamento/types";
 import "./MensalidadeCard.css";
-function formatarData(data: string): string {
-  return new Date(data).toLocaleDateString("pt-BR");
-}
+import { formatarData } from "../../../shared/utils/formatarData";
+
 const STATUS_BADGE = {
   PAGA: "PAGO",
   PENDENTE: "PENDENTE",
