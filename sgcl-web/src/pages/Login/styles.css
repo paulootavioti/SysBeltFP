@@ -1,9 +1,13 @@
+/* coluna, não linha: o rodapé precisa ficar ABAIXO do card, não ao lado
+   dele. Com `flex-direction: row` (o padrão) card e rodapé viravam dois
+   itens lado a lado, e nenhum dos dois ficava centralizado. */
 .login-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: var(--space-5);
+  gap: var(--space-5);
 
   background: radial-gradient(circle at top, #2A241A 0%, var(--color-primary) 55%, #0B0A08 100%);
 }
@@ -16,6 +20,55 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
+
+  /* sobra de espaço dividida entre o topo do card e a base do rodapé
+     (que leva `margin-bottom: auto`), então o conjunto card + rodapé fica
+     centralizado na vertical — e não o card sozinho. */
+  margin-top: auto;
+}
+
+/* Variante do rodapé para fundo escuro: aqui ele fica sobre o gradiente,
+   não sobre uma superfície clara. Escopado na tela de login pra não afetar
+   as outras ~30 telas que usam o mesmo componente. */
+.login-page .site-footer {
+  width: 100%;
+  max-width: 400px;
+  margin-top: 0;
+  margin-bottom: auto;
+
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-2);
+
+  padding: var(--space-4) var(--space-5);
+  background: transparent;
+  border-top: none;
+}
+
+.login-page .site-footer-brand p {
+  color: #fff;
+}
+
+.login-page .site-footer-brand small,
+.login-page .site-footer-copy {
+  color: var(--color-accent-light);
+}
+
+.login-page .site-footer-socials a {
+  color: var(--color-accent-light);
+}
+
+.login-page .site-footer-socials a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* o selo é escuro sobre superfície clara nas outras telas; aqui o fundo já
+   é escuro, então inverte pra não sumir. */
+.login-page .site-footer-mark {
+  background: var(--color-accent);
+  color: var(--color-primary);
 }
 
 .login-brand {
