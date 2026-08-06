@@ -1,3 +1,5 @@
+import { formatarDataBR } from "../../../shared/utils/dataCalendario";
+
 // Variáveis dinâmicas disponíveis nos modelos de contrato — usadas tanto
 // pra substituição real (gerarConteudo) quanto pra listar as opções na
 // tela de edição do modelo. Formato: {{variavel}}.
@@ -35,7 +37,9 @@ function formatarMoeda(valor: number): string {
 
 function formatarData(data?: Date | null): string {
   if (!data) return "Indeterminado";
-  return data.toLocaleDateString("pt-BR");
+  // Vigência e emissão são datas de calendário: formatar no fuso do
+  // processo faria o contrato sair com a data do dia anterior no Brasil.
+  return formatarDataBR(data);
 }
 
 // Substitui {{variavel}} pelo valor correspondente; variáveis sem valor

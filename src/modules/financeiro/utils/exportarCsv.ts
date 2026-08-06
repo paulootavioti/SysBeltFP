@@ -1,3 +1,5 @@
+import { formatarDataBR } from "../../../shared/utils/dataCalendario";
+
 interface ColunaCsv<T> {
   chave: keyof T;
   rotulo: string;
@@ -6,7 +8,9 @@ interface ColunaCsv<T> {
 function escaparCsv(valor: unknown): string {
   if (valor === null || valor === undefined) return "";
 
-  const texto = valor instanceof Date ? valor.toLocaleDateString("pt-BR") : String(valor);
+  // vencimento e data de pagamento são datas de calendário — sem o fuso
+  // fixo, a planilha exportada no Brasil sai com todo dia deslocado.
+  const texto = valor instanceof Date ? formatarDataBR(valor) : String(valor);
 
   if (texto.includes(";") || texto.includes('"') || texto.includes("\n")) {
     return `"${texto.replace(/"/g, '""')}"`;

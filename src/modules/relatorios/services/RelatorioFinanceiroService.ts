@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
+import { formatarDataBR } from "../../../shared/utils/dataCalendario";
 
 export class RelatorioFinanceiroService {
   async execute(unidadeId: number | null) {
@@ -29,9 +30,7 @@ export class RelatorioFinanceiroService {
 
     const linhas =
       mensalidadesVencidas.map(mensalidade => {
-        const data =
-          new Date(mensalidade.vencimento)
-            .toLocaleDateString("pt-BR");
+        const data = formatarDataBR(mensalidade.vencimento);
 
         return `• ${mensalidade.aluno.nome} - R$ ${mensalidade.valor.toFixed(2)} - venc. ${data}`;
       });
