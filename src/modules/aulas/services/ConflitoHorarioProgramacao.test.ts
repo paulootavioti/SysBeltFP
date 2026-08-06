@@ -99,8 +99,11 @@ describe("ReplicarProgramacaoService: conflito de horário", () => {
     const turmaA = await criarTurma("TESTE_CONFPROG_TURMA_A", "18:00", "19:00", [1]);
     const turmaB = await criarTurma("TESTE_CONFPROG_TURMA_B", "18:00", "19:00", [1]);
 
+    // com o "Z" explícito o instante é o mesmo em qualquer máquina; sem
+    // ele, a string seria lida no fuso do processo e este teste passaria
+    // no CI (UTC) e falharia em Brasília.
     await new CreateAulaProgramadaService().execute(
-      { turmaId: turmaA.id, data: "2026-08-10T18:00:00" },
+      { turmaId: turmaA.id, data: "2026-08-10T18:00:00Z" },
       unidadeId
     );
 

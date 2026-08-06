@@ -2,6 +2,13 @@ import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { buscarConflitoProgramacao, mensagemConflitoProgramacao } from "../../../shared/utils/conflitoHorario";
+import {
+  comHorarioUTC,
+  diaDaSemanaUTC,
+  fimDoDiaUTC,
+  inicioDoDiaUTC,
+  somarDiasUTC,
+} from "../../../shared/utils/dataCalendario";
 
 const MAXIMO_AULAS_POR_REPLICACAO = 400;
 
@@ -26,11 +33,12 @@ export class ReplicarProgramacaoService {
 
     const [horas, minutos] = turma.horarioInicio.split(":").map(Number);
 
-    const inicio = new Date(dto.dataInicio);
-    inicio.setHours(0, 0, 0, 0);
-
-    const fim = new Date(dto.dataFim);
-    fim.setHours(23, 59, 59, 999);
+    // Datas de calendário são ancoradas em UTC no sistema inteiro (ver
+    // shared/utils/dataCalendario). Usar setHours/getDay aqui lia o dia no
+    // fuso do processo: rodando em Brasília, o período 01→31/ago virava
+    // 31/jul→30/ago e a última segunda-feira do mês não era criada.
+    const inicio = inicioDoDiaUTC(new Date(dto.dataInicio));
+    const fim = fimDoDiaUTC(new Date(dto.dataFim));
 
     if (fim < inicio) {
       throw new AppError("A data final deve ser depois da data inicial.");
@@ -39,11 +47,9 @@ export class ReplicarProgramacaoService {
     const diasSelecionados = new Set(dto.diasSemana);
     const datas: Date[] = [];
 
-    for (const cursor = new Date(inicio); cursor <= fim; cursor.setDate(cursor.getDate() + 1)) {
-      if (diasSelecionados.has(cursor.getDay())) {
-        const dataAula = new Date(cursor);
-        dataAula.setHours(horas || 0, minutos || 0, 0, 0);
-        datas.push(dataAula);
+    for (let cursor = inicio; cursor <= fim; cursor = somarDiasUTC(cursor, 1)) {
+      if (diasSelecionados.has(diaDaSemanaUTC(cursor))) {
+        datas.push(comHorarioUTC(cursor, horas || 0, minutos || 0));
       }
     }
 
