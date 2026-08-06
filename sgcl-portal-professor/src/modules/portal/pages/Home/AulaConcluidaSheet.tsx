@@ -10,6 +10,7 @@ import { resolverUrlUpload } from "../../../../utils/resolverUrlUpload";
 import type { AulaHojeItem, AulaDetalhe, FotoTreino } from "../../types";
 
 import "./AulaConcluidaSheet.css";
+import { formatarDataExtenso } from "../../../../utils/formatarData";
 
 interface AulaConcluidaSheetProps {
   item: AulaHojeItem | null;
@@ -17,7 +18,7 @@ interface AulaConcluidaSheetProps {
 }
 
 function diaDaSemana(data: string) {
-  return new Date(data).toLocaleDateString("pt-BR", { weekday: "long" });
+  return formatarDataExtenso(data, { weekday: "long" });
 }
 
 export function AulaConcluidaSheet({ item, onClose }: AulaConcluidaSheetProps) {

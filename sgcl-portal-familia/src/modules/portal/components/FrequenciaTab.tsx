@@ -12,6 +12,7 @@ import { resolverUrlUpload } from "../../../utils/resolverUrlUpload";
 import { PortalService } from "../services/PortalService";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import type { Frequencia, FotoTreinoFrequencia } from "../types";
+import { formatarData } from "../../../utils/formatarData";
 
 interface FrequenciaTabProps {
   alunoId: number;
@@ -46,7 +47,7 @@ export function FrequenciaTab({ alunoId }: FrequenciaTabProps) {
           <div key={registro.id} className="frequencia-tab-item">
             <div className="frequencia-tab-item-linha">
               <div>
-                <strong>{new Date(registro.data).toLocaleDateString("pt-BR")}</strong>
+                <strong>{formatarData(registro.data)}</strong>
                 {registro.turmaNome && <span> — {registro.turmaNome}</span>}
               </div>
 

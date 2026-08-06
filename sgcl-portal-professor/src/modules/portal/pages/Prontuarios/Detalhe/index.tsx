@@ -10,15 +10,12 @@ import { getApiErrorMessage } from "../../../../../utils/getApiErrorMessage";
 import type { ProntuarioProfessor } from "../../../types-academico";
 
 import "./styles.css";
+import { formatarData } from "../../../../../utils/formatarData";
 
 function corPorPercentual(percentual: number) {
   if (percentual >= 80) return "prontuario-freq-verde";
   if (percentual >= 60) return "prontuario-freq-ambar";
   return "prontuario-freq-vermelho";
-}
-
-function formatarData(data: string) {
-  return new Date(data).toLocaleDateString("pt-BR");
 }
 
 const ROTULOS_COMPORTAMENTO: Record<string, string> = {

@@ -8,6 +8,7 @@ import { Badge } from "../../../components/ui/Badge";
 import { PortalService } from "../services/PortalService";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import type { Agenda } from "../types";
+import { formatarData } from "../../../utils/formatarData";
 
 interface AgendaTabProps {
   alunoId: number;
@@ -37,7 +38,7 @@ export function AgendaTab({ alunoId }: AgendaTabProps) {
       {itens.map((item, indice) => (
         <div key={`${item.tipo}-${indice}`} className="agenda-tab-item">
           <span className="agenda-tab-data">
-            {new Date(item.data).toLocaleDateString("pt-BR")}
+            {formatarData(item.data)}
           </span>
 
           <div>

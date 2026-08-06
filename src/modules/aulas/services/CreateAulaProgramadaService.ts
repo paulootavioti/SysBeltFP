@@ -2,6 +2,7 @@ import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { buscarConflitoProgramacao, mensagemConflitoProgramacao } from "../../../shared/utils/conflitoHorario";
+import { parsearDataAcademia } from "../../../shared/utils/dataCalendario";
 
 interface CreateAulaProgramadaDTO {
   turmaId: number;
@@ -39,7 +40,7 @@ export class CreateAulaProgramadaService {
       professorId: turma.professorId,
       horarioInicio: turma.horarioInicio,
       horarioFim: turma.horarioFim,
-      datas: [new Date(data.data)],
+      datas: [parsearDataAcademia(data.data)],
     });
 
     if (conflito) {
@@ -51,7 +52,7 @@ export class CreateAulaProgramadaService {
         unidadeId: turma.unidadeId,
         turmaId: data.turmaId,
         aulaCurriculoId: data.aulaCurriculoId,
-        data: new Date(data.data),
+        data: parsearDataAcademia(data.data),
         observacoes: data.observacoes,
       },
       include: {

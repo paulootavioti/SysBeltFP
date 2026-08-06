@@ -18,6 +18,30 @@ export function formatarDataBR(data: Date): string {
   return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
 }
 
+/**
+ * Converte o texto que veio do formulário numa data ancorada em UTC.
+ *
+ * Um `<input type="date">` manda "2026-08-10", que o JS já lê como
+ * meia-noite UTC — correto. Mas um `<input type="datetime-local">` manda
+ * "2026-08-10T18:00", **sem fuso**, e aí o JS lê no fuso do processo: o
+ * horário da aula passava a depender de onde o servidor está hospedado.
+ *
+ * O horário de uma aula é relógio de parede da academia — 19h é 19h no
+ * tatame, não um instante que se converte pra quem está olhando. Então
+ * "18:00" é gravado como 18:00 UTC e lido de volta como 18:00, sempre.
+ */
+export function parsearDataAcademia(texto: string): Date {
+  const jaTemFuso = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(texto);
+
+  if (jaTemFuso) {
+    return new Date(texto);
+  }
+
+  const temHora = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(texto);
+
+  return new Date(temHora ? `${texto}Z` : texto);
+}
+
 /** Meia-noite UTC do dia de `data` — a forma canônica de guardar um dia. */
 export function inicioDoDiaUTC(data: Date): Date {
   return new Date(

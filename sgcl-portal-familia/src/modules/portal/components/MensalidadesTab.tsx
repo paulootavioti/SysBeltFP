@@ -10,6 +10,7 @@ import { Modal } from "../../../components/ui/Modal";
 import { PortalService } from "../services/PortalService";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import type { Mensalidade, ResultadoPagamento } from "../types";
+import { formatarData } from "../../../utils/formatarData";
 
 const BADGE_STATUS: Record<string, { label: string; variant: "warning" | "success" | "danger" | "neutral" }> = {
   ABERTA: { label: "Em aberto", variant: "warning" },
@@ -86,7 +87,7 @@ export function MensalidadesTab({ alunoId }: MensalidadesTabProps) {
               <strong>{mensalidade.descricao || "Mensalidade"}</strong>
               <span>
                 R$ {mensalidade.valor.toFixed(2)} — vence em{" "}
-                {new Date(mensalidade.vencimento).toLocaleDateString("pt-BR")}
+                {formatarData(mensalidade.vencimento)}
               </span>
             </div>
 

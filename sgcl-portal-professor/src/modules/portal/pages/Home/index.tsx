@@ -11,6 +11,7 @@ import { AulaConcluidaSheet } from "./AulaConcluidaSheet";
 import type { AulasHojeResponse, AulaHojeItem } from "../../types";
 
 import "./styles.css";
+import { formatarData } from "../../../../utils/formatarData";
 
 // Telas nativas dentro do próprio Portal — consomem o backend direto (mesmo
 // token já autenticado aqui), sem abrir outro app nem pedir login de novo.
@@ -168,7 +169,7 @@ export function Home() {
                   <>
                     <h2>{dados.proximaSemana.turmaNome}</h2>
                     <p className="home-card-proxima-info">
-                      Próxima aula: {new Date(dados.proximaSemana.data).toLocaleDateString("pt-BR")} às{" "}
+                      Próxima aula: {formatarData(dados.proximaSemana.data)} às{" "}
                       {dados.proximaSemana.horarioInicio}
                     </p>
                   </>

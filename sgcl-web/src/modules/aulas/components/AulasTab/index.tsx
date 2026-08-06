@@ -18,6 +18,7 @@ import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage"
 import type { Aula, PeriodoContagem } from "../../types";
 
 import "./styles.css";
+import { formatarData } from "../../../../shared/utils/formatarData";
 
 export function AulasTab() {
   const navigate = useNavigate();
@@ -152,7 +153,7 @@ export function AulasTab() {
               { header: "Professor", render: (aula) => aula.professor ?? "-" },
               {
                 header: "Data",
-                render: (aula) => new Date(aula.data).toLocaleDateString("pt-BR"),
+                render: (aula) => formatarData(aula.data),
               },
               {
                 header: "Status",

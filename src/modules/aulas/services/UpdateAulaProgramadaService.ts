@@ -1,6 +1,7 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
+import { parsearDataAcademia } from "../../../shared/utils/dataCalendario";
 
 interface UpdateAulaProgramadaDTO {
   data?: string | null;
@@ -25,7 +26,7 @@ export class UpdateAulaProgramadaService {
     return prisma.aulaProgramada.update({
       where: { id },
       data: {
-        data: dto.data ? new Date(dto.data) : undefined,
+        data: dto.data ? parsearDataAcademia(dto.data) : undefined,
         aulaCurriculoId: dto.aulaCurriculoId,
         observacoes: dto.observacoes,
       },

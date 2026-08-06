@@ -24,13 +24,7 @@ import type { AulaProgramada, PeriodoContagem } from "../../types";
 import type { MensagemGerada } from "../../../mensagens/types/mensagem";
 
 import "./styles.css";
-
-function formatarDataHora(data: string) {
-  return new Date(data).toLocaleString("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
-}
+import { formatarDataHoraAula as formatarDataHora } from "../../../../shared/utils/formatarData";
 
 export function ProgramacaoTab() {
   const navigate = useNavigate();

@@ -16,7 +16,10 @@ import { calcularStatusMensalidade } from "../../utils/status";
 import { nomeFormaPagamento } from "../../../formasPagamento/types";
 import type { MensalidadeComAluno } from "../../types";
 import "./styles.css";
-function formatarData(data: string): string {
+import { formatarData } from "../../../../shared/utils/formatarData";
+// dataPagamento eh carimbo do servidor (instante real), por isso sai
+// no fuso de quem olha; vencimento eh data de calendario.
+function formatarDataPagamento(data: string): string {
   return new Date(data).toLocaleDateString("pt-BR");
 }
 function formatarMoeda(valor: number): string {
@@ -180,7 +183,7 @@ export function DetalheMensalidade() {
           <Card titulo="Valor Final" valor={formatarMoeda(mensalidade.valorFinal || mensalidade.valor)} />
           <Card titulo="Vencimento" valor={formatarData(mensalidade.vencimento)} />
           {mensalidade.dataPagamento && (
-            <Card titulo="Data de Pagamento" valor={formatarData(mensalidade.dataPagamento)} />
+            <Card titulo="Data de Pagamento" valor={formatarDataPagamento(mensalidade.dataPagamento)} />
           )}
         </div>
         {status === "CANCELADA" && mensalidade.motivoCancelamento && (

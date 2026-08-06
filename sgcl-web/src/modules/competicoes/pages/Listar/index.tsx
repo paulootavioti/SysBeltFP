@@ -20,10 +20,7 @@ import type { Competicao } from "../../types/competicao";
 import type { CompeticaoFormData } from "../../schema/competicao.schema";
 
 import "./styles.css";
-
-function formatarData(data: string): string {
-  return new Date(data).toLocaleDateString("pt-BR");
-}
+import { formatarData } from "../../../../shared/utils/formatarData";
 
 export function Competicoes() {
   const navigate = useNavigate();

@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { prisma } from "../../../shared/database/prisma";
+import { CreateAulaProgramadaService } from "./CreateAulaProgramadaService";
 import { UpdateAulaProgramadaService } from "./UpdateAulaProgramadaService";
 import { CancelarAulaProgramadaService } from "./CancelarAulaProgramadaService";
 import { ReplicarProgramacaoService } from "./ReplicarProgramacaoService";
@@ -30,6 +31,39 @@ async function criarTurma() {
     },
   });
 }
+
+describe("horário digitado pelo professor", () => {
+  // O formulário usa <input type="datetime-local">, que manda a string
+  // SEM fuso. Antes, o servidor a lia no fuso da própria máquina: quem
+  // programava 18:00 via a aula aparecer às 15:00 na grade.
+  it("grava exatamente a hora digitada, independente do fuso do servidor", async () => {
+    const turma = await criarTurma();
+
+    const programada = await new CreateAulaProgramadaService().execute(
+      { turmaId: turma.id, data: "2026-08-10T18:00" },
+      turma.unidadeId
+    );
+
+    expect(programada.data.toISOString()).toBe("2026-08-10T18:00:00.000Z");
+  });
+
+  it("mantém a hora ao editar a programação", async () => {
+    const turma = await criarTurma();
+
+    const programada = await new CreateAulaProgramadaService().execute(
+      { turmaId: turma.id, data: "2026-08-10T18:00" },
+      turma.unidadeId
+    );
+
+    const atualizada = await new UpdateAulaProgramadaService().execute(
+      programada.id,
+      { data: "2026-08-17T20:30" },
+      turma.unidadeId
+    );
+
+    expect(atualizada.data.toISOString()).toBe("2026-08-17T20:30:00.000Z");
+  });
+});
 
 describe("edição e cancelamento de programação", () => {
   it("edita uma programação pendente", async () => {
