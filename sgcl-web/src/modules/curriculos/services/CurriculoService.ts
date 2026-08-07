@@ -7,13 +7,22 @@ import type {
   TecnicaCurriculoFormData,
 } from "../schema/curriculo.schema";
 
+// "Sem modalidade" chega como string vazia do <select>; mandar "" faria o
+// z.coerce.number() do backend virar 0 e falhar no .positive().
+function corpoCurriculo(data: CurriculoFormData) {
+  return {
+    ...data,
+    modalidadeId: data.modalidadeId ? Number(data.modalidadeId) : null,
+  };
+}
+
 export class CurriculoService {
   static async listar() {
     return ApiClient.get<Curriculo[]>("/curriculos");
   }
 
   static async criar(data: CurriculoFormData) {
-    return ApiClient.post<Curriculo>("/curriculos", data);
+    return ApiClient.post<Curriculo>("/curriculos", corpoCurriculo(data));
   }
 
   static async criarModulo(data: ModuloFormData & { curriculoId: number }) {
@@ -34,7 +43,7 @@ export class CurriculoService {
   }
 
   static async atualizar(id: number, data: CurriculoFormData) {
-    return ApiClient.put<Curriculo>(`/curriculos/${id}`, data);
+    return ApiClient.put<Curriculo>(`/curriculos/${id}`, corpoCurriculo(data));
   }
 
   static async atualizarModulo(id: number, data: ModuloFormData) {

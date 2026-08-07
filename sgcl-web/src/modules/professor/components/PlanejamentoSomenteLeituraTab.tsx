@@ -82,7 +82,7 @@ export function PlanejamentoSomenteLeituraTab({ turmas, turmaSelecionada }: Plan
             <div>
               <h2>{curriculoSelecionado.nome}</h2>
               <p>
-                {curriculoSelecionado.modalidade} — {curriculoSelecionado.publico}
+                {curriculoSelecionado.modalidade?.nome ?? "Sem modalidade"} — {curriculoSelecionado.publico}
               </p>
             </div>
           </div>

@@ -17,6 +17,7 @@ export class TurmaService {
       professorId: data.professorId ? Number(data.professorId) : undefined,
       arenaId: data.arenaId ? Number(data.arenaId) : undefined,
       curriculoId: data.curriculoId ? Number(data.curriculoId) : undefined,
+      modalidadeId: data.modalidadeId ? Number(data.modalidadeId) : null,
       limiteAlunos: data.limiteAlunos ? Number(data.limiteAlunos) : undefined,
     });
   }
@@ -27,6 +28,7 @@ export class TurmaService {
       professorId: data.professorId ? Number(data.professorId) : undefined,
       arenaId: data.arenaId ? Number(data.arenaId) : undefined,
       curriculoId: data.curriculoId ? Number(data.curriculoId) : undefined,
+      modalidadeId: data.modalidadeId ? Number(data.modalidadeId) : null,
       limiteAlunos: data.limiteAlunos ? Number(data.limiteAlunos) : undefined,
     });
   }

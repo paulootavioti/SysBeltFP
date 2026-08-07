@@ -13,6 +13,7 @@ interface UpdateTurmaDTO {
   arenaId?: number;
   limiteAlunos?: number;
   curriculoId?: number;
+  modalidadeId?: number | null;
 }
 
 export class UpdateTurmaService {
@@ -47,6 +48,7 @@ export class UpdateTurmaService {
           select: { id: true, nome: true, apelido: true },
         },
         arena: true,
+        modalidade: true,
         curriculo: true,
       },
     });

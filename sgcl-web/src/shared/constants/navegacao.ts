@@ -31,6 +31,7 @@ import {
   LuShoppingBag,
   LuUserPlus,
   LuBuilding2,
+  LuSwords,
 } from "react-icons/lu";
 
 import type { ContadoresMenu } from "../services/NotificacoesService";
@@ -176,6 +177,7 @@ export const NAV_TREE: NavEntry[] = [
       // é quem administra as unidades/filiais do sistema como um todo.
       item("/unidades", "Unidades", LuBuilding2),
       item("/arenas", "Arenas", LuDoorOpen),
+      item("/modalidades", "Modalidades", LuSwords),
       item("/usuarios", "Usuários", LuUserCog),
     ],
   },

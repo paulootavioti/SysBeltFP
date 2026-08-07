@@ -9,6 +9,7 @@ export class GetCurriculoService {
         id,
       },
       include: {
+        modalidade: { select: { id: true, nome: true } },
         modulos: {
           orderBy: {
             ordem: "asc",

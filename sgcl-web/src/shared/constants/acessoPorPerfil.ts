@@ -14,6 +14,8 @@ const REGRAS_ACESSO: RegraAcesso[] = [
   // Arenas (tatames/espaços) da própria unidade — ADMIN/RECEPCAO cuidam
   // da própria unidade; SUPERADMIN também acessa (bypass) pra dar suporte.
   { prefixo: "/arenas", perfis: ["ADMIN", "RECEPCAO"] },
+  // Modalidades organizam turmas, currículos e a vitrine do site.
+  { prefixo: "/modalidades", perfis: ["ADMIN", "RECEPCAO"] },
   { prefixo: "/dashboard", perfis: ["ADMIN"] },
   { prefixo: "/alunos", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
   { prefixo: "/turmas", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },

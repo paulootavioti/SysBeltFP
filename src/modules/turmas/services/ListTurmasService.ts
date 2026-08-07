@@ -17,6 +17,7 @@ export class ListTurmasService {
           },
         },
         arena: true,
+        modalidade: true,
         _count: {
           select: {
             alunos: {

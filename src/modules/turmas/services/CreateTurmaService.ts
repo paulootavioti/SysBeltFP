@@ -13,6 +13,7 @@ interface CreateTurmaDTO {
   arenaId?: number;
   limiteAlunos?: number;
   curriculoId?: number;
+  modalidadeId?: number | null;
 }
 
 export class CreateTurmaService {
@@ -42,6 +43,7 @@ export class CreateTurmaService {
           },
         },
         arena: true,
+        modalidade: true,
         curriculo: true,
       },
     });

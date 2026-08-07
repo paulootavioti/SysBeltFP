@@ -97,6 +97,7 @@ model Unidade {
   ativo Boolean @default(true)
 
   arenas           Arena[]
+  modalidades      Modalidade[]
   usuarios         Usuario[]
   alunos           Aluno[]
   responsaveis     Responsavel[]
@@ -655,6 +656,9 @@ model Turma {
   arenaId Int?
   arena   Arena? @relation(fields: [arenaId], references: [id])
 
+  modalidadeId Int?
+  modalidade   Modalidade? @relation(fields: [modalidadeId], references: [id])
+
   nome        String
   faixaEtaria String
 
@@ -704,6 +708,7 @@ model Usuario {
   ativo Boolean @default(true)
 
   turmas                Turma[]
+  modalidadesCoordenadas Modalidade[]      @relation("ModalidadeCoordenador")
   avisosReconhecidos    AvisoReconhecido[]
   aulasSubstituindo     AulaProgramada[]   @relation("AulaProgramadaProfessorSubstituto")
   graduacoesSolicitadas Graduacao[]        @relation("GraduacaoSolicitante")
@@ -996,16 +1001,55 @@ model Tecnica {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
+model Modalidade {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  nome      String
+  descricao String?
+
+  // texto curto de público na vitrine da landing, ex.: "4 a 13 anos".
+  // É livre de propósito: não é faixa etária calculável, é como a
+  // academia comunica a modalidade pra quem está de fora.
+  publicoAlvo String?
+
+  // quem responde tecnicamente pela modalidade (grade, metodologia,
+  // critério de graduação). Opcional: academia pequena pode não ter.
+  coordenadorId Int?
+  coordenador   Usuario? @relation("ModalidadeCoordenador", fields: [coordenadorId], references: [id])
+
+  // nem toda modalidade interna vai pra vitrine — projeto social e turma
+  // corporativa, por exemplo, existem no sistema sem aparecer no site.
+  visivelNaLanding Boolean @default(false)
+
+  // controla a ordem dos cards na landing; empate desempata por nome.
+  ordem Int @default(0)
+
+  ativo Boolean @default(true)
+
+  turmas     Turma[]
+  curriculos Curriculo[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([unidadeId, nome])
+}
+
 model Curriculo {
   id Int @id @default(autoincrement())
 
   unidadeId Int
   unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  nome       String
-  descricao  String?
-  modalidade String  @default("Jiu-Jitsu")
-  publico    String  @default("Kids")
+  nome      String
+  descricao String?
+  publico   String  @default("Kids")
+
+  modalidadeId Int?
+  modalidade   Modalidade? @relation(fields: [modalidadeId], references: [id])
 
   ativo Boolean @default(true)
 
