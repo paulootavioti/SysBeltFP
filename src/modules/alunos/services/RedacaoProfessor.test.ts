@@ -8,6 +8,10 @@ let unidadeId: number;
 let alunoId: number;
 
 async function limpar() {
+  // criar aluno agora gera consentimento e auditoria — ambos
+  // apontam pra unidade e precisam sair antes dela.
+  await prisma.consentimento.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_REDACAO_" } } } });
+  await prisma.auditLog.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_REDACAO_" } } } });
   await prisma.responsavel.deleteMany({ where: { nome: { startsWith: "TESTE_REDACAO_" } } });
   await prisma.aluno.deleteMany({ where: { nome: { startsWith: "TESTE_REDACAO_" } } });
   await prisma.unidade.deleteMany({ where: { nome: "TESTE_REDACAO_UNIDADE" } });

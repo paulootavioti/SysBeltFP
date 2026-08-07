@@ -21,6 +21,9 @@ interface RegistrarAuditoriaDTO {
   // opcional: quando omitido, sai do contexto da requisição. Isso permite
   // auditar services que nunca receberam usuarioId por parâmetro.
   usuarioId?: number;
+  // Preencher quando a operação não parte de uma pessoa (webhook, cron):
+  // sem isso a ação mais silenciosa do sistema seria a menos rastreável.
+  origemSistema?: string;
   entidade: string;
   entidadeId: number;
   operacao: OperacaoAuditoria;
@@ -49,19 +52,17 @@ export class AuditLogService {
     operacao,
     valoresAntes,
     valoresDepois,
+    origemSistema,
   }: RegistrarAuditoriaDTO) {
     const contexto = obterContextoRequisicao();
-    const autor = usuarioId ?? contexto.usuarioId;
-
-    // Sem autor não há o que auditar de útil, e a FK não aceita nulo —
-    // acontece em cron/script, onde o log não se aplica.
-    if (!autor) return null;
+    const autor = usuarioId ?? contexto.usuarioId ?? null;
 
     try {
       return await prisma.auditLog.create({
         data: {
           unidadeId,
           usuarioId: autor,
+          origemSistema: autor ? null : (origemSistema ?? "sistema"),
           entidade,
           entidadeId,
           operacao,

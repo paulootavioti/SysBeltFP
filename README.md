@@ -201,6 +201,30 @@ Cada modalidade pertence a uma unidade: duas academias podem oferecer "Jiu-Jitsu
 
 Modalidade não se exclui, se inativa: turmas e currículos antigos continuam apontando pra ela e o histórico fica de pé. Inativar é bloqueado enquanto houver turma ativa — quase sempre isso é engano, e o erro diz quantas turmas faltam mover.
 
+## Pagamento por PIX (Mercado Pago)
+
+A cobrança PIX do Portal da Família é gerada pelo Mercado Pago. A escolha do gateway continua sendo por forma de pagamento (`FormaPagamento.configuracao.gateway = "MERCADO_PAGO"`); sem isso a forma segue no fluxo manual, confirmada pela recepção como sempre foi.
+
+Configuração: `MERCADO_PAGO_ACCESS_TOKEN` e `MERCADO_PAGO_WEBHOOK_SECRET` (ver `.env.example`). No painel do Mercado Pago, cadastre a URL `https://SEU-BACKEND/pagamentos/webhook/mercado_pago` no evento "Pagamentos".
+
+### Por que o webhook é a parte delicada
+
+O webhook não carrega o JWT da aplicação — se ele aceitasse qualquer chamada, quem descobrisse a URL daria baixa numa mensalidade sem pagar. Três defesas, nesta ordem:
+
+1. **Assinatura HMAC-SHA256.** O cabeçalho `x-signature` é conferido contra um manifesto montado com o id do recurso, o `x-request-id` e o timestamp, comparado em tempo constante. Sem `MERCADO_PAGO_WEBHOOK_SECRET` configurado, **nada é aceito** — falha fechado, não aberto.
+2. **Janela de tolerância.** Assinatura com mais de 10 minutos é recusada, senão um payload capturado valeria pra sempre.
+3. **O payload não é fonte de verdade.** Recebida a notificação, o sistema relê o pagamento na API do Mercado Pago e decide pelo status de lá. A notificação diz apenas *que* algo mudou.
+
+### Reenvio não é erro
+
+Todo gateway reenvia a notificação enquanto não recebe 200. Cada evento é gravado em `EventoWebhookPagamento` com índice único `(gateway, eventoExternoId)` **antes** de qualquer efeito — a reserva da chave é o que impede dois webhooks simultâneos de darem baixa duas vezes. Repetição responde 200 com `JA_PROCESSADO`.
+
+O payload cru fica guardado: serve de prova em conciliação e permite reprocessar sem depender de o gateway reenviar.
+
+Pagamento que chega para mensalidade **cancelada ou estornada** não reabre a cobrança sozinho — fica registrado como pendente de tratamento manual, porque devolver dinheiro é decisão de gente.
+
+**A recorrência automática ainda não está integrada.** No Mercado Pago ela é outra API (preapproval), com fluxo de autorização próprio; `criarAssinatura` falha de forma explícita em vez de fingir que funcionou. A mensalidade continua sendo gerada pelo sistema e cobrada via PIX avulso.
+
 ## Auditoria e consentimento (LGPD)
 
 Toda operação sensível grava **quem fez, o que mudou e de onde partiu** — IP e dispositivo inclusive. Esses dois campos não são passados de service em service: um `AsyncLocalStorage` guarda o contexto no início da requisição (`shared/context/contextoRequisicao.ts`) e o `AuditLogService` o lê. Isso significa que nenhuma assinatura de função precisou mudar e ninguém tem como esquecer de repassar. Fora de uma requisição (cron, script) os campos ficam nulos em vez de quebrar.

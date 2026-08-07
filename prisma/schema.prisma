@@ -318,8 +318,15 @@ model AuditLog {
   unidadeId Int
   unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  usuarioId Int
-  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  // Nulo quando a operação não partiu de uma pessoa: webhook de gateway,
+  // cron de geração de cobrança, script de manutenção. Antes isto fazia o
+  // registro ser descartado — e justamente a baixa automática de
+  // mensalidade, que ninguém vê acontecer, ficava sem rastro.
+  usuarioId Int?
+  usuario   Usuario? @relation(fields: [usuarioId], references: [id])
+
+  // De onde partiu, quando não foi uma pessoa: "webhook:MERCADO_PAGO".
+  origemSistema String?
 
   entidade   String // ex.: "Mensalidade"
   entidadeId Int
@@ -946,6 +953,35 @@ enum StatusLead {
 // Lead captado pelo formulário da landing page pública (site institucional
 // da unidade — ver src/modules/publico). Sempre criado sem autenticação,
 // escopado por UNIDADE_PUBLICA_ID.
+model EventoWebhookPagamento {
+  id Int @id @default(autoincrement())
+
+  gateway String
+
+  // Identificador do evento no gateway. É a chave de idempotência: todo
+  // gateway reenvia notificação quando não recebe 200, e sem isto uma
+  // retentativa daria baixa duas vezes na mesma mensalidade.
+  eventoExternoId String
+
+  tipo      String
+  recursoId String?
+
+  // payload cru, como chegou — serve de prova em conciliação e permite
+  // reprocessar um evento sem depender do gateway reenviar.
+  payload Json
+
+  processadoEm DateTime?
+  // o que a aplicação fez com o evento: PAGAMENTO_REGISTRADO, IGNORADO,
+  // FALHA — deixa a conciliação legível sem ler o payload.
+  resultado    String?
+  erro         String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([gateway, eventoExternoId])
+  @@index([recursoId])
+}
+
 model Lead {
   id Int @id @default(autoincrement())
 
