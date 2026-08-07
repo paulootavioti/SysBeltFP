@@ -2,6 +2,9 @@ import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { calcularFrequenciaPorPeriodo } from "../../../shared/utils/calcularFrequencia";
+import { AuditLogService } from "../../../shared/services/AuditLogService";
+
+const auditLogService = new AuditLogService();
 
 export class GetAlunoCompletoService {
   async execute(id: number, unidadeId: number | null, perfil?: string) {
@@ -90,6 +93,17 @@ export class GetAlunoCompletoService {
         id: registro.id,
         data: registro.aula.data,
       }));
+
+    // Prontuário completo inclui saúde, documento e financeiro. O
+    // requisito de auditoria pede registrar o que foi VISUALIZADO, não só
+    // o que mudou — é isso que permite investigar acesso indevido depois.
+    await auditLogService.registrar({
+      unidadeId: aluno.unidadeId,
+      entidade: "Aluno",
+      entidadeId: aluno.id,
+      operacao: "CONSULTA_SENSIVEL",
+      valoresDepois: { motivo: "Prontuário completo do aluno" },
+    });
 
     return {
       ...aluno,

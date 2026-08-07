@@ -11,6 +11,7 @@ import { competicoesRoutes } from "./modules/competicoes/routes";
 import { dashboardRoutes } from "./modules/dashboard/routes";
 import { financeiroRoutes } from "./modules/financeiro/routes";
 import { errorHandler } from "./shared/middlewares/errorHandler";
+import { contextoRequisicao } from "./shared/context/contextoRequisicao";
 import { relatoriosRoutes } from "./modules/relatorios/routes";
 import { comportamentosRoutes } from "./modules/comportamentos/routes";
 import { turmasRoutes } from "./modules/turmas/routes";
@@ -26,6 +27,7 @@ import { avisosRoutes } from "./modules/avisos/routes";
 import { unidadesRoutes } from "./modules/unidades/routes";
 import { arenasRoutes } from "./modules/arenas/routes";
 import { modalidadesRoutes } from "./modules/modalidades/routes";
+import { consentimentosRoutes } from "./modules/consentimentos/routes";
 import { metasRoutes } from "./modules/metas/routes";
 import { eventosRoutes } from "./modules/eventos/routes";
 import { formasPagamentoRoutes } from "./modules/formasPagamento/routes";
@@ -52,6 +54,14 @@ const corsOrigin = process.env.CORS_ORIGIN
   : ["http://localhost:5173", "http://localhost:5175", "http://localhost:5176"];
 
 export const app = express();
+
+// Atrás do proxy da hospedagem, sem isto `req.ip` seria sempre o IP do
+// proxy — e a auditoria registraria o mesmo endereço pra todo mundo.
+app.set("trust proxy", true);
+
+// Antes de qualquer rota: guarda IP e dispositivo pra auditoria e
+// consentimentos, sem precisar passar `req` aos services.
+app.use(contextoRequisicao);
 
 if (process.env.NODE_ENV !== "production") {
   app.use((req, res, next) => {
@@ -95,6 +105,7 @@ app.use("/avisos", avisosRoutes);
 app.use("/unidades", unidadesRoutes);
 app.use("/arenas", arenasRoutes);
 app.use("/modalidades", modalidadesRoutes);
+app.use("/consentimentos", consentimentosRoutes);
 app.use("/metas", metasRoutes);
 app.use("/eventos", eventosRoutes);
 app.use("/formas-pagamento", formasPagamentoRoutes);
