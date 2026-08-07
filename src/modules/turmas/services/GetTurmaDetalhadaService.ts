@@ -19,6 +19,7 @@ export class GetTurmaDetalhadaService {
           },
         },
         arena: true,
+        modalidade: true,
         alunos: {
           orderBy: {
             nome: "asc",

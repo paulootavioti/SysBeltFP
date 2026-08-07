@@ -5,7 +5,7 @@ import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 interface UpdateCurriculoDTO {
   nome: string;
   descricao?: string;
-  modalidade?: string;
+  modalidadeId?: number | null;
   publico?: string;
 }
 
@@ -24,7 +24,7 @@ export class UpdateCurriculoService {
       data: {
         nome: data.nome,
         descricao: data.descricao,
-        modalidade: data.modalidade ?? "Jiu-Jitsu",
+        modalidadeId: data.modalidadeId ?? null,
         publico: data.publico ?? "Kids",
       },
     });

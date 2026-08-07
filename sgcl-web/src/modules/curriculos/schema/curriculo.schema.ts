@@ -3,7 +3,7 @@ import { z } from "zod";
 export const curriculoSchema = z.object({
   nome: z.string().min(3, "Informe o nome do currículo."),
   descricao: z.string().optional(),
-  modalidade: z.string().optional(),
+  modalidadeId: z.string().optional(),
   publico: z.string().optional(),
 });
 

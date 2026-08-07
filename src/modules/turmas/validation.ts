@@ -12,4 +12,5 @@ export const turmaSchema = z.object({
   arenaId: z.coerce.number().int().positive().nullish(),
   limiteAlunos: z.coerce.number().int().positive().nullish(),
   curriculoId: z.coerce.number().int().positive().nullish(),
+  modalidadeId: z.coerce.number().int().positive().nullish(),
 });

@@ -16,6 +16,8 @@ import { CurriculoService } from "../../curriculos/services/CurriculoService";
 import type { Usuario } from "../../usuarios/types/usuario";
 import { UsuarioService } from "../../usuarios/services/UsuarioService";
 
+import { useModalidades } from "../../modalidades/hooks/useModalidades";
+
 import type { Arena } from "../../arenas/types/arena";
 import { ArenaService } from "../../arenas/services/ArenaService";
 
@@ -30,6 +32,9 @@ interface TurmaFormProps {
 
 export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) {
   const [curriculos, setCurriculos] = useState<Curriculo[]>([]);
+  // só modalidades ativas viram opção — as inativas seguem visíveis nas
+  // turmas que já as usam, mas não devem entrar em turma nova.
+  const { modalidades } = useModalidades(true);
   const [professores, setProfessores] = useState<Usuario[]>([]);
   const [arenas, setArenas] = useState<Arena[]>([]);
 
@@ -44,6 +49,7 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
       professorId: turma?.professorId ? String(turma.professorId) : "",
       arenaId: turma?.arenaId ? String(turma.arenaId) : "",
       curriculoId: turma?.curriculoId ? String(turma.curriculoId) : "",
+      modalidadeId: turma?.modalidadeId ? String(turma.modalidadeId) : "",
       limiteAlunos: turma?.limiteAlunos ? String(turma.limiteAlunos) : "",
     },
   });
@@ -111,6 +117,17 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
           <FormGridItem>
             <Input label="Horário de Término" type="time" {...register("horarioFim")} />
             <ErrorMessage message={errors.horarioFim?.message ?? ""} />
+          </FormGridItem>
+
+          <FormGridItem span={2}>
+            <Select
+              label="Modalidade"
+              options={[
+                { label: "Sem modalidade", value: "" },
+                ...modalidades.map((m) => ({ label: m.nome, value: String(m.id) })),
+              ]}
+              {...register("modalidadeId")}
+            />
           </FormGridItem>
 
           <FormGridItem span={2}>

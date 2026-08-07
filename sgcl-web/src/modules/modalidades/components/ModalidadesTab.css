@@ -1,0 +1,17 @@
+.modalidades-acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-4);
+}
+
+.modalidades-table-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* usada onde a modalidade não tem coordenador/público definido — o traço
+   sozinho fica ambíguo demais numa tabela cheia. */
+.modalidades-vazio {
+  color: var(--color-text-light);
+}

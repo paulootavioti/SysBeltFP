@@ -26,6 +26,7 @@ async function limpar() {
   await prisma.aula.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_PUBLICO_" } } } });
   await prisma.produto.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_PUBLICO_" } } } });
   await prisma.turma.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_PUBLICO_" } } } });
+  await prisma.modalidade.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_PUBLICO_" } } } });
   await prisma.usuario.deleteMany({ where: { email: { startsWith: "teste_publico_" } } });
   await prisma.unidade.deleteMany({ where: { nome: { startsWith: "TESTE_PUBLICO_" } } });
 }
@@ -54,16 +55,41 @@ describe("obterUnidadePublicaId", () => {
 });
 
 describe("GetModalidadesPublicoService", () => {
-  it("retorna a lista fixa das 4 modalidades, sem depender de unidade", async () => {
+  it("mostra só as modalidades marcadas como visíveis, na ordem configurada", async () => {
+    await prisma.modalidade.createMany({
+      data: [
+        { unidadeId, nome: "Grappling", publicoAlvo: "Sem kimono", visivelNaLanding: true, ordem: 2 },
+        { unidadeId, nome: "Jiu-Jitsu Kids", publicoAlvo: "4 a 13 anos", visivelNaLanding: true, ordem: 1 },
+        { unidadeId, nome: "Projeto Social", visivelNaLanding: false, ordem: 0 },
+      ],
+    });
+
     const modalidades = await modalidadesService.execute();
 
-    expect(modalidades).toHaveLength(4);
-    expect(modalidades.map((m) => m.nome)).toEqual([
-      "Jiu-Jitsu Kids",
-      "Jiu-Jitsu Adulto",
-      "Grappling",
-      "Autodefesa",
-    ]);
+    expect(modalidades.map((m) => m.nome)).toEqual(["Jiu-Jitsu Kids", "Grappling"]);
+    expect(modalidades[0].publico).toBe("4 a 13 anos");
+  });
+
+  it("não vaza modalidade de outra unidade nem modalidade inativa", async () => {
+    await prisma.modalidade.createMany({
+      data: [
+        { unidadeId, nome: "Judô", visivelNaLanding: true, ativo: false },
+        { unidadeId: outraUnidadeId, nome: "Boxe", visivelNaLanding: true },
+      ],
+    });
+
+    expect(await modalidadesService.execute()).toEqual([]);
+  });
+
+  it("descreve o público como texto vazio quando não foi preenchido", async () => {
+    await prisma.modalidade.create({
+      data: { unidadeId, nome: "Defesa Pessoal", visivelNaLanding: true },
+    });
+
+    const [modalidade] = await modalidadesService.execute();
+
+    expect(modalidade.publico).toBe("");
+    expect(modalidade.descricao).toBe("");
   });
 });
 

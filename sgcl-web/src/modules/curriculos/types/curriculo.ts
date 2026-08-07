@@ -33,7 +33,8 @@ export interface Curriculo {
   id: number;
   nome: string;
   descricao?: string | null;
-  modalidade: string;
+  modalidadeId: number | null;
+  modalidade?: { id: number; nome: string } | null;
   publico: string;
   modulos: ModuloCurriculo[];
 }

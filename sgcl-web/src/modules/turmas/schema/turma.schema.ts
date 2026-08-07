@@ -9,6 +9,7 @@ export const turmaSchema = z.object({
   professorId: z.string().min(1, "Selecione o professor."),
   arenaId: z.string().optional(),
   curriculoId: z.string().optional(),
+  modalidadeId: z.string().optional(),
   limiteAlunos: z.string().optional(),
 });
 

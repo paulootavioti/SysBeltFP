@@ -191,6 +191,16 @@ Na `landing-academia/` (site estático) o rodapé traz o copyright da **academia
 
 O ano do copyright vem de `new Date().getFullYear()` (nos apps React) e do `script.js` via `#anoAtual` (na landing), nunca escrito à mão — senão envelhece sozinho na virada do ano.
 
+## Modalidades
+
+O que a academia ensina — Jiu-Jitsu, Muay Thai, defesa pessoal, projeto social — é uma entidade (`Modalidade`), não um texto digitado em cada tela. Turma e currículo apontam pra ela, então "quais turmas de Muay Thai temos" é uma consulta, não uma busca por string.
+
+Cada modalidade pertence a uma unidade: duas academias podem oferecer "Jiu-Jitsu" com coordenadores e grades diferentes, e o índice único é `(unidade, nome)` — o mesmo nome repetido na mesma unidade é recusado com mensagem clara.
+
+`visivelNaLanding` controla o que aparece no site público. Antes a vitrine era uma lista fixa em código e mudá-la exigia deploy; agora a academia marca a caixa na tela de Modalidades e o card aparece. Modalidade interna (projeto social, turma corporativa) existe no sistema sem ir pro site.
+
+Modalidade não se exclui, se inativa: turmas e currículos antigos continuam apontando pra ela e o histórico fica de pé. Inativar é bloqueado enquanto houver turma ativa — quase sempre isso é engano, e o erro diz quantas turmas faltam mover.
+
 ## Controle de acesso (catraca)
 
 Módulo agnóstico de fabricante: o Sys Belt é dono do **cadastro e das regras** (quem entra, com matrícula ativa e mensalidade em dia); o equipamento é dono do **reconhecimento** (facial, biometria, cartão, QR, PIN). Nenhuma regra de negócio conhece marca de catraca — a escolha do fabricante é o campo `DispositivoAcesso.provedor`, resolvido em `src/modules/controleAcesso/providers`, no mesmo padrão já usado em pagamentos e assinatura eletrônica.

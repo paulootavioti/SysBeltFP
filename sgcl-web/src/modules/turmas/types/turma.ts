@@ -23,6 +23,8 @@ export interface Turma {
   ativo: boolean;
   limiteAlunos?: number | null;
   curriculoId?: number | null;
+  modalidadeId?: number | null;
+  modalidade?: { id: number; nome: string } | null;
   curriculo?: {
     id: number;
     nome: string;

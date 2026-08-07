@@ -374,7 +374,7 @@ export function Curriculos() {
             <div className="curriculo-card-header">
               <div>
                 <h2>{curriculo.nome}</h2>
-                <p>{curriculo.modalidade} — {curriculo.publico}</p>
+                <p>{curriculo.modalidade?.nome ?? "Sem modalidade"} — {curriculo.publico}</p>
               </div>
 
               <div className="curriculos-card-acoes">
@@ -453,7 +453,7 @@ export function Curriculos() {
               ? {
                   nome: modal.editando.nome,
                   descricao: modal.editando.descricao ?? "",
-                  modalidade: modal.editando.modalidade,
+                  modalidadeId: modal.editando.modalidadeId ? String(modal.editando.modalidadeId) : "",
                   publico: modal.editando.publico,
                 }
               : undefined
