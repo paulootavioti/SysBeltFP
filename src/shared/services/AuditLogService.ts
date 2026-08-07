@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "../database/prisma";
+import { obterContextoRequisicao } from "../context/contextoRequisicao";
 
 export type OperacaoAuditoria =
   | "CRIACAO"
@@ -8,11 +9,18 @@ export type OperacaoAuditoria =
   | "CANCELAMENTO"
   | "ESTORNO"
   | "PAGAMENTO"
-  | "EXCLUSAO";
+  | "EXCLUSAO"
+  // leitura de dado sensível (ficha médica, prontuário) — o requisito de
+  // auditoria pede registrar o que foi VISUALIZADO, não só alterado.
+  | "CONSULTA_SENSIVEL"
+  | "CONSENTIMENTO"
+  | "REVOGACAO_CONSENTIMENTO";
 
 interface RegistrarAuditoriaDTO {
   unidadeId: number;
-  usuarioId: number;
+  // opcional: quando omitido, sai do contexto da requisição. Isso permite
+  // auditar services que nunca receberam usuarioId por parâmetro.
+  usuarioId?: number;
   entidade: string;
   entidadeId: number;
   operacao: OperacaoAuditoria;
@@ -27,7 +35,7 @@ function paraJson(valor: unknown): Prisma.InputJsonValue | undefined {
   return JSON.parse(JSON.stringify(valor)) as Prisma.InputJsonValue;
 }
 
-// Auditoria genérica de alterações financeiras/contratuais — todo service
+// Auditoria genérica de alterações sensíveis — todo service
 // de escrita sensível (Mensalidade hoje; Contrato/Assinatura nas próximas
 // fases) chama `registrar` depois de concluir a operação. Nunca deve
 // interromper a operação principal por conta própria — falhas de
@@ -42,16 +50,27 @@ export class AuditLogService {
     valoresAntes,
     valoresDepois,
   }: RegistrarAuditoriaDTO) {
+    const contexto = obterContextoRequisicao();
+    const autor = usuarioId ?? contexto.usuarioId;
+
+    // Sem autor não há o que auditar de útil, e a FK não aceita nulo —
+    // acontece em cron/script, onde o log não se aplica.
+    if (!autor) return null;
+
     try {
       return await prisma.auditLog.create({
         data: {
           unidadeId,
-          usuarioId,
+          usuarioId: autor,
           entidade,
           entidadeId,
           operacao,
           valoresAntes: paraJson(valoresAntes),
           valoresDepois: paraJson(valoresDepois),
+          // IP e dispositivo vêm do contexto da requisição — nenhum
+          // service precisa recebê-los nem lembrar de repassá-los.
+          ip: contexto.ip,
+          dispositivo: contexto.dispositivo,
         },
       });
     } catch (error) {

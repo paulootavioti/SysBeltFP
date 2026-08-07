@@ -3,6 +3,12 @@ import { hash } from "bcryptjs";
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { gerarSenhaAleatoria } from "../../../shared/utils/gerarSenhaAleatoria";
+import { AuditLogService } from "../../../shared/services/AuditLogService";
+import { RegistrarConsentimentoService } from "../../consentimentos/services/RegistrarConsentimentoService";
+import { obterContextoRequisicao } from "../../../shared/context/contextoRequisicao";
+
+const auditLogService = new AuditLogService();
+const registrarConsentimento = new RegistrarConsentimentoService();
 
 interface CreateAlunoDTO {
   unidadeId: number;
@@ -169,6 +175,37 @@ export class CreateAlunoService {
       },
     });
 
+    // A autorização de imagem marcada no cadastro precisa virar linha no
+    // livro de registro — senão o booleano do Aluno seria uma segunda
+    // fonte da verdade, divergindo do histórico de consentimentos.
+    await registrarConsentimentoDeImagem(aluno, data.autorizaUsoImagem ?? true);
+
+    await auditLogService.registrar({
+      unidadeId: aluno.unidadeId,
+      entidade: "Aluno",
+      entidadeId: aluno.id,
+      operacao: "CRIACAO",
+      valoresDepois: { nome: aluno.nome, faixa: aluno.faixa, turmaId: aluno.turmaId },
+    });
+
     return { ...aluno, senhaPortalGerada };
   }
+}
+
+// O cadastro pode ser feito por script/seed, sem usuário autenticado no
+// contexto — nesse caso não há quem registrar e o consentimento fica pro
+// momento em que a recepção coletar de fato.
+async function registrarConsentimentoDeImagem(
+  aluno: { id: number; unidadeId: number },
+  concedido: boolean
+) {
+  const { usuarioId } = obterContextoRequisicao();
+
+  if (!usuarioId) return;
+
+  await registrarConsentimento.execute(
+    { alunoId: aluno.id, tipo: "USO_IMAGEM", concedido },
+    aluno.unidadeId,
+    usuarioId
+  );
 }

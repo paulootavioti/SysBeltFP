@@ -122,6 +122,7 @@ model Unidade {
   produtos         Produto[]
   pedidos          Pedido[]
   leads            Lead[]
+  consentimentos   Consentimento[]
 
   createdAt DateTime @default(now())
 
@@ -229,6 +230,7 @@ model Aluno {
 
   credenciaisAcesso CredencialAcesso[]
   eventosAcesso     EventoAcesso[]
+  consentimentos    Consentimento[]
 }
 
 model Responsavel {
@@ -278,6 +280,7 @@ model Responsavel {
   aluno   Aluno @relation(fields: [alunoId], references: [id])
 
   contratosComoContratante Contrato[]
+  consentimentos           Consentimento[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -324,6 +327,12 @@ model AuditLog {
 
   valoresAntes  Json?
   valoresDepois Json?
+
+  // de onde partiu a ação — exigido pelo requisito de auditoria e útil
+  // pra investigar acesso indevido. Nulos quando a operação não veio de
+  // uma requisição HTTP (cron, script de manutenção).
+  ip          String?
+  dispositivo String?
 
   createdAt DateTime @default(now())
 
@@ -526,6 +535,57 @@ model Contrato {
   @@unique([unidadeId, numero])
 }
 
+enum TipoConsentimento {
+  USO_IMAGEM
+  BIOMETRIA
+  DADOS_SAUDE
+  COMUNICACOES
+}
+
+model Consentimento {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  alunoId Int
+  aluno   Aluno @relation(fields: [alunoId], references: [id])
+
+  tipo TipoConsentimento
+
+  // Quem de fato consentiu. Para menor de idade é o responsável — a LGPD
+  // exige consentimento específico dado por ele (art. 14, §1º), então
+  // guardar só "o aluno consentiu" não serviria como prova.
+  responsavelId Int?
+  responsavel   Responsavel? @relation(fields: [responsavelId], references: [id])
+
+  concedido Boolean
+
+  // Versão do texto aceito. Sem isso não dá pra saber A QUE a pessoa
+  // consentiu quando a política mudar.
+  versaoPolitica String
+
+  // Quem registrou no sistema (recepção, admin) — diferente de quem
+  // consentiu.
+  registradoPorId Int?
+  registradoPor   Usuario? @relation("ConsentimentoRegistrador", fields: [registradoPorId], references: [id])
+
+  ip          String?
+  dispositivo String?
+
+  observacao String?
+
+  // Consentimento é revogável a qualquer tempo (art. 8º, §5º). A linha
+  // não é apagada: revogar é um fato que também precisa ficar registrado.
+  revogadoEm     DateTime?
+  revogadoPorId  Int?
+  revogadoPor    Usuario?  @relation("ConsentimentoRevogador", fields: [revogadoPorId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([alunoId, tipo])
+}
+
 model Graduacao {
   id Int @id @default(autoincrement())
 
@@ -718,6 +778,8 @@ model Usuario {
   // exatamente uma.
   unidadesVinculadas    UsuarioUnidade[]
   auditLogs             AuditLog[]
+  consentimentosRegistrados Consentimento[] @relation("ConsentimentoRegistrador")
+  consentimentosRevogados   Consentimento[] @relation("ConsentimentoRevogador")
   fotosTreinoPublicadas FotoTreino[]
   notasAulaCriadas      NotaAula[]
 

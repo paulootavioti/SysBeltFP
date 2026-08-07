@@ -4,6 +4,12 @@ import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { gerarSenhaAleatoria } from "../../../shared/utils/gerarSenhaAleatoria";
+import { AuditLogService } from "../../../shared/services/AuditLogService";
+import { RegistrarConsentimentoService } from "../../consentimentos/services/RegistrarConsentimentoService";
+import { obterContextoRequisicao } from "../../../shared/context/contextoRequisicao";
+
+const auditLogService = new AuditLogService();
+const registrarConsentimento = new RegistrarConsentimentoService();
 
 interface UpdateAlunoDTO {
   id: number;
@@ -59,6 +65,33 @@ function toNumberOrNull(value: unknown) {
   }
 
   return Number(value);
+}
+
+// Guardar o cadastro inteiro em cada edição encheria a auditoria de
+// ruído. Este recorte é o que de fato importa rastrear: identificação,
+// dado sensível de saúde e a autorização de imagem.
+function recorteAuditavel(aluno: {
+  nome: string;
+  cpf: string | null;
+  faixa: string;
+  turmaId: number | null;
+  ativo: boolean;
+  restricoesMedicas: string | null;
+  alergias: string | null;
+  medicamentos: string | null;
+  autorizaUsoImagem: boolean;
+}) {
+  return {
+    nome: aluno.nome,
+    cpf: aluno.cpf,
+    faixa: aluno.faixa,
+    turmaId: aluno.turmaId,
+    ativo: aluno.ativo,
+    restricoesMedicas: aluno.restricoesMedicas,
+    alergias: aluno.alergias,
+    medicamentos: aluno.medicamentos,
+    autorizaUsoImagem: aluno.autorizaUsoImagem,
+  };
 }
 
 export class UpdateAlunoService {
@@ -143,6 +176,36 @@ export class UpdateAlunoService {
         planoId: toNumberOrNull(data.planoId),
         ...(senhaPortalHash !== undefined ? { senhaPortal: senhaPortalHash } : {}),
       },
+    });
+
+    const mudouAutorizacao =
+      data.autorizaUsoImagem !== null &&
+      data.autorizaUsoImagem !== undefined &&
+      data.autorizaUsoImagem !== aluno.autorizaUsoImagem;
+
+    // Só registra quando a resposta de fato muda: reabrir e salvar o
+    // cadastro sem tocar na caixa não deve virar consentimento novo.
+    if (mudouAutorizacao) {
+      const { usuarioId } = obterContextoRequisicao();
+
+      if (usuarioId) {
+        await registrarConsentimento.execute(
+          { alunoId: atualizado.id, tipo: "USO_IMAGEM", concedido: data.autorizaUsoImagem! },
+          atualizado.unidadeId,
+          usuarioId
+        );
+      }
+    }
+
+    await auditLogService.registrar({
+      unidadeId: atualizado.unidadeId,
+      entidade: "Aluno",
+      entidadeId: atualizado.id,
+      operacao: "ATUALIZACAO",
+      // dados de saúde e documento são o que mais importa saber quem
+      // mexeu — o diff completo do cadastro seria ruído.
+      valoresAntes: recorteAuditavel(aluno),
+      valoresDepois: recorteAuditavel(atualizado),
     });
 
     return { ...atualizado, senhaPortalGerada };

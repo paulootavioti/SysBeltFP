@@ -4,6 +4,7 @@ import { verify } from "jsonwebtoken";
 import { AppError } from "../errors/AppError";
 import { prisma } from "../database/prisma";
 import { PERFIS_MULTI_UNIDADE } from "../constants/perfis";
+import { definirUsuarioDoContexto } from "../context/contextoRequisicao";
 
 interface TokenPayload {
   sub: string;
@@ -48,6 +49,8 @@ export async function ensureAuthenticated(
       perfil: usuario.perfil,
       unidadeId: usuario.unidadeId
     };
+
+    definirUsuarioDoContexto(usuario.id);
 
     // SUPERADMIN pode "visualizar como" uma unidade específica — o frontend
     // manda o id escolhido nesse header, e a partir daqui toda a cadeia de

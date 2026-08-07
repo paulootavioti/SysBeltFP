@@ -8,6 +8,7 @@ import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 import { RegistrarEventoAcessoService } from "./services/RegistrarEventoAcessoService";
 import { ListEventosAcessoService } from "./services/ListEventosAcessoService";
 import { AutorizarAcessoService } from "./services/AutorizarAcessoService";
+import { CriarCredencialService } from "./services/CriarCredencialService";
 import { obterProvedorAcesso } from "./providers";
 
 export class ControleAcessoController {
@@ -42,16 +43,9 @@ export class ControleAcessoController {
   }
 
   async criarCredencial(req: Request, res: Response) {
-    const credencial = await prisma.credencialAcesso.create({
-      data: {
-        alunoId: req.body.alunoId ?? null,
-        usuarioId: req.body.usuarioId ?? null,
-        dispositivoId: req.body.dispositivoId ?? null,
-        tipo: req.body.tipo,
-        valor: req.body.valor ?? null,
-        validoAte: req.body.validoAte ?? null,
-      },
-    });
+    const service = new CriarCredencialService();
+
+    const credencial = await service.execute(req.body);
 
     return res.status(201).json(credencial);
   }

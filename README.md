@@ -201,6 +201,26 @@ Cada modalidade pertence a uma unidade: duas academias podem oferecer "Jiu-Jitsu
 
 Modalidade não se exclui, se inativa: turmas e currículos antigos continuam apontando pra ela e o histórico fica de pé. Inativar é bloqueado enquanto houver turma ativa — quase sempre isso é engano, e o erro diz quantas turmas faltam mover.
 
+## Auditoria e consentimento (LGPD)
+
+Toda operação sensível grava **quem fez, o que mudou e de onde partiu** — IP e dispositivo inclusive. Esses dois campos não são passados de service em service: um `AsyncLocalStorage` guarda o contexto no início da requisição (`shared/context/contextoRequisicao.ts`) e o `AuditLogService` o lê. Isso significa que nenhuma assinatura de função precisou mudar e ninguém tem como esquecer de repassar. Fora de uma requisição (cron, script) os campos ficam nulos em vez de quebrar.
+
+A auditoria cobre alteração e também **leitura**: abrir o prontuário completo de um aluno — que traz saúde, documento e financeiro — grava um registro `CONSULTA_SENSIVEL`. Sem isso não há como investigar acesso indevido depois, já que consultar não deixa marca no dado.
+
+Atrás de proxy o IP real vem no `X-Forwarded-For`; o app usa `trust proxy` e pega o primeiro da cadeia, senão a auditoria registraria o endereço do proxy pra todo mundo.
+
+### Consentimento
+
+`Consentimento` é um livro de registro, não um booleano: guarda o tipo (uso de imagem, biometria, dados de saúde, comunicações), quem consentiu — **o responsável, quando o aluno é menor**, como a LGPD exige (art. 14, §1º) —, quem registrou, quando, de onde e **a versão da política aceita**. Sem a versão não dá pra saber a que a pessoa consentiu depois que o texto mudar.
+
+Consentimento não se apaga, se revoga (art. 8º, §5º): a linha permanece com `revogadoEm` preenchido, porque a revogação também é um fato a registrar.
+
+`Aluno.autorizaUsoImagem` continua existindo como projeção do estado atual, lida no caminho quente da publicação de fotos — mas só é escrita pelo serviço de consentimento, inclusive quando a caixa é marcada na tela do aluno. É isso que impede o booleano e o histórico de divergirem.
+
+**Biometria é bloqueada sem consentimento.** Cadastrar credencial `FACIAL` ou `BIOMETRIA` para um aluno exige consentimento específico vigente, senão a API recusa com 403. Cartão, QR Code e PIN não passam por essa exigência — não são biometria.
+
+Os consentimentos criados pela migration têm versão `migracao-inicial`: vieram do booleano antigo e **não valem como evidência de coleta** — não há registro de quem respondeu nem a que texto. `temConsentimentoValido` os trata como inválidos de propósito, então a academia precisa recoletar antes de ligar reconhecimento facial.
+
 ## Controle de acesso (catraca)
 
 Módulo agnóstico de fabricante: o Sys Belt é dono do **cadastro e das regras** (quem entra, com matrícula ativa e mensalidade em dia); o equipamento é dono do **reconhecimento** (facial, biometria, cartão, QR, PIN). Nenhuma regra de negócio conhece marca de catraca — a escolha do fabricante é o campo `DispositivoAcesso.provedor`, resolvido em `src/modules/controleAcesso/providers`, no mesmo padrão já usado em pagamentos e assinatura eletrônica.
@@ -220,7 +240,7 @@ O motor de regras (`AutorizarAcessoService`) nega por: credencial inexistente/re
 
 A foto de perfil que já existe **não serve** como base de reconhecimento: é enquadramento livre, sem captura controlada nem prova de vivacidade. Ela pode ser o ponto de partida do cadastro no equipamento, não a base da comparação.
 
-Dado biométrico é **dado pessoal sensível** (LGPD, art. 5º, II): exige consentimento específico e destacado, finalidade declarada e política de retenção — com atenção redobrada aos alunos menores de idade. O `Aluno.autorizaUsoImagem` de hoje cobre foto de divulgação, **não** biometria; um consentimento próprio precisa ser adicionado antes de habilitar o cadastro facial. Por isso o template biométrico não é guardado no banco: fica no equipamento, e o sistema só referencia o id dele (`CredencialAcesso.provedorPessoaId`).
+Dado biométrico é **dado pessoal sensível** (LGPD, art. 5º, II) — o módulo de consentimento acima já bloqueia o cadastro biométrico sem autorização vigente. Exige consentimento específico e destacado, finalidade declarada e política de retenção — com atenção redobrada aos alunos menores de idade. O `Aluno.autorizaUsoImagem` de hoje cobre foto de divulgação, **não** biometria; um consentimento próprio precisa ser adicionado antes de habilitar o cadastro facial. Por isso o template biométrico não é guardado no banco: fica no equipamento, e o sistema só referencia o id dele (`CredencialAcesso.provedorPessoaId`).
 
 ## Fotos servidas por URL assinada
 
