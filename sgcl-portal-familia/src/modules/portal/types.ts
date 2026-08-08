@@ -54,6 +54,12 @@ export interface ResultadoPagamento {
   gatewayId: string;
   status: string;
   linkPagamento?: string;
+  // PIX: o "copia e cola" e a mesma informação como imagem. Vêm vazios
+  // quando a forma de pagamento não tem gateway integrado — nesse caso a
+  // confirmação segue sendo manual, pela recepção.
+  pixCopiaECola?: string;
+  pixQrCodeBase64?: string;
+  expiraEm?: string | null;
 }
 
 export interface Agenda {

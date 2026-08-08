@@ -8,6 +8,7 @@ import { Button } from "../../../components/ui/Button";
 import { Modal } from "../../../components/ui/Modal";
 
 import { PortalService } from "../services/PortalService";
+import { PagamentoPix } from "./PagamentoPix";
 import { getApiErrorMessage } from "../../../utils/getApiErrorMessage";
 import type { Mensalidade, ResultadoPagamento } from "../types";
 import { formatarData } from "../../../utils/formatarData";
@@ -51,6 +52,13 @@ export function MensalidadesTab({ alunoId }: MensalidadesTabProps) {
     setPagando(null);
     setResultado(null);
     setErroPagamento("");
+  }
+
+  // Quando o PIX cai, a mensalidade some da lista de "a pagar" — então a
+  // lista precisa ser recarregada, não só o modal fechado.
+  function confirmarPago() {
+    fecharModal();
+    carregar();
   }
 
   async function confirmarPagamento() {
@@ -105,17 +113,26 @@ export function MensalidadesTab({ alunoId }: MensalidadesTabProps) {
       })}
 
       <Modal open={pagando !== null} title="Pagar mensalidade" onClose={fecharModal}>
-        {resultado ? (
-          <div className="mensalidades-tab-confirmacao">
-            <p>Cobrança iniciada com sucesso.</p>
-            <p className="mensalidades-tab-confirmacao-nota">
-              Ainda não temos um gateway de pagamento integrado (TODO da equipe de produto/infra) — a confirmação é
-              manual. Assim que o pagamento for recebido, nossa equipe atualiza o status por aqui.
-            </p>
-            <Button type="button" onClick={fecharModal}>
-              Fechar
-            </Button>
-          </div>
+        {resultado && pagando ? (
+          resultado.pixCopiaECola || resultado.pixQrCodeBase64 ? (
+            <PagamentoPix
+              mensalidadeId={pagando.id}
+              alunoId={alunoId}
+              cobranca={resultado}
+              onPago={confirmarPago}
+            />
+          ) : (
+            <div className="mensalidades-tab-confirmacao">
+              <p>Cobrança registrada.</p>
+              <p className="mensalidades-tab-confirmacao-nota">
+                Esta forma de pagamento é confirmada pela recepção. Assim que o pagamento for
+                recebido, o status aparece atualizado por aqui.
+              </p>
+              <Button type="button" onClick={fecharModal}>
+                Fechar
+              </Button>
+            </div>
+          )
         ) : (
           <div className="mensalidades-tab-confirmacao">
             <p>

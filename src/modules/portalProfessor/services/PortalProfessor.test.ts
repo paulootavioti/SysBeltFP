@@ -10,6 +10,7 @@ import { CriarNotaAulaService } from "./CriarNotaAulaService";
 import { RegistrarObservacaoAulaService } from "./RegistrarObservacaoAulaService";
 import { FinalizarAulaProfessorService } from "./FinalizarAulaProfessorService";
 import { criarNotaAulaSchema } from "../validation";
+import { intervaloHojeBrasilia } from "../utils/hoje";
 
 const hojeService = new GetAulasHojeProfessorService();
 const aulaService = new GetAulaProfessorService();
@@ -123,12 +124,17 @@ describe("GetAulasHojeProfessorService", () => {
     });
 
     const hoje = new Date();
+    // AulaProgramada.data é a meia-noite UTC do dia (ver utils/hoje.ts).
+    // Gravar `new Date()` cru deixava o teste falhar entre 21h e meia-noite
+    // de Brasília, quando o instante atual já caiu no dia UTC seguinte e
+    // sai da janela consultada.
+    const diaDeHoje = intervaloHojeBrasilia(hoje).inicio;
 
     await prisma.aulaProgramada.create({
-      data: { unidadeId: unidade.id, turmaId: outraTurma.id, data: hoje, status: "PENDENTE" },
+      data: { unidadeId: unidade.id, turmaId: outraTurma.id, data: diaDeHoje, status: "PENDENTE" },
     });
     await prisma.aulaProgramada.create({
-      data: { unidadeId: unidade.id, turmaId: turma.id, data: hoje, status: "PENDENTE" },
+      data: { unidadeId: unidade.id, turmaId: turma.id, data: diaDeHoje, status: "PENDENTE" },
     });
 
     const resultado = await hojeService.execute(solicitanteDe(professor), hoje);
@@ -154,7 +160,12 @@ describe("GetAulasHojeProfessorService", () => {
       },
     });
     await prisma.aulaProgramada.create({
-      data: { unidadeId: unidade.id, turmaId: turmaDoOutro.id, data: new Date(), status: "PENDENTE" },
+      data: {
+        unidadeId: unidade.id,
+        turmaId: turmaDoOutro.id,
+        data: intervaloHojeBrasilia(new Date()).inicio,
+        status: "PENDENTE",
+      },
     });
 
     const resultado = await hojeService.execute(solicitanteDe(professor), new Date());
