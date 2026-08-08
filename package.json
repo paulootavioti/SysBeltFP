@@ -14,7 +14,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "seed:admin": "ts-node prisma/seeds/criarAdminInicial.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test:db:preparar": "node scripts/prepararBancoDeTeste.mjs"
   },
   "keywords": [],
   "author": "",
