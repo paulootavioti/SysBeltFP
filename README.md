@@ -225,6 +225,34 @@ Pagamento que chega para mensalidade **cancelada ou estornada** não reabre a co
 
 **A recorrência automática ainda não está integrada.** No Mercado Pago ela é outra API (preapproval), com fluxo de autorização próprio; `criarAssinatura` falha de forma explícita em vez de fingir que funcionou. A mensalidade continua sendo gerada pelo sistema e cobrada via PIX avulso.
 
+## WhatsApp (Meta Cloud API)
+
+Avisos da academia — cobrança, lembrete de aula, entrada e saída da criança — saem pelo WhatsApp Cloud API, direto da Meta, sem intermediário.
+
+**Nada é enviado enquanto `WHATSAPP_PROVIDER` estiver vazio.** O padrão registra no banco o que *seria* enviado e devolve um id simulado. Isso é de propósito: enquanto os templates não estão aprovados, a régua de cobrança roda inteira em homologação sem mandar mensagem para ninguém, e o registro mostra exatamente o que sairia.
+
+### Antes de ligar, três coisas dependem de você
+
+1. **Número dedicado.** O número usado na Cloud API não pode estar ativo no WhatsApp comum nem no Business — a migração é definitiva.
+2. **Templates aprovados.** A Meta só deixa a empresa *iniciar* conversa por template aprovado; texto livre vale apenas como resposta, dentro de 24h após a pessoa escrever. Os textos a cadastrar estão em `src/modules/whatsapp/templates.ts`, com os `{{n}}` na ordem exata que o código envia — se o texto aprovado divergir, o envio falha por parâmetro. Todos são categoria UTILITY, que aprova mais fácil e custa menos que MARKETING.
+3. **Aprovação leva dias.** Comece por ela.
+
+### O consentimento vale aqui também
+
+Mensagem iniciada pela academia é comunicação ativa e exige consentimento `COMUNICACOES` do aluno. Sem ele a mensagem não sai, e o registro fica como `BLOQUEADA_SEM_CONSENTIMENTO` — some do envio, não da história.
+
+### Por que a assinatura do webhook é delicada
+
+A Meta assina o corpo com HMAC-SHA256 no cabeçalho `X-Hub-Signature-256`. A pegadinha: o HMAC é sobre o corpo **cru**, byte a byte. Reserializar o JSON já parseado não funciona, porque a Meta escapa caracteres não-ASCII e o `JSON.stringify` do Node não faz isso.
+
+Num sistema em português isso significa que a verificação passaria nos testes com texto sem acento e **falharia justamente nas mensagens reais**. Por isso o corpo cru é capturado no `verify` do `express.json` e a conferência usa os bytes originais.
+
+### Repetição e ordem
+
+Cada mensagem carrega uma chave de idempotência que identifica o **fato**, não a tentativa: `mensalidade-123-vencida` é sempre a mesma chave. Rodar a régua de cobrança de novo não enche o WhatsApp do responsável.
+
+Os status (`sent`, `delivered`, `read`) chegam em eventos separados e podem vir fora de ordem — o serviço de entrega só avança, nunca regride: um "entregue" atrasado não sobrescreve um "lida" já registrado.
+
 ## Auditoria e consentimento (LGPD)
 
 Toda operação sensível grava **quem fez, o que mudou e de onde partiu** — IP e dispositivo inclusive. Esses dois campos não são passados de service em service: um `AsyncLocalStorage` guarda o contexto no início da requisição (`shared/context/contextoRequisicao.ts`) e o `AuditLogService` o lê. Isso significa que nenhuma assinatura de função precisou mudar e ninguém tem como esquecer de repassar. Fora de uma requisição (cron, script) os campos ficam nulos em vez de quebrar.

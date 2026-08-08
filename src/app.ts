@@ -28,6 +28,7 @@ import { unidadesRoutes } from "./modules/unidades/routes";
 import { arenasRoutes } from "./modules/arenas/routes";
 import { modalidadesRoutes } from "./modules/modalidades/routes";
 import { consentimentosRoutes } from "./modules/consentimentos/routes";
+import { whatsappRoutes } from "./modules/whatsapp/routes";
 import { metasRoutes } from "./modules/metas/routes";
 import { eventosRoutes } from "./modules/eventos/routes";
 import { formasPagamentoRoutes } from "./modules/formasPagamento/routes";
@@ -74,7 +75,16 @@ app.use(cors({
   origin: corsOrigin
 }));
 
-app.use(express.json());
+// `verify` roda antes do parse e recebe os bytes originais — é a única
+// janela pra guardar o corpo cru, necessário pra conferir a assinatura do
+// webhook da Meta.
+app.use(
+  express.json({
+    verify: (req, _res, buffer) => {
+      (req as express.Request).corpoCru = Buffer.from(buffer);
+    },
+  })
+);
 
 app.get("/", (req, res) => {
   return res.json({
@@ -106,6 +116,7 @@ app.use("/unidades", unidadesRoutes);
 app.use("/arenas", arenasRoutes);
 app.use("/modalidades", modalidadesRoutes);
 app.use("/consentimentos", consentimentosRoutes);
+app.use("/whatsapp", whatsappRoutes);
 app.use("/metas", metasRoutes);
 app.use("/eventos", eventosRoutes);
 app.use("/formas-pagamento", formasPagamentoRoutes);
