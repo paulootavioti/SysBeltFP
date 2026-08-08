@@ -162,6 +162,30 @@ A correção é usar uma conexão **direta** (sem pooler) só para o passo de mi
 2. No Netlify, em "Site settings" → "Environment variables" do projeto que roda o backend, adicione `DIRECT_DATABASE_URL` com esse valor, em todos os contextos de deploy.
 3. Redeploy. Sem essa variável definida, o build usa `DATABASE_URL` como antes — então não quebra nada enquanto você não configura, só continua sujeito ao mesmo erro intermitente.
 
+### Banco de testes (leia antes de rodar `npm test`)
+
+A suíte de integração cria e **apaga** registros de verdade. Ela roda contra o banco apontado por `DATABASE_URL`, então rodá-la com o `.env` de produção carregado significa mexer no banco que a academia usa — e basta um filtro escrito errado num teste futuro pra apagar dado real.
+
+Por isso a suíte usa um `.env.test` próprio, com prioridade sobre o `.env`:
+
+```bash
+cp .env.test.example .env.test   # ajuste usuário/senha do seu Postgres
+npm run test:db:preparar         # cria o banco e aplica as migrations
+npm test
+```
+
+O `test:db:preparar` roda uma vez só; depois disso `npm test` já usa o banco local sozinho.
+
+**Há uma trava.** Antes de abrir qualquer conexão, o setup confere se o banco é de teste: ou está na própria máquina, ou tem "test"/"teste" no nome (o que cobre o Postgres do CI e um branch de teste do Neon). Se não for, a suíte para com a instrução do que fazer, em vez de tocar no banco.
+
+Se você precisar mesmo rodar contra outro banco — investigar um bug que só acontece em produção, por exemplo — a exceção é explícita:
+
+```bash
+PERMITIR_TESTE_EM_BANCO_REAL=1 npm test
+```
+
+Além da segurança, faz diferença de tempo: contra um Postgres local a suíte leva cerca de 30 segundos; contra um banco remoto pela internet passa de 8 minutos, porque cada consulta vira uma viagem de rede — e o limite de 5s por teste começa a estourar sozinho.
+
 ## Stack
 
 - **Backend**: Node.js, Express, TypeScript, Prisma ORM, PostgreSQL, JWT, Zod
