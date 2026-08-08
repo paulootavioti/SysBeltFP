@@ -2,18 +2,28 @@ import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { obterGateway } from "../../pagamentos/gateways";
 
-// TODO(produto/infra): nenhum gateway de pagamento está configurado ainda
-// (ver src/modules/pagamentos/gateways) — este service só inicia a
-// cobrança pelo gateway manual (NullPaymentGateway), que devolve status
-// "aguardando confirmação manual" e nenhum link de checkout real. Quando
-// um gateway de verdade for habilitado em FormaPagamento.configuracao,
-// este mesmo código passa a devolver o link de pagamento de fato, sem
-// mudar a rota nem o frontend.
+// Qual gateway atende depende da forma de pagamento da mensalidade
+// (`FormaPagamento.configuracao.gateway`). Sem gateway configurado, cai
+// no manual e a recepção confirma à mão, como sempre foi.
 export class PagarMensalidadeFamiliaService {
   async execute(mensalidadeId: number, alunoId: number) {
     const mensalidade = await prisma.mensalidade.findUnique({
       where: { id: mensalidadeId },
-      include: { formaPagamento: true },
+      include: {
+        formaPagamento: true,
+        // PIX exige e-mail do pagador. O do responsável vem primeiro:
+        // é quem costuma pagar, e o aluno menor raramente tem e-mail.
+        aluno: {
+          select: {
+            nome: true,
+            email: true,
+            responsaveis: {
+              where: { ativo: true },
+              select: { nome: true, email: true, responsavelFinanceiro: true },
+            },
+          },
+        },
+      },
     });
 
     if (!mensalidade || mensalidade.alunoId !== alunoId) {
@@ -33,11 +43,14 @@ export class PagarMensalidadeFamiliaService {
       (mensalidade.formaPagamento?.configuracao as { gateway?: string } | null)?.gateway
     );
 
+    const pagador = escolherPagador(mensalidade.aluno);
+
     const resultado = await gateway.criarCobranca({
       valor: mensalidade.valorFinal || mensalidade.valor,
       vencimento: mensalidade.vencimento,
       descricao: mensalidade.descricao,
       referenciaExterna: String(mensalidade.id),
+      pagador,
     });
 
     return {
@@ -45,4 +58,22 @@ export class PagarMensalidadeFamiliaService {
       ...resultado,
     };
   }
+}
+
+// O responsável financeiro é a primeira escolha; depois qualquer
+// responsável com e-mail; por último o próprio aluno.
+function escolherPagador(aluno: {
+  nome: string;
+  email: string | null;
+  responsaveis: { nome: string; email: string | null; responsavelFinanceiro: boolean }[];
+}) {
+  const financeiro = aluno.responsaveis.find((r) => r.responsavelFinanceiro && r.email);
+  const qualquer = aluno.responsaveis.find((r) => r.email);
+  const escolhido = financeiro ?? qualquer;
+
+  if (escolhido) {
+    return { email: escolhido.email, nome: escolhido.nome };
+  }
+
+  return { email: aluno.email, nome: aluno.nome };
 }
