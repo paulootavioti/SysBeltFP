@@ -5,6 +5,7 @@ import { AppError } from "../../../shared/errors/AppError";
 import { SolicitarGraduacaoService } from "./SolicitarGraduacaoService";
 import { AprovarGraduacaoService } from "./AprovarGraduacaoService";
 import { RejeitarGraduacaoService } from "./RejeitarGraduacaoService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const solicitarService = new SolicitarGraduacaoService();
 const aprovarService = new AprovarGraduacaoService();
@@ -41,7 +42,7 @@ async function limpar() {
 beforeEach(async () => {
   await limpar();
 
-  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_GRADUACAO_SOLICITACAO_UNIDADE" } });
+  const unidade = await criarUnidadeDeTeste("TESTE_GRADUACAO_SOLICITACAO_UNIDADE");
   unidadeId = unidade.id;
 
   const professor = await prisma.usuario.create({
@@ -102,7 +103,7 @@ describe("SolicitarGraduacaoService", () => {
   });
 
   it("rejeita solicitação para aluno de outra unidade", async () => {
-    const outraUnidade = await prisma.unidade.create({ data: { nome: "TESTE_GRADUACAO_SOLICITACAO_UNIDADE_2" } });
+    const outraUnidade = await criarUnidadeDeTeste("TESTE_GRADUACAO_SOLICITACAO_UNIDADE_2");
     const aluno = await prisma.aluno.create({
       data: {
         unidadeId: outraUnidade.id,

@@ -3,6 +3,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vites
 import { prisma } from "../../../shared/database/prisma";
 import { GetGradeSemanalService } from "./GetGradeSemanalService";
 import { calcularSemana } from "../utils/semana";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const service = new GetGradeSemanalService();
 
@@ -33,9 +34,7 @@ describe("GetGradeSemanalService", () => {
   it("lista programações da semana com o status de exibição correto", async () => {
     const { inicio } = calcularSemana(AGORA_FIXO);
 
-    const unidade = await prisma.unidade.create({
-      data: { nome: "TESTE_GRADE_UNIDADE" },
-    });
+    const unidade = await criarUnidadeDeTeste("TESTE_GRADE_UNIDADE");
 
     const professor = await prisma.usuario.create({
       data: {

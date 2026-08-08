@@ -5,6 +5,7 @@ import { AppError } from "../../../shared/errors/AppError";
 import { DeleteModuloCurriculoService } from "./DeleteModuloCurriculoService";
 import { DeleteAulaCurriculoService } from "./DeleteAulaCurriculoService";
 import { DeleteTecnicaCurriculoService } from "./DeleteTecnicaCurriculoService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const deleteModuloService = new DeleteModuloCurriculoService();
 const deleteAulaService = new DeleteAulaCurriculoService();
@@ -33,8 +34,8 @@ async function limpar() {
 
 beforeEach(async () => {
   await limpar();
-  const unidadeA = await prisma.unidade.create({ data: { nome: "TESTE_DELCURR_UNIDADE_A" } });
-  const unidadeB = await prisma.unidade.create({ data: { nome: "TESTE_DELCURR_UNIDADE_B" } });
+  const unidadeA = await criarUnidadeDeTeste("TESTE_DELCURR_UNIDADE_A");
+  const unidadeB = await criarUnidadeDeTeste("TESTE_DELCURR_UNIDADE_B");
   unidadeAId = unidadeA.id;
   unidadeBId = unidadeB.id;
 

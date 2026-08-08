@@ -3,6 +3,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "../../../shared/database/prisma";
 import { ReceberWebhookPagamentoService } from "./ReceberWebhookPagamentoService";
 import type { PaymentGateway, WebhookEvento } from "../gateways/PaymentGateway";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const service = new ReceberWebhookPagamentoService();
 
@@ -41,7 +42,7 @@ function gatewayFalso(evento: Partial<WebhookEvento>): PaymentGateway {
 }
 
 async function criarMensalidade(valor = 150) {
-  const unidade = await prisma.unidade.create({ data: { nome: `${PREFIXO}UNIDADE` } });
+  const unidade = await criarUnidadeDeTeste(`${PREFIXO}UNIDADE`);
 
   const aluno = await prisma.aluno.create({
     data: {

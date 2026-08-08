@@ -6,6 +6,7 @@ import { CreateEventoService } from "./CreateEventoService";
 import { UpdateEventoService } from "./UpdateEventoService";
 import { DeleteEventoService } from "./DeleteEventoService";
 import { ListEventosService } from "./ListEventosService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const createService = new CreateEventoService();
 const updateService = new UpdateEventoService();
@@ -22,8 +23,8 @@ async function limpar() {
 
 beforeEach(async () => {
   await limpar();
-  const unidadeA = await prisma.unidade.create({ data: { nome: "TESTE_EVENTOCRUD_UNIDADE_A" } });
-  const unidadeB = await prisma.unidade.create({ data: { nome: "TESTE_EVENTOCRUD_UNIDADE_B" } });
+  const unidadeA = await criarUnidadeDeTeste("TESTE_EVENTOCRUD_UNIDADE_A");
+  const unidadeB = await criarUnidadeDeTeste("TESTE_EVENTOCRUD_UNIDADE_B");
   unidadeAId = unidadeA.id;
   unidadeBId = unidadeB.id;
 });

@@ -4,6 +4,7 @@ import { prisma } from "../../../shared/database/prisma";
 import { CreateMensalidadeService } from "../../mensalidades/services/CreateMensalidadeService";
 import { PagarMensalidadeService } from "../../mensalidades/services/PagarMensalidadeService";
 import { GetDashboardFinanceiroService } from "./GetDashboardFinanceiroService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const createMensalidadeService = new CreateMensalidadeService();
 const pagarService = new PagarMensalidadeService();
@@ -26,7 +27,7 @@ async function limpar() {
 beforeEach(async () => {
   await limpar();
 
-  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_DASHFIN_UNIDADE" } });
+  const unidade = await criarUnidadeDeTeste("TESTE_DASHFIN_UNIDADE");
   unidadeId = unidade.id;
 
   const admin = await prisma.usuario.create({

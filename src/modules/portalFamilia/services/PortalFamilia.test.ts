@@ -9,6 +9,7 @@ import { ListMensagensFamiliaService } from "./ListMensagensFamiliaService";
 import { EnviarMensagemFamiliaService } from "./EnviarMensagemFamiliaService";
 import { GetMensagensNaoLidasFamiliaService } from "./GetMensagensNaoLidasFamiliaService";
 import { ListConversasFamiliaService } from "../../mensagensFamilia/services/ListConversasFamiliaService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const loginService = new LoginFamiliaService();
 const resumoService = new GetResumoFamiliaService();
@@ -38,7 +39,7 @@ async function limpar() {
 
 beforeEach(async () => {
   await limpar();
-  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_PORTAL_FAMILIA_UNIDADE" } });
+  const unidade = await criarUnidadeDeTeste("TESTE_PORTAL_FAMILIA_UNIDADE");
   unidadeId = unidade.id;
 });
 

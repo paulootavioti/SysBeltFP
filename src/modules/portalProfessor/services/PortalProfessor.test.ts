@@ -11,6 +11,7 @@ import { RegistrarObservacaoAulaService } from "./RegistrarObservacaoAulaService
 import { FinalizarAulaProfessorService } from "./FinalizarAulaProfessorService";
 import { criarNotaAulaSchema } from "../validation";
 import { intervaloHojeBrasilia } from "../utils/hoje";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const hojeService = new GetAulasHojeProfessorService();
 const aulaService = new GetAulaProfessorService();
@@ -40,7 +41,7 @@ beforeEach(limpar);
 afterAll(limpar);
 
 async function criarCenario() {
-  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_PROF_UNIDADE" } });
+  const unidade = await criarUnidadeDeTeste("TESTE_PROF_UNIDADE");
 
   const professor = await prisma.usuario.create({
     data: {

@@ -5,6 +5,7 @@ import { CreateAlunoService } from "../../alunos/services/CreateAlunoService";
 import { UpdateAlunoService } from "../../alunos/services/UpdateAlunoService";
 import { VincularAlunoTurmaService } from "./VincularAlunoTurmaService";
 import { ToggleTurmaAtivoService } from "./ToggleTurmaAtivoService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 let unidadeId: number;
 
@@ -20,7 +21,7 @@ async function limpar() {
 
 beforeEach(async () => {
   await limpar();
-  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_RN020_UNIDADE" } });
+  const unidade = await criarUnidadeDeTeste("TESTE_RN020_UNIDADE");
   unidadeId = unidade.id;
 });
 afterAll(limpar);

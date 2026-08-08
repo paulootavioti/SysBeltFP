@@ -8,6 +8,7 @@ import { GetContratoService } from "./GetContratoService";
 import { AlterarSituacaoContratoService } from "./AlterarSituacaoContratoService";
 import { RegistrarAssinaturaService } from "./RegistrarAssinaturaService";
 import { RenovarContratoService } from "./RenovarContratoService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const createService = new CreateContratoService();
 const updateService = new UpdateContratoService();
@@ -38,8 +39,8 @@ async function limpar() {
 beforeEach(async () => {
   await limpar();
 
-  const unidadeA = await prisma.unidade.create({ data: { nome: "TESTE_CONTRATOCRUD_UNIDADE_A" } });
-  const unidadeB = await prisma.unidade.create({ data: { nome: "TESTE_CONTRATOCRUD_UNIDADE_B" } });
+  const unidadeA = await criarUnidadeDeTeste("TESTE_CONTRATOCRUD_UNIDADE_A");
+  const unidadeB = await criarUnidadeDeTeste("TESTE_CONTRATOCRUD_UNIDADE_B");
   unidadeAId = unidadeA.id;
   unidadeBId = unidadeB.id;
 

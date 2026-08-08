@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { prisma } from "../../../shared/database/prisma";
 import { GetResumoUnidadesService } from "./GetResumoUnidadesService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const service = new GetResumoUnidadesService();
 
@@ -17,8 +18,8 @@ afterAll(limpar);
 
 describe("GetResumoUnidadesService", () => {
   it("SUPERADMIN (unidadeId null) vê todas as unidades", async () => {
-    await prisma.unidade.create({ data: { nome: "TESTE_RESUMOUNIDADES_A" } });
-    await prisma.unidade.create({ data: { nome: "TESTE_RESUMOUNIDADES_B" } });
+    await criarUnidadeDeTeste("TESTE_RESUMOUNIDADES_A");
+    await criarUnidadeDeTeste("TESTE_RESUMOUNIDADES_B");
 
     const resultado = await service.execute(null);
     const nomes = resultado.map((u) => u.nome);
@@ -28,8 +29,8 @@ describe("GetResumoUnidadesService", () => {
   });
 
   it("perfil comum só vê a própria unidade, com os contadores corretos", async () => {
-    const unidade = await prisma.unidade.create({ data: { nome: "TESTE_RESUMOUNIDADES_C" } });
-    await prisma.unidade.create({ data: { nome: "TESTE_RESUMOUNIDADES_D" } });
+    const unidade = await criarUnidadeDeTeste("TESTE_RESUMOUNIDADES_C");
+    await criarUnidadeDeTeste("TESTE_RESUMOUNIDADES_D");
 
     await prisma.aluno.create({
       data: { unidadeId: unidade.id, nome: "TESTE_RESUMOUNIDADES_ALUNO", dataNascimento: new Date("2015-01-01") },

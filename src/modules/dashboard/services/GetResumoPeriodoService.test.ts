@@ -2,6 +2,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vites
 
 import { prisma } from "../../../shared/database/prisma";
 import { GetResumoPeriodoService } from "./GetResumoPeriodoService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const service = new GetResumoPeriodoService();
 
@@ -34,7 +35,7 @@ afterAll(limpar);
 
 describe("GetResumoPeriodoService", () => {
   it("calcula os KPIs financeiros, de frequência e de matrícula do período (MENSAL)", async () => {
-    const unidade = await prisma.unidade.create({ data: { nome: "TESTE_RESUMOPERIODO_UNIDADE" } });
+    const unidade = await criarUnidadeDeTeste("TESTE_RESUMOPERIODO_UNIDADE");
     unidadeId = unidade.id;
 
     const alunoA = await prisma.aluno.create({
@@ -174,7 +175,7 @@ describe("GetResumoPeriodoService", () => {
   });
 
   it("protege ticketMedio e taxas contra divisão por zero quando não há dados no período", async () => {
-    const unidade = await prisma.unidade.create({ data: { nome: "TESTE_RESUMOPERIODO_UNIDADE" } });
+    const unidade = await criarUnidadeDeTeste("TESTE_RESUMOPERIODO_UNIDADE");
     unidadeId = unidade.id;
 
     const resumo = await service.execute("MENSAL", unidadeId);

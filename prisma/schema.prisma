@@ -90,39 +90,181 @@ enum TipoMovimentacaoEstoque {
   SAIDA
 }
 
+// O CLIENTE do SysBelt — a empresa que assina a plataforma. É o topo da
+// hierarquia: uma Conta tem uma ou mais Unidades (as filiais da academia).
+//
+// A distinção que importa: `Unidade` sempre existiu pra separar filiais da
+// MESMA academia; `Conta` separa academias DIFERENTES, que não podem se
+// enxergar. Quem escreve consulta nova filtra por unidade como sempre — a
+// fronteira entre clientes é resolvida em `escopoUnidade`, num lugar só.
+model Conta {
+  id Int @id @default(autoincrement())
+
+  nome          String
+  documento     String? // CNPJ ou CPF do assinante
+  emailCobranca String?
+
+  ativo Boolean @default(true)
+
+  unidades   Unidade[]
+  assinatura AssinaturaPlataforma?
+  faturas    FaturaPlataforma[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+// ATENÇÃO: `Plano`, `Assinatura` e `Mensalidade` (mais abaixo) são o
+// financeiro DA ACADEMIA — o que o aluno paga pra treinar. Os três modelos
+// abaixo, com sufixo `Plataforma`, são a outra ponta: o que a academia paga
+// pro SysBelt. São domínios distintos e não devem se misturar.
+
+// Catálogo de planos de assinatura da plataforma. O preço é por faixa de
+// alunos: a cada `alunosPorBloco` alunos ativos, cobra-se
+// `precoPorBlocoCentavos` — 50 alunos em blocos de 10 a R$ 37,00 dão
+// 5 × 3700 = R$ 185,00. Assim o preço acompanha o tamanho do assinante.
+model PlanoPlataforma {
+  id Int @id @default(autoincrement())
+
+  nome      String  @unique
+  descricao String?
+
+  alunosPorBloco        Int
+  // Dinheiro aqui é INTEIRO em centavos, ao contrário do financeiro da
+  // academia (que usa Float). Este valor é faturado e conciliado com o
+  // gateway: centavo que "some" numa soma de ponto flutuante vira
+  // divergência de caixa. R$ 37,00 = 3700.
+  precoPorBlocoCentavos Int
+  // Piso da fatura. Com 1, um assinante ativo sem nenhum aluno cadastrado
+  // paga um bloco; com 0, pagaria zero. Ver comentário em precoPlataforma.ts.
+  blocosMinimos         Int @default(1)
+
+  // O que este plano libera. Recursos conhecidos em
+  // src/modules/plataforma/utils/recursosDoPlano.ts.
+  recursos String[] @default([])
+
+  ativo Boolean @default(true)
+
+  assinaturas AssinaturaPlataforma[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+enum StatusAssinaturaPlataforma {
+  TESTE
+  ATIVA
+  INADIMPLENTE
+  SUSPENSA
+  CANCELADA
+}
+
+// A assinatura da Conta na plataforma. Uma por conta (`contaId` é único).
+model AssinaturaPlataforma {
+  id Int @id @default(autoincrement())
+
+  contaId Int   @unique
+  conta   Conta @relation(fields: [contaId], references: [id])
+
+  planoId Int
+  plano   PlanoPlataforma @relation(fields: [planoId], references: [id])
+
+  status StatusAssinaturaPlataforma @default(TESTE)
+
+  // Preço negociado: quando preenchido, substitui o do plano. É o que
+  // permite fechar condição especial com um assinante grande sem criar um
+  // plano só pra ele.
+  precoPorBlocoCentavos Int?
+
+  diaVencimento Int @default(10)
+
+  inicioEm    DateTime  @default(now())
+  fimTesteEm  DateTime?
+  canceladaEm DateTime?
+
+  faturas FaturaPlataforma[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+enum StatusFaturaPlataforma {
+  ABERTA
+  PAGA
+  CANCELADA
+}
+
+// Fatura mensal da plataforma. Guarda a contagem de alunos e o preço
+// USADOS no fechamento — mudar o plano depois não reescreve o que já foi
+// cobrado.
+model FaturaPlataforma {
+  id Int @id @default(autoincrement())
+
+  contaId Int
+  conta   Conta @relation(fields: [contaId], references: [id])
+
+  assinaturaId Int
+  assinatura   AssinaturaPlataforma @relation(fields: [assinaturaId], references: [id])
+
+  // Mês de referência, sempre no dia 1 à meia-noite UTC — data de
+  // calendário, não instante (ver src/shared/utils/dataCalendario.ts).
+  competencia DateTime
+  vencimento  DateTime
+
+  alunosContados        Int
+  alunosPorBloco        Int
+  blocos                Int
+  precoPorBlocoCentavos Int
+  valorCentavos         Int
+
+  status StatusFaturaPlataforma @default(ABERTA)
+  pagaEm DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // Trava de idempotência: a fatura identifica o FATO "competência X da
+  // assinatura Y", não a tentativa de gerá-la. Rodar o fechamento duas
+  // vezes no mesmo mês não cobra o assinante duas vezes.
+  @@unique([assinaturaId, competencia])
+}
+
 model Unidade {
   id Int @id @default(autoincrement())
+
+  contaId Int
+  conta   Conta @relation(fields: [contaId], references: [id])
 
   nome  String
   ativo Boolean @default(true)
 
-  arenas           Arena[]
-  modalidades      Modalidade[]
-  usuarios         Usuario[]
-  alunos           Aluno[]
-  responsaveis     Responsavel[]
-  turmas           Turma[]
-  planos           Plano[]
-  curriculos       Curriculo[]
-  tecnicas         Tecnica[]
-  competicoes      Competicao[]
-  mensalidades     Mensalidade[]
-  graduacoes       Graduacao[]
-  aulasProgramadas AulaProgramada[]
-  aulas            Aula[]
-  vinculosUsuarios UsuarioUnidade[]
-  metas            Meta[]
-  eventos          Evento[]
-  formasPagamento  FormaPagamento[]
-  auditLogs        AuditLog[]
-  assinaturas      Assinatura[]
-  modelosContrato  ModeloContrato[]
-  contratos        Contrato[]
-  mensagensFamilia MensagemFamilia[]
-  produtos         Produto[]
-  pedidos          Pedido[]
-  leads            Lead[]
-  consentimentos   Consentimento[]
+  arenas            Arena[]
+  modalidades       Modalidade[]
+  usuarios          Usuario[]
+  alunos            Aluno[]
+  responsaveis      Responsavel[]
+  turmas            Turma[]
+  planos            Plano[]
+  curriculos        Curriculo[]
+  tecnicas          Tecnica[]
+  competicoes       Competicao[]
+  mensalidades      Mensalidade[]
+  graduacoes        Graduacao[]
+  aulasProgramadas  AulaProgramada[]
+  aulas             Aula[]
+  vinculosUsuarios  UsuarioUnidade[]
+  metas             Meta[]
+  eventos           Evento[]
+  formasPagamento   FormaPagamento[]
+  auditLogs         AuditLog[]
+  assinaturas       Assinatura[]
+  modelosContrato   ModeloContrato[]
+  contratos         Contrato[]
+  mensagensFamilia  MensagemFamilia[]
+  produtos          Produto[]
+  pedidos           Pedido[]
+  leads             Lead[]
+  consentimentos    Consentimento[]
   mensagensWhatsapp MensagemWhatsapp[]
 
   createdAt DateTime @default(now())
@@ -587,9 +729,9 @@ model Consentimento {
 
   // Consentimento é revogável a qualquer tempo (art. 8º, §5º). A linha
   // não é apagada: revogar é um fato que também precisa ficar registrado.
-  revogadoEm     DateTime?
-  revogadoPorId  Int?
-  revogadoPor    Usuario?  @relation("ConsentimentoRevogador", fields: [revogadoPorId], references: [id])
+  revogadoEm    DateTime?
+  revogadoPorId Int?
+  revogadoPor   Usuario?  @relation("ConsentimentoRevogador", fields: [revogadoPorId], references: [id])
 
   createdAt DateTime @default(now())
 
@@ -777,21 +919,21 @@ model Usuario {
 
   ativo Boolean @default(true)
 
-  turmas                Turma[]
-  modalidadesCoordenadas Modalidade[]      @relation("ModalidadeCoordenador")
-  avisosReconhecidos    AvisoReconhecido[]
-  aulasSubstituindo     AulaProgramada[]   @relation("AulaProgramadaProfessorSubstituto")
-  graduacoesSolicitadas Graduacao[]        @relation("GraduacaoSolicitante")
-  graduacoesRevisadas   Graduacao[]        @relation("GraduacaoRevisor")
+  turmas                    Turma[]
+  modalidadesCoordenadas    Modalidade[]       @relation("ModalidadeCoordenador")
+  avisosReconhecidos        AvisoReconhecido[]
+  aulasSubstituindo         AulaProgramada[]   @relation("AulaProgramadaProfessorSubstituto")
+  graduacoesSolicitadas     Graduacao[]        @relation("GraduacaoSolicitante")
+  graduacoesRevisadas       Graduacao[]        @relation("GraduacaoRevisor")
   // unidades que esse usuário pode acessar — ADMIN e RECEPCAO podem ter
   // mais de uma (só o SUPERADMIN monta essa lista); PROFESSOR sempre tem
   // exatamente uma.
-  unidadesVinculadas    UsuarioUnidade[]
-  auditLogs             AuditLog[]
-  consentimentosRegistrados Consentimento[] @relation("ConsentimentoRegistrador")
-  consentimentosRevogados   Consentimento[] @relation("ConsentimentoRevogador")
-  fotosTreinoPublicadas FotoTreino[]
-  notasAulaCriadas      NotaAula[]
+  unidadesVinculadas        UsuarioUnidade[]
+  auditLogs                 AuditLog[]
+  consentimentosRegistrados Consentimento[]    @relation("ConsentimentoRegistrador")
+  consentimentosRevogados   Consentimento[]    @relation("ConsentimentoRevogador")
+  fotosTreinoPublicadas     FotoTreino[]
+  notasAulaCriadas          NotaAula[]
 
   createdAt DateTime @default(now())
 

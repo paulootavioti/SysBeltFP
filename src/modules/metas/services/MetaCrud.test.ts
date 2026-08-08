@@ -5,6 +5,7 @@ import { AppError } from "../../../shared/errors/AppError";
 import { CreateMetaService } from "./CreateMetaService";
 import { UpdateMetaService } from "./UpdateMetaService";
 import { DeleteMetaService } from "./DeleteMetaService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const createService = new CreateMetaService();
 const updateService = new UpdateMetaService();
@@ -20,8 +21,8 @@ async function limpar() {
 
 beforeEach(async () => {
   await limpar();
-  const unidadeA = await prisma.unidade.create({ data: { nome: "TESTE_METACRUD_UNIDADE_A" } });
-  const unidadeB = await prisma.unidade.create({ data: { nome: "TESTE_METACRUD_UNIDADE_B" } });
+  const unidadeA = await criarUnidadeDeTeste("TESTE_METACRUD_UNIDADE_A");
+  const unidadeB = await criarUnidadeDeTeste("TESTE_METACRUD_UNIDADE_B");
   unidadeAId = unidadeA.id;
   unidadeBId = unidadeB.id;
 });
