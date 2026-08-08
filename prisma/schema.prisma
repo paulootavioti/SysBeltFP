@@ -123,6 +123,7 @@ model Unidade {
   pedidos          Pedido[]
   leads            Lead[]
   consentimentos   Consentimento[]
+  mensagensWhatsapp MensagemWhatsapp[]
 
   createdAt DateTime @default(now())
 
@@ -231,6 +232,7 @@ model Aluno {
   credenciaisAcesso CredencialAcesso[]
   eventosAcesso     EventoAcesso[]
   consentimentos    Consentimento[]
+  mensagensWhatsapp MensagemWhatsapp[]
 }
 
 model Responsavel {
@@ -281,6 +283,7 @@ model Responsavel {
 
   contratosComoContratante Contrato[]
   consentimentos           Consentimento[]
+  mensagensWhatsapp        MensagemWhatsapp[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -980,6 +983,59 @@ model EventoWebhookPagamento {
 
   @@unique([gateway, eventoExternoId])
   @@index([recursoId])
+}
+
+enum StatusMensagemWhatsapp {
+  PENDENTE
+  ENVIADA
+  ENTREGUE
+  LIDA
+  FALHOU
+  BLOQUEADA_SEM_CONSENTIMENTO
+}
+
+model MensagemWhatsapp {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  alunoId Int?
+  aluno   Aluno? @relation(fields: [alunoId], references: [id])
+
+  responsavelId Int?
+  responsavel   Responsavel? @relation(fields: [responsavelId], references: [id])
+
+  // Guardado como foi enviado (E.164) — o cadastro pode mudar depois, e o
+  // registro precisa dizer pra onde a mensagem foi de fato.
+  telefone String
+
+  template   String
+  parametros Json?
+
+  // Impede mandar duas vezes o mesmo aviso: "mensalidade 123 vencida" tem
+  // sempre a mesma chave, então reprocessar a régua de cobrança não
+  // enche o WhatsApp do responsável.
+  chaveIdempotencia String @unique
+
+  status StatusMensagemWhatsapp @default(PENDENTE)
+
+  // id da mensagem no provedor — é por ele que os webhooks de entrega e
+  // leitura reencontram este registro.
+  provedorMensagemId String?
+
+  tentativas Int     @default(0)
+  erro       String?
+
+  enviadaEm  DateTime?
+  entregueEm DateTime?
+  lidaEm     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([provedorMensagemId])
+  @@index([status])
 }
 
 model Lead {
