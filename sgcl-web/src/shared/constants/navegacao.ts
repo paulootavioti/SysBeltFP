@@ -18,6 +18,7 @@ import {
   LuTarget,
   LuMegaphone,
   LuBanknote,
+  LuReceipt,
   LuRepeat,
   LuFileText,
   LuFileStack,
@@ -126,6 +127,10 @@ export const NAV_TREE: NavEntry[] = [
       item("/mensalidades", "Mensalidades", LuWallet, "mensalidadesVencidas"),
       item("/assinaturas", "Assinaturas", LuRepeat),
       item("/financeiro/formas-pagamento", "Formas de Pagamento", LuBanknote),
+      // A assinatura da ACADEMIA no SysBelt — não confundir com as
+      // assinaturas dos alunos, logo acima. Fica no financeiro porque é
+      // uma despesa fixa do negócio.
+      item("/minha-assinatura", "Minha Assinatura (SysBelt)", LuReceipt),
     ],
   },
 

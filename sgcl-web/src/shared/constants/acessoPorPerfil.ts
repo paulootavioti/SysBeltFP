@@ -1,4 +1,4 @@
-export type Perfil = "SUPERADMIN" | "ADMIN" | "PROFESSOR" | "RECEPCAO";
+export type Perfil = "SUPERADMIN" | "DONO" | "ADMIN" | "PROFESSOR" | "RECEPCAO";
 
 interface RegraAcesso {
   prefixo: string;
@@ -38,20 +38,26 @@ const REGRAS_ACESSO: RegraAcesso[] = [
   { prefixo: "/eventos", perfis: ["ADMIN", "RECEPCAO"] },
   { prefixo: "/leads", perfis: ["ADMIN", "RECEPCAO"] },
   { prefixo: "/professor", perfis: ["ADMIN", "PROFESSOR"] },
+  // A assinatura da academia no SysBelt: quanto custa, quantos alunos
+  // estão sendo contados, quais faturas foram emitidas. É assunto do dono
+  // do negócio, não de quem opera o dia a dia.
+  { prefixo: "/minha-assinatura", perfis: ["DONO", "ADMIN"] },
 ];
 
 // Página segura para qualquer perfil autenticado — usada como destino
 // depois do login e como fallback quando o perfil não tem acesso à rota atual.
 export const ROTA_PADRAO_POR_PERFIL: Record<Perfil, string> = {
   SUPERADMIN: "/dashboard",
+  DONO: "/dashboard",
   ADMIN: "/dashboard",
   PROFESSOR: "/aulas",
   RECEPCAO: "/alunos",
 };
 
 export function perfilTemAcesso(perfil: string | undefined, caminho: string): boolean {
-  // superadmin administra todas as unidades — enxerga tudo que um ADMIN
-  // enxergaria, sem precisar listar "SUPERADMIN" em toda regra abaixo.
+  // O operador da plataforma dá suporte a todos os assinantes — enxerga
+  // tudo que um ADMIN enxergaria, sem precisar listar "SUPERADMIN" em toda
+  // regra acima.
   if (perfil === "SUPERADMIN") return true;
 
   const regra = REGRAS_ACESSO.find(
@@ -60,5 +66,13 @@ export function perfilTemAcesso(perfil: string | undefined, caminho: string): bo
 
   if (!regra) return true;
 
-  return !!perfil && (regra.perfis as string[]).includes(perfil);
+  const perfis = regra.perfis as string[];
+
+  if (!perfil) return false;
+  if (perfis.includes(perfil)) return true;
+
+  // O DONO da academia manda onde um ADMIN dela manda — mesma herança
+  // declarada no backend (shared/constants/perfis.ts). Sem isto ele não
+  // navegaria em lugar nenhum, porque as regras acima falam de ADMIN.
+  return perfil === "DONO" && perfis.includes("ADMIN");
 }
