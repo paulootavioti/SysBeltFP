@@ -14,9 +14,38 @@ import { useFormasPagamento } from "../../hooks/useFormasPagamento";
 import { FormaPagamentoService } from "../../services/FormaPagamentoService";
 import { FormaPagamentoForm } from "../../components/FormaPagamentoForm";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
-import { nomeFormaPagamento, type FormaPagamento } from "../../types";
+import {
+  CREDENCIAIS_DO_GATEWAY,
+  GATEWAYS_DISPONIVEIS,
+  nomeFormaPagamento,
+  type FormaPagamento,
+} from "../../types";
 import type { FormaPagamentoFormData } from "../../schema/formaPagamento.schema";
 import "./styles.css";
+
+// Gateway configurado mas sem todas as credenciais é o estado perigoso:
+// parece pronto e não cobra. Aparece em vermelho, dizendo o que falta.
+function descreverGateway(forma: FormaPagamento) {
+  const nome = forma.gateway?.gateway;
+
+  if (!nome) {
+    return <span className="forma-pagamento-gateway forma-pagamento-gateway--manual">Manual</span>;
+  }
+
+  const rotulo = GATEWAYS_DISPONIVEIS.find((g) => g.value === nome)?.label ?? nome;
+  const exigidas = CREDENCIAIS_DO_GATEWAY[nome] ?? [];
+  const faltando = exigidas.filter(({ campo }) => !forma.gateway.credenciaisConfiguradas?.[campo]);
+
+  if (faltando.length > 0) {
+    return (
+      <span className="forma-pagamento-gateway forma-pagamento-gateway--incompleto">
+        {rotulo} — falta {faltando.map((c) => c.label.toLowerCase()).join(" e ")}
+      </span>
+    );
+  }
+
+  return <span className="forma-pagamento-gateway">{rotulo}</span>;
+}
 
 export function FormasPagamento() {
   const toast = useToast();
@@ -80,6 +109,11 @@ export function FormasPagamento() {
       header: "Forma de Pagamento",
       accessor: "tipo" as const,
       render: (forma: FormaPagamento) => nomeFormaPagamento(forma),
+    },
+    {
+      header: "Cobrança",
+      accessor: "gateway" as const,
+      render: (forma: FormaPagamento) => descreverGateway(forma),
     },
     {
       header: "Status",

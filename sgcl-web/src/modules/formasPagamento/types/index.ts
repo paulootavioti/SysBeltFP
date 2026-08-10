@@ -25,13 +25,41 @@ export const TIPO_FORMA_PAGAMENTO_LABEL: Record<TipoFormaPagamento, string> = {
   OUTRO: "Outra (personalizada)",
 };
 
+// Gateways com integração pronta. Os demais nomes existem no backend como
+// stub e só entram aqui quando a integração de fato for implementada —
+// oferecer na tela algo que não cobra seria pior que não oferecer.
+export const GATEWAYS_DISPONIVEIS = [{ value: "MERCADO_PAGO", label: "Mercado Pago" }];
+
+export const CREDENCIAIS_DO_GATEWAY: Record<string, { campo: string; label: string; ajuda: string }[]> = {
+  MERCADO_PAGO: [
+    {
+      campo: "accessToken",
+      label: "Access token",
+      ajuda: "Mercado Pago > Suas integrações > sua aplicação > Credenciais.",
+    },
+    {
+      campo: "webhookSecret",
+      label: "Chave secreta do webhook",
+      ajuda: "Webhooks > Configurar notificação > revelar chave secreta.",
+    },
+  ],
+};
+
+// O que a API devolve no lugar de `configuracao`: qual gateway está ligado
+// e quais credenciais já foram preenchidas — nunca os valores. Ver
+// src/modules/pagamentos/gateways/credenciais.ts no backend.
+export interface ResumoGateway {
+  gateway: string | null;
+  credenciaisConfiguradas: Record<string, boolean>;
+}
+
 export interface FormaPagamento {
   id: number;
   unidadeId: number;
   tipo: TipoFormaPagamento;
   nomePersonalizado?: string | null;
   ativo: boolean;
-  configuracao?: Record<string, unknown> | null;
+  gateway: ResumoGateway;
   createdAt: string;
   updatedAt: string;
 }

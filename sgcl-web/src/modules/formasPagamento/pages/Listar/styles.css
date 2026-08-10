@@ -9,3 +9,36 @@
   gap: var(--space-2);
   flex-wrap: wrap;
 }
+
+.forma-pagamento-ajuda {
+  margin: var(--space-1) 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+}
+
+.forma-pagamento-aviso {
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+  color: var(--color-neutral-text);
+  font-size: 0.85rem;
+}
+
+.forma-pagamento-gateway {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 0.85rem;
+  color: var(--color-neutral-text);
+}
+
+.forma-pagamento-gateway--manual {
+  color: var(--color-text-tertiary);
+}
+
+/* Credencial faltando é a diferença entre "configurei" e "vai cobrar" —
+   precisa saltar aos olhos na listagem, não só dentro do formulário. */
+.forma-pagamento-gateway--incompleto {
+  color: var(--color-danger);
+}
