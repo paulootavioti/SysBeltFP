@@ -3,6 +3,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { CreateGraduacaoService } from "./CreateGraduacaoService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const service = new CreateGraduacaoService();
 
@@ -47,7 +48,7 @@ async function limparAlunosDeTeste() {
 
 beforeEach(async () => {
   await limparAlunosDeTeste();
-  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_GRADUACAO_UNIDADE" } });
+  const unidade = await criarUnidadeDeTeste("TESTE_GRADUACAO_UNIDADE");
   unidadeId = unidade.id;
 });
 afterAll(limparAlunosDeTeste);

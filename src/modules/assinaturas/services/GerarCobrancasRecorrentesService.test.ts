@@ -3,6 +3,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "../../../shared/database/prisma";
 import { CreateAssinaturaService } from "./CreateAssinaturaService";
 import { GerarCobrancasRecorrentesService } from "./GerarCobrancasRecorrentesService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const createService = new CreateAssinaturaService();
 const gerarService = new GerarCobrancasRecorrentesService();
@@ -25,8 +26,8 @@ async function limpar() {
 
 beforeEach(async () => {
   await limpar();
-  const unidadeA = await prisma.unidade.create({ data: { nome: "TESTE_GERARCOBRANCA_UNIDADE_A" } });
-  const unidadeB = await prisma.unidade.create({ data: { nome: "TESTE_GERARCOBRANCA_UNIDADE_B" } });
+  const unidadeA = await criarUnidadeDeTeste("TESTE_GERARCOBRANCA_UNIDADE_A");
+  const unidadeB = await criarUnidadeDeTeste("TESTE_GERARCOBRANCA_UNIDADE_B");
   unidadeAId = unidadeA.id;
   unidadeBId = unidadeB.id;
 

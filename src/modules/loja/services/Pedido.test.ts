@@ -7,6 +7,7 @@ import { GetLojaFamiliaService } from "../../portalFamilia/services/GetLojaFamil
 import { ListPedidosService } from "./ListPedidosService";
 import { MarcarPedidoEntregueService } from "./MarcarPedidoEntregueService";
 import { CancelarPedidoService } from "./CancelarPedidoService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const criarPedidoService = new CriarPedidoFamiliaService();
 const getLojaFamiliaService = new GetLojaFamiliaService();
@@ -39,8 +40,8 @@ async function limpar() {
 beforeEach(async () => {
   await limpar();
 
-  const unidadeA = await prisma.unidade.create({ data: { nome: "TESTE_PEDIDO_UNIDADE_A" } });
-  const unidadeB = await prisma.unidade.create({ data: { nome: "TESTE_PEDIDO_UNIDADE_B" } });
+  const unidadeA = await criarUnidadeDeTeste("TESTE_PEDIDO_UNIDADE_A");
+  const unidadeB = await criarUnidadeDeTeste("TESTE_PEDIDO_UNIDADE_B");
   unidadeAId = unidadeA.id;
   unidadeBId = unidadeB.id;
 

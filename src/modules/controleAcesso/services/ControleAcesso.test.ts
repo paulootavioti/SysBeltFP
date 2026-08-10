@@ -4,6 +4,7 @@ import { prisma } from "../../../shared/database/prisma";
 import { AutorizarAcessoService } from "./AutorizarAcessoService";
 import { RegistrarEventoAcessoService } from "./RegistrarEventoAcessoService";
 import { obterProvedorAcesso, ProvedorAcessoNaoImplementadoError } from "../providers";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const autorizar = new AutorizarAcessoService();
 const registrar = new RegistrarEventoAcessoService();
@@ -25,7 +26,7 @@ beforeEach(limpar);
 afterAll(limpar);
 
 async function criarCenario() {
-  const unidade = await prisma.unidade.create({ data: { nome: `${PREFIXO}UNIDADE` } });
+  const unidade = await criarUnidadeDeTeste(`${PREFIXO}UNIDADE`);
 
   const aluno = await prisma.aluno.create({
     data: {

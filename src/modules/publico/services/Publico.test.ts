@@ -9,6 +9,7 @@ import { GetProdutosDestaquePublicoService } from "./GetProdutosDestaquePublicoS
 import { GetGaleriaPublicaService } from "./GetGaleriaPublicaService";
 import { GetModalidadesPublicoService } from "./GetModalidadesPublicoService";
 import { CriarLeadPublicoService } from "./CriarLeadPublicoService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const modalidadesService = new GetModalidadesPublicoService();
 const equipeService = new GetEquipePublicaService();
@@ -34,10 +35,10 @@ async function limpar() {
 beforeEach(async () => {
   await limpar();
 
-  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_PUBLICO_UNIDADE" } });
+  const unidade = await criarUnidadeDeTeste("TESTE_PUBLICO_UNIDADE");
   unidadeId = unidade.id;
 
-  const outraUnidade = await prisma.unidade.create({ data: { nome: "TESTE_PUBLICO_OUTRA_UNIDADE" } });
+  const outraUnidade = await criarUnidadeDeTeste("TESTE_PUBLICO_OUTRA_UNIDADE");
   outraUnidadeId = outraUnidade.id;
 
   process.env.UNIDADE_PUBLICA_ID = String(unidadeId);

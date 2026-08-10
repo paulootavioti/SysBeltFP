@@ -6,6 +6,7 @@ import { CreateModalidadeService } from "./CreateModalidadeService";
 import { UpdateModalidadeService } from "./UpdateModalidadeService";
 import { ListModalidadesService } from "./ListModalidadesService";
 import { ToggleAtivoModalidadeService } from "./ToggleAtivoModalidadeService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const criar = new CreateModalidadeService();
 const atualizar = new UpdateModalidadeService();
@@ -26,8 +27,8 @@ beforeEach(limpar);
 afterAll(limpar);
 
 async function criarUnidades() {
-  const unidade = await prisma.unidade.create({ data: { nome: `${PREFIXO}MATRIZ` } });
-  const outra = await prisma.unidade.create({ data: { nome: `${PREFIXO}FILIAL` } });
+  const unidade = await criarUnidadeDeTeste(`${PREFIXO}MATRIZ`);
+  const outra = await criarUnidadeDeTeste(`${PREFIXO}FILIAL`);
 
   return { unidadeId: unidade.id, outraUnidadeId: outra.id };
 }

@@ -6,6 +6,7 @@ import { PublicarFotosTreinoService } from "./PublicarFotosTreinoService";
 import { ListFotosTreinoService } from "./ListFotosTreinoService";
 import { ToggleVisibilidadeFotoTreinoService } from "./ToggleVisibilidadeFotoTreinoService";
 import { ExcluirFotoTreinoService } from "./ExcluirFotoTreinoService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const publicarService = new PublicarFotosTreinoService();
 const listService = new ListFotosTreinoService();
@@ -31,7 +32,7 @@ async function limpar() {
 beforeEach(async () => {
   await limpar();
 
-  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_FOTOTREINO_UNIDADE" } });
+  const unidade = await criarUnidadeDeTeste("TESTE_FOTOTREINO_UNIDADE");
   unidadeId = unidade.id;
 
   const professor = await prisma.usuario.create({

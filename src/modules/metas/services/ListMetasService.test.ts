@@ -2,6 +2,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vites
 
 import { prisma } from "../../../shared/database/prisma";
 import { ListMetasService } from "./ListMetasService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const service = new ListMetasService();
 
@@ -30,7 +31,7 @@ afterAll(limpar);
 
 describe("ListMetasService", () => {
   it("calcula valorAtual e percentual pra uma meta de RECEITA (quanto maior, melhor)", async () => {
-    const unidade = await prisma.unidade.create({ data: { nome: "TESTE_LISTMETAS_UNIDADE" } });
+    const unidade = await criarUnidadeDeTeste("TESTE_LISTMETAS_UNIDADE");
     unidadeId = unidade.id;
 
     const aluno = await prisma.aluno.create({
@@ -68,7 +69,7 @@ describe("ListMetasService", () => {
   });
 
   it("inverte o percentual pra uma meta de INADIMPLENCIA (quanto menor, melhor) e marca ATINGIDA quando já está abaixo do teto", async () => {
-    const unidade = await prisma.unidade.create({ data: { nome: "TESTE_LISTMETAS_UNIDADE" } });
+    const unidade = await criarUnidadeDeTeste("TESTE_LISTMETAS_UNIDADE");
     unidadeId = unidade.id;
 
     // sem mensalidades no período -> taxaInadimplencia = 0
@@ -92,7 +93,7 @@ describe("ListMetasService", () => {
   });
 
   it("marca ATRASADA quando o prazo já passou e a meta não foi atingida", async () => {
-    const unidade = await prisma.unidade.create({ data: { nome: "TESTE_LISTMETAS_UNIDADE" } });
+    const unidade = await criarUnidadeDeTeste("TESTE_LISTMETAS_UNIDADE");
     unidadeId = unidade.id;
 
     await prisma.meta.create({
@@ -113,7 +114,7 @@ describe("ListMetasService", () => {
   });
 
   it("SUPERADMIN (unidadeId null) vê metas de todas as unidades", async () => {
-    const unidade = await prisma.unidade.create({ data: { nome: "TESTE_LISTMETAS_UNIDADE" } });
+    const unidade = await criarUnidadeDeTeste("TESTE_LISTMETAS_UNIDADE");
     unidadeId = unidade.id;
 
     await prisma.meta.create({

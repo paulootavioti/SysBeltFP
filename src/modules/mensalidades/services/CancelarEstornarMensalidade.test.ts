@@ -6,6 +6,7 @@ import { CreateMensalidadeService } from "./CreateMensalidadeService";
 import { PagarMensalidadeService } from "./PagarMensalidadeService";
 import { CancelarMensalidadeService } from "./CancelarMensalidadeService";
 import { EstornarMensalidadeService } from "./EstornarMensalidadeService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const createService = new CreateMensalidadeService();
 const pagarService = new PagarMensalidadeService();
@@ -38,8 +39,8 @@ async function criarMensalidade(vencimento: string) {
 beforeEach(async () => {
   await limpar();
 
-  const unidadeA = await prisma.unidade.create({ data: { nome: "TESTE_CANCELESTORNO_UNIDADE_A" } });
-  const unidadeB = await prisma.unidade.create({ data: { nome: "TESTE_CANCELESTORNO_UNIDADE_B" } });
+  const unidadeA = await criarUnidadeDeTeste("TESTE_CANCELESTORNO_UNIDADE_A");
+  const unidadeB = await criarUnidadeDeTeste("TESTE_CANCELESTORNO_UNIDADE_B");
   unidadeAId = unidadeA.id;
   unidadeBId = unidadeB.id;
 

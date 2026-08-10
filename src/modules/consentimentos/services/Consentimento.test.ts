@@ -8,6 +8,7 @@ import { ConsultarConsentimentoService } from "./ConsultarConsentimentoService";
 import { CriarCredencialService } from "../../controleAcesso/services/CriarCredencialService";
 import { UpdateAlunoService } from "../../alunos/services/UpdateAlunoService";
 import { VERSAO_POLITICA_MIGRADA } from "../constants";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const registrar = new RegistrarConsentimentoService();
 const revogar = new RevogarConsentimentoService();
@@ -30,7 +31,7 @@ beforeEach(limpar);
 afterAll(limpar);
 
 async function criarCenario() {
-  const unidade = await prisma.unidade.create({ data: { nome: `${PREFIXO}UNIDADE` } });
+  const unidade = await criarUnidadeDeTeste(`${PREFIXO}UNIDADE`);
 
   const aluno = await prisma.aluno.create({
     data: {

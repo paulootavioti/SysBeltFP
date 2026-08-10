@@ -7,6 +7,7 @@ import { UpdateProdutoService } from "./UpdateProdutoService";
 import { ToggleAtivoProdutoService } from "./ToggleAtivoProdutoService";
 import { ListProdutosService } from "./ListProdutosService";
 import { GetLojaKpisService } from "./GetLojaKpisService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const createService = new CreateProdutoService();
 const updateService = new UpdateProdutoService();
@@ -30,8 +31,8 @@ async function limpar() {
 
 beforeEach(async () => {
   await limpar();
-  const unidadeA = await prisma.unidade.create({ data: { nome: "TESTE_LOJACRUD_UNIDADE_A" } });
-  const unidadeB = await prisma.unidade.create({ data: { nome: "TESTE_LOJACRUD_UNIDADE_B" } });
+  const unidadeA = await criarUnidadeDeTeste("TESTE_LOJACRUD_UNIDADE_A");
+  const unidadeB = await criarUnidadeDeTeste("TESTE_LOJACRUD_UNIDADE_B");
   unidadeAId = unidadeA.id;
   unidadeBId = unidadeB.id;
 });

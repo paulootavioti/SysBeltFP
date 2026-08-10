@@ -6,6 +6,7 @@ import { UpdateAulaProgramadaService } from "./UpdateAulaProgramadaService";
 import { CancelarAulaProgramadaService } from "./CancelarAulaProgramadaService";
 import { ReplicarProgramacaoService } from "./ReplicarProgramacaoService";
 import { AvisoCancelamentoAulaService } from "../../mensagens/services/AvisoCancelamentoAulaService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 async function limpar() {
   await prisma.aulaProgramada.deleteMany({ where: { turma: { nome: "TESTE_PROG_TURMA" } } });
@@ -18,7 +19,7 @@ beforeEach(limpar);
 afterAll(limpar);
 
 async function criarTurma() {
-  const unidade = await prisma.unidade.create({ data: { nome: "TESTE_PROG_UNIDADE" } });
+  const unidade = await criarUnidadeDeTeste("TESTE_PROG_UNIDADE");
 
   return prisma.turma.create({
     data: {

@@ -4,6 +4,7 @@ import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { ListLeadsService } from "./ListLeadsService";
 import { AtualizarStatusLeadService } from "./AtualizarStatusLeadService";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const listService = new ListLeadsService();
 const atualizarStatusService = new AtualizarStatusLeadService();
@@ -19,8 +20,8 @@ async function limpar() {
 beforeEach(async () => {
   await limpar();
 
-  const unidadeA = await prisma.unidade.create({ data: { nome: "TESTE_LEADS_UNIDADE_A" } });
-  const unidadeB = await prisma.unidade.create({ data: { nome: "TESTE_LEADS_UNIDADE_B" } });
+  const unidadeA = await criarUnidadeDeTeste("TESTE_LEADS_UNIDADE_A");
+  const unidadeB = await criarUnidadeDeTeste("TESTE_LEADS_UNIDADE_B");
   unidadeAId = unidadeA.id;
   unidadeBId = unidadeB.id;
 });

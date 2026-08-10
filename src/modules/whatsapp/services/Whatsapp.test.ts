@@ -6,6 +6,7 @@ import { AtualizarEntregaService } from "./AtualizarEntregaService";
 import { RegistrarConsentimentoService } from "../../consentimentos/services/RegistrarConsentimentoService";
 import { MetaCloudApiProvider } from "../providers/MetaCloudApiProvider";
 import { normalizarTelefoneBR } from "../utils/telefone";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const enviar = new EnviarMensagemWhatsappService();
 const atualizar = new AtualizarEntregaService();
@@ -26,7 +27,7 @@ beforeEach(limpar);
 afterAll(limpar);
 
 async function criarCenario() {
-  const unidade = await prisma.unidade.create({ data: { nome: `${PREFIXO}UNIDADE` } });
+  const unidade = await criarUnidadeDeTeste(`${PREFIXO}UNIDADE`);
 
   const aluno = await prisma.aluno.create({
     data: {
