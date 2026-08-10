@@ -28,29 +28,31 @@ export interface PagamentoMercadoPago {
   };
 }
 
-export function tokenMercadoPago(): string {
-  const token = process.env.MERCADO_PAGO_ACCESS_TOKEN;
-
-  if (!token) {
+// O token entra por parâmetro, vindo da forma de pagamento da unidade —
+// não de variável de ambiente. É o que permite cada academia usar a
+// própria conta do Mercado Pago no mesmo servidor.
+function exigirToken(accessToken: string): string {
+  if (!accessToken) {
     throw new AppError(
-      "Mercado Pago não configurado (MERCADO_PAGO_ACCESS_TOKEN ausente).",
+      "Mercado Pago não configurado para esta unidade: cadastre o access token na forma de pagamento.",
       503
     );
   }
 
-  return token;
-}
-
-export function segredoWebhookMercadoPago(): string {
-  return process.env.MERCADO_PAGO_WEBHOOK_SECRET ?? "";
+  return accessToken;
 }
 
 async function chamar<T>(
   caminho: string,
-  opcoes: { metodo: "GET" | "POST"; corpo?: unknown; chaveIdempotencia?: string }
+  opcoes: {
+    metodo: "GET" | "POST";
+    accessToken: string;
+    corpo?: unknown;
+    chaveIdempotencia?: string;
+  }
 ): Promise<T> {
   const cabecalhos: Record<string, string> = {
-    Authorization: `Bearer ${tokenMercadoPago()}`,
+    Authorization: `Bearer ${exigirToken(opcoes.accessToken)}`,
     "Content-Type": "application/json",
   };
 
@@ -98,6 +100,7 @@ async function chamar<T>(
 }
 
 interface CriarPagamentoPixDTO {
+  accessToken: string;
   valor: number;
   descricao: string;
   referenciaExterna: string;
@@ -110,6 +113,7 @@ export async function criarPagamentoPix(
 ): Promise<PagamentoMercadoPago> {
   return chamar<PagamentoMercadoPago>("/v1/payments", {
     metodo: "POST",
+    accessToken: dados.accessToken,
     // a referência externa é a mensalidade: é por ela que o webhook
     // reencontra o que dar baixa.
     chaveIdempotencia: `mensalidade-${dados.referenciaExterna}-${randomUUID()}`,
@@ -127,13 +131,17 @@ export async function criarPagamentoPix(
   });
 }
 
-export async function consultarPagamento(id: string): Promise<PagamentoMercadoPago> {
-  return chamar<PagamentoMercadoPago>(`/v1/payments/${id}`, { metodo: "GET" });
+export async function consultarPagamento(
+  id: string,
+  accessToken: string
+): Promise<PagamentoMercadoPago> {
+  return chamar<PagamentoMercadoPago>(`/v1/payments/${id}`, { metodo: "GET", accessToken });
 }
 
-export async function estornarPagamento(id: string): Promise<void> {
+export async function estornarPagamento(id: string, accessToken: string): Promise<void> {
   await chamar(`/v1/payments/${id}/refunds`, {
     metodo: "POST",
+    accessToken,
     chaveIdempotencia: `estorno-${id}`,
     corpo: {},
   });

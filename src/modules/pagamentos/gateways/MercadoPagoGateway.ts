@@ -14,6 +14,7 @@ import {
   estornarPagamento,
   type PagamentoMercadoPago,
 } from "./mercadoPago/clienteMercadoPago";
+import type { CredenciaisGateway } from "./credenciais";
 
 // Tradução dos status do Mercado Pago pro vocabulário do sistema. O que
 // interessa à mensalidade é "posso dar baixa?", e só `approved` responde
@@ -40,6 +41,11 @@ function traduzirStatus(status: string): NonNullable<WebhookEvento["situacao"]> 
 export class MercadoPagoGateway implements PaymentGateway {
   readonly nome = "Mercado Pago";
 
+  // As credenciais vêm da forma de pagamento da unidade. Cada assinante
+  // cobra pela própria conta do Mercado Pago; o gateway nunca vai buscar
+  // token em variável de ambiente por conta própria.
+  constructor(private readonly credenciais: CredenciaisGateway) {}
+
   async criarCobranca(dados: CriarCobrancaDTO): Promise<CriarCobrancaResultado> {
     const email = dados.pagador?.email;
 
@@ -52,6 +58,7 @@ export class MercadoPagoGateway implements PaymentGateway {
     }
 
     const pagamento = await criarPagamentoPix({
+      accessToken: this.credenciais.accessToken,
       valor: dados.valor,
       descricao: dados.descricao ?? "Mensalidade",
       referenciaExterna: dados.referenciaExterna,
@@ -83,11 +90,11 @@ export class MercadoPagoGateway implements PaymentGateway {
   }
 
   async estornar(gatewayId: string): Promise<void> {
-    await estornarPagamento(gatewayId);
+    await estornarPagamento(gatewayId, this.credenciais.accessToken);
   }
 
   async consultarStatus(gatewayId: string): Promise<string> {
-    const pagamento = await consultarPagamento(gatewayId);
+    const pagamento = await consultarPagamento(gatewayId, this.credenciais.accessToken);
 
     return pagamento.status;
   }
@@ -111,7 +118,10 @@ export class MercadoPagoGateway implements PaymentGateway {
       return { tipo, payload, eventoExternoId: notificacao.id ? String(notificacao.id) : undefined };
     }
 
-    const pagamento: PagamentoMercadoPago = await consultarPagamento(recursoId);
+    const pagamento: PagamentoMercadoPago = await consultarPagamento(
+      recursoId,
+      this.credenciais.accessToken
+    );
 
     return {
       tipo,

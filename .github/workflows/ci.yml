@@ -27,6 +27,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sysbelt_test?schema=public
       JWT_SECRET: test-secret
+      # Chave de teste do cofre de credenciais (ver src/shared/security).
+      CHAVE_SEGREDOS: "0000000000000000000000000000000000000000000000000000000000000001"
       # O runner do GitHub roda em UTC, e a academia opera em Brasília.
       # Rodar os testes em UTC escondia bugs de data que só apareciam na
       # máquina de quem desenvolve (contrato com data de ontem, replicação
