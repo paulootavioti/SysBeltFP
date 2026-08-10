@@ -6,7 +6,10 @@ import { AtualizarEntregaService } from "./AtualizarEntregaService";
 import { RegistrarConsentimentoService } from "../../consentimentos/services/RegistrarConsentimentoService";
 import { MetaCloudApiProvider } from "../providers/MetaCloudApiProvider";
 import { normalizarTelefoneBR } from "../utils/telefone";
-import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
+import {
+  criarUnidadeDeTeste,
+  criarUnidadeSemRecursos,
+} from "../../../shared/testing/criarUnidadeDeTeste";
 
 const enviar = new EnviarMensagemWhatsappService();
 const atualizar = new AtualizarEntregaService();
@@ -21,6 +24,11 @@ async function limpar() {
   await prisma.aluno.deleteMany({ where: { nome: { startsWith: PREFIXO } } });
   await prisma.usuario.deleteMany({ where: { email: { startsWith: "teste_zap_" } } });
   await prisma.unidade.deleteMany({ where: { nome: { startsWith: PREFIXO } } });
+  await prisma.assinaturaPlataforma.deleteMany({
+    where: { conta: { nome: { startsWith: PREFIXO } } },
+  });
+  await prisma.conta.deleteMany({ where: { nome: { startsWith: PREFIXO } } });
+  await prisma.planoPlataforma.deleteMany({ where: { nome: { startsWith: PREFIXO } } });
 }
 
 beforeEach(limpar);
@@ -301,5 +309,94 @@ describe("leitura do webhook da Meta", () => {
     expect(
       provedor.interpretarWebhook({ entry: [{ changes: [{ value: { messages: [{ id: "x" }] } }] }] })
     ).toEqual([]);
+  });
+});
+
+// O WhatsApp é vendido à parte. Estes testes cobrem os dois lados da
+// trava: quem contratou envia, quem não contratou não envia — e a
+// diferença não depende de nenhum gatilho lembrar de checar.
+describe("WhatsApp é recurso de plano", () => {
+  it("assinante sem o recurso não envia, e nada vai pro provedor", async () => {
+    const unidade = await criarUnidadeSemRecursos(
+      `${PREFIXO}UNIDADE_SEM`,
+      `${PREFIXO}CONTA_SEM`
+    );
+
+    const aluno = await prisma.aluno.create({
+      data: {
+        unidadeId: unidade.id,
+        nome: `${PREFIXO}ALUNO_SEM`,
+        dataNascimento: new Date("2015-01-01"),
+      },
+    });
+
+    const usuario = await prisma.usuario.create({
+      data: {
+        unidadeId: unidade.id,
+        nome: `${PREFIXO}RECEP_SEM`,
+        email: "teste_zap_recep_sem@x.com",
+        senha: "x",
+        perfil: "RECEPCAO",
+      },
+    });
+
+    // consentimento em dia: o que barra o envio é só o plano.
+    await liberarComunicacoes(unidade.id, aluno.id, usuario.id);
+
+    const resultado = await enviar.execute({
+      unidadeId: unidade.id,
+      template: "MENSALIDADE_VENCIDA",
+      parametros: ["Fulano", "R$ 100,00", "01/08/2026"],
+      telefone: "(41) 99999-8888",
+      alunoId: aluno.id,
+      chaveIdempotencia: `sem-recurso-${aluno.id}`,
+    });
+
+    expect(resultado.resultado).toBe("SEM_RECURSO_NO_PLANO");
+
+    // não gera linha: plano sem o recurso não é um fato sobre o aluno,
+    // ao contrário da falta de consentimento.
+    const registros = await prisma.mensagemWhatsapp.findMany({
+      where: { unidadeId: unidade.id },
+    });
+
+    expect(registros).toHaveLength(0);
+  });
+
+  it("a trava vem antes do consentimento e do telefone", async () => {
+    // ordem importa: sem o recurso, o sistema nem chega a avaliar o
+    // consentimento — não faz sentido registrar bloqueio de LGPD numa
+    // academia que não contratou o canal.
+    const unidade = await criarUnidadeSemRecursos(
+      `${PREFIXO}UNIDADE_ORDEM`,
+      `${PREFIXO}CONTA_ORDEM`
+    );
+
+    const resultado = await enviar.execute({
+      unidadeId: unidade.id,
+      template: "LEMBRETE_AULA",
+      parametros: ["Fulano", "Jiu-Jitsu", "19:00"],
+      telefone: null,
+      chaveIdempotencia: `ordem-${unidade.id}`,
+    });
+
+    expect(resultado.resultado).toBe("SEM_RECURSO_NO_PLANO");
+  });
+
+  it("assinante que contratou envia normalmente", async () => {
+    const { unidade, aluno, usuario } = await criarCenario();
+
+    await liberarComunicacoes(unidade.id, aluno.id, usuario.id);
+
+    const resultado = await enviar.execute({
+      unidadeId: unidade.id,
+      template: "MENSALIDADE_VENCIDA",
+      parametros: ["Fulano", "R$ 100,00", "01/08/2026"],
+      telefone: "(41) 99999-8888",
+      alunoId: aluno.id,
+      chaveIdempotencia: `com-recurso-${aluno.id}`,
+    });
+
+    expect(resultado.resultado).toBe("ENVIADA");
   });
 });

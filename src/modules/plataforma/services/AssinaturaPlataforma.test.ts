@@ -191,7 +191,7 @@ describe("GerarFaturasPlataformaService", () => {
   it("fatura 50 alunos como 5 faixas de R$ 37,00", async () => {
     const { conta } = await contaComAlunos(50);
 
-    const resultado = await gerarFaturas.execute();
+    const resultado = await gerarFaturas.execute(new Date(), conta.id);
 
     expect(resultado.geradas).toBe(1);
 
@@ -207,8 +207,8 @@ describe("GerarFaturasPlataformaService", () => {
   it("rodar o fechamento duas vezes no mesmo mês não cobra duas vezes", async () => {
     const { conta } = await contaComAlunos(23);
 
-    const primeira = await gerarFaturas.execute();
-    const segunda = await gerarFaturas.execute();
+    const primeira = await gerarFaturas.execute(new Date(), conta.id);
+    const segunda = await gerarFaturas.execute(new Date(), conta.id);
 
     expect(primeira.geradas).toBe(1);
     expect(segunda.geradas).toBe(0);
@@ -224,7 +224,10 @@ describe("GerarFaturasPlataformaService", () => {
 
     // a trava é o índice único no banco, não uma checagem em memória —
     // por isso duas execuções concorrentes também são seguras.
-    await Promise.all([gerarFaturas.execute(), gerarFaturas.execute()]);
+    await Promise.all([
+      gerarFaturas.execute(new Date(), conta.id),
+      gerarFaturas.execute(new Date(), conta.id),
+    ]);
 
     const faturas = await prisma.faturaPlataforma.findMany({ where: { contaId: conta.id } });
 
@@ -234,13 +237,13 @@ describe("GerarFaturasPlataformaService", () => {
   it("não fatura quem está em período de teste", async () => {
     const plano = await planoEssencial();
 
-    await criarConta.execute({
+    const { conta } = await criarConta.execute({
       nome: `${PREFIXO}Em teste`,
       planoId: plano.id,
       diasDeTeste: 30,
     });
 
-    const resultado = await gerarFaturas.execute();
+    const resultado = await gerarFaturas.execute(new Date(), conta.id);
 
     expect(resultado.geradas).toBe(0);
   });
@@ -249,10 +252,10 @@ describe("GerarFaturasPlataformaService", () => {
     const { conta } = await contaComAlunos(30);
 
     await alterarAssinatura.execute(conta.id, { status: "SUSPENSA" });
-    expect((await gerarFaturas.execute()).geradas).toBe(0);
+    expect((await gerarFaturas.execute(new Date(), conta.id)).geradas).toBe(0);
 
     await alterarAssinatura.execute(conta.id, { status: "CANCELADA" });
-    expect((await gerarFaturas.execute()).geradas).toBe(0);
+    expect((await gerarFaturas.execute(new Date(), conta.id)).geradas).toBe(0);
   });
 
   it("continua faturando quem está inadimplente", async () => {
@@ -260,7 +263,7 @@ describe("GerarFaturasPlataformaService", () => {
 
     await alterarAssinatura.execute(conta.id, { status: "INADIMPLENTE" });
 
-    expect((await gerarFaturas.execute()).geradas).toBe(1);
+    expect((await gerarFaturas.execute(new Date(), conta.id)).geradas).toBe(1);
   });
 
   it("usa o preço negociado da assinatura em vez do preço de tabela", async () => {
@@ -269,7 +272,7 @@ describe("GerarFaturasPlataformaService", () => {
     // condição especial: R$ 25,00 por faixa em vez de R$ 37,00.
     await alterarAssinatura.execute(conta.id, { precoPorBlocoCentavos: 2500 });
 
-    await gerarFaturas.execute();
+    await gerarFaturas.execute(new Date(), conta.id);
 
     const fatura = await prisma.faturaPlataforma.findFirstOrThrow({
       where: { contaId: conta.id },
@@ -282,7 +285,7 @@ describe("GerarFaturasPlataformaService", () => {
   it("guarda os parâmetros usados, pra fatura antiga não mudar de valor", async () => {
     const { conta, plano } = await contaComAlunos(20);
 
-    await gerarFaturas.execute();
+    await gerarFaturas.execute(new Date(), conta.id);
 
     // meses depois, a tabela sobe.
     await prisma.planoPlataforma.update({
@@ -302,7 +305,7 @@ describe("GerarFaturasPlataformaService", () => {
     const { conta } = await contaComAlunos(10);
 
     await alterarAssinatura.execute(conta.id, { diaVencimento: 5 });
-    await gerarFaturas.execute();
+    await gerarFaturas.execute(new Date(), conta.id);
 
     const fatura = await prisma.faturaPlataforma.findFirstOrThrow({
       where: { contaId: conta.id },
@@ -317,7 +320,7 @@ describe("GerarFaturasPlataformaService", () => {
 describe("MarcarFaturaPagaService", () => {
   it("baixa a fatura e não reescreve a data quando repetido", async () => {
     const { conta } = await contaComAlunos(10);
-    await gerarFaturas.execute();
+    await gerarFaturas.execute(new Date(), conta.id);
 
     const fatura = await prisma.faturaPlataforma.findFirstOrThrow({
       where: { contaId: conta.id },
@@ -334,7 +337,7 @@ describe("MarcarFaturaPagaService", () => {
   it("tira o assinante da inadimplência quando não sobra fatura vencida", async () => {
     const { conta } = await contaComAlunos(10);
     await alterarAssinatura.execute(conta.id, { diaVencimento: 1, status: "INADIMPLENTE" });
-    await gerarFaturas.execute();
+    await gerarFaturas.execute(new Date(), conta.id);
 
     const fatura = await prisma.faturaPlataforma.findFirstOrThrow({
       where: { contaId: conta.id },
