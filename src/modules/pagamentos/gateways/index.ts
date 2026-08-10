@@ -9,9 +9,17 @@ import { StripeGateway } from "./StripeGateway";
 import { PagarMeGateway } from "./PagarMeGateway";
 import { StoneGateway } from "./StoneGateway";
 import { CieloGateway } from "./CieloGateway";
+import { lerCredenciaisGateway, nomeDoGateway, type CredenciaisGateway } from "./credenciais";
 
 export type { PaymentGateway } from "./PaymentGateway";
 export { GatewayNaoImplementadoError } from "./PaymentGateway";
+export {
+  lerCredenciaisGateway,
+  nomeDoGateway,
+  prepararConfiguracaoParaGravar,
+  resumirConfiguracao,
+} from "./credenciais";
+export type { CredenciaisGateway, ResumoConfiguracao } from "./credenciais";
 
 // Nome do gateway configurado em `FormaPagamento.configuracao.gateway` —
 // quando ausente (o caso hoje, sempre), cai no NullPaymentGateway (manual).
@@ -24,8 +32,8 @@ export type NomeGateway =
   | "STONE"
   | "CIELO";
 
-const GATEWAYS: Record<NomeGateway, () => PaymentGateway> = {
-  MERCADO_PAGO: () => new MercadoPagoGateway(),
+const GATEWAYS: Record<NomeGateway, (credenciais: CredenciaisGateway) => PaymentGateway> = {
+  MERCADO_PAGO: (credenciais) => new MercadoPagoGateway(credenciais),
   ASAAS: () => new AsaasGateway(),
   PAGSEGURO: () => new PagSeguroGateway(),
   STRIPE: () => new StripeGateway(),
@@ -38,15 +46,28 @@ const GATEWAYS: Record<NomeGateway, () => PaymentGateway> = {
 // função, nunca instanciam um gateway concreto diretamente. Formas de
 // pagamento manuais (Dinheiro, Transferência) e qualquer forma sem
 // `configuracao.gateway` definido usam o gateway manual.
+//
+// Recebe a `configuracao` inteira da FormaPagamento, não só o nome: é dela
+// que saem as credenciais da unidade, decifradas na hora do uso. Assim a
+// escolha do gateway E a conta usada pra cobrar pertencem ao assinante.
+// Recebe a `configuracao` da FormaPagamento (o Json inteiro), nunca só o
+// nome do gateway: é dela que saem as credenciais da unidade. Aceitar o
+// nome solto abriria a porta pra cair calado nas credenciais do ambiente
+// e cobrar na conta do assinante errado.
 export function obterGateway(
   _tipo: TipoFormaPagamento,
-  nomeGateway?: string | null
+  configuracao?: unknown
 ): PaymentGateway {
+  const nomeGateway = nomeDoGateway(configuracao);
+
   if (!nomeGateway) {
     return new NullPaymentGateway();
   }
 
   const fabrica = GATEWAYS[nomeGateway as NomeGateway];
 
-  return fabrica ? fabrica() : new NullPaymentGateway();
+  if (!fabrica) return new NullPaymentGateway();
+
+  // Só lê (e decifra) credencial quando o gateway realmente precisa dela.
+  return fabrica(lerCredenciaisGateway(configuracao));
 }

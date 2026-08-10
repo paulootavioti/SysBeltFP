@@ -40,7 +40,10 @@ export class PagarMensalidadeFamiliaService {
 
     const gateway = obterGateway(
       mensalidade.formaPagamento?.tipo ?? "OUTRO",
-      (mensalidade.formaPagamento?.configuracao as { gateway?: string } | null)?.gateway
+      // A configuração inteira, não só o nome do gateway: é dela que saem
+      // as credenciais da unidade. Passar só o nome cobraria na conta
+      // errada quando houver mais de um assinante no mesmo servidor.
+      mensalidade.formaPagamento?.configuracao
     );
 
     const pagador = escolherPagador(mensalidade.aluno);

@@ -12,13 +12,50 @@ import { prisma } from "../database/prisma";
 // DIFERENTES (isolamento entre assinantes) deve criar a conta
 // explicitamente, para deixar essa intenção visível.
 const NOME_CONTA_PADRAO = "TESTE_CONTA_PADRAO";
+const NOME_PLANO_PADRAO = "TESTE_PLANO_PADRAO";
+
+// A conta de teste assina um plano com TODOS os recursos. Sem isso, cada
+// teste de módulo que passa por uma trava de plano (WhatsApp, por exemplo)
+// falharia por um motivo que não é o que ele está verificando. Quem quer
+// testar a trava em si cria uma conta sem o recurso, de propósito.
+const RECURSOS_DE_TESTE = ["WHATSAPP", "GATEWAY_AUTOMATICO", "CONTROLE_ACESSO"];
 
 export async function contaDeTeste(): Promise<number> {
-  const existente = await prisma.conta.findFirst({ where: { nome: NOME_CONTA_PADRAO } });
+  const plano = await prisma.planoPlataforma.upsert({
+    where: { nome: NOME_PLANO_PADRAO },
+    update: { recursos: RECURSOS_DE_TESTE },
+    create: {
+      nome: NOME_PLANO_PADRAO,
+      alunosPorBloco: 10,
+      precoPorBlocoCentavos: 3700,
+      recursos: RECURSOS_DE_TESTE,
+    },
+  });
 
-  if (existente) return existente.id;
+  const existente = await prisma.conta.findFirst({
+    where: { nome: NOME_CONTA_PADRAO },
+    include: { assinatura: true },
+  });
 
-  const criada = await prisma.conta.create({ data: { nome: NOME_CONTA_PADRAO } });
+  if (existente) {
+    // A conta pode ter sobrado de um banco criado antes de a assinatura
+    // existir. Sem ela, toda trava de plano bloquearia — e o teste
+    // falharia por um motivo que não é o que ele verifica.
+    if (!existente.assinatura) {
+      await prisma.assinaturaPlataforma.create({
+        data: { contaId: existente.id, planoId: plano.id, status: "ATIVA" },
+      });
+    }
+
+    return existente.id;
+  }
+
+  const criada = await prisma.conta.create({
+    data: {
+      nome: NOME_CONTA_PADRAO,
+      assinatura: { create: { planoId: plano.id, status: "ATIVA" } },
+    },
+  });
 
   return criada.id;
 }
@@ -26,4 +63,30 @@ export async function contaDeTeste(): Promise<number> {
 /** Substitui `prisma.unidade.create({ data: { nome } })` nos testes. */
 export async function criarUnidadeDeTeste(nome: string) {
   return prisma.unidade.create({ data: { nome, contaId: await contaDeTeste() } });
+}
+
+/**
+ * Unidade de um assinante SEM os recursos pagos — pra testar a trava de
+ * plano, e não o caminho feliz.
+ */
+export async function criarUnidadeSemRecursos(nome: string, nomeDaConta = `${nome}_CONTA`) {
+  const plano = await prisma.planoPlataforma.upsert({
+    where: { nome: `${nomeDaConta}_PLANO` },
+    update: { recursos: [] },
+    create: {
+      nome: `${nomeDaConta}_PLANO`,
+      alunosPorBloco: 10,
+      precoPorBlocoCentavos: 3700,
+      recursos: [],
+    },
+  });
+
+  const conta = await prisma.conta.create({
+    data: {
+      nome: nomeDaConta,
+      assinatura: { create: { planoId: plano.id, status: "ATIVA" } },
+    },
+  });
+
+  return prisma.unidade.create({ data: { nome, contaId: conta.id } });
 }

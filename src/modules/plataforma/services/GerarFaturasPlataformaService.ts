@@ -30,12 +30,20 @@ const STATUS_FATURAVEIS: Prisma.EnumStatusAssinaturaPlataformaFilter = {
  * `create` deixaria uma janela de corrida aberta.
  */
 export class GerarFaturasPlataformaService {
-  async execute(referencia: Date = new Date()): Promise<ResultadoFechamento> {
+  /**
+   * @param contaId quando informado, fecha só essa conta — serve pra
+   * reemitir a fatura de um cliente sem mexer nas dos outros.
+   */
+  async execute(referencia: Date = new Date(), contaId?: number): Promise<ResultadoFechamento> {
     const competencia = competenciaDoMes(referencia);
     const contarAlunos = new ContarAlunosDaContaService();
 
     const assinaturas = await prisma.assinaturaPlataforma.findMany({
-      where: { status: STATUS_FATURAVEIS, conta: { ativo: true } },
+      where: {
+        status: STATUS_FATURAVEIS,
+        conta: { ativo: true },
+        ...(contaId === undefined ? {} : { contaId }),
+      },
       include: { plano: true },
     });
 

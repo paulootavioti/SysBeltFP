@@ -5,6 +5,7 @@ import { ConsultarConsentimentoService } from "../../consentimentos/services/Con
 import { obterProvedorMensagens } from "../providers";
 import { TEMPLATES, type NomeTemplate } from "../templates";
 import { normalizarTelefoneBR } from "../utils/telefone";
+import { unidadeTemRecurso } from "../../plataforma/utils/recursosDoPlano";
 
 const consultarConsentimento = new ConsultarConsentimentoService();
 
@@ -12,6 +13,7 @@ export type ResultadoEnvio =
   | "ENVIADA"
   | "JA_ENVIADA"
   | "SEM_CONSENTIMENTO"
+  | "SEM_RECURSO_NO_PLANO"
   | "SEM_TELEFONE"
   | "FALHOU";
 
@@ -34,6 +36,20 @@ interface EnviarMensagemDTO {
 export class EnviarMensagemWhatsappService {
   async execute(dto: EnviarMensagemDTO): Promise<{ resultado: ResultadoEnvio; detalhe?: string }> {
     const definicao = TEMPLATES[dto.template];
+
+    // WhatsApp é recurso de plano: custa por mensagem e exige número e
+    // templates aprovados na Meta. Quem não contratou não envia.
+    //
+    // A checagem fica aqui, no ponto único por onde toda mensagem passa,
+    // e não em cada gatilho (régua de cobrança, aviso de entrada, lembrete
+    // de aula) — gatilho novo nasce coberto sem ninguém lembrar disso.
+    //
+    // Não grava registro: diferente de "sem consentimento", que é história
+    // que a LGPD pede pra guardar, plano sem o recurso não é um fato sobre
+    // o aluno — gravar encheria a tabela de linhas sem valor.
+    if (!(await unidadeTemRecurso(dto.unidadeId, "WHATSAPP"))) {
+      return { resultado: "SEM_RECURSO_NO_PLANO" };
+    }
 
     const telefone = normalizarTelefoneBR(dto.telefone);
 

@@ -5,6 +5,19 @@ import { UpdateFormaPagamentoService } from "./services/UpdateFormaPagamentoServ
 import { ListFormasPagamentoService } from "./services/ListFormasPagamentoService";
 import { ToggleAtivoFormaPagamentoService } from "./services/ToggleAtivoFormaPagamentoService";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
+import { resumirConfiguracao } from "../pagamentos/gateways";
+
+// `configuracao` guarda as credenciais do gateway do cliente. Ela NUNCA
+// sai numa resposta: no lugar vai um resumo que diz qual gateway está
+// ligado e quais credenciais já foram preenchidas, sem revelar nenhuma.
+//
+// Isto vale pra toda resposta deste módulo, não só a listagem — a rota de
+// listar é aberta a RECEPCAO, e create/update devolvem a linha gravada.
+function semCredenciais<T extends { configuracao?: unknown }>(forma: T) {
+  const { configuracao, ...resto } = forma;
+
+  return { ...resto, gateway: resumirConfiguracao(configuracao) };
+}
 
 export class FormasPagamentoController {
   async create(req: Request, res: Response) {
@@ -12,7 +25,7 @@ export class FormasPagamentoController {
 
     const formaPagamento = await service.execute({ ...req.body, unidadeId: requireUnidadeId(req) });
 
-    return res.status(201).json(formaPagamento);
+    return res.status(201).json(semCredenciais(formaPagamento));
   }
 
   async update(req: Request, res: Response) {
@@ -22,7 +35,7 @@ export class FormasPagamentoController {
 
     const formaPagamento = await service.execute(Number(id), req.body, req.user.unidadeId);
 
-    return res.json(formaPagamento);
+    return res.json(semCredenciais(formaPagamento));
   }
 
   async list(req: Request, res: Response) {
@@ -30,7 +43,7 @@ export class FormasPagamentoController {
 
     const formasPagamento = await service.execute(req.user.unidadeId);
 
-    return res.json(formasPagamento);
+    return res.json(formasPagamento.map(semCredenciais));
   }
 
   async toggleAtivo(req: Request, res: Response) {
@@ -40,6 +53,6 @@ export class FormasPagamentoController {
 
     const formaPagamento = await service.execute(Number(id), req.user.unidadeId);
 
-    return res.json(formaPagamento);
+    return res.json(semCredenciais(formaPagamento));
   }
 }
