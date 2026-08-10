@@ -3,6 +3,10 @@ import { hash } from "bcryptjs";
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
+import {
+  garantirUnidadesDaMesmaConta,
+  unidadesDaConta,
+} from "../../../shared/utils/contaDoUsuario";
 
 interface UpdateUsuarioDTO {
   nome: string;
@@ -60,12 +64,21 @@ export class UpdateUsuarioService {
       });
     }
 
+    // Mesma fronteira do cadastro: vínculo não atravessa conta, e o DONO
+    // alcança todas as filiais da própria academia.
+    const contaId = await garantirUnidadesDaMesmaConta(data.unidadeIds ?? []);
+
+    const idsVinculo =
+      data.perfil === "DONO" && contaId !== null
+        ? await unidadesDaConta(contaId)
+        : (data.unidadeIds ?? []);
+
     // a unidade ATIVA só muda se ela não estiver mais entre as vinculadas
     // (ex.: SUPERADMIN removeu a unidade que o usuário estava usando) —
     // do contrário mantém, pra não derrubar a sessão ativa dele à toa.
     const novaUnidadeAtiva =
-      data.unidadeIds?.length && !data.unidadeIds.includes(usuario.unidadeId ?? -1)
-        ? data.unidadeIds[0]
+      idsVinculo.length && !idsVinculo.includes(usuario.unidadeId ?? -1)
+        ? idsVinculo[0]
         : undefined;
 
     return prisma.usuario.update({
@@ -80,11 +93,11 @@ export class UpdateUsuarioService {
         outrasGraduacoes: data.outrasGraduacoes,
         fotoUrl: data.fotoUrl,
         ...(novaUnidadeAtiva ? { unidadeId: novaUnidadeAtiva } : {}),
-        ...(data.unidadeIds?.length
+        ...(idsVinculo.length
           ? {
               unidadesVinculadas: {
                 deleteMany: {},
-                create: data.unidadeIds.map((unidadeId) => ({ unidadeId })),
+                create: idsVinculo.map((unidadeId) => ({ unidadeId })),
               },
             }
           : {}),

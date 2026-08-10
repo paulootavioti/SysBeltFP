@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { PERFIS } from "../../shared/constants/perfis";
 
 export const updatePerfilSchema = z.object({
-  perfil: z.enum(["SUPERADMIN", "ADMIN", "PROFESSOR", "RECEPCAO"]),
+  perfil: z.enum(PERFIS),
 });
 
 export const updateUsuarioSchema = z.object({
@@ -11,7 +12,7 @@ export const updateUsuarioSchema = z.object({
   senha: z
     .union([z.literal(""), z.string().min(6, "A senha precisa ter pelo menos 6 caracteres.")])
     .nullish(),
-  perfil: z.enum(["SUPERADMIN", "ADMIN", "PROFESSOR", "RECEPCAO"]),
+  perfil: z.enum(PERFIS),
   // só é lido quando quem edita é SUPERADMIN.
   unidadeIds: z.array(z.coerce.number().int().positive()).nullish(),
   nivelGraduacao: z.string().nullish(),

@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { PERFIS } from "../../shared/constants/perfis";
 
 export const registerSchema = z.object({
   nome: z.string().min(1, "Informe o nome."),
   apelido: z.string().nullish(),
   email: z.string().min(1, "Informe o e-mail.").email("E-mail inválido."),
   senha: z.string().min(6, "A senha precisa ter pelo menos 6 caracteres."),
-  perfil: z.enum(["SUPERADMIN", "ADMIN", "PROFESSOR", "RECEPCAO"]),
+  perfil: z.enum(PERFIS),
   // só é lido quando quem cadastra é SUPERADMIN — um ADMIN normal sempre
   // cadastra dentro da própria unidade, esse campo é ignorado nesse caso.
   unidadeId: z.coerce.number().int().positive().nullish(),
