@@ -44,6 +44,18 @@ export class PlataformaController {
     return res.json(contas);
   }
 
+  // Detalhe de UM assinante, pro operador acompanhar e dar baixa. É o
+  // mesmo serviço que alimenta a tela do dono — a diferença é só de onde
+  // vem o contaId: aqui da URL (o operador escolhe), lá da unidade ativa
+  // (o dono não escolhe).
+  async detalharConta(req: Request, res: Response) {
+    const assinatura = await new ObterAssinaturaDaContaService().execute(
+      Number(req.params.contaId)
+    );
+
+    return res.json(assinatura);
+  }
+
   async criarConta(req: Request, res: Response) {
     const resultado = await new CreateContaService().execute(req.body);
 

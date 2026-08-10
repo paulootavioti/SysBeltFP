@@ -53,6 +53,12 @@ plataformaRoutes.put(
 
 plataformaRoutes.get("/contas", ensureRole(["SUPERADMIN"]), controller.listarContas);
 
+plataformaRoutes.get(
+  "/contas/:contaId",
+  ensureRole(["SUPERADMIN"]),
+  controller.detalharConta
+);
+
 plataformaRoutes.post(
   "/contas",
   ensureRole(["SUPERADMIN"]),
