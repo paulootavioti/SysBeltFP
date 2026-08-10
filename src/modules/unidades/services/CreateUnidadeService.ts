@@ -18,8 +18,26 @@ export class CreateUnidadeService {
       throw new AppError("Conta não encontrada.", 404);
     }
 
-    return prisma.unidade.create({
+    const unidade = await prisma.unidade.create({
       data: { nome: data.nome.trim(), contaId: data.contaId },
     });
+
+    // O DONO alcança a academia inteira, inclusive o que for aberto
+    // depois dele. Sem isto, abrir uma filial deixaria o dono sem acesso
+    // à própria unidade nova até alguém lembrar de reeditar o cadastro
+    // dele — e o sintoma ("não aparece no seletor") não aponta pra causa.
+    const donos = await prisma.usuario.findMany({
+      where: { perfil: "DONO", unidadesVinculadas: { some: { unidade: { contaId: data.contaId } } } },
+      select: { id: true },
+    });
+
+    if (donos.length > 0) {
+      await prisma.usuarioUnidade.createMany({
+        data: donos.map((dono) => ({ usuarioId: dono.id, unidadeId: unidade.id })),
+        skipDuplicates: true,
+      });
+    }
+
+    return unidade;
   }
 }

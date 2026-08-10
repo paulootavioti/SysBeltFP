@@ -1,6 +1,10 @@
 import { prisma } from "../../../shared/database/prisma";
 import { hash } from "bcryptjs";
 import { AppError } from "../../../shared/errors/AppError";
+import {
+  garantirUnidadesDaMesmaConta,
+  unidadesDaConta,
+} from "../../../shared/utils/contaDoUsuario";
 
 interface CreateUsuarioDTO {
   nome: string;
@@ -48,7 +52,17 @@ export class CreateUsuarioService {
     const senhaHash =
       await hash(senha, 8);
 
-    const idsVinculo = unidadeIds?.length ? unidadeIds : unidadeId ? [unidadeId] : [];
+    const idsPedidos = unidadeIds?.length ? unidadeIds : unidadeId ? [unidadeId] : [];
+
+    // Vínculo é a fronteira entre assinantes: se um usuário puder acessar
+    // unidades de contas diferentes, ele atravessa a fronteira trocando a
+    // unidade ativa. Recusa a lista misturada em vez de gravar.
+    const contaId = await garantirUnidadesDaMesmaConta(idsPedidos);
+
+    // O DONO alcança a academia inteira: recebe vínculo com todas as
+    // filiais da conta, não só com as que vieram no formulário.
+    const idsVinculo =
+      perfil === "DONO" && contaId !== null ? await unidadesDaConta(contaId) : idsPedidos;
 
     return prisma.usuario.create({
       data: {
