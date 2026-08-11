@@ -2,6 +2,7 @@ import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { obterProvedorAcesso } from "../providers";
 import { AutorizarAcessoService } from "./AutorizarAcessoService";
+import { AvisarAcessoService } from "../../whatsapp/services/AvisarAcessoService";
 
 interface RegistrarEventoAcessoDTO {
   dispositivoId: number;
@@ -65,7 +66,7 @@ export class RegistrarEventoAcessoService {
       data: { ultimoContatoEm: new Date() },
     });
 
-    return prisma.eventoAcesso.create({
+    const registrado = await prisma.eventoAcesso.create({
       data: {
         unidadeId: dispositivo.unidadeId,
         dispositivoId,
@@ -80,6 +81,16 @@ export class RegistrarEventoAcessoService {
         payload: evento.payload as never,
       },
     });
+
+    // Avisa a família que a criança chegou (ou saiu). Deliberadamente FORA
+    // do caminho crítico: a catraca precisa responder rápido, e uma falha
+    // de WhatsApp não pode impedir o registro do acesso — que é o dado que
+    // realmente importa e já está gravado neste ponto.
+    await new AvisarAcessoService().execute(registrado.id).catch((erro) => {
+      console.warn("[controleAcesso] falha ao avisar acesso por WhatsApp:", erro);
+    });
+
+    return registrado;
   }
 
   private async localizarCredencial(provedorPessoaId?: string | null, referenciaExterna?: string | null) {

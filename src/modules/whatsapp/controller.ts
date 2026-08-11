@@ -4,6 +4,8 @@ import { obterProvedorMensagens } from "./providers";
 import { verificarAssinaturaMeta } from "./providers/assinaturaMeta";
 import { segredoAplicativoMeta, tokenVerificacaoWebhook } from "./providers/MetaCloudApiProvider";
 import { AtualizarEntregaService } from "./services/AtualizarEntregaService";
+import { ReguaCobrancaService } from "./services/ReguaCobrancaService";
+import { LembreteAulaService } from "./services/LembreteAulaService";
 
 export class WhatsappController {
   // A Meta faz um GET com hub.challenge pra confirmar que a URL é nossa
@@ -45,5 +47,24 @@ export class WhatsappController {
     // Sempre 200 quando a assinatura confere: a Meta reenvia diante de
     // erro, e reenviar um evento que já não se aplica não ajuda ninguém.
     return res.status(200).json(resultado);
+  }
+
+  // Disparos das réguas. Rodam pelo cron, sem usuário autenticado —
+  // autenticação por segredo compartilhado (ensureCronSecret).
+  //
+  // Enquanto WHATSAPP_PROVIDER estiver vazio, o NullMessagingProvider
+  // registra o que SERIA enviado e não manda nada: dá pra rodar a régua
+  // inteira em homologação e conferir na tabela MensagemWhatsapp antes de
+  // ligar a integração com a Meta.
+  async reguaCobranca(_req: Request, res: Response) {
+    const resultado = await new ReguaCobrancaService().execute();
+
+    return res.json(resultado);
+  }
+
+  async lembreteAula(_req: Request, res: Response) {
+    const resultado = await new LembreteAulaService().execute();
+
+    return res.json(resultado);
   }
 }
