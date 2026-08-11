@@ -65,3 +65,61 @@ export function calcularPrecoPorFaixa(
 export function formatarCentavos(centavos: number): string {
   return (centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
+
+// ---------------------------------------------------------------------
+// Cobrança por UNIDADE.
+//
+// Cada unidade é uma licença: paga no mínimo uma faixa, e cresce com os
+// alunos DELA. O total é a soma das unidades — não o total de alunos da
+// academia dividido por 10.
+//
+// A diferença é material. Uma rede com três unidades de 5 alunos paga 3
+// faixas (R$ 111), e não 2 (R$ 74, que é o que daria somar 15 alunos e
+// dividir). É o que faz a licença por unidade valer alguma coisa.
+//
+// Aluno vinculado a duas unidades conta nas DUAS, por decisão comercial:
+// ele ocupa vaga, tatame e atenção em cada uma. O cadastro dele continua
+// sendo um só — os dados são compartilhados entre as filiais —, o que se
+// duplica é a lotação, não a pessoa.
+
+export interface ContagemDaUnidade {
+  unidadeId: number;
+  nomeUnidade: string;
+  /** alunos ativos LOTADOS nesta unidade (um aluno pode estar em várias) */
+  alunosContados: number;
+}
+
+export interface PrecoDaUnidade extends ContagemDaUnidade {
+  blocos: number;
+  valorCentavos: number;
+}
+
+export interface PrecoPorUnidade {
+  unidades: PrecoDaUnidade[];
+  /** soma das lotações — pode ser maior que o nº de pessoas distintas */
+  totalLotacoes: number;
+  totalBlocos: number;
+  valorCentavos: number;
+}
+
+export function calcularPrecoPorUnidade(
+  contagens: ContagemDaUnidade[],
+  parametros: ParametrosPreco
+): PrecoPorUnidade {
+  const unidades = contagens.map((contagem) => {
+    const preco = calcularPrecoPorFaixa(contagem.alunosContados, parametros);
+
+    return {
+      ...contagem,
+      blocos: preco.blocos,
+      valorCentavos: preco.valorCentavos,
+    };
+  });
+
+  return {
+    unidades,
+    totalLotacoes: unidades.reduce((total, u) => total + u.alunosContados, 0),
+    totalBlocos: unidades.reduce((total, u) => total + u.blocos, 0),
+    valorCentavos: unidades.reduce((total, u) => total + u.valorCentavos, 0),
+  };
+}
