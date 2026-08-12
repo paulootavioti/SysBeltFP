@@ -47,6 +47,7 @@ import { mensagensFamiliaRoutes } from "./modules/mensagensFamilia/routes";
 import { publicoRoutes } from "./modules/publico/routes";
 import { leadsRoutes } from "./modules/leads/routes";
 import { portalProfessorRoutes } from "./modules/portalProfessor/routes";
+import { concessaoPlataformaRoutes } from "./modules/concessaoPlataforma/routes";
 
 // 5173 = sgcl-web (admin/staff), 5175 = sgcl-portal-familia (Portal da
 // Família), 5176 = sgcl-portal-professor (Portal do Professor) — três
@@ -136,6 +137,7 @@ app.use("/portal-professor", portalProfessorRoutes);
 app.use("/mensagens-familia", mensagensFamiliaRoutes);
 app.use("/publico", publicoRoutes);
 app.use("/leads", leadsRoutes);
+app.use("/integracao/control-plane", concessaoPlataformaRoutes);
 
 app.use("/auth", authRoutes);
 app.use(errorHandler);
