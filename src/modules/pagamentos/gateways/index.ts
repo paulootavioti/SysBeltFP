@@ -10,6 +10,7 @@ import { PagarMeGateway } from "./PagarMeGateway";
 import { StoneGateway } from "./StoneGateway";
 import { CieloGateway } from "./CieloGateway";
 import { lerCredenciaisGateway, nomeDoGateway, type CredenciaisGateway } from "./credenciais";
+import { tenantTemRecurso } from "../../concessaoPlataforma/recursos";
 
 export type { PaymentGateway } from "./PaymentGateway";
 export { GatewayNaoImplementadoError } from "./PaymentGateway";
@@ -70,4 +71,20 @@ export function obterGateway(
 
   // Só lê (e decifra) credencial quando o gateway realmente precisa dela.
   return fabrica(lerCredenciaisGateway(configuracao));
+}
+
+/**
+ * Seleciona um gateway para iniciar uma nova operação financeira.
+ * O fluxo manual não é premium; somente integrações externas dependem da
+ * concessão GATEWAY_AUTOMATICO. Webhooks usam o gateway concreto diretamente
+ * porque pagamentos já iniciados precisam continuar sendo conciliados.
+ */
+export async function obterGatewayConcedido(
+  tipo: TipoFormaPagamento,
+  configuracao?: unknown,
+  temRecurso: typeof tenantTemRecurso = tenantTemRecurso,
+): Promise<PaymentGateway> {
+  if (!nomeDoGateway(configuracao)) return new NullPaymentGateway();
+  if (!(await temRecurso("GATEWAY_AUTOMATICO"))) return new NullPaymentGateway();
+  return obterGateway(tipo, configuracao);
 }

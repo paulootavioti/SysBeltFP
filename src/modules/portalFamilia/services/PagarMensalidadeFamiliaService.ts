@@ -1,6 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
-import { obterGateway } from "../../pagamentos/gateways";
+import { obterGatewayConcedido } from "../../pagamentos/gateways";
 
 // Qual gateway atende depende da forma de pagamento da mensalidade
 // (`FormaPagamento.configuracao.gateway`). Sem gateway configurado, cai
@@ -38,7 +38,7 @@ export class PagarMensalidadeFamiliaService {
       throw new AppError("Esta mensalidade não pode ser paga.");
     }
 
-    const gateway = obterGateway(
+    const gateway = await obterGatewayConcedido(
       mensalidade.formaPagamento?.tipo ?? "OUTRO",
       // A configuração inteira, não só o nome do gateway: é dela que saem
       // as credenciais da unidade. Passar só o nome cobraria na conta
