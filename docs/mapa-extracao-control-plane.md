@@ -14,6 +14,10 @@ O primeiro schema comercial já modela `Assinante`, `ContatoAssinante`, `Plano`,
 `PlanoVersao`, `Assinatura`, `Fatura` e `FaturaItem`. Provisionamento, ambiente
 tenant e auditoria serão adicionados separadamente na etapa correspondente.
 
+A autenticação própria do Control Plane usa `OperadorPlataforma` e os perfis
+`OPERADOR`, `FINANCEIRO`, `SUPORTE` e `ADMIN_PLATAFORMA`. Ela não consulta nem
+cria registros na tabela `Usuario` do Tenant Plane.
+
 ## Legenda
 
 | Classificação | Significado |
