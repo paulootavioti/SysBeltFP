@@ -98,6 +98,10 @@ privada é gravada no segredo do tenant junto às conexões e nunca retorna ao
 Control Plane; somente a chave pública é persistida em `AmbienteTenant`. A
 etapa não é marcada como concluída se uma dessas duas saídas estiver ausente.
 
+O adaptador AWS usa o SDK JavaScript v3 e relê o segredo por nome antes de
+criá-lo. Assim, uma retentativa não cria outra chave nem outra versão. O valor
+sensível nunca é incluído no retorno do adaptador.
+
 Cada etapa verifica se já foi concluída antes de executar. A criação de
 projeto é uma operação não idempotente no provedor; em timeout incerto, o
 worker reconcilia projetos por metadados registrados antes de tentar criar
