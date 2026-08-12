@@ -1,6 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
-import { calcularPrecoPorFaixa } from "../utils/precoPlataforma";
+import { calcularPrecoPorUnidade } from "../utils/precoPlataforma";
 
 // Painel do operador do SaaS: todas as contas assinantes, com quantos
 // alunos cada uma tem e quanto isso representa de receita no mês.
@@ -17,18 +17,24 @@ export class ListContasService {
 
     // Uma contagem só pra todas as contas, agrupada — evita uma consulta
     // por conta quando a base de assinantes crescer.
-    const alunosPorConta = await prisma.aluno.groupBy({
+    const contagensPorUnidade = await prisma.aluno.groupBy({
       by: ["unidadeId"],
       where: { ativo: true },
       _count: { _all: true },
     });
 
-    const unidades = await prisma.unidade.findMany({ select: { id: true, contaId: true } });
+    const unidades = await prisma.unidade.findMany({
+      where: { ativo: true },
+      select: { id: true, contaId: true, nome: true },
+    });
     const contaDaUnidade = new Map(unidades.map((u) => [u.id, u.contaId]));
+    const totalPorUnidade = new Map(
+      contagensPorUnidade.map((grupo) => [grupo.unidadeId, grupo._count._all])
+    );
 
     const totalPorConta = new Map<number, number>();
 
-    for (const grupo of alunosPorConta) {
+    for (const grupo of contagensPorUnidade) {
       const contaId = contaDaUnidade.get(grupo.unidadeId);
       if (contaId === undefined) continue;
 
@@ -39,8 +45,16 @@ export class ListContasService {
       const alunosAtivos = totalPorConta.get(conta.id) ?? 0;
       const assinatura = conta.assinatura;
 
+      const contagensDaConta = unidades
+        .filter((unidade) => unidade.contaId === conta.id)
+        .map((unidade) => ({
+          unidadeId: unidade.id,
+          nomeUnidade: unidade.nome,
+          alunosContados: totalPorUnidade.get(unidade.id) ?? 0,
+        }));
+
       const previa = assinatura
-        ? calcularPrecoPorFaixa(alunosAtivos, {
+        ? calcularPrecoPorUnidade(contagensDaConta, {
             alunosPorBloco: assinatura.plano.alunosPorBloco,
             precoPorBlocoCentavos:
               assinatura.precoPorBlocoCentavos ?? assinatura.plano.precoPorBlocoCentavos,
@@ -61,7 +75,7 @@ export class ListContasService {
               status: assinatura.status,
               plano: assinatura.plano.nome,
               diaVencimento: assinatura.diaVencimento,
-              blocos: previa?.blocos ?? 0,
+              blocos: previa?.totalBlocos ?? 0,
               valorCentavos: previa?.valorCentavos ?? 0,
             }
           : null,

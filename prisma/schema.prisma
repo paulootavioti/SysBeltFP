@@ -216,6 +216,10 @@ model FaturaPlataforma {
   blocos                Int
   precoPorBlocoCentavos Int
   valorCentavos         Int
+  // Memória de cálculo por filial no momento do fechamento. É JSON porque
+  // representa o retrato imutável da fatura, não uma relação viva que deve
+  // mudar quando a unidade for renomeada ou desativada depois.
+  detalhamentoUnidades  Json?
 
   status StatusFaturaPlataforma @default(ABERTA)
   pagaEm DateTime?
