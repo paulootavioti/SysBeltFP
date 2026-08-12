@@ -6,6 +6,30 @@ on:
   pull_request:
 
 jobs:
+  control-plane:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: control-plane/package-lock.json
+
+      - working-directory: control-plane
+        run: npm ci
+
+      - working-directory: control-plane
+        run: npm run typecheck
+
+      - working-directory: control-plane
+        run: npm run test
+
+      - working-directory: control-plane
+        run: npm run build
+
   backend:
     runs-on: ubuntu-latest
 

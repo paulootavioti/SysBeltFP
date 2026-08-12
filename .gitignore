@@ -4,6 +4,8 @@ node_modules
 .env.test
 /src/generated/prisma
 /dist
+control-plane/dist
+control-plane/.env
 prisma/dev.db
 .DS_Store*.patch
 *.patch

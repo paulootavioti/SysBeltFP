@@ -3,6 +3,13 @@
 > Inventário do código atual e destino de cada responsabilidade. Este mapa é
 > a referência do passo 5 da separação B2B.
 
+## Estado da implementação
+
+A fundação independente está em `control-plane/`, com pacote Node, configuração
+Prisma, testes e deploy Netlify próprios. Nenhuma dependência do Tenant Plane é
+importada por essa aplicação. O módulo legado `src/modules/plataforma` continua
+ativo durante a transição e só será removido após migração e reconciliação.
+
 ## Legenda
 
 | Classificação | Significado |
