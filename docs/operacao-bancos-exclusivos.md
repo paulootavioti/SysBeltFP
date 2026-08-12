@@ -97,6 +97,11 @@ projeto é uma operação não idempotente no provedor; em timeout incerto, o
 worker reconcilia projetos por metadados registrados antes de tentar criar
 outro.
 
+O orquestrador retomável está implementado em
+`control-plane/src/modules/provisionamento/worker`. Ele depende de contratos
+para infraestrutura e persistência; os adaptadores reais Neon e cofre de
+segredos serão conectados somente depois da configuração dos ambientes.
+
 ## Estados e retomada
 
 ```text
