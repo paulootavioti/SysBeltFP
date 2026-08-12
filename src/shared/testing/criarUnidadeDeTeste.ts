@@ -20,7 +20,27 @@ const NOME_PLANO_PADRAO = "TESTE_PLANO_PADRAO";
 // testar a trava em si cria uma conta sem o recurso, de propósito.
 const RECURSOS_DE_TESTE = ["WHATSAPP", "GATEWAY_AUTOMATICO", "CONTROLE_ACESSO"];
 
+async function garantirConcessaoDeTeste() {
+  await prisma.concessaoPlataforma.upsert({
+    where: { id: 1 },
+    update: { statusAcesso: "ATIVO", recursos: RECURSOS_DE_TESTE, expiraEm: new Date("2100-01-01T00:00:00.000Z") },
+    create: {
+      id: 1,
+      tenantKey: "00000000-0000-4000-8000-000000000001",
+      statusAcesso: "ATIVO",
+      recursos: RECURSOS_DE_TESTE,
+      versaoContrato: 1,
+      revisao: 1,
+      emitidaEm: new Date("2026-08-12T00:00:00.000Z"),
+      expiraEm: new Date("2100-01-01T00:00:00.000Z"),
+      payloadHash: "concessao-ficticia-exclusiva-dos-testes",
+      assinaturaBase64: "assinatura-ficticia-exclusiva-dos-testes",
+    },
+  });
+}
+
 export async function contaDeTeste(): Promise<number> {
+  await garantirConcessaoDeTeste();
   const plano = await prisma.planoPlataforma.upsert({
     where: { nome: NOME_PLANO_PADRAO },
     update: { recursos: RECURSOS_DE_TESTE },

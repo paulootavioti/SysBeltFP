@@ -6,12 +6,9 @@ import { AtualizarEntregaService } from "./AtualizarEntregaService";
 import { RegistrarConsentimentoService } from "../../consentimentos/services/RegistrarConsentimentoService";
 import { MetaCloudApiProvider } from "../providers/MetaCloudApiProvider";
 import { normalizarTelefoneBR } from "../utils/telefone";
-import {
-  criarUnidadeDeTeste,
-  criarUnidadeSemRecursos,
-} from "../../../shared/testing/criarUnidadeDeTeste";
+import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
-const enviar = new EnviarMensagemWhatsappService();
+const enviar = new EnviarMensagemWhatsappService(async () => true);
 const atualizar = new AtualizarEntregaService();
 const registrarConsentimento = new RegistrarConsentimentoService();
 
@@ -312,15 +309,12 @@ describe("leitura do webhook da Meta", () => {
   });
 });
 
-// O WhatsApp é vendido à parte. Estes testes cobrem os dois lados da
-// trava: quem contratou envia, quem não contratou não envia — e a
-// diferença não depende de nenhum gatilho lembrar de checar.
-describe("WhatsApp é recurso de plano", () => {
-  it("assinante sem o recurso não envia, e nada vai pro provedor", async () => {
-    const unidade = await criarUnidadeSemRecursos(
-      `${PREFIXO}UNIDADE_SEM`,
-      `${PREFIXO}CONTA_SEM`
-    );
+// O WhatsApp é vendido à parte. A fonte de verdade local agora é a
+// concessão assinada, sem consulta à assinatura comercial legada.
+describe("WhatsApp é recurso da concessão", () => {
+  it("tenant sem o recurso não envia, e nada vai pro provedor", async () => {
+    const bloqueado = new EnviarMensagemWhatsappService(async () => false);
+    const unidade = await criarUnidadeDeTeste(`${PREFIXO}UNIDADE_SEM`);
 
     const aluno = await prisma.aluno.create({
       data: {
@@ -340,10 +334,10 @@ describe("WhatsApp é recurso de plano", () => {
       },
     });
 
-    // consentimento em dia: o que barra o envio é só o plano.
+    // consentimento em dia: o que barra o envio é só a concessão.
     await liberarComunicacoes(unidade.id, aluno.id, usuario.id);
 
-    const resultado = await enviar.execute({
+    const resultado = await bloqueado.execute({
       unidadeId: unidade.id,
       template: "MENSALIDADE_VENCIDA",
       parametros: ["Fulano", "R$ 100,00", "01/08/2026"],
@@ -354,7 +348,7 @@ describe("WhatsApp é recurso de plano", () => {
 
     expect(resultado.resultado).toBe("SEM_RECURSO_NO_PLANO");
 
-    // não gera linha: plano sem o recurso não é um fato sobre o aluno,
+    // não gera linha: concessão sem o recurso não é um fato sobre o aluno,
     // ao contrário da falta de consentimento.
     const registros = await prisma.mensagemWhatsapp.findMany({
       where: { unidadeId: unidade.id },
@@ -367,12 +361,10 @@ describe("WhatsApp é recurso de plano", () => {
     // ordem importa: sem o recurso, o sistema nem chega a avaliar o
     // consentimento — não faz sentido registrar bloqueio de LGPD numa
     // academia que não contratou o canal.
-    const unidade = await criarUnidadeSemRecursos(
-      `${PREFIXO}UNIDADE_ORDEM`,
-      `${PREFIXO}CONTA_ORDEM`
-    );
+    const bloqueado = new EnviarMensagemWhatsappService(async () => false);
+    const unidade = await criarUnidadeDeTeste(`${PREFIXO}UNIDADE_ORDEM`);
 
-    const resultado = await enviar.execute({
+    const resultado = await bloqueado.execute({
       unidadeId: unidade.id,
       template: "LEMBRETE_AULA",
       parametros: ["Fulano", "Jiu-Jitsu", "19:00"],
@@ -383,7 +375,7 @@ describe("WhatsApp é recurso de plano", () => {
     expect(resultado.resultado).toBe("SEM_RECURSO_NO_PLANO");
   });
 
-  it("assinante que contratou envia normalmente", async () => {
+  it("tenant com recurso concedido envia normalmente", async () => {
     const { unidade, aluno, usuario } = await criarCenario();
 
     await liberarComunicacoes(unidade.id, aluno.id, usuario.id);
