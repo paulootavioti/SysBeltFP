@@ -102,6 +102,11 @@ O orquestrador retomável está implementado em
 para infraestrutura e persistência; os adaptadores reais Neon e cofre de
 segredos serão conectados somente depois da configuração dos ambientes.
 
+O runner Prisma adquire cada evento de forma condicional, limita o fluxo a
+cinco tentativas e agenda retentativas com backoff. A Background Function fica
+bloqueada por segredo interno e por `PROVISIONAMENTO_REAL_HABILITADO=false`
+até que os adaptadores reais sejam conectados.
+
 ## Estados e retomada
 
 ```text
