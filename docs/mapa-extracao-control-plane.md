@@ -10,6 +10,10 @@ Prisma, testes e deploy Netlify próprios. Nenhuma dependência do Tenant Plane 
 importada por essa aplicação. O módulo legado `src/modules/plataforma` continua
 ativo durante a transição e só será removido após migração e reconciliação.
 
+O primeiro schema comercial já modela `Assinante`, `ContatoAssinante`, `Plano`,
+`PlanoVersao`, `Assinatura`, `Fatura` e `FaturaItem`. Provisionamento, ambiente
+tenant e auditoria serão adicionados separadamente na etapa correspondente.
+
 ## Legenda
 
 | Classificação | Significado |
