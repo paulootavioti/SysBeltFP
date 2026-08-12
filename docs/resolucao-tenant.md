@@ -204,3 +204,10 @@ Antes de produção, testes automatizados devem provar que:
 - [Neon — connection pooling](https://neon.com/docs/connect/connection-pooling)
 - [Netlify — configuração de Functions](https://docs.netlify.com/build/functions/configuration/)
 - [Netlify — domínios e certificados wildcard](https://docs.netlify.com/manage/domains/configure-domains/delegate-a-standalone-subdomain/)
+# Emissão de contagens
+
+Cada Tenant Plane envia diariamente ao Control Plane um snapshot agregado por
+unidade. A função agendada usa `TENANT_KEY` e assina o contrato v1 com
+`TENANT_INTEGRATION_PRIVATE_KEY`; nenhuma linha de aluno deixa o banco
+exclusivo. A chave deve ser configurada como segredo no site Netlify da
+academia.
