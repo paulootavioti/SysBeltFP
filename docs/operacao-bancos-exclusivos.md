@@ -102,6 +102,11 @@ O adaptador AWS usa o SDK JavaScript v3 e relê o segredo por nome antes de
 criá-lo. Assim, uma retentativa não cria outra chave nem outra versão. O valor
 sensível nunca é incluído no retorno do adaptador.
 
+O cliente Neon busca primeiro o nome determinístico `tenant-<tenantKey>` e só
+executa `POST /projects` quando a busca exata está vazia. Se encontrar um
+projeto sem o segredo correspondente, interrompe a retomada para recuperação
+de credenciais; nunca cria cegamente um segundo projeto.
+
 Cada etapa verifica se já foi concluída antes de executar. A criação de
 projeto é uma operação não idempotente no provedor; em timeout incerto, o
 worker reconcilia projetos por metadados registrados antes de tentar criar
