@@ -5,6 +5,7 @@ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticate
 import { ensureRole } from "../../shared/middlewares/ensureRole";
 import { validateBody } from "../../shared/middlewares/validateBody";
 import { credencialAcessoSchema, dispositivoAcessoSchema } from "./validation";
+import { exigirRecursoTenant } from "../concessaoPlataforma/exigirRecursoTenant";
 
 const controleAcessoRoutes = Router();
 const controller = new ControleAcessoController();
@@ -18,6 +19,7 @@ controleAcessoRoutes.post("/dispositivos/:id/eventos", controller.receberEvento)
 
 // ===== Rotas da equipe =====
 controleAcessoRoutes.use(ensureAuthenticated);
+controleAcessoRoutes.use(exigirRecursoTenant("CONTROLE_ACESSO"));
 
 controleAcessoRoutes.get(
   "/dispositivos",

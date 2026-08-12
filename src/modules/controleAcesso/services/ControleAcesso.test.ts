@@ -6,7 +6,7 @@ import { RegistrarEventoAcessoService } from "./RegistrarEventoAcessoService";
 import { obterProvedorAcesso, ProvedorAcessoNaoImplementadoError } from "../providers";
 import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
-const autorizar = new AutorizarAcessoService();
+const autorizar = new AutorizarAcessoService(async () => true);
 const registrar = new RegistrarEventoAcessoService();
 
 const PREFIXO = "TESTE_ACESSO_";
