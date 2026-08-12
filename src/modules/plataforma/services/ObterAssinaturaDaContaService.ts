@@ -1,8 +1,8 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
 import { competenciaDoMes, vencimentoDaCompetencia } from "../utils/competencia";
-import { calcularPrecoPorFaixa } from "../utils/precoPlataforma";
-import { ContarAlunosDaContaService } from "./ContarAlunosDaContaService";
+import { calcularPrecoPorUnidade } from "../utils/precoPlataforma";
+import { ContarAlunosPorUnidadeDaContaService } from "./ContarAlunosPorUnidadeDaContaService";
 
 // A visão que o dono da academia tem da própria assinatura: qual plano,
 // quantos alunos estão sendo contados agora, quanto isso dá, e o histórico
@@ -22,12 +22,12 @@ export class ObterAssinaturaDaContaService {
       throw new AppError("Esta conta ainda não tem assinatura da plataforma.", 404);
     }
 
-    const alunosContados = await new ContarAlunosDaContaService().execute(contaId);
+    const alunosPorUnidade = await new ContarAlunosPorUnidadeDaContaService().execute(contaId);
 
     const precoPorBlocoCentavos =
       assinatura.precoPorBlocoCentavos ?? assinatura.plano.precoPorBlocoCentavos;
 
-    const previa = calcularPrecoPorFaixa(alunosContados, {
+    const previa = calcularPrecoPorUnidade(alunosPorUnidade, {
       alunosPorBloco: assinatura.plano.alunosPorBloco,
       precoPorBlocoCentavos,
       blocosMinimos: assinatura.plano.blocosMinimos,
@@ -60,7 +60,12 @@ export class ObterAssinaturaDaContaService {
       previaDoMes: {
         competencia,
         vencimento: vencimentoDaCompetencia(competencia, assinatura.diaVencimento),
-        ...previa,
+        unidades: previa.unidades,
+        alunosContados: previa.totalLotacoes,
+        alunosPorBloco: assinatura.plano.alunosPorBloco,
+        blocos: previa.totalBlocos,
+        precoPorBlocoCentavos,
+        valorCentavos: previa.valorCentavos,
       },
       faturas,
     };

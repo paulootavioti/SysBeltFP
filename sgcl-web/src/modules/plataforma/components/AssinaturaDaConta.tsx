@@ -125,6 +125,16 @@ export function AssinaturaDaConta({ detalhe, planos, onAtualizado }: AssinaturaD
         </div>
       </div>
 
+      <div className="conta-detalhe-resumo">
+        {detalhe.previaDoMes.unidades.map((unidade) => (
+          <div key={unidade.unidadeId}>
+            <span>{unidade.nomeUnidade}</span>
+            <strong>{formatarCentavos(unidade.valorCentavos)}</strong>
+            <small>{unidade.alunosContados} aluno(s) · {unidade.blocos} faixa(s)</small>
+          </div>
+        ))}
+      </div>
+
       <FormGrid columns={2}>
         <FormGridItem>
           <Select

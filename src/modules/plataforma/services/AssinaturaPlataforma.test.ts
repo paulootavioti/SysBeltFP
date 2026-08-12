@@ -6,8 +6,10 @@ import { competenciaDoMes } from "../utils/competencia";
 import { contaTemRecurso, unidadeTemRecurso } from "../utils/recursosDoPlano";
 import { AlterarAssinaturaPlataformaService } from "./AlterarAssinaturaPlataformaService";
 import { ContarAlunosDaContaService } from "./ContarAlunosDaContaService";
+import { ContarAlunosPorUnidadeDaContaService } from "./ContarAlunosPorUnidadeDaContaService";
 import { CreateContaService } from "./CreateContaService";
 import { GerarFaturasPlataformaService } from "./GerarFaturasPlataformaService";
+import { ListContasService } from "./ListContasService";
 import { MarcarFaturaPagaService } from "./MarcarFaturaPagaService";
 import { ObterAssinaturaDaContaService } from "./ObterAssinaturaDaContaService";
 import { CreatePlanoPlataformaService } from "./PlanosPlataformaService";
@@ -17,7 +19,9 @@ const PREFIXO = "TESTE_PLATAFORMA_";
 const criarConta = new CreateContaService();
 const criarPlano = new CreatePlanoPlataformaService();
 const contarAlunos = new ContarAlunosDaContaService();
+const contarAlunosPorUnidade = new ContarAlunosPorUnidadeDaContaService();
 const gerarFaturas = new GerarFaturasPlataformaService();
+const listarContas = new ListContasService();
 const marcarPaga = new MarcarFaturaPagaService();
 const obterAssinatura = new ObterAssinaturaDaContaService();
 const alterarAssinatura = new AlterarAssinaturaPlataformaService();
@@ -187,6 +191,39 @@ describe("ContarAlunosDaContaService", () => {
   });
 });
 
+describe("ContarAlunosPorUnidadeDaContaService", () => {
+  it("inclui unidade ativa vazia, porque ela também ocupa uma licença", async () => {
+    const { conta, unidade } = await contaComAlunos(12);
+    const filial = await prisma.unidade.create({
+      data: { contaId: conta.id, nome: `${PREFIXO}Filial vazia` },
+    });
+
+    expect(await contarAlunosPorUnidade.execute(conta.id)).toEqual([
+      { unidadeId: unidade.id, nomeUnidade: unidade.nome, alunosContados: 12 },
+      { unidadeId: filial.id, nomeUnidade: filial.nome, alunosContados: 0 },
+    ]);
+  });
+
+  it("não cobra licença nem alunos de unidade inativa", async () => {
+    const { conta } = await contaComAlunos(5);
+    const inativa = await prisma.unidade.create({
+      data: { contaId: conta.id, nome: `${PREFIXO}Encerrada`, ativo: false },
+    });
+    await prisma.aluno.create({
+      data: {
+        unidadeId: inativa.id,
+        nome: `${PREFIXO}Aluno histórico`,
+        dataNascimento: new Date("2012-01-01"),
+      },
+    });
+
+    const contagens = await contarAlunosPorUnidade.execute(conta.id);
+
+    expect(contagens).toHaveLength(1);
+    expect(contagens[0].alunosContados).toBe(5);
+  });
+});
+
 describe("GerarFaturasPlataformaService", () => {
   it("fatura 50 alunos como 5 faixas de R$ 37,00", async () => {
     const { conta } = await contaComAlunos(50);
@@ -202,6 +239,35 @@ describe("GerarFaturasPlataformaService", () => {
     expect(fatura.alunosContados).toBe(50);
     expect(fatura.blocos).toBe(5);
     expect(fatura.valorCentavos).toBe(18500);
+  });
+
+  it("cobra cada unidade como licença e guarda a memória de cálculo", async () => {
+    const { conta } = await contaComAlunos(12);
+    const filial = await prisma.unidade.create({
+      data: { contaId: conta.id, nome: `${PREFIXO}Filial` },
+    });
+    for (let i = 0; i < 8; i++) {
+      await prisma.aluno.create({
+        data: {
+          unidadeId: filial.id,
+          nome: `${PREFIXO}Filial cobrança ${i}`,
+          dataNascimento: new Date("2012-01-01"),
+        },
+      });
+    }
+
+    await gerarFaturas.execute(new Date(), conta.id);
+
+    const fatura = await prisma.faturaPlataforma.findFirstOrThrow({
+      where: { contaId: conta.id },
+    });
+    expect(fatura.alunosContados).toBe(20);
+    expect(fatura.blocos).toBe(3);
+    expect(fatura.valorCentavos).toBe(11100);
+    expect(fatura.detalhamentoUnidades).toEqual([
+      expect.objectContaining({ alunosContados: 12, blocos: 2, valorCentavos: 7400 }),
+      expect.objectContaining({ alunosContados: 8, blocos: 1, valorCentavos: 3700 }),
+    ]);
   });
 
   it("rodar o fechamento duas vezes no mesmo mês não cobra duas vezes", async () => {
@@ -374,6 +440,36 @@ describe("ObterAssinaturaDaContaService", () => {
 
     expect(visao.plano.precoPorBlocoCentavos).toBe(2000);
     expect(visao.previaDoMes.valorCentavos).toBe(2000);
+  });
+
+  it("mostra a prévia quebrada por unidade", async () => {
+    const { conta } = await contaComAlunos(5);
+    await prisma.unidade.create({
+      data: { contaId: conta.id, nome: `${PREFIXO}Nova filial` },
+    });
+
+    const visao = await obterAssinatura.execute(conta.id);
+
+    expect(visao.previaDoMes.alunosContados).toBe(5);
+    expect(visao.previaDoMes.blocos).toBe(2);
+    expect(visao.previaDoMes.valorCentavos).toBe(7400);
+    expect(visao.previaDoMes.unidades).toHaveLength(2);
+  });
+});
+
+describe("ListContasService", () => {
+  it("calcula a receita do painel por unidade, incluindo filial vazia", async () => {
+    const { conta } = await contaComAlunos(5);
+    await prisma.unidade.create({
+      data: { contaId: conta.id, nome: `${PREFIXO}Licença vazia` },
+    });
+
+    const contas = await listarContas.execute();
+    const resumo = contas.find((item) => item.id === conta.id);
+
+    expect(resumo?.alunosAtivos).toBe(5);
+    expect(resumo?.assinatura?.blocos).toBe(2);
+    expect(resumo?.assinatura?.valorCentavos).toBe(7400);
   });
 });
 

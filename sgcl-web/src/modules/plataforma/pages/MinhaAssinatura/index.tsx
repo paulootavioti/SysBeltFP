@@ -57,12 +57,6 @@ export function MinhaAssinatura() {
 
   const { plano, previaDoMes, faturas } = assinatura;
 
-  // Quantos alunos ainda cabem antes de virar a faixa. É a pergunta que o
-  // dono realmente faz ao olhar esta tela: "se eu matricular mais alguns,
-  // meu preço muda?".
-  const capacidadeDaFaixa = previaDoMes.blocos * previaDoMes.alunosPorBloco;
-  const vagasAteProximaFaixa = capacidadeDaFaixa - previaDoMes.alunosContados;
-
   const colunas = [
     {
       header: "Competência",
@@ -113,6 +107,12 @@ export function MinhaAssinatura() {
           <p className="assinatura-detalhe assinatura-detalhe--fraco">
             Vence em {formatarData(previaDoMes.vencimento)}
           </p>
+          {previaDoMes.unidades.map((unidade) => (
+            <p className="assinatura-detalhe assinatura-detalhe--fraco" key={unidade.unidadeId}>
+              {unidade.nomeUnidade}: {unidade.alunosContados} aluno(s), {unidade.blocos}{" "}
+              {unidade.blocos === 1 ? "faixa" : "faixas"} — {formatarCentavos(unidade.valorCentavos)}
+            </p>
+          ))}
         </section>
 
         <section className="assinatura-cartao">
@@ -130,18 +130,10 @@ export function MinhaAssinatura() {
         </section>
 
         <section className="assinatura-cartao">
-          <span className="assinatura-rotulo">Espaço na faixa atual</span>
-          <strong className="assinatura-valor">
-            {vagasAteProximaFaixa === 0 ? "Cheia" : vagasAteProximaFaixa}
-          </strong>
+          <span className="assinatura-rotulo">Licenças ativas</span>
+          <strong className="assinatura-valor">{previaDoMes.unidades.length}</strong>
           <p className="assinatura-detalhe">
-            {vagasAteProximaFaixa === 0
-              ? `O próximo aluno abre uma faixa nova (+${formatarCentavos(
-                  plano.precoPorBlocoCentavos
-                )}).`
-              : `Cabem mais ${vagasAteProximaFaixa} ${
-                  vagasAteProximaFaixa === 1 ? "aluno" : "alunos"
-                } sem mudar o valor.`}
+            Cada unidade é calculada separadamente e paga ao menos uma faixa.
           </p>
         </section>
       </div>

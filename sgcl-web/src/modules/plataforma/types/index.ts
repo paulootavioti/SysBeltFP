@@ -29,6 +29,14 @@ export const RECURSO_LABEL: Record<RecursoPlataforma, string> = {
   CONTROLE_ACESSO: "Catraca e leitor facial",
 };
 
+export interface PrecoUnidadePlataforma {
+  unidadeId: number;
+  nomeUnidade: string;
+  alunosContados: number;
+  blocos: number;
+  valorCentavos: number;
+}
+
 export interface FaturaPlataforma {
   id: number;
   competencia: string;
@@ -38,6 +46,7 @@ export interface FaturaPlataforma {
   blocos: number;
   precoPorBlocoCentavos: number;
   valorCentavos: number;
+  detalhamentoUnidades: PrecoUnidadePlataforma[] | null;
   status: StatusFaturaPlataforma;
   pagaEm: string | null;
 }
@@ -64,6 +73,7 @@ export interface MinhaAssinatura {
     blocos: number;
     precoPorBlocoCentavos: number;
     valorCentavos: number;
+    unidades: PrecoUnidadePlataforma[];
   };
   faturas: FaturaPlataforma[];
 }
