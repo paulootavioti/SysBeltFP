@@ -18,6 +18,10 @@ A autenticação própria do Control Plane usa `OperadorPlataforma` e os perfis
 `OPERADOR`, `FINANCEIRO`, `SUPORTE` e `ADMIN_PLATAFORMA`. Ela não consulta nem
 cria registros na tabela `Usuario` do Tenant Plane.
 
+O inventário de infraestrutura usa `AmbienteTenant` e
+`EventoProvisionamento`. Ele guarda somente identificadores do provedor e a
+referência do segredo; connection strings nunca pertencem ao banco central.
+
 ## Legenda
 
 | Classificação | Significado |
