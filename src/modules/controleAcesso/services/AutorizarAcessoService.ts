@@ -1,5 +1,6 @@
 import { prisma } from "../../../shared/database/prisma";
 import type { SentidoAcesso } from "../providers";
+import { tenantTemRecurso } from "../../concessaoPlataforma/recursos";
 
 export interface DecisaoAcesso {
   autorizado: boolean;
@@ -25,18 +26,27 @@ interface AutorizarAcessoDTO {
 //
 // Regras, em ordem (a primeira que falha nega):
 //   1. saída é sempre liberada — ninguém fica preso lá dentro;
-//   2. a credencial precisa existir, estar ativa e dentro da validade;
-//   3. aluno precisa estar ativo;
-//   4. aluno com mensalidade vencida não passa (a academia pode desligar
+//   2. a concessão precisa liberar o recurso de controle de acesso;
+//   3. a credencial precisa existir, estar ativa e dentro da validade;
+//   4. aluno precisa estar ativo;
+//   5. aluno com mensalidade vencida não passa (a academia pode desligar
 //      essa regra por unidade — ver bloqueiaInadimplente);
-//   5. usuário (professor/equipe) precisa estar ativo.
+//   6. usuário (professor/equipe) precisa estar ativo.
 export class AutorizarAcessoService {
+  constructor(
+    private readonly temRecurso: typeof tenantTemRecurso = tenantTemRecurso,
+  ) {}
+
   async execute(dados: AutorizarAcessoDTO): Promise<DecisaoAcesso> {
     const sentido = dados.sentido ?? "ENTRADA";
     const agora = dados.referencia ?? new Date();
 
     if (sentido === "SAIDA") {
       return { autorizado: true, motivo: "Saída liberada", alunoId: dados.alunoId, usuarioId: dados.usuarioId };
+    }
+
+    if (!(await this.temRecurso("CONTROLE_ACESSO", agora))) {
+      return { autorizado: false, motivo: "Controle de acesso indisponível para esta assinatura" };
     }
 
     let alunoId = dados.alunoId ?? null;
