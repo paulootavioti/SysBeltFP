@@ -22,6 +22,10 @@ O inventário de infraestrutura usa `AmbienteTenant` e
 `EventoProvisionamento`. Ele guarda somente identificadores do provedor e a
 referência do segredo; connection strings nunca pertencem ao banco central.
 
+O contrato v1 de contagem está em `contracts/tenant-control-plane/v1`. O
+Control Plane persiste `LicencaUnidade` e snapshots idempotentes contendo
+somente contagens agregadas; nenhum registro de aluno atravessa essa fronteira.
+
 ## Legenda
 
 | Classificação | Significado |
