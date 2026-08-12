@@ -26,6 +26,10 @@ O contrato v1 de contagem está em `contracts/tenant-control-plane/v1`. O
 Control Plane persiste `LicencaUnidade` e snapshots idempotentes contendo
 somente contagens agregadas; nenhum registro de aluno atravessa essa fronteira.
 
+O contrato inverso de concessão está em `contracts/control-plane-tenant/v1`.
+O Tenant Plane já possui a projeção local aditiva `ConcessaoPlataforma` e uma
+consulta que falha fechado; as travas legadas ainda não foram substituídas.
+
 ## Legenda
 
 | Classificação | Significado |

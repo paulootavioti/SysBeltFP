@@ -194,6 +194,29 @@ enum StatusFaturaPlataforma {
   CANCELADA
 }
 
+enum StatusAcessoPlataforma {
+  ATIVO
+  SUSPENSO
+  CANCELADO
+}
+
+// Projeção local assinada pelo Control Plane. Não possui relação com as
+// tabelas comerciais legadas e contém somente o necessário para autorizar
+// recursos neste banco exclusivo.
+model ConcessaoPlataforma {
+  id                Int                    @id @default(1)
+  tenantKey         String                 @unique @db.Uuid
+  statusAcesso      StatusAcessoPlataforma
+  recursos          String[]
+  versaoContrato    Int
+  revisao           Int
+  emitidaEm         DateTime
+  expiraEm          DateTime
+  sincronizadaEm    DateTime               @default(now())
+  payloadHash       String
+  assinaturaBase64  String
+}
+
 // Fatura mensal da plataforma. Guarda a contagem de alunos e o preço
 // USADOS no fechamento — mudar o plano depois não reescreve o que já foi
 // cobrado.
