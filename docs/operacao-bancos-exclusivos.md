@@ -36,6 +36,7 @@ O nome visível do projeto não é usado como identidade de segurança. O víncu
 - `databaseName` e `roleName` operacionais;
 - região e versão do PostgreSQL;
 - `secretRef`;
+- chave pública Ed25519 da integração (a chave privada permanece no tenant);
 - versão atual e desejada do schema;
 - estado de provisionamento e saúde;
 - última migration, backup verificado e rotação de credencial.
