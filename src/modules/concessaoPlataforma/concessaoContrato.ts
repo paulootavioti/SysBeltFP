@@ -1,14 +1,15 @@
 import { createHash, verify } from "node:crypto";
 import { z } from "zod";
 
-const RECURSOS = ["WHATSAPP", "GATEWAY_AUTOMATICO", "CONTROLE_ACESSO"] as const;
+export const RECURSOS_CONCESSAO = ["WHATSAPP", "GATEWAY_AUTOMATICO", "CONTROLE_ACESSO"] as const;
+export type RecursoConcessao = (typeof RECURSOS_CONCESSAO)[number];
 
 export const concessaoV1Schema = z.object({
   versao: z.literal(1),
   tenantKey: z.string().uuid(),
   revisao: z.number().int().positive(),
   statusAcesso: z.enum(["ATIVO", "SUSPENSO", "CANCELADO"]),
-  recursos: z.array(z.enum(RECURSOS)).max(RECURSOS.length).refine(
+  recursos: z.array(z.enum(RECURSOS_CONCESSAO)).max(RECURSOS_CONCESSAO.length).refine(
     (itens) => new Set(itens).size === itens.length, "Recursos duplicados.",
   ),
   emitidaEm: z.string().datetime({ offset: true }),

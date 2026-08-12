@@ -5,7 +5,7 @@ import { ConsultarConsentimentoService } from "../../consentimentos/services/Con
 import { obterProvedorMensagens } from "../providers";
 import { TEMPLATES, type NomeTemplate } from "../templates";
 import { normalizarTelefoneBR } from "../utils/telefone";
-import { unidadeTemRecurso } from "../../plataforma/utils/recursosDoPlano";
+import { tenantTemRecurso } from "../../concessaoPlataforma/recursos";
 
 const consultarConsentimento = new ConsultarConsentimentoService();
 
@@ -34,6 +34,10 @@ interface EnviarMensagemDTO {
 }
 
 export class EnviarMensagemWhatsappService {
+  constructor(
+    private readonly temRecurso: typeof tenantTemRecurso = tenantTemRecurso,
+  ) {}
+
   async execute(dto: EnviarMensagemDTO): Promise<{ resultado: ResultadoEnvio; detalhe?: string }> {
     const definicao = TEMPLATES[dto.template];
 
@@ -45,9 +49,9 @@ export class EnviarMensagemWhatsappService {
     // de aula) — gatilho novo nasce coberto sem ninguém lembrar disso.
     //
     // Não grava registro: diferente de "sem consentimento", que é história
-    // que a LGPD pede pra guardar, plano sem o recurso não é um fato sobre
-    // o aluno — gravar encheria a tabela de linhas sem valor.
-    if (!(await unidadeTemRecurso(dto.unidadeId, "WHATSAPP"))) {
+    // que a LGPD pede pra guardar, concessão sem o recurso não é um fato
+    // sobre o aluno — gravar encheria a tabela de linhas sem valor.
+    if (!(await this.temRecurso("WHATSAPP"))) {
       return { resultado: "SEM_RECURSO_NO_PLANO" };
     }
 
