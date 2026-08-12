@@ -145,6 +145,19 @@ Frontend (React)
 
 Detalhes completos em [`arquitetura.md`](arquitetura.md).
 
+Para a arquitetura B2B e o isolamento entre assinantes, consulte:
+
+- [`architecture-decisions.md`](architecture-decisions.md) — ADR-010, que
+  estabelece banco operacional exclusivo por academia/rede;
+- [`control-plane-b2b.md`](control-plane-b2b.md) — modelo funcional e de dados
+  do sistema comercial, de assinaturas e provisionamento.
+- [`resolucao-tenant.md`](resolucao-tenant.md) — identificação por hostname,
+  contexto por requisição e seleção segura do banco exclusivo.
+- [`operacao-bancos-exclusivos.md`](operacao-bancos-exclusivos.md) —
+  provisionamento, segredos, migrations, backup, rotação e encerramento.
+- [`mapa-extracao-control-plane.md`](mapa-extracao-control-plane.md) — destino
+  das tabelas, rotas, serviços, telas e perfis atuais.
+
 ---
 
 # Estrutura do projeto
