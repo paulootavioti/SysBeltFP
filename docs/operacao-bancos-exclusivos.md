@@ -93,6 +93,11 @@ O worker executa etapas persistidas:
 10. **ativar:** marca ambiente e assinante como ativos;
 11. **notificar:** envia instrução de primeiro acesso fora do log técnico.
 
+Na etapa 5, o adaptador do cofre também gera um par Ed25519 exclusivo. A chave
+privada é gravada no segredo do tenant junto às conexões e nunca retorna ao
+Control Plane; somente a chave pública é persistida em `AmbienteTenant`. A
+etapa não é marcada como concluída se uma dessas duas saídas estiver ausente.
+
 Cada etapa verifica se já foi concluída antes de executar. A criação de
 projeto é uma operação não idempotente no provedor; em timeout incerto, o
 worker reconcilia projetos por metadados registrados antes de tentar criar
