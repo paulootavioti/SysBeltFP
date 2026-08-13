@@ -28,7 +28,13 @@ somente contagens agregadas; nenhum registro de aluno atravessa essa fronteira.
 
 O contrato inverso de concessão está em `contracts/control-plane-tenant/v1`.
 O Tenant Plane já possui a projeção local aditiva `ConcessaoPlataforma` e uma
-consulta que falha fechado; as travas legadas ainda não foram substituídas.
+consulta que falha fechado. WhatsApp, gateway automático e controle de acesso
+já usam essa concessão, sem consultar a assinatura comercial legada.
+
+O Tenant Plane também gera, assina e envia diariamente snapshots agregados por
+unidade. No Control Plane, o worker já compõe Neon, AWS Secrets Manager e um
+provisionador isolado para migrations, bootstrap e health; a execução real
+permanece desabilitada por padrão até toda a infraestrutura ser configurada.
 
 ## Legenda
 
