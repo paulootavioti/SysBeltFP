@@ -1,6 +1,5 @@
 import { prisma } from "../../../shared/database/prisma";
 import { AppError } from "../../../shared/errors/AppError";
-import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { calcularFrequenciaPorPeriodo } from "../../../shared/utils/calcularFrequencia";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
 
@@ -16,6 +15,7 @@ export class GetAlunoCompletoService {
         select: {
           id: true,
           unidadeId: true,
+          unidadesPermitidas: { select: { unidadeId: true } },
           nome: true,
           apelido: true,
           turma: { select: { id: true, nome: true } },
@@ -32,9 +32,11 @@ export class GetAlunoCompletoService {
         throw new AppError("Aluno não encontrado.");
       }
 
-      garantirAcessoUnidade(unidadeId, alunoBasico.unidadeId, "Aluno não encontrado.");
+      if (unidadeId !== null && !alunoBasico.unidadesPermitidas.some((vinculo) => vinculo.unidadeId === unidadeId)) {
+        throw new AppError("Aluno não encontrado.");
+      }
 
-      const { unidadeId: _unidadeId, aulas, ...resto } = alunoBasico;
+      const { unidadeId: _unidadeId, unidadesPermitidas: _unidadesPermitidas, aulas, ...resto } = alunoBasico;
 
       return {
         ...resto,
@@ -53,6 +55,7 @@ export class GetAlunoCompletoService {
       },
       include: {
         responsaveis: true,
+        unidadesPermitidas: { select: { unidadeId: true } },
         aulas: {
           include: {
             aula: true,
@@ -85,7 +88,9 @@ export class GetAlunoCompletoService {
       throw new AppError("Aluno não encontrado.");
     }
 
-    garantirAcessoUnidade(unidadeId, aluno.unidadeId, "Aluno não encontrado.");
+    if (unidadeId !== null && !aluno.unidadesPermitidas.some((vinculo) => vinculo.unidadeId === unidadeId)) {
+      throw new AppError("Aluno não encontrado.");
+    }
 
     const presencas = aluno.aulas
       .filter((registro) => registro.presente)
@@ -105,8 +110,10 @@ export class GetAlunoCompletoService {
       valoresDepois: { motivo: "Prontuário completo do aluno" },
     });
 
+    const { unidadesPermitidas, ...dadosAluno } = aluno;
     return {
-      ...aluno,
+      ...dadosAluno,
+      unidadesPermitidasIds: unidadesPermitidas.map((vinculo) => vinculo.unidadeId),
       presencas,
       ...calcularFrequenciaPorPeriodo(
         aluno.aulas.map((registro) => ({ presente: registro.presente, data: registro.aula.data }))

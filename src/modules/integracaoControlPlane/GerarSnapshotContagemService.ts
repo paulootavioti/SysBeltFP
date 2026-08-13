@@ -14,9 +14,9 @@ const fontePrisma: FonteContagem = {
     select: { id: true, nome: true, ativo: true }, orderBy: { id: "asc" },
   }),
   contarAlunosAtivos: async () => {
-    const contagens = await prisma.aluno.groupBy({
+    const contagens = await prisma.alunoUnidade.groupBy({
       by: ["unidadeId"],
-      where: { ativo: true, unidade: { ativo: true } },
+      where: { aluno: { ativo: true }, unidade: { ativo: true } },
       _count: { _all: true },
     });
     return contagens.map((item) => ({

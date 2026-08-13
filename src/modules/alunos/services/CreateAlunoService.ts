@@ -6,6 +6,7 @@ import { gerarSenhaAleatoria } from "../../../shared/utils/gerarSenhaAleatoria";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
 import { RegistrarConsentimentoService } from "../../consentimentos/services/RegistrarConsentimentoService";
 import { obterContextoRequisicao } from "../../../shared/context/contextoRequisicao";
+import { validarUnidadesPermitidas } from "./validarUnidadesPermitidas";
 
 const auditLogService = new AuditLogService();
 const registrarConsentimento = new RegistrarConsentimentoService();
@@ -56,6 +57,7 @@ interface CreateAlunoDTO {
   formaPagamento?: string | null;
   diaVencimento?: string | number | null;
   planoId?: string | number | null;
+  unidadesPermitidasIds?: number[];
 }
 
 function toNumberOrNull(value: unknown) {
@@ -103,6 +105,10 @@ export class CreateAlunoService {
     }
 
     const turmaId = toNumberOrNull(data.turmaId);
+    const unidadesPermitidasIds = await validarUnidadesPermitidas(
+      data.unidadeId,
+      data.unidadesPermitidasIds,
+    );
 
     if (turmaId !== null) {
       const turma = await prisma.turma.findUnique({ where: { id: turmaId } });
@@ -172,7 +178,11 @@ export class CreateAlunoService {
 
         ativo: true,
         senhaPortal: senhaPortalHash,
+        unidadesPermitidas: {
+          create: unidadesPermitidasIds.map((unidadeId) => ({ unidadeId })),
+        },
       },
+      include: { unidadesPermitidas: { select: { unidadeId: true } } },
     });
 
     // A autorização de imagem marcada no cadastro precisa virar linha no
@@ -188,7 +198,12 @@ export class CreateAlunoService {
       valoresDepois: { nome: aluno.nome, faixa: aluno.faixa, turmaId: aluno.turmaId },
     });
 
-    return { ...aluno, senhaPortalGerada };
+    const { unidadesPermitidas, ...dadosAluno } = aluno;
+    return {
+      ...dadosAluno,
+      unidadesPermitidasIds: unidadesPermitidas.map(({ unidadeId }) => unidadeId),
+      senhaPortalGerada,
+    };
   }
 }
 
