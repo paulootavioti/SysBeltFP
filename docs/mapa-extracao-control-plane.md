@@ -35,6 +35,8 @@ O Tenant Plane também gera, assina e envia diariamente snapshots agregados por
 unidade. No Control Plane, o worker já compõe Neon, AWS Secrets Manager e um
 provisionador isolado para migrations, bootstrap e health; a execução real
 permanece desabilitada por padrão até toda a infraestrutura ser configurada.
+O contrato dessa fronteira está versionado em
+`contracts/control-plane-provisioner/v1` e proíbe o trânsito de credenciais.
 
 ## Legenda
 
