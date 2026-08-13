@@ -67,6 +67,7 @@ async function contaComAlunos(quantidade: number, opcoes: { ativos?: boolean } =
         nome: `${PREFIXO}Aluno ${i}`,
         dataNascimento: new Date("2012-01-01"),
         ativo: opcoes.ativos ?? true,
+        unidadesPermitidas: { create: { unidadeId: unidade.id } },
       },
     });
   }
@@ -142,6 +143,7 @@ describe("ContarAlunosDaContaService", () => {
           unidadeId: filial.id,
           nome: `${PREFIXO}Filial Aluno ${i}`,
           dataNascimento: new Date("2010-01-01"),
+          unidadesPermitidas: { create: { unidadeId: filial.id } },
         },
       });
     }
@@ -183,6 +185,7 @@ describe("ContarAlunosDaContaService", () => {
         unidadeId: outraUnidade.id,
         nome: `${PREFIXO}Aluno da concorrente`,
         dataNascimento: new Date("2011-01-01"),
+        unidadesPermitidas: { create: { unidadeId: outraUnidade.id } },
       },
     });
 
@@ -214,6 +217,7 @@ describe("ContarAlunosPorUnidadeDaContaService", () => {
         unidadeId: inativa.id,
         nome: `${PREFIXO}Aluno histórico`,
         dataNascimento: new Date("2012-01-01"),
+        unidadesPermitidas: { create: { unidadeId: inativa.id } },
       },
     });
 
@@ -252,6 +256,7 @@ describe("GerarFaturasPlataformaService", () => {
           unidadeId: filial.id,
           nome: `${PREFIXO}Filial cobrança ${i}`,
           dataNascimento: new Date("2012-01-01"),
+          unidadesPermitidas: { create: { unidadeId: filial.id } },
         },
       });
     }

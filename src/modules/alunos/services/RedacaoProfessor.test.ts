@@ -34,6 +34,7 @@ beforeEach(async () => {
       telefone: "61999999999",
       logradouro: "Rua Teste",
       restricoesMedicas: "Nenhuma",
+      unidadesPermitidas: { create: { unidadeId } },
     },
   });
   alunoId = aluno.id;

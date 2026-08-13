@@ -269,6 +269,7 @@ model Unidade {
   modalidades       Modalidade[]
   usuarios          Usuario[]
   alunos            Aluno[]
+  alunosAutorizados AlunoUnidade[]
   responsaveis      Responsavel[]
   turmas            Turma[]
   planos            Plano[]
@@ -319,8 +320,9 @@ model Arena {
 model Aluno {
   id Int @id @default(autoincrement())
 
-  unidadeId Int
-  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+  unidadeId          Int
+  unidade            Unidade        @relation(fields: [unidadeId], references: [id])
+  unidadesPermitidas AlunoUnidade[]
 
   nome           String
   apelido        String?
@@ -402,6 +404,21 @@ model Aluno {
   eventosAcesso     EventoAcesso[]
   consentimentos    Consentimento[]
   mensagensWhatsapp MensagemWhatsapp[]
+}
+
+// Unidades da mesma academia em que o aluno está autorizado a frequentar.
+// A unidade principal também possui uma linha e nunca é inferida na cobrança.
+model AlunoUnidade {
+  alunoId   Int
+  unidadeId Int
+
+  aluno   Aluno   @relation(fields: [alunoId], references: [id], onDelete: Cascade)
+  unidade Unidade @relation(fields: [unidadeId], references: [id], onDelete: Cascade)
+
+  criadoEm DateTime @default(now())
+
+  @@id([alunoId, unidadeId])
+  @@index([unidadeId, alunoId])
 }
 
 model Responsavel {

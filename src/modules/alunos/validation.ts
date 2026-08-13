@@ -49,6 +49,7 @@ export const alunoSchema = z.object({
   formaPagamento: z.string().nullish(),
   diaVencimento: numeroOuTexto,
   planoId: numeroOuTexto,
+  unidadesPermitidasIds: z.array(z.number().int().positive()).max(100).optional(),
 });
 
 export const senhaPortalSchema = z.object({

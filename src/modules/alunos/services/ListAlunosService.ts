@@ -1,10 +1,12 @@
 import { prisma } from "../../../shared/database/prisma";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
-import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class ListAlunosService {
 
   async execute(unidadeId: number | null, perfil?: string) {
+    const escopoAluno = unidadeId === null
+      ? {}
+      : { unidadesPermitidas: { some: { unidadeId } } };
 
     // PROFESSOR só pode VER: nome, apelido, nome do responsável e turma —
     // nada de CPF, endereço, saúde ou financeiro do aluno. `ativo` e
@@ -13,7 +15,7 @@ export class ListAlunosService {
     // tela do Professor exibe esses dois campos.
     if (perfil === "PROFESSOR") {
       return prisma.aluno.findMany({
-        where: escopoUnidade(unidadeId),
+        where: escopoAluno,
         take: LIMITE_PADRAO_LISTAGEM,
         orderBy: { nome: "asc" },
         select: {
@@ -30,12 +32,13 @@ export class ListAlunosService {
 
     const alunos =
       await prisma.aluno.findMany({
-        where: escopoUnidade(unidadeId),
+        where: escopoAluno,
         take: LIMITE_PADRAO_LISTAGEM,
         orderBy: {
           nome: "asc"
         },
         include: {
+          unidadesPermitidas: { select: { unidadeId: true } },
           mensalidades: {
             orderBy: {
               vencimento: "desc"

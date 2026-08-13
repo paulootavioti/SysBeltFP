@@ -12,9 +12,9 @@ export class ContarAlunosPorUnidadeDaContaService {
         select: { id: true, nome: true },
         orderBy: { id: "asc" },
       }),
-      prisma.aluno.groupBy({
+      prisma.alunoUnidade.groupBy({
         by: ["unidadeId"],
-        where: { ativo: true, unidade: { contaId, ativo: true } },
+        where: { aluno: { ativo: true }, unidade: { contaId, ativo: true } },
         _count: { _all: true },
       }),
     ]);

@@ -9,7 +9,12 @@ describe("emissão da contagem agregada", () => {
       { id: 2, nome: "Filial vazia", ativo: true },
       { id: 3, nome: "Filial encerrada", ativo: false },
     ],
-    contarAlunosAtivos: async () => [{ unidadeId: 1, _count: { _all: 12 } }],
+    // O mesmo aluno autorizado em duas unidades já chega contado uma vez em
+    // cada vínculo agregado pela fonte.
+    contarAlunosAtivos: async () => [
+      { unidadeId: 1, _count: { _all: 12 } },
+      { unidadeId: 2, _count: { _all: 1 } },
+    ],
   };
 
   it("inclui unidade ativa vazia e encerra inativa com contagem zero", async () => {
@@ -19,7 +24,7 @@ describe("emissão da contagem agregada", () => {
     );
     expect(snapshot.unidades).toEqual([
       { unidadeId: "1", nomeExibicao: "Matriz", status: "ATIVA", alunosAtivos: 12 },
-      { unidadeId: "2", nomeExibicao: "Filial vazia", status: "ATIVA", alunosAtivos: 0 },
+      { unidadeId: "2", nomeExibicao: "Filial vazia", status: "ATIVA", alunosAtivos: 1 },
       { unidadeId: "3", nomeExibicao: "Filial encerrada", status: "ENCERRADA", alunosAtivos: 0 },
     ]);
   });

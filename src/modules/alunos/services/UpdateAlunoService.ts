@@ -7,6 +7,7 @@ import { gerarSenhaAleatoria } from "../../../shared/utils/gerarSenhaAleatoria";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
 import { RegistrarConsentimentoService } from "../../consentimentos/services/RegistrarConsentimentoService";
 import { obterContextoRequisicao } from "../../../shared/context/contextoRequisicao";
+import { validarUnidadesPermitidas } from "./validarUnidadesPermitidas";
 
 const auditLogService = new AuditLogService();
 const registrarConsentimento = new RegistrarConsentimentoService();
@@ -57,6 +58,7 @@ interface UpdateAlunoDTO {
   formaPagamento?: string | null;
   diaVencimento?: string | number | null;
   planoId?: string | number | null;
+  unidadesPermitidasIds?: number[];
 }
 
 function toNumberOrNull(value: unknown) {
@@ -108,6 +110,9 @@ export class UpdateAlunoService {
     garantirAcessoUnidade(unidadeId, aluno.unidadeId, "Aluno não encontrado.");
 
     const turmaId = toNumberOrNull(data.turmaId);
+    const unidadesPermitidasIds = data.unidadesPermitidasIds === undefined
+      ? undefined
+      : await validarUnidadesPermitidas(aluno.unidadeId, data.unidadesPermitidasIds);
 
     if (turmaId !== null && turmaId !== aluno.turmaId) {
       const turma = await prisma.turma.findUnique({ where: { id: turmaId } });
@@ -175,7 +180,14 @@ export class UpdateAlunoService {
         diaVencimento: toNumberOrNull(data.diaVencimento),
         planoId: toNumberOrNull(data.planoId),
         ...(senhaPortalHash !== undefined ? { senhaPortal: senhaPortalHash } : {}),
+        ...(unidadesPermitidasIds && {
+          unidadesPermitidas: {
+            deleteMany: {},
+            create: unidadesPermitidasIds.map((unidadeId) => ({ unidadeId })),
+          },
+        }),
       },
+      include: { unidadesPermitidas: { select: { unidadeId: true } } },
     });
 
     const mudouAutorizacao =
@@ -208,6 +220,11 @@ export class UpdateAlunoService {
       valoresDepois: recorteAuditavel(atualizado),
     });
 
-    return { ...atualizado, senhaPortalGerada };
+    const { unidadesPermitidas, ...dadosAluno } = atualizado;
+    return {
+      ...dadosAluno,
+      unidadesPermitidasIds: unidadesPermitidas.map(({ unidadeId }) => unidadeId),
+      senhaPortalGerada,
+    };
   }
 }

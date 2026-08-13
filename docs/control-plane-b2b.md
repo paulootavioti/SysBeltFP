@@ -246,6 +246,10 @@ mudanças relevantes sem registrar segredos.
 3. Alunos ativos são agrupados por unidade no Tenant Plane.
 4. O Tenant Plane envia apenas identificador da unidade e contagem agregada.
 5. Uma pessoa vinculada a duas unidades conta nas duas lotações.
+   O cadastro do aluno mantém uma unidade principal e vínculos explícitos com
+   cada outra unidade da mesma academia em que pode frequentar. A contagem usa
+   esses vínculos, sem duplicar o cadastro ou enviar dados pessoais ao Control
+   Plane.
 6. A fatura guarda o snapshot das contagens e preços usados.
 7. Falha de sincronização não deve gerar cobrança silenciosamente com dados
    presumidos; a competência fica pendente para revisão ou nova tentativa.
