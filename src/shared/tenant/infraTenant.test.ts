@@ -5,6 +5,7 @@ const base = {
   TENANT_APP_BASE_DOMAIN: "app.sysbelt.com.br",
   CONTROL_PLANE_URL: "https://control.example.com",
   TENANT_DIRECTORY_SECRET: "s".repeat(32),
+  TENANT_SCHEMA_COMPATIBLE_VERSIONS: "schema-1,schema-2",
 };
 
 describe("configuração da resolução de tenant", () => {
@@ -14,6 +15,7 @@ describe("configuração da resolução de tenant", () => {
       ttlDiretorioMs: 30_000, ttlNegativoMs: 5_000, limiteDiretorio: 500,
       limitePrisma: 10, ociosidadePrismaMs: 300_000,
     });
+    expect(lerConfiguracaoResolucaoTenant(base).versoesSchemaCompativeis).toEqual(new Set(["schema-1", "schema-2"]));
   });
 
   it("falha fechado quando domínio, URL ou segredo não estão configurados", () => {
