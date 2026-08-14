@@ -218,6 +218,12 @@ migração deverá acontecer em etapas:
 6. remover o cliente operacional global;
 7. remover do Tenant Plane as rotas do módulo `plataforma`.
 
+Login administrativo, revalidação da sessão e login/guard do Portal da Família
+já usam `prismaDaRequisicao()`. Durante a implantação, o adaptador mantém o
+cliente legado somente com `TENANT_RESOLUTION_REQUIRED=false`; ao ativar a
+variável, qualquer autenticação sem contexto resolvido falha fechada. Essa
+trava permite configurar domínio, diretório e AWS antes do corte definitivo.
+
 Nenhuma etapa deve permitir que uma requisição parcialmente migrada caia no
 banco de outro cliente.
 

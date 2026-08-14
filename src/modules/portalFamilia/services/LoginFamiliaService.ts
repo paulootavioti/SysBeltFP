@@ -1,7 +1,7 @@
 import { compare } from "bcryptjs";
 import { sign, SignOptions } from "jsonwebtoken";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { calcularIdade } from "../../mensagens/utils";
 import { calcularEscopoFamilia } from "../utils/calcularEscopoFamilia";
@@ -19,6 +19,7 @@ function iniciais(nome: string): string {
 
 export class LoginFamiliaService {
   async execute({ email, senha }: LoginFamiliaDTO) {
+    const prisma = prismaDaRequisicao();
     const responsaveis = await prisma.responsavel.findMany({
       where: { email, ativo: true },
       include: { aluno: true },
