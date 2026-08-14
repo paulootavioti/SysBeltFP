@@ -116,6 +116,10 @@ interface ContextoTenant {
 `prismaDoContexto()` lança erro se usado fora de um contexto resolvido. Não há
 fallback para `DATABASE_URL` em produção.
 
+`ContextoTenant` implementa essa fronteira com `AsyncLocalStorage`, identidade
+imutável e falha explícita fora de uma requisição resolvida. Testes concorrentes
+garantem que tenant e cliente Prisma de uma requisição não aparecem em outra.
+
 ## Ordem dos middlewares
 
 ```text
