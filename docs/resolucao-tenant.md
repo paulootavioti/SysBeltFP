@@ -147,6 +147,11 @@ provedor AWS e registro Prisma. Todas as dimensões de cache são configuráveis
 dentro de limites defensivos; produção exige HTTPS para o Control Plane e
 configuração incompleta interrompe a ativação em vez de escolher um banco.
 
+O `app` instala `criarResolucaoTenantAtivavel()` antes de auditoria,
+autenticação e rotas. Com `TENANT_RESOLUTION_ENABLED=false`, nenhuma
+infraestrutura é criada e o comportamento legado permanece. O modo obrigatório
+não pode ser ligado sem o middleware, evitando um deploy parcialmente ativado.
+
 ## Tokens
 
 Exemplo conceitual de claims:

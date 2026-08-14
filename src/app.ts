@@ -48,6 +48,7 @@ import { publicoRoutes } from "./modules/publico/routes";
 import { leadsRoutes } from "./modules/leads/routes";
 import { portalProfessorRoutes } from "./modules/portalProfessor/routes";
 import { concessaoPlataformaRoutes } from "./modules/concessaoPlataforma/routes";
+import { criarResolucaoTenantAtivavel } from "./shared/tenant/resolucaoTenantAtivavel";
 
 // 5173 = sgcl-web (admin/staff), 5175 = sgcl-portal-familia (Portal da
 // Família), 5176 = sgcl-portal-professor (Portal do Professor) — três
@@ -61,6 +62,10 @@ export const app = express();
 // Atrás do proxy da hospedagem, sem isto `req.ip` seria sempre o IP do
 // proxy — e a auditoria registraria o mesmo endereço pra todo mundo.
 app.set("trust proxy", true);
+
+// Precisa vir antes de autenticação e de qualquer acesso operacional ao banco.
+// A flag permanece desligada até diretório, domínio e cofre estarem configurados.
+app.use(criarResolucaoTenantAtivavel());
 
 // Antes de qualquer rota: guarda IP e dispositivo pra auditoria e
 // consentimentos, sem precisar passar `req` aos services.
