@@ -185,6 +185,11 @@ cache curto por slug. Regras mínimas:
 Os valores exatos serão definidos com testes de carga e requisitos comerciais
 de suspensão.
 
+`TenantDirectoryCache` aplica inicialmente 30 segundos para resultados
+positivos e 5 segundos para ausências, deduplica consultas concorrentes e
+limita a memória por LRU. Falhas do Control Plane nunca são armazenadas e a
+entrada pode ser invalidada imediatamente após mudança operacional.
+
 ## Impacto no código atual
 
 O arquivo `src/shared/database/prisma.ts` hoje exporta uma instância fixa. A
