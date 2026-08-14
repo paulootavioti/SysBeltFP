@@ -65,8 +65,10 @@ navegador.
 Resolve `secretRef` para a URL pooled do banco. O valor existe apenas no
 backend e nunca entra em logs, respostas, JWT ou eventos de analytics.
 
-A escolha concreta do gerenciador de segredos pertence ao próximo passo da
-arquitetura.
+`TenantSecretProviderAws` implementa a leitura no AWS Secrets Manager e valida
+o `tenantKey`, a versão da credencial e o protocolo PostgreSQL. O retorno
+omite URL direta e chave privada de integração; qualquer falha é sanitizada
+antes de atravessar essa fronteira.
 
 ### `TenantPrismaRegistry`
 
