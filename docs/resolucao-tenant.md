@@ -155,6 +155,11 @@ Regras:
 - suspensão comercial deve ser revalidada por concessão de curta duração ou
   estado local assinado, a ser definido no contrato entre os sistemas.
 
+O contrato em `tokenTenant.ts` inclui `tenantKey`, emissor fixo e audiência
+opcional na assinatura. A validação exige igualdade com o tenant já resolvido;
+um JWT criptograficamente válido emitido no ambiente A é recusado no ambiente
+B, e claims fornecidos pelo chamador não podem sobrescrever essa identidade.
+
 ## Falhas e respostas
 
 | Situação | Resposta | Acesso a banco operacional |
