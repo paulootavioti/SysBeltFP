@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { compare } from "bcryptjs";
 import { sign, SignOptions } from "jsonwebtoken";
 import { AppError } from "../../../shared/errors/AppError";
@@ -14,6 +14,7 @@ export class LoginService {
     email,
     senha
   }: LoginDTO) {
+    const prisma = prismaDaRequisicao();
 
     const usuario =
       await prisma.usuario.findUnique({

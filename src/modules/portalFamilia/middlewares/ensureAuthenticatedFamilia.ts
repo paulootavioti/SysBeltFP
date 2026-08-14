@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
 
 import { AppError } from "../../../shared/errors/AppError";
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { calcularEscopoFamilia } from "../utils/calcularEscopoFamilia";
 
 interface TokenPayloadFamilia {
@@ -33,6 +33,7 @@ declare global {
 // quais senhas foram provadas no login (isso não muda durante a sessão);
 // o que cada uma delas dá direito de ver é sempre recalculado na hora.
 export async function ensureAuthenticatedFamilia(req: Request, res: Response, next: NextFunction) {
+  const prisma = prismaDaRequisicao();
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {

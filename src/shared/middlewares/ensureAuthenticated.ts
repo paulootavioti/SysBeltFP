@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
 
 import { AppError } from "../errors/AppError";
-import { prisma } from "../database/prisma";
+import { prismaDaRequisicao } from "../database/prismaDaRequisicao";
 import { PERFIS_MULTI_UNIDADE } from "../constants/perfis";
 import { definirUsuarioDoContexto } from "../context/contextoRequisicao";
 
@@ -16,6 +16,7 @@ export async function ensureAuthenticated(
   res: Response,
   next: NextFunction
 ) {
+  const prisma = prismaDaRequisicao();
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
