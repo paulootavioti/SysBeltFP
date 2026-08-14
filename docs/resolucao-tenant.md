@@ -162,6 +162,11 @@ exata `TENANT_SCHEMA_COMPATIBLE_VERSIONS`. Lista ausente impede a ativação e
 versão incompatível responde 503 sem abrir conexão. Não há comparação
 lexicográfica entre nomes de migration.
 
+Os logins administrativo e familiar agora usam `tokenDaRequisicao`. Com a
+resolução habilitada, o JWT recebe `tenantKey`, emissor e audiência específica
+do portal; guards exigem igualdade com o contexto resolvido. Tokens legados só
+são emitidos e aceitos enquanto a flag de resolução permanece desligada.
+
 ## Tokens
 
 Exemplo conceitual de claims:

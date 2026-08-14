@@ -1,7 +1,8 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { compare } from "bcryptjs";
-import { sign, SignOptions } from "jsonwebtoken";
+import { SignOptions } from "jsonwebtoken";
 import { AppError } from "../../../shared/errors/AppError";
+import { assinarTokenDaRequisicao } from "../../../shared/tenant/tokenDaRequisicao";
 
 interface LoginDTO {
   email: string;
@@ -56,9 +57,6 @@ export class LoginService {
 //     "Usuário inativo."
 //   );
 // }
-    const jwtSecret =
-      process.env.JWT_SECRET as string;
-
     // Sem refresh token de propósito: ensureAuthenticated já revalida o
     // usuário (existência + ativo) no banco a cada requisição, então um
     // token vazado só é útil até um admin desativar a conta em Usuários —
@@ -68,15 +66,15 @@ export class LoginService {
     const jwtExpiresIn =
       (process.env.JWT_EXPIRES_IN || "7d") as SignOptions["expiresIn"];
 
-    const token = sign(
+    const token = assinarTokenDaRequisicao(
       {
         perfil: usuario.perfil
       },
-        jwtSecret,
       {
         subject: String(usuario.id),
         expiresIn: jwtExpiresIn
-      }
+      },
+      "sysbelt-web",
     );
 
     return {
