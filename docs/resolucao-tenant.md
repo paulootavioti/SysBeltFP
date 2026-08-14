@@ -42,6 +42,12 @@ Função pura que recebe o hostname e devolve um slug validado. Deve:
 Slugs reservados iniciais: `www`, `api`, `admin`, `app`, `status`, `support`
 e `control`.
 
+A função pura está implementada em `src/shared/tenant/TenantHostParser.ts`.
+Ela exige exatamente um subdomínio sob `TENANT_APP_BASE_DOMAIN`, normaliza
+caixa e só remove porta quando o modo de desenvolvimento é informado
+explicitamente. Host desconhecido, domínio parecido e subdomínio aninhado não
+produzem tenant padrão.
+
 ### `TenantDirectory`
 
 Interface de leitura do diretório central. A implementação consulta o Control
