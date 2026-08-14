@@ -142,6 +142,11 @@ Prisma antes de abrir o contexto assíncrono. Host inválido/ausente responde
 diretório ou cofre responde 503 sem revelar infraestrutura. A instalação no
 `app` ocorrerá somente após autenticação e services deixarem o Prisma global.
 
+`infraTenant.ts` compõe uma única instância aquecida do diretório com cache,
+provedor AWS e registro Prisma. Todas as dimensões de cache são configuráveis
+dentro de limites defensivos; produção exige HTTPS para o Control Plane e
+configuração incompleta interrompe a ativação em vez de escolher um banco.
+
 ## Tokens
 
 Exemplo conceitual de claims:
