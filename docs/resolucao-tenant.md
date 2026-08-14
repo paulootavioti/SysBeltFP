@@ -136,6 +136,12 @@ requestId / observabilidade
 Endpoints do próprio Control Plane ficam em outro deploy e não passam por
 esse middleware.
 
+`criarResolucaoTenantMiddleware` encadeia parser, diretório, cofre e registro
+Prisma antes de abrir o contexto assíncrono. Host inválido/ausente responde
+404, suspensão responde 403 antes de acessar segredo, e indisponibilidade do
+diretório ou cofre responde 503 sem revelar infraestrutura. A instalação no
+`app` ocorrerá somente após autenticação e services deixarem o Prisma global.
+
 ## Tokens
 
 Exemplo conceitual de claims:
