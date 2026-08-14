@@ -60,6 +60,11 @@ interface TenantResolvido {
 O diretório não devolve dados de alunos nem credenciais diretamente ao
 navegador.
 
+`TenantDirectoryHttp` implementa essa fronteira no backend com segredo
+dedicado, timeout curto e validação estrita do contrato. Apenas `404` significa
+tenant ausente; timeout, erro de autenticação e resposta inesperada falham
+fechado como indisponibilidade, sem reutilizar banco ou resposta anterior.
+
 ### `TenantSecretProvider`
 
 Resolve `secretRef` para a URL pooled do banco. O valor existe apenas no
