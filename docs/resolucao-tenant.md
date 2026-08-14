@@ -82,6 +82,11 @@ Mantém, por instância aquecida da função, um cache limitado de clientes:
 Cada cliente usa URL pooled própria do tenant. A URL direta fica reservada a
 jobs administrativos e migrations.
 
+`TenantPrismaRegistry` implementa o cache por `tenantKey`, deduplica criações
+concorrentes, invalida o cliente quando `credentialVersion` muda e chama
+`$disconnect()` tanto na expiração por ociosidade quanto na remoção LRU. O
+limite é defensivo e nunca usa slug ou URL como chave.
+
 ### `ContextoTenant`
 
 Usa contexto assíncrono para expor durante a requisição:
