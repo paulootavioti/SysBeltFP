@@ -9,7 +9,7 @@ import type { TenantPrismaRegistry } from "./TenantPrismaRegistry";
 import type { TenantSecretProvider } from "./TenantSecretProvider";
 import { SegredoTenantIndisponivelError } from "./TenantSecretProvider";
 
-interface DependenciasResolucaoTenant {
+export interface DependenciasResolucaoTenant {
   dominioBase: string;
   desenvolvimento?: boolean;
   diretorio: TenantDirectory;
