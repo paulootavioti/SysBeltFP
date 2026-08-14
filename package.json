@@ -34,6 +34,7 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.1110.0",
     "@netlify/blobs": "^10.7.9",
     "@prisma/client": "^6.16.2",
     "bcryptjs": "^3.0.3",
