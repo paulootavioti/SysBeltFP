@@ -49,6 +49,7 @@ import { leadsRoutes } from "./modules/leads/routes";
 import { portalProfessorRoutes } from "./modules/portalProfessor/routes";
 import { concessaoPlataformaRoutes } from "./modules/concessaoPlataforma/routes";
 import { criarResolucaoTenantAtivavel } from "./shared/tenant/resolucaoTenantAtivavel";
+import { obterReadinessTenant } from "./shared/tenant/readinessTenant";
 
 // 5173 = sgcl-web (admin/staff), 5175 = sgcl-portal-familia (Portal da
 // Família), 5176 = sgcl-portal-professor (Portal do Professor) — três
@@ -62,6 +63,13 @@ export const app = express();
 // Atrás do proxy da hospedagem, sem isto `req.ip` seria sempre o IP do
 // proxy — e a auditoria registraria o mesmo endereço pra todo mundo.
 app.set("trust proxy", true);
+
+// Não passa pela resolução para continuar diagnosticável quando a configuração
+// multi-tenant estiver incompleta. A resposta contém somente indicadores.
+app.get("/health/tenant-resolution", (_request, response) => {
+  const readiness = obterReadinessTenant();
+  return response.status(readiness.httpStatus).json(readiness.corpo);
+});
 
 // Precisa vir antes de autenticação e de qualquer acesso operacional ao banco.
 // A flag permanece desligada até diretório, domínio e cofre estarem configurados.

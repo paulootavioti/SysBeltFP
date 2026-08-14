@@ -152,6 +152,11 @@ autenticação e rotas. Com `TENANT_RESOLUTION_ENABLED=false`, nenhuma
 infraestrutura é criada e o comportamento legado permanece. O modo obrigatório
 não pode ser ligado sem o middleware, evitando um deploy parcialmente ativado.
 
+`GET /health/tenant-resolution` fica antes do middleware e informa se o modo
+legado está pronto para o corte ou se uma ativação está inconsistente. A
+resposta contém somente booleanos e estado; nomes de tenant, domínio, região,
+URL, segredo e connection string nunca são devolvidos.
+
 ## Tokens
 
 Exemplo conceitual de claims:
