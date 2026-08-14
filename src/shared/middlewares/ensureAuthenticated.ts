@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { verify } from "jsonwebtoken";
 
 import { AppError } from "../errors/AppError";
 import { prismaDaRequisicao } from "../database/prismaDaRequisicao";
 import { PERFIS_MULTI_UNIDADE } from "../constants/perfis";
 import { definirUsuarioDoContexto } from "../context/contextoRequisicao";
+import { verificarTokenDaRequisicao } from "../tenant/tokenDaRequisicao";
 
 interface TokenPayload {
   sub: string;
@@ -26,10 +26,7 @@ export async function ensureAuthenticated(
   const [, token] = authHeader.split(" ");
 
   try {
-    const decoded = verify(
-      token,
-      process.env.JWT_SECRET as string
-    ) as TokenPayload;
+    const decoded = verificarTokenDaRequisicao<TokenPayload>(token, "sysbelt-web");
 
     const usuario = await prisma.usuario.findUnique({
       where: {

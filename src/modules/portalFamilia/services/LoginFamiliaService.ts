@@ -1,10 +1,11 @@
 import { compare } from "bcryptjs";
-import { sign, SignOptions } from "jsonwebtoken";
+import { SignOptions } from "jsonwebtoken";
 
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { calcularIdade } from "../../mensagens/utils";
 import { calcularEscopoFamilia } from "../utils/calcularEscopoFamilia";
+import { assinarTokenDaRequisicao } from "../../../shared/tenant/tokenDaRequisicao";
 
 interface LoginFamiliaDTO {
   email: string;
@@ -73,20 +74,19 @@ export class LoginFamiliaService {
     comoResponsavel: boolean;
     escopo: ReturnType<typeof calcularEscopoFamilia>;
   }) {
-    const jwtSecret = process.env.JWT_SECRET as string;
     const jwtExpiresIn = (process.env.JWT_EXPIRES_IN || "7d") as SignOptions["expiresIn"];
 
-    const token = sign(
+    const token = assinarTokenDaRequisicao(
       {
         email: dados.email,
         comoAluno: dados.comoAluno,
         comoResponsavel: dados.comoResponsavel,
       },
-      jwtSecret,
       {
         subject: dados.email,
         expiresIn: jwtExpiresIn,
-      }
+      },
+      "sysbelt-familia",
     );
 
     return {

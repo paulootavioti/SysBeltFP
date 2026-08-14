@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { verify } from "jsonwebtoken";
 
 import { AppError } from "../../../shared/errors/AppError";
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { calcularEscopoFamilia } from "../utils/calcularEscopoFamilia";
+import { verificarTokenDaRequisicao } from "../../../shared/tenant/tokenDaRequisicao";
 
 interface TokenPayloadFamilia {
   email: string;
@@ -45,7 +45,7 @@ export async function ensureAuthenticatedFamilia(req: Request, res: Response, ne
   let decoded: TokenPayloadFamilia;
 
   try {
-    decoded = verify(token, process.env.JWT_SECRET as string) as TokenPayloadFamilia;
+    decoded = verificarTokenDaRequisicao<TokenPayloadFamilia>(token, "sysbelt-familia");
   } catch {
     throw new AppError("Token inválido.", 401);
   }
