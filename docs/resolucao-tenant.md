@@ -157,6 +157,11 @@ legado está pronto para o corte ou se uma ativação está inconsistente. A
 resposta contém somente booleanos e estado; nomes de tenant, domínio, região,
 URL, segredo e connection string nunca são devolvidos.
 
+Antes de ler o segredo, o middleware exige que `schemaVersion` pertença à lista
+exata `TENANT_SCHEMA_COMPATIBLE_VERSIONS`. Lista ausente impede a ativação e
+versão incompatível responde 503 sem abrir conexão. Não há comparação
+lexicográfica entre nomes de migration.
+
 ## Tokens
 
 Exemplo conceitual de claims:

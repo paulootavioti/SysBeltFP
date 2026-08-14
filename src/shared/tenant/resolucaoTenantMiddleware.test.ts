@@ -46,6 +46,17 @@ describe("resolucaoTenantMiddleware", () => {
     expect(dependencias.registro.obter).not.toHaveBeenCalled();
   });
 
+  it("bloqueia schema incompatível antes de acessar segredo ou banco", async () => {
+    const dependencias = { ...deps(), versoesSchemaCompativeis: new Set(["schema-2"]) };
+    const res = resposta();
+    await criarResolucaoTenantMiddleware(dependencias as never)(
+      { hostname: "academia.app.sysbelt.com.br" } as never, res as never, vi.fn(),
+    );
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(dependencias.segredos.obter).not.toHaveBeenCalled();
+    expect(dependencias.registro.obter).not.toHaveBeenCalled();
+  });
+
   it("falha fechado sem revelar diretório, cofre ou hostname", async () => {
     const dependencias = deps(); const res = resposta();
     dependencias.diretorio.resolver.mockRejectedValue(new TenantDirectoryIndisponivelError());

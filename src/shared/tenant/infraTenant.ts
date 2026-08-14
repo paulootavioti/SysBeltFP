@@ -13,6 +13,7 @@ export interface ConfiguracaoResolucaoTenant {
   limiteDiretorio: number;
   limitePrisma: number;
   ociosidadePrismaMs: number;
+  versoesSchemaCompativeis: ReadonlySet<string>;
 }
 
 function inteiro(env: NodeJS.ProcessEnv, nome: string, padrao: number, minimo: number, maximo: number): number {
@@ -26,7 +27,8 @@ export function lerConfiguracaoResolucaoTenant(env: NodeJS.ProcessEnv = process.
   const dominioBase = env.TENANT_APP_BASE_DOMAIN?.trim().toLowerCase();
   const controlPlaneUrl = env.CONTROL_PLANE_URL?.trim();
   const segredoDiretorio = env.TENANT_DIRECTORY_SECRET?.trim();
-  if (!dominioBase || !controlPlaneUrl || !segredoDiretorio || segredoDiretorio.length < 32) {
+  const versoes = env.TENANT_SCHEMA_COMPATIBLE_VERSIONS?.split(",").map((item) => item.trim()).filter(Boolean) ?? [];
+  if (!dominioBase || !controlPlaneUrl || !segredoDiretorio || segredoDiretorio.length < 32 || versoes.length === 0) {
     throw new Error("Resolução de tenant não configurada.");
   }
   const url = new URL(controlPlaneUrl);
@@ -40,6 +42,7 @@ export function lerConfiguracaoResolucaoTenant(env: NodeJS.ProcessEnv = process.
     limiteDiretorio: inteiro(env, "TENANT_DIRECTORY_CACHE_LIMIT", 500, 1, 10_000),
     limitePrisma: inteiro(env, "TENANT_PRISMA_CACHE_LIMIT", 10, 1, 100),
     ociosidadePrismaMs: inteiro(env, "TENANT_PRISMA_IDLE_MS", 300_000, 10_000, 3_600_000),
+    versoesSchemaCompativeis: new Set(versoes),
   };
 }
 
@@ -56,6 +59,7 @@ export function criarDependenciasResolucaoTenant(
     ),
     segredos: new TenantSecretProviderAws(),
     registro: new TenantPrismaRegistry(config.limitePrisma, config.ociosidadePrismaMs),
+    versoesSchemaCompativeis: config.versoesSchemaCompativeis,
   };
 }
 

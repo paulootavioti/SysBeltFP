@@ -15,6 +15,7 @@ export interface DependenciasResolucaoTenant {
   diretorio: TenantDirectory;
   segredos: TenantSecretProvider;
   registro: TenantPrismaRegistry;
+  versoesSchemaCompativeis?: ReadonlySet<string>;
 }
 
 export function criarResolucaoTenantMiddleware(deps: DependenciasResolucaoTenant) {
@@ -28,6 +29,9 @@ export function criarResolucaoTenantMiddleware(deps: DependenciasResolucaoTenant
       if (!tenant) return response.status(404).json({ mensagem: "Ambiente não encontrado." });
       if (tenant.status === "SUSPENSO") {
         return response.status(403).json({ mensagem: "Acesso temporariamente suspenso." });
+      }
+      if (deps.versoesSchemaCompativeis && !deps.versoesSchemaCompativeis.has(tenant.schemaVersion)) {
+        return response.status(503).json({ mensagem: "Ambiente temporariamente indisponível." });
       }
       const prisma = await deps.registro.obter({
         tenantKey: tenant.tenantKey,

@@ -7,6 +7,7 @@ const completa = {
   TENANT_DIRECTORY_SECRET: "s".repeat(32),
   AWS_REGION: "sa-east-1",
   NODE_ENV: "production",
+  TENANT_SCHEMA_COMPATIBLE_VERSIONS: "schema-1",
 };
 
 describe("readiness da resolução tenant", () => {
