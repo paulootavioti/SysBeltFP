@@ -1,6 +1,6 @@
 import type { TipoConsentimento } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { obterContextoRequisicao } from "../../../shared/context/contextoRequisicao";
@@ -25,6 +25,7 @@ export class RegistrarConsentimentoService {
     unidadeId: number | null,
     registradoPorId: number
   ) {
+    const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({
       where: { id: dto.alunoId },
       select: { id: true, unidadeId: true, dataNascimento: true },
