@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 interface AvisoParaReconhecer {
   tipo: string;
@@ -7,6 +7,7 @@ interface AvisoParaReconhecer {
 
 export class ReconhecerAvisosService {
   async execute(usuarioId: number, avisos: AvisoParaReconhecer[]) {
+    const prisma = prismaDaRequisicao();
     await prisma.avisoReconhecido.createMany({
       data: avisos.map((aviso) => ({
         usuarioId,
