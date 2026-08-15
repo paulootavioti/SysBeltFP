@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { calcularIdade, getFaixasDaTrilha, getTrilhaFaixa } from "../../../shared/constants/faixas";
 
@@ -34,6 +34,7 @@ export class ListProximasGraduacoesService {
     unidadeId: number | null,
     apenasElegiveis = true
   ): Promise<AlunoProximaGraduacao[]> {
+    const prisma = prismaDaRequisicao();
     const alunos = await prisma.aluno.findMany({
       where: { ativo: true, ...escopoUnidade(unidadeId) },
     });
