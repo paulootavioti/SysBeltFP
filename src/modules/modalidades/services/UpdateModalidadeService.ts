@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { garantirCoordenadorDaUnidade, traduzirNomeDuplicado } from "./CreateModalidadeService";
@@ -14,6 +14,7 @@ interface UpdateModalidadeDTO {
 
 export class UpdateModalidadeService {
   async execute(id: number, data: UpdateModalidadeDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const modalidade = await prisma.modalidade.findUnique({ where: { id } });
 
     if (!modalidade) {

@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 
 interface CreateModalidadeDTO {
@@ -15,6 +15,7 @@ interface CreateModalidadeDTO {
 
 export class CreateModalidadeService {
   async execute(data: CreateModalidadeDTO) {
+    const prisma = prismaDaRequisicao();
     await garantirCoordenadorDaUnidade(data.coordenadorId, data.unidadeId);
 
     try {
@@ -56,6 +57,7 @@ export async function garantirCoordenadorDaUnidade(
   unidadeId: number
 ) {
   if (!coordenadorId) return;
+  const prisma = prismaDaRequisicao();
 
   const coordenador = await prisma.usuario.findUnique({
     where: { id: coordenadorId },
