@@ -1,9 +1,10 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class ToggleAtivoModalidadeService {
   async execute(id: number, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const modalidade = await prisma.modalidade.findUnique({
       where: { id },
       include: { _count: { select: { turmas: true } } },

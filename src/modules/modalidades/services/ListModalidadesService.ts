@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -8,6 +8,7 @@ interface ListModalidadesFiltro {
 
 export class ListModalidadesService {
   async execute(unidadeId: number | null, filtro: ListModalidadesFiltro = {}) {
+    const prisma = prismaDaRequisicao();
     return prisma.modalidade.findMany({
       where: {
         ...escopoUnidade(unidadeId),
