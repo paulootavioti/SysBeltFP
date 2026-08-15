@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import type { FormatoValorMeta, TipoMeta } from "../constants";
 
 interface CreateMetaDTO {
@@ -12,6 +12,7 @@ interface CreateMetaDTO {
 
 export class CreateMetaService {
   async execute({ unidadeId, nome, tipo, valorMeta, formatoValor, dataLimite }: CreateMetaDTO) {
+    const prisma = prismaDaRequisicao();
     return prisma.meta.create({
       data: {
         unidadeId,
