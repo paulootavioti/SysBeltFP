@@ -1,6 +1,6 @@
 import type { TipoConsentimento } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { VERSAO_POLITICA_MIGRADA } from "../constants";
 
 export interface SituacaoConsentimento {
@@ -18,6 +18,7 @@ export interface SituacaoConsentimento {
 // se apaga um consentimento, revoga-se.
 export class ConsultarConsentimentoService {
   async situacaoAtual(alunoId: number, tipo: TipoConsentimento): Promise<SituacaoConsentimento> {
+    const prisma = prismaDaRequisicao();
     const ultimo = await prisma.consentimento.findFirst({
       where: { alunoId, tipo, revogadoEm: null },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
@@ -50,6 +51,7 @@ export class ConsultarConsentimentoService {
   }
 
   async historico(alunoId: number) {
+    const prisma = prismaDaRequisicao();
     return prisma.consentimento.findMany({
       where: { alunoId },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],

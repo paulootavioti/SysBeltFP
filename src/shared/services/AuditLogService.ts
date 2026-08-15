@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 
-import { prisma } from "../database/prisma";
+import { prismaDaRequisicao } from "../database/prismaDaRequisicao";
 import { obterContextoRequisicao } from "../context/contextoRequisicao";
 
 export type OperacaoAuditoria =
@@ -58,6 +58,7 @@ export class AuditLogService {
     const autor = usuarioId ?? contexto.usuarioId ?? null;
 
     try {
+      const prisma = prismaDaRequisicao();
       return await prisma.auditLog.create({
         data: {
           unidadeId,

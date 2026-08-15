@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
@@ -9,6 +9,7 @@ const auditLogService = new AuditLogService();
 // também é um fato que precisa ficar registrado (LGPD, art. 8º, §5º).
 export class RevogarConsentimentoService {
   async execute(id: number, unidadeId: number | null, revogadoPorId: number) {
+    const prisma = prismaDaRequisicao();
     const consentimento = await prisma.consentimento.findUnique({ where: { id } });
 
     if (!consentimento) {
