@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import type { StatusEvento, TipoEvento } from "../constants";
 
@@ -12,6 +12,7 @@ export interface FiltrosEvento {
 
 export class ListEventosService {
   async execute(unidadeId: number | null, filtros: FiltrosEvento = {}) {
+    const prisma = prismaDaRequisicao();
     return prisma.evento.findMany({
       where: {
         ...escopoUnidade(unidadeId),

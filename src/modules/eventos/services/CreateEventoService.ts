@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import type { StatusEvento, TipoEvento } from "../constants";
 
 interface CreateEventoDTO {
@@ -19,6 +19,7 @@ interface CreateEventoDTO {
 
 export class CreateEventoService {
   async execute(data: CreateEventoDTO) {
+    const prisma = prismaDaRequisicao();
     return prisma.evento.create({
       data: {
         ...data,
