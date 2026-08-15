@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 interface CreateTecnicaDTO {
   unidadeId: number;
@@ -11,6 +11,7 @@ interface CreateTecnicaDTO {
 
 export class CreateTecnicaService {
   async execute(data: CreateTecnicaDTO) {
+    const prisma = prismaDaRequisicao();
     const tecnica = await prisma.tecnica.create({
       data: {
         unidadeId: data.unidadeId,
