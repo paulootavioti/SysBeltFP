@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -8,6 +8,7 @@ interface UpdateArenaDTO {
 
 export class UpdateArenaService {
   async execute(id: number, data: UpdateArenaDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const arena = await prisma.arena.findUnique({ where: { id } });
 
     if (!arena) {

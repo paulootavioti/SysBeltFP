@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 interface CreateArenaDTO {
   unidadeId: number;
@@ -7,6 +7,7 @@ interface CreateArenaDTO {
 
 export class CreateArenaService {
   async execute(data: CreateArenaDTO) {
+    const prisma = prismaDaRequisicao();
     return prisma.arena.create({
       data,
       include: {
