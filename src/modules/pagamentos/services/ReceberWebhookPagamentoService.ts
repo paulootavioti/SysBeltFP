@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
 import type { PaymentGateway, WebhookEvento } from "../gateways/PaymentGateway";
 
@@ -25,6 +25,7 @@ export class ReceberWebhookPagamentoService {
     resultado: ResultadoWebhook;
     detalhe?: string;
   }> {
+    const prisma = prismaDaRequisicao();
     this.nomeGateway = nomeGateway;
 
     // O gateway relê o pagamento na API dele antes de responder — o
@@ -80,6 +81,7 @@ export class ReceberWebhookPagamentoService {
     resultado: ResultadoWebhook;
     detalhe?: string;
   }> {
+    const prisma = prismaDaRequisicao();
     if (evento.situacao !== "PAGO") {
       // Pendente e recusado não mudam nada: a mensalidade continua em
       // aberto e o aluno pode tentar de novo.
