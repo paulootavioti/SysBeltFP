@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import {
   agruparPorBucket,
   calcularRangePeriodo,
@@ -26,6 +26,7 @@ interface DadosPeriodo {
 // um aluno já inativo, ou uma reativação seguida de nova inativação fora
 // do período, pode distorcer esse número — ver ADR pendente / roadmap.
 async function buscarDadosPeriodo(range: RangePeriodo, unidadeId: number | null): Promise<DadosPeriodo> {
+  const prisma = prismaDaRequisicao();
   const unidade = escopoUnidade(unidadeId);
 
   const [presencas, mensalidadesPorVencimento, mensalidadesPagas, alunosNovos, alunosCancelados, graduacoes] =
@@ -67,6 +68,7 @@ async function buscarDadosPeriodo(range: RangePeriodo, unidadeId: number | null)
 
 export class GetResumoPeriodoService {
   async execute(periodo: Periodo, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const agora = new Date();
     const range = calcularRangePeriodo(periodo, agora);
     const rangeAnterior = calcularRangePeriodoAnterior(periodo, agora);

@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { GetResumoPeriodoService } from "../../dashboard/services/GetResumoPeriodoService";
 import { TIPOS_META_REDUCAO, type FormatoValorMeta, type StatusMeta, type TipoMeta } from "../constants";
@@ -57,6 +57,7 @@ function calcularStatus(percentual: number, dataLimite: Date): StatusMeta {
 
 export class ListMetasService {
   async execute(unidadeId: number | null): Promise<MetaComProgresso[]> {
+    const prisma = prismaDaRequisicao();
     const metas = await prisma.meta.findMany({
       where: escopoUnidade(unidadeId),
       orderBy: { dataLimite: "asc" },
