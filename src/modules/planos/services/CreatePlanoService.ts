@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 interface CreatePlanoDTO {
   unidadeId: number;
@@ -9,6 +9,7 @@ interface CreatePlanoDTO {
 
 export class CreatePlanoService {
   async execute(data: CreatePlanoDTO) {
+    const prisma = prismaDaRequisicao();
     return prisma.plano.create({
       data,
     });
