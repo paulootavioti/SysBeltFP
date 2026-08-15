@@ -1,11 +1,12 @@
 import { StatusLead } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class AtualizarStatusLeadService {
   async execute(id: number, status: StatusLead, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const lead = await prisma.lead.findUnique({ where: { id } });
 
     if (!lead) {

@@ -1,6 +1,6 @@
 import { StatusLead } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -10,6 +10,7 @@ interface ListLeadsFiltros {
 
 export class ListLeadsService {
   async execute(unidadeId: number | null, filtros: ListLeadsFiltros = {}) {
+    const prisma = prismaDaRequisicao();
     return prisma.lead.findMany({
       where: {
         ...escopoUnidade(unidadeId),
