@@ -1,6 +1,6 @@
 import type { Prisma, TipoFormaPagamento } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { prepararConfiguracaoParaGravar } from "../../pagamentos/gateways";
@@ -13,6 +13,7 @@ interface UpdateFormaPagamentoDTO {
 
 export class UpdateFormaPagamentoService {
   async execute(id: number, data: UpdateFormaPagamentoDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const formaPagamento = await prisma.formaPagamento.findUnique({ where: { id } });
 
     if (!formaPagamento) {

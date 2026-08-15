@@ -1,6 +1,6 @@
 import type { Prisma, TipoFormaPagamento } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { prepararConfiguracaoParaGravar } from "../../pagamentos/gateways";
 
 interface CreateFormaPagamentoDTO {
@@ -12,6 +12,7 @@ interface CreateFormaPagamentoDTO {
 
 export class CreateFormaPagamentoService {
   async execute(data: CreateFormaPagamentoDTO) {
+    const prisma = prismaDaRequisicao();
     // Credencial de gateway entra cifrada. Passa por aqui e não pelo
     // controller pra que nenhum caminho de escrita consiga gravar token
     // em texto puro por esquecimento.
