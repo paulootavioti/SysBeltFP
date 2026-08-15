@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -17,6 +17,7 @@ interface PublicarFotosTreinoDTO {
 
 export class PublicarFotosTreinoService {
   async execute(data: PublicarFotosTreinoDTO, solicitante: Solicitante) {
+    const prisma = prismaDaRequisicao();
     const aula = await prisma.aula.findUnique({
       where: { id: data.aulaId },
       include: {
