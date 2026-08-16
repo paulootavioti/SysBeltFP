@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { montarWhereMensalidade, type FiltrosFinanceiro } from "../utils/filtros";
 
@@ -23,6 +23,7 @@ export interface DashboardFinanceiro {
 
 export class GetDashboardFinanceiroService {
   async execute(unidadeId: number | null, filtros: FiltrosFinanceiro = {}): Promise<DashboardFinanceiro> {
+    const prisma = prismaDaRequisicao();
     const where = montarWhereMensalidade(unidadeId, filtros);
 
     const mensalidades = await prisma.mensalidade.findMany({

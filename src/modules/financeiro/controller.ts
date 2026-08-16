@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../shared/utils/escopoUnidade";
 import { AppError } from "../../shared/errors/AppError";
 
@@ -16,6 +16,7 @@ import { lerFiltrosDaQuery } from "./utils/filtros";
 export class FinanceiroController {
 
   async resumo(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
 
     const unidade = escopoUnidade(req.user.unidadeId);
 
