@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { EnviarMensagemWhatsappService, type ResultadoEnvio } from "./EnviarMensagemWhatsappService";
 import { destinatarioDoAluno, primeiroNome } from "../utils/destinatario";
 
@@ -18,6 +18,7 @@ export class AvisarAcessoService {
   private readonly enviar = new EnviarMensagemWhatsappService();
 
   async execute(eventoAcessoId: number): Promise<ResultadoEnvio | "IGNORADO"> {
+    const prisma = prismaDaRequisicao();
     const evento = await prisma.eventoAcesso.findUnique({
       where: { id: eventoAcessoId },
       select: {
