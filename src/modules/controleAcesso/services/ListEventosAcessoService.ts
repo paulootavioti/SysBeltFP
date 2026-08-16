@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface Solicitante {
@@ -19,6 +19,7 @@ const LIMITE_MAXIMO = 500;
 
 export class ListEventosAcessoService {
   async execute(solicitante: Solicitante, filtros: Filtros = {}) {
+    const prisma = prismaDaRequisicao();
     const limite = Math.min(filtros.limite ?? LIMITE_PADRAO, LIMITE_MAXIMO);
 
     return prisma.eventoAcesso.findMany({

@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import type { SentidoAcesso } from "../providers";
 import { tenantTemRecurso } from "../../concessaoPlataforma/recursos";
 
@@ -38,6 +38,7 @@ export class AutorizarAcessoService {
   ) {}
 
   async execute(dados: AutorizarAcessoDTO): Promise<DecisaoAcesso> {
+    const prisma = prismaDaRequisicao();
     const sentido = dados.sentido ?? "ENTRADA";
     const agora = dados.referencia ?? new Date();
 
@@ -91,6 +92,7 @@ export class AutorizarAcessoService {
   }
 
   private async avaliarAluno(alunoId: number, agora: Date): Promise<DecisaoAcesso> {
+    const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({
       where: { id: alunoId },
       include: { unidade: true },

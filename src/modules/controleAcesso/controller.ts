@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { timingSafeEqual } from "crypto";
 
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../shared/errors/AppError";
 import { escopoUnidade, garantirAcessoUnidade } from "../../shared/utils/escopoUnidade";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
@@ -13,6 +13,7 @@ import { obterProvedorAcesso } from "./providers";
 
 export class ControleAcessoController {
   async listarDispositivos(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
     const dispositivos = await prisma.dispositivoAcesso.findMany({
       where: escopoUnidade(req.user.unidadeId),
       orderBy: { nome: "asc" },
@@ -25,6 +26,7 @@ export class ControleAcessoController {
   }
 
   async criarDispositivo(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
     const dispositivo = await prisma.dispositivoAcesso.create({
       data: {
         unidadeId: requireUnidadeId(req),
@@ -51,6 +53,7 @@ export class ControleAcessoController {
   }
 
   async revogarCredencial(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
     const id = Number(req.params.id);
 
     const credencial = await prisma.credencialAcesso.findUnique({
@@ -105,6 +108,7 @@ export class ControleAcessoController {
   // Consulta on-line: equipamento "burro" pergunta ao servidor a cada
   // passagem se libera ou não. Autenticado pelo segredo do dispositivo.
   async autorizar(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
     const dispositivo = await autenticarDispositivo(req);
 
     const service = new AutorizarAcessoService();
@@ -143,6 +147,7 @@ export class ControleAcessoController {
 // cadastro do dispositivo. Comparação em tempo constante pra não vazar o
 // segredo por diferença de tempo de resposta.
 async function autenticarDispositivo(req: Request) {
+  const prisma = prismaDaRequisicao();
   const id = Number(req.params.id);
   const segredo = req.headers["x-dispositivo-segredo"];
 
