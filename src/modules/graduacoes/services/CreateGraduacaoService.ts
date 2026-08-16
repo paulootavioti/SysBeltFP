@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { validarProgressaoFaixa } from "../utils/validarProgressaoFaixa";
 
@@ -16,6 +16,7 @@ interface CreateGraduacaoDTO {
 
 export class CreateGraduacaoService {
   async execute({ faixa, data, alunoId, cobranca }: CreateGraduacaoDTO) {
+    const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({
       where: { id: alunoId },
     });

@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -11,6 +11,7 @@ interface RejeitarGraduacaoDTO {
 
 export class RejeitarGraduacaoService {
   async execute({ id, revisorId, unidadeIdRevisor, motivoRejeicao }: RejeitarGraduacaoDTO) {
+    const prisma = prismaDaRequisicao();
     const graduacao = await prisma.graduacao.findUnique({
       where: { id },
     });

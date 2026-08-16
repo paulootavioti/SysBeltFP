@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { CreateGraduacaoService } from "./services/CreateGraduacaoService";
 import { GetEvolucaoAlunoService } from "./services/GetEvolucaoAlunoService";
 import { IncrementarGrauService } from "./services/IncrementarGrauService";
@@ -46,6 +46,7 @@ export class GraduacoesController {
   }
 
   async list(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
 
     const graduacoes = await prisma.graduacao.findMany({
       where: escopoUnidade(req.user.unidadeId),
@@ -111,6 +112,7 @@ export class GraduacoesController {
 
   // Historico de Graduacoes
   async aluno(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
 
     const { id } = req.params;
 

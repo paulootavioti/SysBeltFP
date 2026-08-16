@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import {
   calcularIdade,
@@ -19,6 +19,7 @@ interface AlunoParaValidacao {
 // trilha do aluno (idade) e, pra trilha adulta, respeita idade mínima e
 // tempo mínimo na faixa atual.
 export async function validarProgressaoFaixa(aluno: AlunoParaValidacao, faixa: string) {
+  const prisma = prismaDaRequisicao();
   const idade = calcularIdade(aluno.dataNascimento);
   const trilha = getTrilhaFaixa(idade);
   const faixasValidas = getFaixasDaTrilha(trilha);
