@@ -1,6 +1,6 @@
 import { hash } from "bcryptjs";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { gerarSenhaAleatoria } from "../../../shared/utils/gerarSenhaAleatoria";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
@@ -70,6 +70,7 @@ function toNumberOrNull(value: unknown) {
 
 export class CreateAlunoService {
   async execute(data: CreateAlunoDTO) {
+    const prisma = prismaDaRequisicao();
     const dataNascimentoFormatada = new Date(data.dataNascimento);
 
     const inicioDia = new Date(

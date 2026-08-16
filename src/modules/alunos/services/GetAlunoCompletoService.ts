@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { calcularFrequenciaPorPeriodo } from "../../../shared/utils/calcularFrequencia";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
@@ -7,6 +7,7 @@ const auditLogService = new AuditLogService();
 
 export class GetAlunoCompletoService {
   async execute(id: number, unidadeId: number | null, perfil?: string) {
+    const prisma = prismaDaRequisicao();
     // PROFESSOR só pode ver: nome, apelido, nome do responsável, turma,
     // presenças e graduações — nada de CPF, endereço, saúde ou financeiro.
     if (perfil === "PROFESSOR") {

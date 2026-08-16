@@ -1,6 +1,6 @@
 import { hash } from "bcryptjs";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -13,6 +13,7 @@ interface SetSenhaPortalDTO {
 // de SetSenhaPortalResponsavelService, aplicada ao próprio aluno.
 export class SetSenhaPortalAlunoService {
   async execute({ id, senha }: SetSenhaPortalDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({ where: { id } });
 
     if (!aluno) {
