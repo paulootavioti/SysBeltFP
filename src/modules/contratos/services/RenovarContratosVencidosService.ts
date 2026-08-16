@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { gerarConteudoContrato } from "../utils/gerarConteudoContrato";
 
@@ -15,6 +15,7 @@ export interface ResultadoRenovacaoAutomatica {
 // então (assim como lá) não grava AuditLog.
 export class RenovarContratosVencidosService {
   async execute(unidadeId: number | null): Promise<ResultadoRenovacaoAutomatica> {
+    const prisma = prismaDaRequisicao();
     const hoje = new Date();
 
     const contratos = await prisma.contrato.findMany({

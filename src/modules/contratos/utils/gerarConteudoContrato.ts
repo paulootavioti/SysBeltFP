@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { determinarContratante } from "./determinarContratante";
@@ -18,6 +18,7 @@ interface GerarConteudoContratoDTO {
 // edição de contrato — mantém as duas operações consistentes (mesmo
 // snapshot de conteúdo pra mesmos dados de entrada).
 export async function gerarConteudoContrato(data: GerarConteudoContratoDTO) {
+  const prisma = prismaDaRequisicao();
   const aluno = await prisma.aluno.findUnique({
     where: { id: data.alunoId },
     include: {
