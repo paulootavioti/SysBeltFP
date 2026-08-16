@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 
 // Baixa manual da fatura da plataforma. Quando a cobrança automática
@@ -6,6 +6,7 @@ import { AppError } from "../../../shared/errors/AppError";
 // "fatura paga" precisa ter um caminho só.
 export class MarcarFaturaPagaService {
   async execute(faturaId: number, pagaEm: Date = new Date()) {
+    const prisma = prismaDaRequisicao();
     const fatura = await prisma.faturaPlataforma.findUnique({ where: { id: faturaId } });
 
     if (!fatura) {
@@ -35,6 +36,7 @@ export class MarcarFaturaPagaService {
   }
 
   private async reativarSeQuitou(assinaturaId: number) {
+    const prisma = prismaDaRequisicao();
     const assinatura = await prisma.assinaturaPlataforma.findUnique({
       where: { id: assinaturaId },
       select: { status: true },
