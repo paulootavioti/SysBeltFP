@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
 import { gerarConteudoContrato } from "../utils/gerarConteudoContrato";
 
@@ -21,6 +21,7 @@ const auditLogService = new AuditLogService();
 
 export class CreateContratoService {
   async execute(data: CreateContratoDTO) {
+    const prisma = prismaDaRequisicao();
     const { conteudoGerado, contratanteResponsavelId } = await gerarConteudoContrato(data);
 
     const ultimoContrato = await prisma.contrato.findFirst({

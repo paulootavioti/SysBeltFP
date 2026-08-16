@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
@@ -19,6 +19,7 @@ const auditLogService = new AuditLogService();
 // futura (aqui é só o registro manual feito pelo administrador).
 export class RegistrarAssinaturaService {
   async execute(id: number, unidadeId: number | null, usuarioId: number, data: RegistrarAssinaturaDTO) {
+    const prisma = prismaDaRequisicao();
     const contrato = await prisma.contrato.findUnique({ where: { id } });
 
     if (!contrato) {

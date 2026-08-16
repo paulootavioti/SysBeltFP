@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 interface ListContratosFiltros {
@@ -8,6 +8,7 @@ interface ListContratosFiltros {
 
 export class ListContratosService {
   async execute(unidadeId: number | null, filtros: ListContratosFiltros = {}) {
+    const prisma = prismaDaRequisicao();
     return prisma.contrato.findMany({
       where: {
         ...escopoUnidade(unidadeId),

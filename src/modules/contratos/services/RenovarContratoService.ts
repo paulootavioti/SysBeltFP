@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
@@ -20,6 +20,7 @@ const auditLogService = new AuditLogService();
 // manual (aqui) quanto pela automática (RenovarContratosVencidosService).
 export class RenovarContratoService {
   async execute(id: number, unidadeId: number | null, data: RenovarContratoDTO) {
+    const prisma = prismaDaRequisicao();
     const contratoAtual = await prisma.contrato.findUnique({ where: { id } });
 
     if (!contratoAtual) {

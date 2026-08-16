@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
@@ -22,6 +22,7 @@ export class AlterarSituacaoContratoService {
     novaSituacao: SituacaoManual,
     motivoCancelamento?: string | null
   ) {
+    const prisma = prismaDaRequisicao();
     const contrato = await prisma.contrato.findUnique({ where: { id } });
 
     if (!contrato) {
