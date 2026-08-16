@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 interface CreateCurriculoDTO {
   unidadeId: number;
@@ -10,6 +10,7 @@ interface CreateCurriculoDTO {
 
 export class CreateCurriculoService {
   async execute(data: CreateCurriculoDTO) {
+    const prisma = prismaDaRequisicao();
     return prisma.curriculo.create({
       data: {
         unidadeId: data.unidadeId,
