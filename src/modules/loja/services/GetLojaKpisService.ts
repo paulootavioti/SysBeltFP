@@ -1,8 +1,9 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class GetLojaKpisService {
   async execute(unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const produtos = await prisma.produto.findMany({
       where: { ...escopoUnidade(unidadeId), ativo: true },
       include: { variantes: true },

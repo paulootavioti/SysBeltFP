@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { CategoriaProduto } from "@prisma/client";
@@ -11,6 +11,7 @@ interface ListProdutosFiltros {
 
 export class ListProdutosService {
   async execute(unidadeId: number | null, filtros: ListProdutosFiltros = {}) {
+    const prisma = prismaDaRequisicao();
     const produtos = await prisma.produto.findMany({
       where: {
         ...escopoUnidade(unidadeId),
