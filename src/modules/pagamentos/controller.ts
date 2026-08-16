@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../shared/errors/AppError";
 import { MercadoPagoGateway } from "./gateways/MercadoPagoGateway";
 import { verificarAssinaturaMercadoPago } from "./gateways/mercadoPago/assinaturaWebhook";
@@ -82,6 +82,7 @@ export class PagamentosController {
 async function resolverCredenciais(
   formaPagamentoId: string | undefined
 ): Promise<CredenciaisGateway | null> {
+  const prisma = prismaDaRequisicao();
   // Sem id na URL: instalação de uma academia só, ainda usando as
   // variáveis de ambiente. `lerCredenciaisGateway` cai nelas e avisa.
   if (!formaPagamentoId) {
