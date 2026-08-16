@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { buscarConflitoProgramacao, mensagemConflitoProgramacao } from "../../../shared/utils/conflitoHorario";
@@ -13,6 +13,7 @@ interface CreateAulaProgramadaDTO {
 
 export class CreateAulaProgramadaService {
   async execute(data: CreateAulaProgramadaDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const turma = await prisma.turma.findUnique({
       where: { id: data.turmaId },
     });

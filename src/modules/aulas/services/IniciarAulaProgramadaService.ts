@@ -1,10 +1,11 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { StartAulaService } from "./StartAulaService";
 
 export class IniciarAulaProgramadaService {
   async execute(id: number, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const programacao = await prisma.aulaProgramada.findUnique({
       where: { id },
     });

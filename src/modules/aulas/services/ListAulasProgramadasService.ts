@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
 import { calcularRangeContagem, type PeriodoContagem } from "../utils/periodoContagem";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
@@ -10,6 +10,7 @@ interface ListAulasProgramadasFiltros {
 
 export class ListAulasProgramadasService {
   async execute(filtros: ListAulasProgramadasFiltros = {}, unidadeId: number | null = null) {
+    const prisma = prismaDaRequisicao();
     const range = filtros.periodo ? calcularRangeContagem(filtros.periodo) : undefined;
 
     return prisma.aulaProgramada.findMany({

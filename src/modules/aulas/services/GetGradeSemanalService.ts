@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { calcularSemana } from "../utils/semana";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -49,6 +49,7 @@ function calcularStatusExibicao(
 
 export class GetGradeSemanalService {
   async execute(unidadeId: number | null, referencia: Date = new Date()) {
+    const prisma = prismaDaRequisicao();
     const { inicio, fim } = calcularSemana(referencia);
 
     const programadas = await prisma.aulaProgramada.findMany({

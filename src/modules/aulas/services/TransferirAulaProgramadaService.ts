@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { horariosSobrepoem } from "../../../shared/utils/conflitoHorario";
@@ -16,6 +16,7 @@ interface Solicitante {
 
 export class TransferirAulaProgramadaService {
   async execute(id: number, dto: TransferirAulaProgramadaDTO, solicitante: Solicitante) {
+    const prisma = prismaDaRequisicao();
     const programacao = await prisma.aulaProgramada.findUnique({
       where: { id },
       include: { turma: true },

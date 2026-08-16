@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { calcularIdade } from "../../../shared/constants/faixas";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
@@ -33,6 +33,7 @@ const CAMPOS_COMPORTAMENTO = [
 
 export class UpdateAulaAlunoService {
   async execute(data: UpdateAulaAlunoDTO, solicitante: Solicitante) {
+    const prisma = prismaDaRequisicao();
     const registro = await prisma.aulaAluno.findUnique({
       where: {
         id: data.id,
