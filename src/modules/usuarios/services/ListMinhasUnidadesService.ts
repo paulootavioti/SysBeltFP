@@ -1,9 +1,10 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 // unidades vinculadas ao usuário autenticado — usado pelo seletor de
 // "unidade ativa" de um ADMIN/RECEPCAO vinculado a mais de uma unidade.
 export class ListMinhasUnidadesService {
   async execute(usuarioId: number) {
+    const prisma = prismaDaRequisicao();
     const vinculos = await prisma.usuarioUnidade.findMany({
       where: { usuarioId },
       select: { unidade: { select: { id: true, nome: true } } },
