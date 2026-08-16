@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/AppError";
+import { erroSeguroParaLog } from "../security/sanitizarErro";
 
 export function errorHandler(
   error: Error,
@@ -16,7 +17,7 @@ export function errorHandler(
 
   }
 
-  console.error(error);
+  console.error("Erro não tratado", erroSeguroParaLog(error));
 
   return res.status(500).json({
     message: "Erro interno do servidor."

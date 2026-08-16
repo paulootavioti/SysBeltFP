@@ -400,6 +400,15 @@ Dados médicos
 
 CPF completo
 
+Connection strings ou credenciais de banco
+
+Segredos de integração entre Tenant Plane e Control Plane
+
+O tratador global converte erros inesperados em uma estrutura sanitizada antes
+de enviá-los ao console. URLs PostgreSQL, tokens Bearer e o segredo do
+diretório são substituídos por marcadores de redação; o objeto `Error` bruto
+nunca deve ser registrado.
+
 ---
 
 Registrar apenas:
