@@ -1,9 +1,10 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { calcularIdade, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class CongratulacoesGraduacaoService {
   async execute(unidadeId: number | null): Promise<MensagemGerada[]> {
+    const prisma = prismaDaRequisicao();
     const seteDiasAtras = new Date();
     seteDiasAtras.setUTCDate(seteDiasAtras.getUTCDate() - 7);
     seteDiasAtras.setUTCHours(0, 0, 0, 0);

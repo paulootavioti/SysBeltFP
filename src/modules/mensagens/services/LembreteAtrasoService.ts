@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import {
   calcularIdade,
   formatarDataBr,
@@ -10,6 +10,7 @@ import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class LembreteAtrasoService {
   async execute(unidadeId: number | null): Promise<MensagemGerada[]> {
+    const prisma = prismaDaRequisicao();
     const hoje = new Date();
     hoje.setUTCHours(0, 0, 0, 0);
 

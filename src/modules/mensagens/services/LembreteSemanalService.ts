@@ -1,10 +1,11 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { calcularIdade, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
 import { formatarDiasSemana } from "../../../shared/utils/diasSemana";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class LembreteSemanalService {
   async execute(unidadeId: number | null): Promise<MensagemGerada[]> {
+    const prisma = prismaDaRequisicao();
     const alunos = await prisma.aluno.findMany({
       where: {
         ativo: true,
