@@ -1,4 +1,4 @@
-import { prisma } from "../database/prisma";
+import { prismaDaRequisicao } from "../database/prismaDaRequisicao";
 import { AppError } from "../errors/AppError";
 
 // A fronteira entre assinantes, na prática, é o vínculo do usuário.
@@ -14,6 +14,7 @@ import { AppError } from "../errors/AppError";
 // silencioso, e nada no sistema reclamaria.
 
 export async function contaDaUnidade(unidadeId: number): Promise<number> {
+  const prisma = prismaDaRequisicao();
   const unidade = await prisma.unidade.findUnique({
     where: { id: unidadeId },
     select: { contaId: true },
@@ -30,6 +31,7 @@ export async function contaDaUnidade(unidadeId: number): Promise<number> {
  * Todas as unidades de um assinante. É o alcance de um DONO.
  */
 export async function unidadesDaConta(contaId: number): Promise<number[]> {
+  const prisma = prismaDaRequisicao();
   const unidades = await prisma.unidade.findMany({
     where: { contaId },
     select: { id: true },
@@ -48,6 +50,7 @@ export async function garantirUnidadesDaMesmaConta(unidadeIds: number[]): Promis
   const ids = [...new Set(unidadeIds)];
 
   if (ids.length === 0) return null;
+  const prisma = prismaDaRequisicao();
 
   const unidades = await prisma.unidade.findMany({
     where: { id: { in: ids } },
