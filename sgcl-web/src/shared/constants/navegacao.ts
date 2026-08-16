@@ -184,10 +184,6 @@ export const NAV_TREE: NavEntry[] = [
       item("/arenas", "Arenas", LuDoorOpen),
       item("/modalidades", "Modalidades", LuSwords),
       item("/usuarios", "Usuários", LuUserCog),
-      // Painel do OPERADOR do SaaS: os assinantes do SysBelt, o catálogo
-      // de planos e o faturamento da plataforma. Só o SUPERADMIN enxerga
-      // (ver acessoPorPerfil.ts) — nem o dono da academia.
-      item("/plataforma/assinantes", "Assinantes (SysBelt)", LuBuilding2),
     ],
   },
 

@@ -44,7 +44,6 @@ const Metas = lazy(() => import("../modules/metas/pages/Listar").then((m) => ({ 
 
 const FormasPagamento = lazy(() => import("../modules/formasPagamento/pages/Listar").then((m) => ({ default: m.FormasPagamento })));
 const MinhaAssinatura = lazy(() => import("../modules/plataforma/pages/MinhaAssinatura").then((m) => ({ default: m.MinhaAssinatura })));
-const Assinantes = lazy(() => import("../modules/plataforma/pages/Assinantes").then((m) => ({ default: m.Assinantes })));
 const Assinaturas = lazy(() => import("../modules/assinaturas/pages/Listar").then((m) => ({ default: m.Assinaturas })));
 const ModelosContrato = lazy(() => import("../modules/modelosContrato/pages/Listar").then((m) => ({ default: m.ModelosContrato })));
 const Contratos = lazy(() => import("../modules/contratos/pages/Listar").then((m) => ({ default: m.Contratos })));
@@ -359,15 +358,6 @@ export function AppRoutes() {
           element={
             <PrivateRoute>
               <EditarEvento />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/plataforma/assinantes"
-          element={
-            <PrivateRoute>
-              <Assinantes />
             </PrivateRoute>
           }
         />
