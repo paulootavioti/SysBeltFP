@@ -13,8 +13,7 @@ interface CreateUsuarioDTO {
   senha: string;
   perfil: string;
   unidadeId: number | null;
-  // todas as unidades que o usuário pode acessar — só é maior que 1 item
-  // quando um SUPERADMIN vincula um ADMIN/RECEPCAO a mais de uma unidade.
+  // todas as unidades da academia em que o usuário pode atuar.
   unidadeIds?: number[];
   nivelGraduacao?: string;
   outrasGraduacoes?: string;

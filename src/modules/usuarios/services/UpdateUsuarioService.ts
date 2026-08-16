@@ -17,7 +17,6 @@ interface UpdateUsuarioDTO {
   nivelGraduacao?: string | null;
   outrasGraduacoes?: string | null;
   fotoUrl?: string | null;
-  // só é aplicado quando quem edita é SUPERADMIN (checado no controller) —
   // substitui por completo a lista de unidades vinculadas ao usuário.
   unidadeIds?: number[];
 }
@@ -75,7 +74,7 @@ export class UpdateUsuarioService {
         : (data.unidadeIds ?? []);
 
     // a unidade ATIVA só muda se ela não estiver mais entre as vinculadas
-    // (ex.: SUPERADMIN removeu a unidade que o usuário estava usando) —
+    // (ex.: o gestor removeu a unidade que o usuário estava usando) —
     // do contrário mantém, pra não derrubar a sessão ativa dele à toa.
     const novaUnidadeAtiva =
       idsVinculo.length && !idsVinculo.includes(usuario.unidadeId ?? -1)
