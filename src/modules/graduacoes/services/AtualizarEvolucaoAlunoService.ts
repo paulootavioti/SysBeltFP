@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 const faixasKids = [
   "Branca",
@@ -16,6 +16,7 @@ const faixasKids = [
 
 export class AtualizarEvolucaoAlunoService {
   async execute(alunoId: number) {
+    const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({
       where: {
         id: alunoId

@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 
 const GRAUS_MAXIMOS_POR_FAIXA = 4;
@@ -15,6 +15,7 @@ interface IncrementarGrauDTO {
 
 export class IncrementarGrauService {
   async execute({ alunoId, cobranca }: IncrementarGrauDTO) {
+    const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({
       where: { id: alunoId },
     });
