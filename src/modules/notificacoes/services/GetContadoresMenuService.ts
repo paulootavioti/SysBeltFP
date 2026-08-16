@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { ListProximasGraduacoesService } from "../../graduacoes/services/ListProximasGraduacoesService";
 
@@ -20,6 +20,7 @@ const listProximasGraduacoesService = new ListProximasGraduacoesService();
 // em toda troca de página (ver useContadoresMenu no frontend).
 export class GetContadoresMenuService {
   async execute(unidadeId: number | null): Promise<ContadoresMenu> {
+    const prisma = prismaDaRequisicao();
     const [
       mensalidadesVencidas,
       contratosAguardandoAssinatura,
