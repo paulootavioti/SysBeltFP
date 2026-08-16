@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { obterProvedorAcesso } from "../providers";
 import { AutorizarAcessoService } from "./AutorizarAcessoService";
@@ -19,6 +19,7 @@ interface RegistrarEventoAcessoDTO {
 // estava inadimplente porque a sincronização atrasou).
 export class RegistrarEventoAcessoService {
   async execute({ dispositivoId, payload }: RegistrarEventoAcessoDTO) {
+    const prisma = prismaDaRequisicao();
     const dispositivo = await prisma.dispositivoAcesso.findUnique({
       where: { id: dispositivoId },
     });

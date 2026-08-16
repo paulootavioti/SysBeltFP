@@ -1,6 +1,6 @@
 import type { TipoCredencialAcesso } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { ConsultarConsentimentoService } from "../../consentimentos/services/ConsultarConsentimentoService";
 
@@ -23,6 +23,7 @@ interface CriarCredencialDTO {
 
 export class CriarCredencialService {
   async execute(dto: CriarCredencialDTO) {
+    const prisma = prismaDaRequisicao();
     if (TIPOS_BIOMETRICOS.includes(dto.tipo) && dto.alunoId) {
       const liberado = await consultarConsentimento.temConsentimentoValido(
         dto.alunoId,
