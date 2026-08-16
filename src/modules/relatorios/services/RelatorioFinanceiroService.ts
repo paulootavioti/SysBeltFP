@@ -1,9 +1,10 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { formatarDataBR } from "../../../shared/utils/dataCalendario";
 
 export class RelatorioFinanceiroService {
   async execute(unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const mensalidadesVencidas =
       await prisma.mensalidade.findMany({
         where: {
