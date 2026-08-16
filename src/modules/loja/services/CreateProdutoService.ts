@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { CategoriaProduto } from "@prisma/client";
 
 interface VarianteDTO {
@@ -19,6 +19,7 @@ interface CreateProdutoDTO {
 
 export class CreateProdutoService {
   async execute(data: CreateProdutoDTO) {
+    const prisma = prismaDaRequisicao();
     const { variantes, ...produtoData } = data;
 
     return prisma.produto.create({

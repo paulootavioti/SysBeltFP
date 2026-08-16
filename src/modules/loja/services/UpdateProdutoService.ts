@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { CategoriaProduto } from "@prisma/client";
@@ -21,6 +21,7 @@ interface UpdateProdutoDTO {
 
 export class UpdateProdutoService {
   async execute(id: number, data: UpdateProdutoDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const produto = await prisma.produto.findUnique({
       where: { id },
       include: { variantes: true },

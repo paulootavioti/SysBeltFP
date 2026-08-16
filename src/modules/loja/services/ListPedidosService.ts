@@ -1,6 +1,6 @@
 import { StatusPedido } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -11,6 +11,7 @@ interface ListPedidosFiltros {
 
 export class ListPedidosService {
   async execute(unidadeId: number | null, filtros: ListPedidosFiltros = {}) {
+    const prisma = prismaDaRequisicao();
     return prisma.pedido.findMany({
       where: {
         ...escopoUnidade(unidadeId),
