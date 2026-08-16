@@ -1,5 +1,21 @@
 import { AppError } from "../errors/AppError";
 
+export function superadminLegadoPodeAcessar(
+  perfil: string,
+  env: NodeJS.ProcessEnv = process.env,
+): boolean {
+  return perfil !== "SUPERADMIN" || env.LEGACY_SUPERADMIN_ACCESS_ENABLED === "true";
+}
+
+export function garantirAcessoSuperadminLegado(
+  perfil: string,
+  env: NodeJS.ProcessEnv = process.env,
+): void {
+  if (!superadminLegadoPodeAcessar(perfil, env)) {
+    throw new AppError("Operadores da plataforma devem acessar o Control Plane.", 403);
+  }
+}
+
 export function garantirConcessaoSuperadminPermitida(
   perfilDesejado: unknown,
   perfilAtor: string,

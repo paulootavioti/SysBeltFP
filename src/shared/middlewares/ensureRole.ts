@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/AppError";
 import { PERFIS_QUE_HERDAM } from "../constants/perfis";
+import { garantirAcessoSuperadminLegado } from "../security/superadminLegado";
 
 export function ensureRole(roles: string[]) {
   return (req: Request, _res: Response, next: NextFunction) => {
-    // O operador da plataforma enxerga e administra todos os assinantes —
-    // não faz sentido listar "SUPERADMIN" em toda rota já restrita a ADMIN.
     if (req.user.perfil === "SUPERADMIN") {
-      return next();
+      garantirAcessoSuperadminLegado(req.user.perfil);
+      return next(); // compatibilidade temporária, somente durante rollback
     }
 
     if (roles.includes(req.user.perfil)) {

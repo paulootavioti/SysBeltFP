@@ -5,6 +5,7 @@ import { prismaDaRequisicao } from "../database/prismaDaRequisicao";
 import { PERFIS_MULTI_UNIDADE } from "../constants/perfis";
 import { definirUsuarioDoContexto } from "../context/contextoRequisicao";
 import { verificarTokenDaRequisicao } from "../tenant/tokenDaRequisicao";
+import { garantirAcessoSuperadminLegado } from "../security/superadminLegado";
 
 interface TokenPayload {
   sub: string;
@@ -41,6 +42,8 @@ export async function ensureAuthenticated(
     if (!usuario.ativo) {
       throw new AppError("Usuário inativo.", 403);
     }
+
+    garantirAcessoSuperadminLegado(usuario.perfil);
 
     req.user = {
       id: usuario.id,
