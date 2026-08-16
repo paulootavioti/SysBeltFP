@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -22,6 +22,7 @@ export class ListMensagensFamiliaService {
     unidadeIdSolicitante: number | null = null,
     visualizadoPor?: "FAMILIA" | "ACADEMIA"
   ) {
+    const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({ where: { id: alunoId } });
 
     if (!aluno) {

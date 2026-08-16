@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
 
@@ -16,6 +16,7 @@ export interface ConversaFamiliaResumo {
 // pra "o que está acontecendo agora", não um arquivo histórico completo.
 export class ListConversasFamiliaService {
   async execute(unidadeId: number | null): Promise<ConversaFamiliaResumo[]> {
+    const prisma = prismaDaRequisicao();
     const mensagens = await prisma.mensagemFamilia.findMany({
       where: escopoUnidade(unidadeId),
       orderBy: { createdAt: "desc" },
