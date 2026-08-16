@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { DeleteCompeticaoService } from "./services/DeleteCompeticaoService";
 import { LIMITE_PADRAO_LISTAGEM } from "../../shared/constants/pagination";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
@@ -9,6 +9,7 @@ import { AppError } from "../../shared/errors/AppError";
 export class CompeticoesController {
 
   async create(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
 
     const {
       nome,
@@ -29,6 +30,7 @@ export class CompeticoesController {
   }
 
   async list(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
 
     const competicoes = await prisma.competicao.findMany({
       where: escopoUnidade(req.user.unidadeId),
@@ -43,6 +45,7 @@ export class CompeticoesController {
 
   // Inscricao em competicoes
   async inscrever(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
 
     const {
       competicaoId,
@@ -76,6 +79,7 @@ export class CompeticoesController {
 
   // Listar atletas inscritos
   async atletas(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
 
     const { id } = req.params;
 
@@ -104,6 +108,7 @@ export class CompeticoesController {
 
   // Registrar resultado
   async resultado(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
 
     const { id } = req.params;
 
