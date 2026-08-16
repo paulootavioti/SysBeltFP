@@ -42,11 +42,6 @@ const REGRAS_ACESSO: RegraAcesso[] = [
   // estão sendo contados, quais faturas foram emitidas. É assunto do dono
   // do negócio, não de quem opera o dia a dia.
   { prefixo: "/minha-assinatura", perfis: ["DONO", "ADMIN"] },
-  // Painel do OPERADOR do SaaS: contas de todos os assinantes, catálogo de
-  // planos e faturamento. Lista de perfis vazia de propósito — só o
-  // SUPERADMIN entra, pelo desvio no topo de perfilTemAcesso. Nem o DONO
-  // da academia passa aqui, e é esse o ponto.
-  { prefixo: "/plataforma", perfis: [] },
 ];
 
 // Página segura para qualquer perfil autenticado — usada como destino

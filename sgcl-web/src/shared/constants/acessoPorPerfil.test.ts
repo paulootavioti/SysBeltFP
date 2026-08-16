@@ -63,6 +63,11 @@ describe("perfilTemAcesso", () => {
     expect(perfilTemAcesso("SUPERADMIN", "/eventos")).toBe(true);
   });
 
+  it("mantém Minha Assinatura acessível ao dono e fora do painel B2B legado", () => {
+    expect(perfilTemAcesso("DONO", "/minha-assinatura")).toBe(true);
+    expect(perfilTemAcesso("PROFESSOR", "/minha-assinatura")).toBe(false);
+  });
+
   it("sem perfil definido, nenhuma rota com regra é liberada", () => {
     expect(perfilTemAcesso(undefined, "/dashboard")).toBe(false);
     expect(perfilTemAcesso(undefined, "/alunos")).toBe(false);
