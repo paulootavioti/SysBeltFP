@@ -7,9 +7,8 @@ interface CreateUnidadeDTO {
 }
 
 // Uma filial nova nasce sempre dentro de uma conta — é o que impede que
-// unidades de assinantes diferentes acabem no mesmo balaio. Quem é ADMIN
-// abre filial na própria conta (resolvida pela unidade ativa, no
-// controller); o SUPERADMIN precisa dizer em qual conta.
+// unidades de assinantes diferentes acabem no mesmo balaio. DONO/ADMIN
+// abrem filial na própria conta, inferida exclusivamente da unidade ativa.
 export class CreateUnidadeService {
   async execute(data: CreateUnidadeDTO) {
     const prisma = prismaDaRequisicao();

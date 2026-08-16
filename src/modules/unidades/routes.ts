@@ -12,7 +12,7 @@ const unidadesController = new UnidadesController();
 unidadesRoutes.post(
   "/",
   ensureAuthenticated,
-  ensureRole(["SUPERADMIN"]),
+  ensureRole(["DONO", "ADMIN"]),
   validateBody(unidadeSchema),
   unidadesController.create
 );
@@ -20,7 +20,7 @@ unidadesRoutes.post(
 unidadesRoutes.get(
   "/",
   ensureAuthenticated,
-  ensureRole(["SUPERADMIN"]),
+  ensureRole(["DONO", "ADMIN"]),
   unidadesController.list
 );
 
@@ -36,7 +36,7 @@ unidadesRoutes.get(
 unidadesRoutes.put(
   "/:id",
   ensureAuthenticated,
-  ensureRole(["SUPERADMIN"]),
+  ensureRole(["DONO", "ADMIN"]),
   validateBody(unidadeSchema),
   unidadesController.update
 );
@@ -44,7 +44,7 @@ unidadesRoutes.put(
 unidadesRoutes.patch(
   "/:id/ativo",
   ensureAuthenticated,
-  ensureRole(["SUPERADMIN"]),
+  ensureRole(["DONO", "ADMIN"]),
   unidadesController.toggleAtivo
 );
 
