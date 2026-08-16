@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { ConsultarConsentimentoService } from "../../consentimentos/services/ConsultarConsentimentoService";
 import { obterProvedorMensagens } from "../providers";
 import { TEMPLATES, type NomeTemplate } from "../templates";
@@ -39,6 +39,7 @@ export class EnviarMensagemWhatsappService {
   ) {}
 
   async execute(dto: EnviarMensagemDTO): Promise<{ resultado: ResultadoEnvio; detalhe?: string }> {
+    const prisma = prismaDaRequisicao();
     const definicao = TEMPLATES[dto.template];
 
     // WhatsApp é recurso de plano: custa por mensagem e exige número e

@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import type { StatusEntrega } from "../providers/MessagingProvider";
 
 // A Meta manda o ciclo de vida em eventos separados: sent, delivered,
@@ -14,6 +14,7 @@ const PESO: Record<StatusEntrega["situacao"], number> = {
 
 export class AtualizarEntregaService {
   async execute(atualizacoes: StatusEntrega[]): Promise<{ aplicadas: number }> {
+    const prisma = prismaDaRequisicao();
     let aplicadas = 0;
 
     for (const atualizacao of atualizacoes) {

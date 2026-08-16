@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 // Quem recebe o aviso sobre um aluno.
 //
@@ -18,6 +18,7 @@ export interface Destinatario {
 }
 
 export async function destinatarioDoAluno(alunoId: number): Promise<Destinatario | null> {
+  const prisma = prismaDaRequisicao();
   const aluno = await prisma.aluno.findUnique({
     where: { id: alunoId },
     select: {

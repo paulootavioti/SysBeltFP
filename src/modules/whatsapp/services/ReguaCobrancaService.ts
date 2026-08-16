@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { formatarDataBR, inicioDoDiaUTC, somarDiasUTC } from "../../../shared/utils/dataCalendario";
 import { EnviarMensagemWhatsappService, type ResultadoEnvio } from "./EnviarMensagemWhatsappService";
 import { destinatarioDoAluno, primeiroNome } from "../utils/destinatario";
@@ -29,6 +29,7 @@ export class ReguaCobrancaService {
   private readonly enviar = new EnviarMensagemWhatsappService();
 
   async execute(hoje: Date = new Date(), unidadeId?: number): Promise<ResultadoRegua> {
+    const prisma = prismaDaRequisicao();
     const contador: ResultadoRegua = {
       avaliadas: 0,
       enviadas: 0,
