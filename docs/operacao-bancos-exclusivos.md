@@ -141,6 +141,21 @@ backoff; depois disso exigem ação do operador.
 
 ## Estratégia de migrations
 
+### Pré-condição para remover `Conta`
+
+Antes da migration que elimina o cadastro comercial legado do Tenant Plane,
+execute no banco de cada academia:
+
+```bash
+npm run tenant:auditar-fronteira
+```
+
+O comando é somente leitura e termina com código diferente de zero se não
+existir exatamente uma `Conta`, se as unidades não estiverem concentradas
+nessa única conta ou se ainda houver `SUPERADMIN` ativo. A saída contém apenas
+contagens e códigos de bloqueio, sem nomes, documentos ou identificadores.
+Somente ambientes com `prontaParaRemoverConta: true` entram no lote de corte.
+
 ### Classificação
 
 - **compatível:** adiciona tabela/coluna opcional ou índice seguro;

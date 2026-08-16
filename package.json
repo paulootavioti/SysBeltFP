@@ -16,7 +16,8 @@
     "seed:admin": "ts-node prisma/seeds/criarAdminInicial.ts",
     "postinstall": "prisma generate",
     "test:db:preparar": "node scripts/prepararBancoDeTeste.mjs",
-    "tenant:preflight": "node scripts/verificarAtivacaoTenant.mjs"
+    "tenant:preflight": "node scripts/verificarAtivacaoTenant.mjs",
+    "tenant:auditar-fronteira": "node scripts/auditarFronteiraTenant.mjs"
   },
   "keywords": [],
   "author": "",
