@@ -1,6 +1,6 @@
 import { hash } from "bcryptjs";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { gerarSenhaAleatoria } from "../../../shared/utils/gerarSenhaAleatoria";
@@ -42,6 +42,7 @@ interface CreateResponsavelDTO {
 
 export class CreateResponsavelService {
   async execute(data: CreateResponsavelDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({
       where: {
         id: data.alunoId,
