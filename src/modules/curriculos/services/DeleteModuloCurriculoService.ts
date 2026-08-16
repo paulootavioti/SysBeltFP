@@ -1,9 +1,10 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class DeleteModuloCurriculoService {
   async execute(id: number, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const modulo = await prisma.moduloCurriculo.findUnique({
       where: { id },
       include: { curriculo: true },

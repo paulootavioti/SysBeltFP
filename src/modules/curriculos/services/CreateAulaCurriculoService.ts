@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -14,6 +14,7 @@ interface CreateAulaCurriculoDTO {
 
 export class CreateAulaCurriculoService {
   async execute(data: CreateAulaCurriculoDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const modulo = await prisma.moduloCurriculo.findUnique({
       where: { id: data.moduloId },
       include: { curriculo: true },

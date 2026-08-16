@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -12,6 +12,7 @@ interface UpdateTecnicaCurriculoDTO {
 
 export class UpdateTecnicaCurriculoService {
   async execute(id: number, data: UpdateTecnicaCurriculoDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const tecnicaCurriculo = await prisma.tecnicaCurriculo.findUnique({
       where: { id },
       include: { aulaCurriculo: { include: { modulo: { include: { curriculo: true } } } } },
