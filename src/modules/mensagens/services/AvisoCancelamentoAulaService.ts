@@ -1,9 +1,10 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { calcularIdade, formatarDataBr, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
 
 export class AvisoCancelamentoAulaService {
   async execute(turmaId: number, dataAula: Date): Promise<MensagemGerada[]> {
+    const prisma = prismaDaRequisicao();
     const turma = await prisma.turma.findUnique({ where: { id: turmaId } });
 
     if (!turma) {

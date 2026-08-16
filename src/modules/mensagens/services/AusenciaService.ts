@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { calcularIdade, formatarTelefoneWhatsapp, type MensagemGerada } from "../utils";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -6,6 +6,7 @@ const DIAS_LIMITE_AUSENCIA = 14;
 
 export class AusenciaService {
   async execute(unidadeId: number | null): Promise<MensagemGerada[]> {
+    const prisma = prismaDaRequisicao();
     const dataLimite = new Date();
     dataLimite.setUTCDate(dataLimite.getUTCDate() - DIAS_LIMITE_AUSENCIA);
 
