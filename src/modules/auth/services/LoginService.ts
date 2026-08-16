@@ -3,6 +3,7 @@ import { compare } from "bcryptjs";
 import { SignOptions } from "jsonwebtoken";
 import { AppError } from "../../../shared/errors/AppError";
 import { assinarTokenDaRequisicao } from "../../../shared/tenant/tokenDaRequisicao";
+import { garantirAcessoSuperadminLegado } from "../../../shared/security/superadminLegado";
 
 interface LoginDTO {
   email: string;
@@ -51,6 +52,8 @@ export class LoginService {
         "Usuário ou senha inválidos."
       );
     }
+
+    garantirAcessoSuperadminLegado(usuario.perfil);
 // Antes de validar a senha
 //if (!usuario.ativo) {
 //   throw new AppError(

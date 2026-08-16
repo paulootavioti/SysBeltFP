@@ -300,6 +300,11 @@ Plane. Durante a transição, um `SUPERADMIN` já existente somente recupera ess
 capacidade quando `LEGACY_SUPERADMIN_MANAGEMENT_ENABLED=true`; a interface das
 academias nunca oferece esse perfil.
 
+Login, revalidação de tokens e bypass global de permissões de `SUPERADMIN`
+também ficam bloqueados no Tenant Plane. O rollback temporário exige
+`LEGACY_SUPERADMIN_ACCESS_ENABLED=true`. A variável não cria operadores nem
+altera vínculos; apenas restaura o acesso de uma conta legada já existente.
+
 ## Referências técnicas
 
 - [Prisma — gerenciamento de conexões](https://docs.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/connection-management)
