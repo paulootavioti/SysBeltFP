@@ -139,6 +139,7 @@ export class EnviarMensagemWhatsappService {
   }
 
   private async registrarBloqueio(dto: EnviarMensagemDTO, telefone: string) {
+    const prisma = prismaDaRequisicao();
     const definicao = TEMPLATES[dto.template];
 
     await prisma.mensagemWhatsapp
