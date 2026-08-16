@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 
 interface CreateContaDTO {
@@ -20,6 +20,7 @@ interface CreateContaDTO {
 // entra no fechamento.
 export class CreateContaService {
   async execute(data: CreateContaDTO) {
+    const prisma = prismaDaRequisicao();
     const plano = await prisma.planoPlataforma.findUnique({ where: { id: data.planoId } });
 
     if (!plano) {
