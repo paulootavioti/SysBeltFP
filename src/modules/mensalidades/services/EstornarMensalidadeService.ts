@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
@@ -8,6 +8,7 @@ const auditLogService = new AuditLogService();
 export class EstornarMensalidadeService {
 
   async execute(id: number, unidadeId: number | null, usuarioId: number, motivo: string) {
+    const prisma = prismaDaRequisicao();
 
     const mensalidadeExistente = await prisma.mensalidade.findUnique({ where: { id } });
 
