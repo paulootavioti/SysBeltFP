@@ -1,14 +1,16 @@
-import { prisma } from "../../shared/database/prisma";
+import type { PrismaClient } from "@prisma/client";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import type { RecursoConcessao } from "./concessaoContrato";
 
-type RepositorioConcessao = Pick<typeof prisma, "concessaoPlataforma">;
+type RepositorioConcessao = Pick<PrismaClient, "concessaoPlataforma">;
 
 export async function tenantTemRecurso(
   recurso: RecursoConcessao,
   agora = new Date(),
-  db: RepositorioConcessao = prisma,
+  db?: RepositorioConcessao,
 ): Promise<boolean> {
-  const concessao = await db.concessaoPlataforma.findUnique({ where: { id: 1 } });
+  const repositorio = db ?? prismaDaRequisicao();
+  const concessao = await repositorio.concessaoPlataforma.findUnique({ where: { id: 1 } });
   if (!concessao || concessao.statusAcesso !== "ATIVO" || concessao.expiraEm <= agora) return false;
   return concessao.recursos.includes(recurso);
 }

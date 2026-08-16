@@ -1,8 +1,9 @@
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { validarConcessao } from "./concessaoContrato";
 
 export class AplicarConcessaoService {
   async execute(entrada: unknown, agora = new Date()): Promise<{ revisao: number; duplicada: boolean }> {
+    const prisma = prismaDaRequisicao();
     const tenantKey = process.env.TENANT_KEY?.trim();
     const chavePublica = process.env.CONTROL_PLANE_GRANT_PUBLIC_KEY?.replace(/\\n/g, "\n").trim();
     if (!tenantKey || !chavePublica) throw new Error("Validação de concessão não configurada.");
