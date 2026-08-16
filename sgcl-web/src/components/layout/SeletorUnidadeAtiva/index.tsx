@@ -12,9 +12,7 @@ interface UnidadeOpcao {
 
 // Admin, Professor e Recepção podem estar vinculados a mais de uma unidade
 // — esse seletor deixa esses perfis escolherem em qual estão trabalhando
-// agora. Diferente do seletor "ver como" do SUPERADMIN, aqui não existe
-// opção de "todas as unidades": sempre precisa haver uma unidade ativa
-// escolhida.
+// agora. Sempre precisa haver uma unidade ativa escolhida.
 const PERFIS_MULTI_UNIDADE = ["ADMIN", "PROFESSOR", "RECEPCAO"];
 
 export function SeletorUnidadeAtiva() {

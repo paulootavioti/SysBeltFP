@@ -1,4 +1,4 @@
-export type Perfil = "SUPERADMIN" | "DONO" | "ADMIN" | "PROFESSOR" | "RECEPCAO";
+export type Perfil = "DONO" | "ADMIN" | "PROFESSOR" | "RECEPCAO";
 
 interface RegraAcesso {
   prefixo: string;
@@ -8,11 +8,10 @@ interface RegraAcesso {
 // Espelha as permissões (ensureRole) já aplicadas no backend, módulo a
 // módulo, pra que o menu e as rotas nunca ofereçam algo que a API recusaria.
 const REGRAS_ACESSO: RegraAcesso[] = [
-  // Cadastro de unidades (academias/filiais) — só o SUPERADMIN administra
-  // isso (acesso liberado pelo bypass em perfilTemAcesso, abaixo).
-  { prefixo: "/unidades", perfis: [] },
-  // Arenas (tatames/espaços) da própria unidade — ADMIN/RECEPCAO cuidam
-  // da própria unidade; SUPERADMIN também acessa (bypass) pra dar suporte.
+  // Cadastro de unidades (academias/filiais) — DONO/ADMIN administram as
+  // unidades do próprio assinante.
+  { prefixo: "/unidades", perfis: ["ADMIN"] },
+  // Arenas (tatames/espaços) da unidade ativa.
   { prefixo: "/arenas", perfis: ["ADMIN", "RECEPCAO"] },
   // Modalidades organizam turmas, currículos e a vitrine do site.
   { prefixo: "/modalidades", perfis: ["ADMIN", "RECEPCAO"] },
@@ -47,7 +46,6 @@ const REGRAS_ACESSO: RegraAcesso[] = [
 // Página segura para qualquer perfil autenticado — usada como destino
 // depois do login e como fallback quando o perfil não tem acesso à rota atual.
 export const ROTA_PADRAO_POR_PERFIL: Record<Perfil, string> = {
-  SUPERADMIN: "/dashboard",
   DONO: "/dashboard",
   ADMIN: "/dashboard",
   PROFESSOR: "/aulas",
@@ -55,11 +53,6 @@ export const ROTA_PADRAO_POR_PERFIL: Record<Perfil, string> = {
 };
 
 export function perfilTemAcesso(perfil: string | undefined, caminho: string): boolean {
-  // O operador da plataforma dá suporte a todos os assinantes — enxerga
-  // tudo que um ADMIN enxergaria, sem precisar listar "SUPERADMIN" em toda
-  // regra acima.
-  if (perfil === "SUPERADMIN") return true;
-
   const regra = REGRAS_ACESSO.find(
     (r) => caminho === r.prefixo || caminho.startsWith(`${r.prefixo}/`)
   );

@@ -35,7 +35,7 @@ const PERFIS_MULTI_UNIDADE = ["ADMIN", "PROFESSOR", "RECEPCAO"];
 export function UsuarioForm({ usuario, loading = false, onSubmit }: UsuarioFormProps) {
   const emEdicao = Boolean(usuario);
   const { usuario: usuarioLogado } = useAuth();
-  const souSuperadmin = usuarioLogado?.perfil === "SUPERADMIN";
+  const podeGerenciarUnidades = ["DONO", "ADMIN"].includes(usuarioLogado?.perfil ?? "");
 
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [unidadeIdsSelecionadas, setUnidadeIdsSelecionadas] = useState<number[]>(
@@ -58,12 +58,12 @@ export function UsuarioForm({ usuario, loading = false, onSubmit }: UsuarioFormP
   const { register, handleSubmit, watch, formState: { errors } } = methods;
   const perfil = watch("perfil");
   const ehProfessor = perfil === "PROFESSOR";
-  const mostrarChecklistUnidades = souSuperadmin && PERFIS_MULTI_UNIDADE.includes(perfil);
+  const mostrarChecklistUnidades = podeGerenciarUnidades && PERFIS_MULTI_UNIDADE.includes(perfil);
   const opcoesPerfil = PERFIS_BASE;
 
   useEffect(() => {
-    if (souSuperadmin) UnidadeService.listar().then(setUnidades);
-  }, [souSuperadmin]);
+    if (podeGerenciarUnidades) UnidadeService.listar().then(setUnidades);
+  }, [podeGerenciarUnidades]);
 
   function alternarUnidade(unidadeId: number) {
     setUnidadeIdsSelecionadas((atual) =>

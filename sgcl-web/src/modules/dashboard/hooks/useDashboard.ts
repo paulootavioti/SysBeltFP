@@ -105,7 +105,7 @@ export function useDashboard() {
     []
   );
 
-  // A loja é gerida só por ADMIN/SUPERADMIN — pros demais perfis a seção nem
+  // A loja é gerida só por DONO/ADMIN — pros demais perfis a seção nem
   // é renderizada, então evita a chamada (que voltaria 403) resolvendo pra
   // null direto.
   const [loja, recarregarLoja] = useSecaoDashboard<LojaKpis | null>(

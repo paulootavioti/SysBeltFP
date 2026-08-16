@@ -70,8 +70,7 @@ function paraDatetimeLocal(data: Date, horario: string): string {
 }
 
 // ADMIN e PROFESSOR podem consultar (só leitura) a grade de outra unidade
-// pra efeito informativo — RECEPCAO e SUPERADMIN (que já tem o seletor
-// global de "unidade visualizada") não usam esse seletor local.
+// pra efeito informativo — RECEPCAO não usa esse seletor local.
 const PERFIS_COM_CONSULTA_CROSS_UNIT = ["ADMIN", "PROFESSOR"];
 
 export function GradeHorariaSemanal({ compacta = false, onSelecionarSlot, ocupacaoPorTurma }: GradeHorariaSemanalProps) {

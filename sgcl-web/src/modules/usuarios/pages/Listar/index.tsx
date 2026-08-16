@@ -107,11 +107,8 @@ export function Usuarios() {
       header: "Perfil",
       accessor: "perfil" as const,
       render: (usuario: Usuario) =>
-        // SUPERADMIN não é uma opção desse select (só ADMIN/PROFESSOR/RECEPCAO
-        // se trocam por aqui) — sem essa checagem, o <select> caía por
-        // padrão em "Admin" pra uma linha de SUPERADMIN, o que é enganoso.
-        usuario.perfil === "SUPERADMIN" ? (
-          <span>Superadmin</span>
+        usuario.perfil === "DONO" ? (
+          <span>Dono</span>
         ) : (
           <Select
             value={usuario.perfil}

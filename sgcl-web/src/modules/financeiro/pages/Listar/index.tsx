@@ -12,10 +12,8 @@ import { PeriodoSelector } from "../../../../components/ui/PeriodoSelector";
 import { MultiSeriesChart } from "../../../../components/ui/MultiSeriesChart";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 
-import { useAuth } from "../../../../contexts/useAuth";
 import { useFinanceiroDashboard } from "../../hooks/useFinanceiroDashboard";
 import { FinanceiroService } from "../../services/FinanceiroService";
-import { UnidadeService } from "../../../unidades/services/UnidadeService";
 import { UsuarioService } from "../../../usuarios/services/UsuarioService";
 import { DashboardKpiCard } from "../../../dashboard/components/DashboardKpiCard";
 import { DashboardSection } from "../../../dashboard/components/DashboardSection";
@@ -24,7 +22,6 @@ import { formatarMoeda, formatarPercentual, formatarData } from "../../../dashbo
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { ContasTable } from "../../components/ContasTable";
 
-import type { Unidade } from "../../../unidades/types/unidade";
 import type { ProfessorOpcao } from "../../../usuarios/types/usuario";
 import type { TipoExportacaoFinanceiro } from "../../services/FinanceiroService";
 
@@ -32,14 +29,9 @@ import "./styles.css";
 
 export function Financeiro() {
   const navigate = useNavigate();
-  const { usuario } = useAuth();
-  const ehSuperadmin = usuario?.perfil === "SUPERADMIN";
-
   const {
     periodo,
     definirPeriodo,
-    unidadeId,
-    definirUnidadeId,
     professorId,
     definirProfessorId,
     filtros,
@@ -59,17 +51,13 @@ export function Financeiro() {
     recarregarEstornos,
   } = useFinanceiroDashboard();
 
-  const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [professores, setProfessores] = useState<ProfessorOpcao[]>([]);
   const [exportando, setExportando] = useState<TipoExportacaoFinanceiro | null>(null);
   const [erroExportar, setErroExportar] = useState("");
 
   useEffect(() => {
-    if (ehSuperadmin) {
-      UnidadeService.listar().then(setUnidades).catch(() => setUnidades([]));
-    }
     UsuarioService.listarProfessores().then(setProfessores).catch(() => setProfessores([]));
-  }, [ehSuperadmin]);
+  }, []);
 
   async function handleExportar(tipo: TipoExportacaoFinanceiro) {
     try {
@@ -99,15 +87,6 @@ export function Financeiro() {
       <div className="financeiro-toolbar">
         <div className="financeiro-toolbar-filtros">
           <PeriodoSelector valor={periodo} onChange={definirPeriodo} />
-
-          {ehSuperadmin && (
-            <Select
-              label="Unidade (todas, se em branco)"
-              options={unidades.map((u) => ({ label: u.nome, value: String(u.id) }))}
-              value={unidadeId ? String(unidadeId) : ""}
-              onChange={(e) => definirUnidadeId(e.target.value ? Number(e.target.value) : undefined)}
-            />
-          )}
 
           <Select
             label="Professor (todos, se em branco)"
