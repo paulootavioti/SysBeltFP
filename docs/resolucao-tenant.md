@@ -284,6 +284,17 @@ cliente Prisma, inclusive depois de uma espera assíncrona.
 6. Repetir o health check: o estado esperado é `ready`, com `habilitada` e
    `obrigatoria` iguais a `true`.
 
+Cada ponto pode ser validado sem copiar JSON manualmente:
+
+```bash
+npm run tenant:preflight -- https://tenant.example.com --fase=configuracao
+npm run tenant:preflight -- https://tenant.example.com --fase=habilitada
+npm run tenant:preflight -- https://tenant.example.com --fase=obrigatoria
+```
+
+O comando usa timeout de 10 segundos, exige HTTPS fora de localhost e termina
+com código diferente de zero se a fase estiver incompleta ou fora de ordem.
+
 Rollback seguro: desligar primeiro `TENANT_RESOLUTION_REQUIRED` e depois
 `TENANT_RESOLUTION_ENABLED`. Não alterar segredos, diretório ou bancos durante
 o rollback; isso preserva a possibilidade de reativar após o diagnóstico.
