@@ -7,9 +7,8 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* remonta toda a árvore de rotas ao trocar a unidade visualizada
-          (SUPERADMIN), pra cada página recarregar os dados sob o novo
-          filtro sem precisar tratar isso individualmente. */}
+      {/* Remonta as rotas quando um usuário multiunidade troca sua unidade
+          ativa, fazendo cada página recarregar no novo escopo. */}
       <AppRoutes key={unidadeVisualizada?.id ?? "todas"} />
     </BrowserRouter>
   );
