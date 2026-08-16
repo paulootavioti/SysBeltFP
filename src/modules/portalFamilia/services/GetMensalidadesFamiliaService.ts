@@ -1,7 +1,8 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 export class GetMensalidadesFamiliaService {
   async execute(alunoId: number) {
+    const prisma = prismaDaRequisicao();
     const mensalidades = await prisma.mensalidade.findMany({
       where: { alunoId },
       orderBy: { vencimento: "desc" },

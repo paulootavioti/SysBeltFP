@@ -1,8 +1,9 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { assinarUrlFoto } from "../../uploads/services/assinarUrlFoto";
 
 export class GetFrequenciaFamiliaService {
   async execute(alunoId: number) {
+    const prisma = prismaDaRequisicao();
     const registros = await prisma.aulaAluno.findMany({
       where: { alunoId },
       include: {

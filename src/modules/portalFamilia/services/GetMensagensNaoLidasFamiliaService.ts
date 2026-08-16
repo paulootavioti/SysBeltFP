@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 export interface NaoLidasPorAluno {
   alunoId: number;
@@ -10,6 +10,7 @@ export interface NaoLidasPorAluno {
 // aba Mensagens do Portal da Família.
 export class GetMensagensNaoLidasFamiliaService {
   async execute(alunoIds: number[]): Promise<NaoLidasPorAluno[]> {
+    const prisma = prismaDaRequisicao();
     if (alunoIds.length === 0) return [];
 
     const agrupado = await prisma.mensagemFamilia.groupBy({

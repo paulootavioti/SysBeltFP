@@ -1,10 +1,11 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 
 const AULAS_POR_GRAU = 8;
 
 export class GetResumoFamiliaService {
   async execute(alunoId: number) {
+    const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({
       where: { id: alunoId },
       include: {
