@@ -1,6 +1,6 @@
 import { hash } from "bcryptjs";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { gerarSenhaAleatoria } from "../../../shared/utils/gerarSenhaAleatoria";
@@ -44,6 +44,7 @@ interface UpdateResponsavelDTO {
 
 export class UpdateResponsavelService {
   async execute(data: UpdateResponsavelDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const responsavel = await prisma.responsavel.findUnique({
       where: { id: data.id },
       omit: { senhaPortal: false },
@@ -139,4 +140,4 @@ export class UpdateResponsavelService {
 
     return { ...atualizado, senhaPortalGerada };
   }
-} 
+}
