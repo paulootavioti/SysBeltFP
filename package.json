@@ -15,7 +15,8 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "seed:admin": "ts-node prisma/seeds/criarAdminInicial.ts",
     "postinstall": "prisma generate",
-    "test:db:preparar": "node scripts/prepararBancoDeTeste.mjs"
+    "test:db:preparar": "node scripts/prepararBancoDeTeste.mjs",
+    "tenant:preflight": "node scripts/verificarAtivacaoTenant.mjs"
   },
   "keywords": [],
   "author": "",
