@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
 import { calcularPrecoPorUnidade } from "../utils/precoPlataforma";
 
@@ -6,6 +6,7 @@ import { calcularPrecoPorUnidade } from "../utils/precoPlataforma";
 // alunos cada uma tem e quanto isso representa de receita no mês.
 export class ListContasService {
   async execute() {
+    const prisma = prismaDaRequisicao();
     const contas = await prisma.conta.findMany({
       take: LIMITE_PADRAO_LISTAGEM,
       orderBy: { nome: "asc" },
