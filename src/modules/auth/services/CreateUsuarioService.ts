@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { hash } from "bcryptjs";
 import { AppError } from "../../../shared/errors/AppError";
 import {
@@ -35,6 +35,7 @@ export class CreateUsuarioService {
     outrasGraduacoes,
     fotoUrl
   }: CreateUsuarioDTO) {
+    const prisma = prismaDaRequisicao();
 
     const usuarioExistente =
       await prisma.usuario.findUnique({
