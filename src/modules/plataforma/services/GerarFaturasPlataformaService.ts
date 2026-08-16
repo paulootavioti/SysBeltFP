@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { competenciaDoMes, vencimentoDaCompetencia } from "../utils/competencia";
 import { calcularPrecoPorUnidade } from "../utils/precoPlataforma";
 import { ContarAlunosPorUnidadeDaContaService } from "./ContarAlunosPorUnidadeDaContaService";
@@ -36,6 +36,7 @@ export class GerarFaturasPlataformaService {
    * reemitir a fatura de um cliente sem mexer nas dos outros.
    */
   async execute(referencia: Date = new Date(), contaId?: number): Promise<ResultadoFechamento> {
+    const prisma = prismaDaRequisicao();
     const competencia = competenciaDoMes(referencia);
     const contarAlunos = new ContarAlunosPorUnidadeDaContaService();
 
