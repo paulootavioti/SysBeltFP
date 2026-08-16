@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -8,6 +8,7 @@ import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 // modeloOrigemId, com versao = versão anterior + 1.
 export class VersionarModeloContratoService {
   async execute(id: number, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const modeloOrigem = await prisma.modeloContrato.findUnique({ where: { id } });
 
     if (!modeloOrigem) {

@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 interface CreateModeloContratoDTO {
   unidadeId: number;
@@ -8,6 +8,7 @@ interface CreateModeloContratoDTO {
 
 export class CreateModeloContratoService {
   async execute(data: CreateModeloContratoDTO) {
+    const prisma = prismaDaRequisicao();
     return prisma.modeloContrato.create({
       data: {
         unidadeId: data.unidadeId,
