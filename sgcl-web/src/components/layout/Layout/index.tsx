@@ -9,7 +9,6 @@ import { NAV_TREE, encontrarGrupoDaRota, type NavEntry } from "../../../shared/c
 import { useContadoresMenu } from "../../../hooks/useContadoresMenu";
 import { useFavoritosMenu } from "../../../hooks/useFavoritosMenu";
 import { NotificationBell } from "../../ui/NotificationBell";
-import { SeletorUnidadeVisualizada } from "../SeletorUnidadeVisualizada";
 import { SeletorUnidadeAtiva } from "../SeletorUnidadeAtiva";
 import { NavItemLink } from "./NavItemLink";
 import { NavGroupSection } from "./NavGroupSection";
@@ -187,7 +186,6 @@ export function Layout({ children }: LayoutProps) {
             <NotificationBell />
           )}
 
-          <SeletorUnidadeVisualizada />
           <SeletorUnidadeAtiva />
 
           <Button onClick={handleLogout}>
