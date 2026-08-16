@@ -3,6 +3,11 @@ import assert from "node:assert/strict";
 
 import { avaliarFronteiraTenant } from "./auditarFronteiraTenant.mjs";
 
+test("carrega a configuração local antes de inicializar o Prisma", () => {
+  assert.equal(typeof process.env.DATABASE_URL, "string");
+  assert.ok(process.env.DATABASE_URL.length > 0);
+});
+
 test("aprova somente um banco com uma conta, unidades locais e nenhum superadmin ativo", () => {
   assert.deepEqual(
     avaliarFronteiraTenant({

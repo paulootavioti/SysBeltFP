@@ -1,4 +1,5 @@
 import { pathToFileURL } from "node:url";
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
 export function avaliarFronteiraTenant({ totalContas, unidadesPorConta, superadminsAtivos }) {
