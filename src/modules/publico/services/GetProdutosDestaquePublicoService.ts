@@ -1,8 +1,9 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { obterUnidadePublicaId } from "../../../shared/utils/unidadePublica";
 
 export class GetProdutosDestaquePublicoService {
   async execute() {
+    const prisma = prismaDaRequisicao();
     const unidadeId = obterUnidadePublicaId();
 
     const produtos = await prisma.produto.findMany({

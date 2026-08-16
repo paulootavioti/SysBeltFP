@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { obterUnidadePublicaId } from "../../../shared/utils/unidadePublica";
 
 // Antes era uma lista fixa em código: mudar a vitrine da landing exigia
@@ -6,6 +6,7 @@ import { obterUnidadePublicaId } from "../../../shared/utils/unidadePublica";
 // academia liga `visivelNaLanding` na tela de Modalidades e o card aparece.
 export class GetModalidadesPublicoService {
   async execute() {
+    const prisma = prismaDaRequisicao();
     const unidadeId = obterUnidadePublicaId();
 
     const modalidades = await prisma.modalidade.findMany({

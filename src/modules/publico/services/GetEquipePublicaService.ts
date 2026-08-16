@@ -1,8 +1,9 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { obterUnidadePublicaId } from "../../../shared/utils/unidadePublica";
 
 export class GetEquipePublicaService {
   async execute() {
+    const prisma = prismaDaRequisicao();
     const unidadeId = obterUnidadePublicaId();
 
     const professores = await prisma.usuario.findMany({

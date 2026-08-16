@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { formatarDiasSemana } from "../../../shared/utils/diasSemana";
 import { obterUnidadePublicaId } from "../../../shared/utils/unidadePublica";
 
@@ -8,6 +8,7 @@ import { obterUnidadePublicaId } from "../../../shared/utils/unidadePublica";
 // interno autenticado).
 export class GetHorariosPublicoService {
   async execute() {
+    const prisma = prismaDaRequisicao();
     const unidadeId = obterUnidadePublicaId();
 
     const turmas = await prisma.turma.findMany({
