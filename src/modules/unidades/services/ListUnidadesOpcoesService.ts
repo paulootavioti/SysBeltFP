@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 // Versão enxuta de ListUnidadesService — só id/nome das unidades ativas,
 // pra popular seletores (ex.: consulta de grade horária de outra unidade)
@@ -9,6 +9,7 @@ import { prisma } from "../../../shared/database/prisma";
 // assinante. Só o operador do SaaS (SUPERADMIN, sem unidade ativa) vê todas.
 export class ListUnidadesOpcoesService {
   async execute(unidadeAtivaId: number | null) {
+    const prisma = prismaDaRequisicao();
     const contaId = await resolverConta(unidadeAtivaId);
 
     return prisma.unidade.findMany({
@@ -21,6 +22,7 @@ export class ListUnidadesOpcoesService {
 
 async function resolverConta(unidadeAtivaId: number | null): Promise<number | null> {
   if (unidadeAtivaId === null) return null;
+  const prisma = prismaDaRequisicao();
 
   const unidade = await prisma.unidade.findUnique({
     where: { id: unidadeAtivaId },

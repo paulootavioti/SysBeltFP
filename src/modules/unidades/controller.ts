@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../shared/errors/AppError";
 import { CreateUnidadeService } from "./services/CreateUnidadeService";
 import { UpdateUnidadeService } from "./services/UpdateUnidadeService";
@@ -62,6 +62,7 @@ export class UnidadesController {
 }
 
 async function resolverContaDestino(req: Request): Promise<number> {
+  const prisma = prismaDaRequisicao();
   if (req.user.unidadeId) {
     const unidadeAtual = await prisma.unidade.findUnique({
       where: { id: req.user.unidadeId },
