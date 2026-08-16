@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import type { ContagemDaUnidade } from "../utils/precoPlataforma";
 
 // Base da cobrança por licença: devolve todas as unidades ATIVAS da conta,
@@ -6,6 +6,7 @@ import type { ContagemDaUnidade } from "../utils/precoPlataforma";
 // e, portanto, precisa aparecer com contagem zero para receber o piso do plano.
 export class ContarAlunosPorUnidadeDaContaService {
   async execute(contaId: number): Promise<ContagemDaUnidade[]> {
+    const prisma = prismaDaRequisicao();
     const [unidades, contagens] = await Promise.all([
       prisma.unidade.findMany({
         where: { contaId, ativo: true },
