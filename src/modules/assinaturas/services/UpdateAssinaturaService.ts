@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -20,6 +20,7 @@ interface UpdateAssinaturaDTO {
 
 export class UpdateAssinaturaService {
   async execute(id: number, data: UpdateAssinaturaDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const assinatura = await prisma.assinatura.findUnique({ where: { id } });
 
     if (!assinatura) {
