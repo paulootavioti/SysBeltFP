@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { calcularRangePeriodo, type Periodo } from "../utils/periodo";
 
 export interface UnidadeDashboard {
@@ -24,6 +24,7 @@ export interface UnidadeDashboard {
 // e o tipo de status é um subconjunto do sugerido originalmente.
 export class GetResumoUnidadesService {
   async execute(unidadeId: number | null, periodo: Periodo = "MENSAL"): Promise<UnidadeDashboard[]> {
+    const prisma = prismaDaRequisicao();
     const range = calcularRangePeriodo(periodo);
     const hoje = new Date();
 

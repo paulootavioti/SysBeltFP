@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export type PrioridadeAlerta = "BAIXA" | "MEDIA" | "ALTA" | "CRITICA";
@@ -25,6 +25,7 @@ const JANELA_FREQUENCIA_DIAS = 30;
 // mockados de Metas/Eventos, claramente identificados como tal.
 export class GetAlertasDashboardService {
   async execute(unidadeId: number | null): Promise<AlertaDashboard[]> {
+    const prisma = prismaDaRequisicao();
     const unidade = escopoUnidade(unidadeId);
     const alertas: AlertaDashboard[] = [];
 
