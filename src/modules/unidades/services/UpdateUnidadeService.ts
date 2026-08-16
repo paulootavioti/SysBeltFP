@@ -6,14 +6,14 @@ interface UpdateUnidadeDTO {
 }
 
 export class UpdateUnidadeService {
-  async execute(id: number, data: UpdateUnidadeDTO) {
+  async execute(id: number, contaId: number, data: UpdateUnidadeDTO) {
     const prisma = prismaDaRequisicao();
-    const unidade = await prisma.unidade.findUnique({ where: { id } });
+    const unidade = await prisma.unidade.findFirst({ where: { id, contaId } });
 
     if (!unidade) {
       throw new AppError("Unidade não encontrada.");
     }
 
-    return prisma.unidade.update({ where: { id }, data });
+    return prisma.unidade.update({ where: { id }, data: { nome: data.nome.trim() } });
   }
 }

@@ -13,9 +13,6 @@ export class UnidadesController {
   async create(req: Request, res: Response) {
     const service = new CreateUnidadeService();
 
-    // A conta vem da unidade ativa de quem está criando — um ADMIN abre
-    // filial na própria conta e não pode escolher outra. Só o SUPERADMIN
-    // (que não tem unidade fixa) informa a conta no corpo.
     const contaId = await resolverContaDestino(req);
 
     const unidade = await service.execute({ nome: req.body.nome, contaId });
@@ -28,7 +25,7 @@ export class UnidadesController {
 
     const service = new UpdateUnidadeService();
 
-    const unidade = await service.execute(Number(id), req.body);
+    const unidade = await service.execute(Number(id), await resolverContaDestino(req), req.body);
 
     return res.json(unidade);
   }
@@ -36,7 +33,7 @@ export class UnidadesController {
   async list(req: Request, res: Response) {
     const service = new ListUnidadesService();
 
-    const unidades = await service.execute();
+    const unidades = await service.execute(await resolverContaDestino(req));
 
     return res.json(unidades);
   }
@@ -54,7 +51,7 @@ export class UnidadesController {
 
     const service = new ToggleAtivoUnidadeService();
 
-    const unidade = await service.execute(Number(id));
+    const unidade = await service.execute(Number(id), await resolverContaDestino(req));
 
     return res.json(unidade);
   }
@@ -76,9 +73,5 @@ async function resolverContaDestino(req: Request): Promise<number> {
     return unidadeAtual.contaId;
   }
 
-  if (req.user.perfil === "SUPERADMIN" && req.body.contaId) {
-    return Number(req.body.contaId);
-  }
-
-  throw new AppError("Informe a conta em que a unidade será criada.");
+  throw new AppError("Selecione uma unidade ativa para administrar as filiais.", 400);
 }

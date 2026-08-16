@@ -13,8 +13,11 @@ describe("serviços de unidades com tenant", () => {
   beforeEach(() => vi.clearAllMocks());
   it("consulta o Prisma associado à requisição", async () => {
     findMany.mockResolvedValue([]);
-    await new ListUnidadesService().execute();
+    await new ListUnidadesService().execute(42);
     expect(prismaDaRequisicao).toHaveBeenCalledOnce();
-    expect(findMany).toHaveBeenCalledOnce();
+    expect(findMany).toHaveBeenCalledWith({
+      where: { contaId: 42 },
+      orderBy: { nome: "asc" },
+    });
   });
 });
