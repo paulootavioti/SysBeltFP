@@ -2,9 +2,9 @@ import { AppError } from "../errors/AppError";
 
 export function superadminLegadoPodeAcessar(
   perfil: string,
-  env: NodeJS.ProcessEnv = process.env,
+  _env: NodeJS.ProcessEnv = process.env,
 ): boolean {
-  return perfil !== "SUPERADMIN" || env.LEGACY_SUPERADMIN_ACCESS_ENABLED === "true";
+  return perfil !== "SUPERADMIN";
 }
 
 export function garantirAcessoSuperadminLegado(

@@ -53,20 +53,9 @@ export async function ensureAuthenticated(
 
     definirUsuarioDoContexto(usuario.id);
 
-    // SUPERADMIN pode "visualizar como" uma unidade específica — o frontend
-    // manda o id escolhido nesse header, e a partir daqui toda a cadeia de
-    // escopo (escopoUnidade, garantirAcessoUnidade, requireUnidadeId) passa
-    // a enxergar só aquela unidade, sem precisar mudar nada nos services.
-    if (usuario.perfil === "SUPERADMIN") {
-      const unidadeVisualizada = Number(req.headers["x-unidade-id"]);
-      if (Number.isInteger(unidadeVisualizada) && unidadeVisualizada > 0) {
-        req.user.unidadeId = unidadeVisualizada;
-      }
-    } else if (PERFIS_MULTI_UNIDADE.includes(usuario.perfil) && req.headers["x-unidade-id"]) {
-      // ADMIN/PROFESSOR/RECEPCAO vinculado a mais de uma unidade pode trocar
-      // qual unidade está ativa — mas só entre as unidades que ele de fato
-      // tem vínculo (UsuarioUnidade), diferente do SUPERADMIN, que é
-      // irrestrito.
+    if (PERFIS_MULTI_UNIDADE.includes(usuario.perfil) && req.headers["x-unidade-id"]) {
+      // Perfis multiunidade podem trocar a unidade ativa somente quando
+      // existe vínculo explícito em UsuarioUnidade.
       const unidadeSolicitada = Number(req.headers["x-unidade-id"]);
 
       if (Number.isInteger(unidadeSolicitada) && unidadeSolicitada > 0) {

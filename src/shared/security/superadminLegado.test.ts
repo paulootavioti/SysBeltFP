@@ -14,10 +14,10 @@ describe("acesso do SUPERADMIN legado", () => {
     expect(() => garantirAcessoSuperadminLegado("SUPERADMIN", {})).toThrow("Control Plane");
   });
 
-  it("aceita o operador legado apenas durante rollback explícito", () => {
+  it("não reabre o Tenant Plane por variável de ambiente", () => {
     const env = { LEGACY_SUPERADMIN_ACCESS_ENABLED: "true" };
-    expect(superadminLegadoPodeAcessar("SUPERADMIN", env)).toBe(true);
-    expect(() => garantirAcessoSuperadminLegado("SUPERADMIN", env)).not.toThrow();
+    expect(superadminLegadoPodeAcessar("SUPERADMIN", env)).toBe(false);
+    expect(() => garantirAcessoSuperadminLegado("SUPERADMIN", env)).toThrow("Control Plane");
   });
 });
 
