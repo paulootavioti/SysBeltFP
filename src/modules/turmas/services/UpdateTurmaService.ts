@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { buscarConflitoTurma, mensagemConflitoTurma } from "../../../shared/utils/conflitoHorario";
@@ -18,6 +18,7 @@ interface UpdateTurmaDTO {
 
 export class UpdateTurmaService {
   async execute(id: number, data: UpdateTurmaDTO, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const turmaExistente = await prisma.turma.findUnique({ where: { id } });
 
     if (!turmaExistente) {

@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -9,6 +9,7 @@ export class VincularAlunoTurmaService {
     alunoId: number,
     unidadeId: number | null
   ) {
+    const prisma = prismaDaRequisicao();
 
     const turma =
       await prisma.turma.findUnique({
