@@ -294,6 +294,12 @@ assinantes e faturas devem ser administrados no deploy `control-plane`. A rota
 Somente durante um rollback controlado, `LEGACY_PLATFORM_ADMIN_ENABLED=true`
 restaura temporariamente as rotas antigas de `SUPERADMIN` e o cron legado.
 
+O Tenant Plane também não permite criar nem promover usuários para
+`SUPERADMIN` por padrão. Operadores novos pertencem exclusivamente ao Control
+Plane. Durante a transição, um `SUPERADMIN` já existente somente recupera essa
+capacidade quando `LEGACY_SUPERADMIN_MANAGEMENT_ENABLED=true`; a interface das
+academias nunca oferece esse perfil.
+
 ## Referências técnicas
 
 - [Prisma — gerenciamento de conexões](https://docs.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/connection-management)

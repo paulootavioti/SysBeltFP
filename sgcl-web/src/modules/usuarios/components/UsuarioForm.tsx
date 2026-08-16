@@ -59,10 +59,7 @@ export function UsuarioForm({ usuario, loading = false, onSubmit }: UsuarioFormP
   const perfil = watch("perfil");
   const ehProfessor = perfil === "PROFESSOR";
   const mostrarChecklistUnidades = souSuperadmin && PERFIS_MULTI_UNIDADE.includes(perfil);
-  // só um SUPERADMIN pode conceder esse perfil a outro usuário.
-  const opcoesPerfil = souSuperadmin
-    ? [...PERFIS_BASE, { label: "Superadmin", value: "SUPERADMIN" }]
-    : PERFIS_BASE;
+  const opcoesPerfil = PERFIS_BASE;
 
   useEffect(() => {
     if (souSuperadmin) UnidadeService.listar().then(setUnidades);

@@ -8,6 +8,7 @@ import { ToggleUsuarioAtivoService } from "./services/ToggleUsuarioAtivoService"
 import { UpdateUsuarioService } from "./services/UpdateUsuarioService";
 import { AppError } from "../../shared/errors/AppError";
 import { PERFIS_MULTI_UNIDADE } from "../../shared/constants/perfis";
+import { garantirConcessaoSuperadminPermitida } from "../../shared/security/superadminLegado";
 
 export class UsuariosController {
 
@@ -67,9 +68,7 @@ export class UsuariosController {
     const { perfil } =
       req.body;
 
-    if (perfil === "SUPERADMIN" && req.user.perfil !== "SUPERADMIN") {
-      throw new AppError("Apenas um superadmin pode conceder esse perfil.", 403);
-    }
+    garantirConcessaoSuperadminPermitida(perfil, req.user.perfil);
 
     const service =
       new UpdatePerfilUsuarioService();
@@ -93,9 +92,7 @@ export class UsuariosController {
     const { id } =
       req.params;
 
-    if (req.body.perfil === "SUPERADMIN" && req.user.perfil !== "SUPERADMIN") {
-      throw new AppError("Apenas um superadmin pode conceder esse perfil.", 403);
-    }
+    garantirConcessaoSuperadminPermitida(req.body.perfil, req.user.perfil);
 
     // vincular um usuário a mais de uma unidade só o SUPERADMIN pode fazer.
     const unidadeIds =

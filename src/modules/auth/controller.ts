@@ -4,12 +4,11 @@ import { CreateUsuarioService } from "./services/CreateUsuarioService";
 import { LoginService } from "./services/LoginService";
 import { AppError } from "../../shared/errors/AppError";
 import { PERFIS_MULTI_UNIDADE } from "../../shared/constants/perfis";
+import { garantirConcessaoSuperadminPermitida } from "../../shared/security/superadminLegado";
 
 export class AuthController {
   async register(req: Request, res: Response) {
-    if (req.body.perfil === "SUPERADMIN" && req.user.perfil !== "SUPERADMIN") {
-      throw new AppError("Apenas um superadmin pode conceder esse perfil.", 403);
-    }
+    garantirConcessaoSuperadminPermitida(req.body.perfil, req.user.perfil);
 
     // vincular um usuário a mais de uma unidade é uma configuração que só
     // o SUPERADMIN pode fazer — pra qualquer outro perfil que cadastra
