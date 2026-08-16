@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { obterUnidadePublicaId } from "../../../shared/utils/unidadePublica";
 
 interface CriarLeadPublicoDTO {
@@ -9,6 +9,7 @@ interface CriarLeadPublicoDTO {
 
 export class CriarLeadPublicoService {
   async execute(dados: CriarLeadPublicoDTO) {
+    const prisma = prismaDaRequisicao();
     const unidadeId = obterUnidadePublicaId();
 
     return prisma.lead.create({

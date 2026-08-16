@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { obterUnidadePublicaId } from "../../../shared/utils/unidadePublica";
 import { assinarUrlFoto } from "../../uploads/services/assinarUrlFoto";
 
@@ -6,6 +6,7 @@ const FOTOS_POR_PAGINA = 8;
 
 export class GetGaleriaPublicaService {
   async execute(pagina = 1) {
+    const prisma = prismaDaRequisicao();
     const unidadeId = obterUnidadePublicaId();
     const skip = Math.max(0, pagina - 1) * FOTOS_POR_PAGINA;
 
