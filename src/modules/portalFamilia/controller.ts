@@ -13,7 +13,7 @@ import { GetLojaFamiliaService } from "./services/GetLojaFamiliaService";
 import { CriarPedidoFamiliaService } from "./services/CriarPedidoFamiliaService";
 import { ListPedidosFamiliaService } from "./services/ListPedidosFamiliaService";
 import { garantirAlunoNoEscopo } from "./utils/garantirAlunoNoEscopo";
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 
 export class PortalFamiliaController {
   async login(req: Request, res: Response) {
@@ -27,6 +27,7 @@ export class PortalFamiliaController {
   }
 
   async listarAlunos(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
     const alunos = await prisma.aluno.findMany({
       where: { id: { in: req.familia!.alunoIds } },
       select: { id: true, nome: true, apelido: true, fotoUrl: true, faixa: true },

@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { obterGateway } from "../../pagamentos/gateways";
 import { obterEmailService } from "../../../shared/services/EmailService";
@@ -23,6 +23,7 @@ interface ItemCarrinhoDTO {
 // de uma unidade e faz um segundo pedido para a outra.
 export class CriarPedidoFamiliaService {
   async execute(alunoId: number, itens: ItemCarrinhoDTO[]) {
+    const prisma = prismaDaRequisicao();
     if (itens.length === 0) {
       throw new AppError("O carrinho está vazio.");
     }

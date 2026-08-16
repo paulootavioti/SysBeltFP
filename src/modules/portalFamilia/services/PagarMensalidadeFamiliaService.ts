@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { obterGatewayConcedido } from "../../pagamentos/gateways";
 
@@ -7,6 +7,7 @@ import { obterGatewayConcedido } from "../../pagamentos/gateways";
 // no manual e a recepção confirma à mão, como sempre foi.
 export class PagarMensalidadeFamiliaService {
   async execute(mensalidadeId: number, alunoId: number) {
+    const prisma = prismaDaRequisicao();
     const mensalidade = await prisma.mensalidade.findUnique({
       where: { id: mensalidadeId },
       include: {

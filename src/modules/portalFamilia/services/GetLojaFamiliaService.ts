@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 // Vitrine consumida pela família: a loja é única pro sistema todo, então
 // mostra produtos ativos de qualquer unidade (a família escolhe de qual
@@ -8,6 +8,7 @@ import { prisma } from "../../../shared/database/prisma";
 // informal que o resto do módulo loja).
 export class GetLojaFamiliaService {
   async execute() {
+    const prisma = prismaDaRequisicao();
     return prisma.produto.findMany({
       where: { ativo: true },
       include: { variantes: true, unidade: { select: { id: true, nome: true } } },
