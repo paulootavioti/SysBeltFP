@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { traduzirPlanoDuplicado } from "./CreateContaService";
 import { ehRecursoConhecido } from "../utils/recursosDoPlano";
@@ -14,6 +14,7 @@ interface PlanoDTO {
 
 export class ListPlanosPlataformaService {
   async execute(apenasAtivos: boolean) {
+    const prisma = prismaDaRequisicao();
     return prisma.planoPlataforma.findMany({
       where: apenasAtivos ? { ativo: true } : {},
       orderBy: { precoPorBlocoCentavos: "asc" },
@@ -23,6 +24,7 @@ export class ListPlanosPlataformaService {
 
 export class CreatePlanoPlataformaService {
   async execute(data: PlanoDTO) {
+    const prisma = prismaDaRequisicao();
     const recursos = validarRecursos(data.recursos);
 
     try {
@@ -44,6 +46,7 @@ export class CreatePlanoPlataformaService {
 
 export class UpdatePlanoPlataformaService {
   async execute(id: number, data: PlanoDTO) {
+    const prisma = prismaDaRequisicao();
     const plano = await prisma.planoPlataforma.findUnique({ where: { id } });
 
     if (!plano) {

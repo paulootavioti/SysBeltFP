@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { competenciaDoMes, vencimentoDaCompetencia } from "../utils/competencia";
 import { calcularPrecoPorUnidade } from "../utils/precoPlataforma";
@@ -10,6 +10,7 @@ import { ContarAlunosPorUnidadeDaContaService } from "./ContarAlunosPorUnidadeDa
 // pra responder "se eu matricular mais 3 alunos, muda meu preço?".
 export class ObterAssinaturaDaContaService {
   async execute(contaId: number) {
+    const prisma = prismaDaRequisicao();
     const assinatura = await prisma.assinaturaPlataforma.findUnique({
       where: { contaId },
       include: {

@@ -1,6 +1,6 @@
 import { StatusAssinaturaPlataforma } from "@prisma/client";
 
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 
 interface AlterarAssinaturaDTO {
@@ -14,6 +14,7 @@ interface AlterarAssinaturaDTO {
 // suspensão e cancelamento. É o painel comercial do operador do SaaS.
 export class AlterarAssinaturaPlataformaService {
   async execute(contaId: number, data: AlterarAssinaturaDTO) {
+    const prisma = prismaDaRequisicao();
     const assinatura = await prisma.assinaturaPlataforma.findUnique({ where: { contaId } });
 
     if (!assinatura) {
