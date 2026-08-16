@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -12,6 +12,7 @@ interface EnviarMensagemFamiliaDTO {
 
 export class EnviarMensagemFamiliaService {
   async execute({ alunoId, remetenteTipo, remetenteNome, texto, unidadeIdSolicitante = null }: EnviarMensagemFamiliaDTO) {
+    const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({ where: { id: alunoId } });
 
     if (!aluno) {

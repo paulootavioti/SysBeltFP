@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { ListMensagensFamiliaService } from "../portalFamilia/services/ListMensagensFamiliaService";
 import { EnviarMensagemFamiliaService } from "../portalFamilia/services/EnviarMensagemFamiliaService";
 import { ListConversasFamiliaService } from "./services/ListConversasFamiliaService";
@@ -25,6 +25,7 @@ export class MensagensFamiliaController {
   }
 
   async enviar(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
     const { alunoId, texto } = req.body;
 
     const usuario = await prisma.usuario.findUniqueOrThrow({ where: { id: req.user.id } });
