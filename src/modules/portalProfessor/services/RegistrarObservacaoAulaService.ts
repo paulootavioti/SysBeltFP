@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -10,6 +10,7 @@ interface Solicitante {
 
 export class RegistrarObservacaoAulaService {
   async execute(aulaId: number, texto: string, solicitante: Solicitante) {
+    const prisma = prismaDaRequisicao();
     const aula = await prisma.aula.findUnique({ where: { id: aulaId }, include: { turma: true } });
 
     if (!aula) {

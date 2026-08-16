@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { GetAulaService } from "../../aulas/services/GetAulaService";
 import { calcularFrequenciaPorPeriodo } from "../../../shared/utils/calcularFrequencia";
 
@@ -10,6 +10,7 @@ interface Solicitante {
 
 export class GetAulaProfessorService {
   async execute(id: number, solicitante: Solicitante) {
+    const prisma = prismaDaRequisicao();
     // reaproveita a checagem "só a própria turma" já feita pra chamada no
     // sgcl-web — lança AppError antes de chegarmos a buscar as notas.
     const aula = await new GetAulaService().execute(id, solicitante);

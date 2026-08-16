@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { UpdateAulaAlunoService } from "../../aulas/services/UpdateAulaAlunoService";
 
@@ -15,6 +15,7 @@ interface MarcarPresencaDTO {
 
 export class MarcarPresencaProfessorService {
   async execute(aulaId: number, data: MarcarPresencaDTO, solicitante: Solicitante) {
+    const prisma = prismaDaRequisicao();
     const registro = await prisma.aulaAluno.findUnique({
       where: { aulaId_alunoId: { aulaId, alunoId: data.alunoId } },
     });
