@@ -1,7 +1,8 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 
 export async function garantirSemMensalidadeNoMes(alunoId: number, vencimento: string) {
+  const prisma = prismaDaRequisicao();
   const dataVencimento = new Date(vencimento);
   const mes = dataVencimento.getMonth();
   const ano = dataVencimento.getFullYear();

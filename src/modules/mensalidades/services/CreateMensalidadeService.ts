@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
@@ -36,6 +36,7 @@ export class CreateMensalidadeService {
     unidadeIdUsuario,
     usuarioId,
   }: CreateMensalidadeDTO) {
+    const prisma = prismaDaRequisicao();
 
     await garantirSemMensalidadeNoMes(alunoId, vencimento);
 
