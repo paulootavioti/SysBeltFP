@@ -265,6 +265,29 @@ Antes de produção, testes automatizados devem provar que:
 - suspensão bloqueia novas requisições no prazo acordado;
 - logs e erros não contêm connection strings.
 
+Essas garantias estão cobertas pelos testes de contexto, middleware, token,
+cache, registro Prisma e cofre. O teste do middleware executa simultaneamente
+dois hostnames e confirma que cada requisição mantém seu próprio `tenantKey` e
+cliente Prisma, inclusive depois de uma espera assíncrona.
+
+## Roteiro de ativação obrigatória
+
+1. Manter `TENANT_RESOLUTION_ENABLED=false` e `TENANT_RESOLUTION_REQUIRED=false`
+   enquanto domínio, diretório, AWS e versões compatíveis são configurados.
+2. Conferir `GET /health/tenant-resolution`: `prontaParaAtivar` deve ser `true`.
+3. Ligar somente `TENANT_RESOLUTION_ENABLED=true` e testar dois hostnames reais,
+   login, troca de unidade e uma consulta simples em cada academia.
+4. Confirmar que token emitido no hostname A recebe `401` no hostname B e que
+   hostname inexistente recebe `404` sem acesso ao banco legado.
+5. Ligar `TENANT_RESOLUTION_REQUIRED=true`. A partir desse ponto, qualquer rota
+   sem contexto falha com `CONTEXTO_TENANT_AUSENTE`, sem fallback global.
+6. Repetir o health check: o estado esperado é `ready`, com `habilitada` e
+   `obrigatoria` iguais a `true`.
+
+Rollback seguro: desligar primeiro `TENANT_RESOLUTION_REQUIRED` e depois
+`TENANT_RESOLUTION_ENABLED`. Não alterar segredos, diretório ou bancos durante
+o rollback; isso preserva a possibilidade de reativar após o diagnóstico.
+
 ## Referências técnicas
 
 - [Prisma — gerenciamento de conexões](https://docs.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/connection-management)

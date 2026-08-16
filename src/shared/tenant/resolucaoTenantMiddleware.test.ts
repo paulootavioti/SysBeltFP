@@ -66,4 +66,70 @@ describe("resolucaoTenantMiddleware", () => {
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.status.mock.results[0].value.json).toHaveBeenCalledWith({ mensagem: "Ambiente temporariamente indisponível." });
   });
+
+  it("mantém dois hostnames concorrentes em clientes Prisma distintos", async () => {
+    const tenants = {
+      alpha: { ...tenant, tenantKey: "11111111-1111-4111-8111-111111111111", slug: "alpha", secretRef: "arn:alpha" },
+      beta: { ...tenant, tenantKey: "22222222-2222-4222-8222-222222222222", slug: "beta", secretRef: "arn:beta" },
+    };
+    const clientes = {
+      [tenants.alpha.tenantKey]: { banco: "alpha" },
+      [tenants.beta.tenantKey]: { banco: "beta" },
+    };
+    const diretorio = { resolver: vi.fn(async (slug: "alpha" | "beta") => tenants[slug]) };
+    const segredos = { obter: vi.fn(async (ref: string) => ({ pooledUrl: `postgresql://${ref}`, credentialVersion: 2 })) };
+    const registro = {
+      obter: vi.fn(async ({ tenantKey }: { tenantKey: keyof typeof clientes }, carregar: () => Promise<string>) => {
+        await carregar();
+        return clientes[tenantKey];
+      }),
+    };
+    const middleware = criarResolucaoTenantMiddleware({
+      dominioBase: "app.sysbelt.com.br", diretorio, segredos, registro,
+    } as never);
+    let entradas = 0;
+    let liberar!: () => void;
+    const ambasNoContexto = new Promise<void>((resolve) => { liberar = resolve; });
+    const observados: Array<{ tenantKey: string; prisma: unknown }> = [];
+    const proxima = vi.fn(async () => {
+      entradas += 1;
+      if (entradas === 2) liberar();
+      await ambasNoContexto;
+      const contexto = obterContextoTenant();
+      observados.push({ tenantKey: contexto.tenantKey, prisma: contexto.prisma });
+    });
+
+    await Promise.all([
+      middleware({ hostname: "alpha.app.sysbelt.com.br" } as never, resposta() as never, proxima),
+      middleware({ hostname: "beta.app.sysbelt.com.br" } as never, resposta() as never, proxima),
+    ]);
+
+    expect(observados).toEqual(expect.arrayContaining([
+      { tenantKey: tenants.alpha.tenantKey, prisma: clientes[tenants.alpha.tenantKey] },
+      { tenantKey: tenants.beta.tenantKey, prisma: clientes[tenants.beta.tenantKey] },
+    ]));
+    expect(observados[0].prisma).not.toBe(observados[1].prisma);
+  });
+
+  it("ignora header de tenant forjado e usa somente o hostname", async () => {
+    const dependencias = deps();
+    const next = vi.fn(() => expect(obterContextoTenant().slug).toBe("academia"));
+    await criarResolucaoTenantMiddleware(dependencias as never)(
+      { hostname: "academia.app.sysbelt.com.br", headers: { "x-tenant": "outra-academia" } } as never,
+      resposta() as never,
+      next,
+    );
+    expect(dependencias.diretorio.resolver).toHaveBeenCalledWith("academia");
+  });
+
+  it("recusa hostname desconhecido antes de consultar diretório ou banco", async () => {
+    const dependencias = deps();
+    const res = resposta();
+    await criarResolucaoTenantMiddleware(dependencias as never)(
+      { hostname: "academia.exemplo.com" } as never, res as never, vi.fn(),
+    );
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(dependencias.diretorio.resolver).not.toHaveBeenCalled();
+    expect(dependencias.registro.obter).not.toHaveBeenCalled();
+  });
 });
