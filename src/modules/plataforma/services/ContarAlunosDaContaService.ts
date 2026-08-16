@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 // Base de cobrança da plataforma: quantos alunos ATIVOS a conta tem,
 // somando todas as suas unidades.
@@ -18,6 +18,7 @@ import { prisma } from "../../../shared/database/prisma";
 //    houver obrigação legal). Cobrar pelo ativo alinha as duas coisas.
 export class ContarAlunosDaContaService {
   async execute(contaId: number): Promise<number> {
+    const prisma = prismaDaRequisicao();
     return prisma.aluno.count({
       where: {
         ativo: true,
