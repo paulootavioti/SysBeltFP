@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { garantirSemMensalidadeNoMes } from "../../mensalidades/utils/garantirSemMensalidadeNoMes";
@@ -18,6 +18,7 @@ export interface ResultadoGeracaoCobrancas {
 // manualmente por um ADMIN (escopado à própria unidade).
 export class GerarCobrancasRecorrentesService {
   async execute(unidadeId: number | null): Promise<ResultadoGeracaoCobrancas> {
+    const prisma = prismaDaRequisicao();
     const hoje = new Date();
 
     const assinaturas = await prisma.assinatura.findMany({

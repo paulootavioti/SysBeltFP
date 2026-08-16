@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -8,6 +8,7 @@ type StatusManual = "ATIVA" | "PAUSADA" | "CANCELADA";
 // esgotado ou dataFim vencida) — não é uma opção manual do usuário.
 export class AlterarStatusAssinaturaService {
   async execute(id: number, unidadeId: number | null, status: StatusManual) {
+    const prisma = prismaDaRequisicao();
     const assinatura = await prisma.assinatura.findUnique({ where: { id } });
 
     if (!assinatura) {
