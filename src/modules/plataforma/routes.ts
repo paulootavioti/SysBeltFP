@@ -14,11 +14,14 @@ import {
 const plataformaRoutes = Router();
 
 const controller = new PlataformaController();
+const administracaoLegadaHabilitada = process.env.LEGACY_PLATFORM_ADMIN_ENABLED === "true";
 
 // Fechamento mensal por disparo externo (cron). Fica antes do
 // `ensureAuthenticated` porque se autentica por segredo compartilhado —
 // ver src/shared/middlewares/ensureCronSecret.ts.
-plataformaRoutes.post("/faturas/fechamento/cron", ensureCronSecret, controller.fechamentoCron);
+if (administracaoLegadaHabilitada) {
+  plataformaRoutes.post("/faturas/fechamento/cron", ensureCronSecret, controller.fechamentoCron);
+}
 
 plataformaRoutes.use(ensureAuthenticated);
 
@@ -35,6 +38,7 @@ plataformaRoutes.get(
 // outros clientes, faturamento) e por isso é exclusivo de SUPERADMIN. Note
 // que `ensureRole` já deixa SUPERADMIN passar em qualquer rota; listar o
 // perfil explicitamente aqui é o que BARRA o ADMIN de uma academia.
+if (administracaoLegadaHabilitada) {
 plataformaRoutes.get("/planos", ensureRole(["SUPERADMIN"]), controller.listarPlanos);
 
 plataformaRoutes.post(
@@ -84,5 +88,6 @@ plataformaRoutes.patch(
   ensureRole(["SUPERADMIN"]),
   controller.marcarFaturaPaga
 );
+}
 
 export { plataformaRoutes };

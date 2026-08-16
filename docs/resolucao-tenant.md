@@ -288,6 +288,12 @@ Rollback seguro: desligar primeiro `TENANT_RESOLUTION_REQUIRED` e depois
 `TENANT_RESOLUTION_ENABLED`. Não alterar segredos, diretório ou bancos durante
 o rollback; isso preserva a possibilidade de reativar após o diagnóstico.
 
+As rotas B2B legadas do Tenant Plane ficam desabilitadas por padrão. Planos,
+assinantes e faturas devem ser administrados no deploy `control-plane`. A rota
+`GET /plataforma/minha-assinatura` continua disponível para a própria academia.
+Somente durante um rollback controlado, `LEGACY_PLATFORM_ADMIN_ENABLED=true`
+restaura temporariamente as rotas antigas de `SUPERADMIN` e o cron legado.
+
 ## Referências técnicas
 
 - [Prisma — gerenciamento de conexões](https://docs.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/connection-management)
