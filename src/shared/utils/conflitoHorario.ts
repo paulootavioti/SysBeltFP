@@ -1,4 +1,4 @@
-import { prisma } from "../database/prisma";
+import { prismaDaRequisicao } from "../database/prismaDaRequisicao";
 
 export interface ConflitoHorario {
   tipo: "ARENA" | "PROFESSOR";
@@ -22,6 +22,7 @@ interface ConflitoTurmaParams {
 
 // checagem para o padrão semanal recorrente de uma turma (usada ao criar/editar a Turma).
 export async function buscarConflitoTurma(params: ConflitoTurmaParams): Promise<ConflitoHorario | null> {
+  const prisma = prismaDaRequisicao();
   const { unidadeId, diasSemana, horarioInicio, horarioFim, arenaId, professorId, excluirTurmaId } = params;
 
   if (!arenaId && !professorId) return null;
@@ -74,6 +75,7 @@ export interface ConflitoProgramacao extends ConflitoHorario {
 export async function buscarConflitoProgramacao(
   params: ConflitoProgramacaoParams
 ): Promise<ConflitoProgramacao | null> {
+  const prisma = prismaDaRequisicao();
   const { unidadeId, turmaId, arenaId, professorId, horarioInicio, horarioFim, datas } = params;
 
   if (!arenaId && !professorId) return null;

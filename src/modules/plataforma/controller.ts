@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../shared/errors/AppError";
 import { AlterarAssinaturaPlataformaService } from "./services/AlterarAssinaturaPlataformaService";
 import { CreateContaService } from "./services/CreateContaService";
@@ -104,6 +104,7 @@ export class PlataformaController {
 // senão um ADMIN leria a assinatura (e o faturamento) de outro assinante
 // mandando outro contaId.
 async function resolverContaDoUsuario(req: Request): Promise<number> {
+  const prisma = prismaDaRequisicao();
   if (!req.user.unidadeId) {
     throw new AppError("Selecione uma unidade para ver a assinatura da conta.");
   }
