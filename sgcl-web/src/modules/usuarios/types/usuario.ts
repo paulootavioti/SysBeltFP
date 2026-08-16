@@ -1,4 +1,4 @@
-export type PerfilUsuario = "ADMIN" | "PROFESSOR" | "RECEPCAO" | "SUPERADMIN";
+export type PerfilUsuario = "DONO" | "ADMIN" | "PROFESSOR" | "RECEPCAO";
 
 export interface ProfessorOpcao {
   id: number;

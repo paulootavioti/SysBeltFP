@@ -7,7 +7,6 @@ import { Loading } from "../../../components/ui/Loading";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { Modal } from "../../../components/ui/Modal";
 import { useToast } from "../../../contexts/toast/useToast";
-import { useAuth } from "../../../contexts/useAuth";
 import { useArenas } from "../hooks/useArenas";
 import { ArenaService } from "../services/ArenaService";
 import { ArenaForm } from "./ArenaForm";
@@ -18,8 +17,6 @@ import "./ArenasTab.css";
 
 export function ArenasTab() {
   const toast = useToast();
-  const { usuario } = useAuth();
-  const ehSuperadmin = usuario?.perfil === "SUPERADMIN";
   const { arenas, loading, erro, setErro, carregarArenas } = useArenas();
   const [modalAberto, setModalAberto] = useState(false);
   const [arenaEditando, setArenaEditando] = useState<Arena | null>(null);
@@ -71,15 +68,6 @@ export function ArenasTab() {
 
   const columns = [
     { header: "Nome", accessor: "nome" as const },
-    ...(ehSuperadmin
-      ? [
-          {
-            header: "Unidade",
-            accessor: "unidade" as const,
-            render: (arena: Arena) => arena.unidade?.nome || "-",
-          },
-        ]
-      : []),
     {
       header: "Status",
       accessor: "ativo" as const,

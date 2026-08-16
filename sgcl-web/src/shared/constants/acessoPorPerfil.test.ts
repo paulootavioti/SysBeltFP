@@ -58,9 +58,9 @@ describe("perfilTemAcesso", () => {
     expect(perfilTemAcesso("PROFESSOR", "/eventos")).toBe(false);
   });
 
-  it("SUPERADMIN tem acesso irrestrito, inclusive Metas e Eventos", () => {
-    expect(perfilTemAcesso("SUPERADMIN", "/metas")).toBe(true);
-    expect(perfilTemAcesso("SUPERADMIN", "/eventos")).toBe(true);
+  it("não reconhece o perfil legado SUPERADMIN", () => {
+    expect(perfilTemAcesso("SUPERADMIN", "/metas")).toBe(false);
+    expect(perfilTemAcesso("SUPERADMIN", "/eventos")).toBe(false);
   });
 
   it("mantém Minha Assinatura acessível ao dono e fora do painel B2B legado", () => {

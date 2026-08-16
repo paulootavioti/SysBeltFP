@@ -8,7 +8,7 @@ export const modalidadeSchema = z.object({
   coordenadorId: z.string().optional(),
   visivelNaLanding: z.boolean().optional(),
   ordem: z.string().optional(),
-  // só é exibido pro superadmin — um admin cadastra na própria unidade.
+  // Mantido temporariamente para compatibilidade; o cadastro usa a unidade ativa.
   unidadeId: z.string().optional(),
 });
 

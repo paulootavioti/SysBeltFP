@@ -9,7 +9,6 @@ import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { Badge } from "../../../components/ui/Badge";
 import { Modal } from "../../../components/ui/Modal";
 import { useToast } from "../../../contexts/toast/useToast";
-import { useAuth } from "../../../contexts/useAuth";
 import { getApiErrorMessage } from "../../../shared/utils/getApiErrorMessage";
 
 import { useModalidades } from "../hooks/useModalidades";
@@ -21,9 +20,6 @@ import "./ModalidadesTab.css";
 
 export function ModalidadesTab() {
   const toast = useToast();
-  const { usuario } = useAuth();
-  const ehSuperadmin = usuario?.perfil === "SUPERADMIN";
-
   const { modalidades, loading, erro, setErro, carregarModalidades } = useModalidades();
   const [modalAberto, setModalAberto] = useState(false);
   const [editando, setEditando] = useState<Modalidade | null>(null);
@@ -101,15 +97,6 @@ export function ModalidadesTab() {
           <Badge variant="neutral">Oculta</Badge>
         ),
     },
-    ...(ehSuperadmin
-      ? [
-          {
-            header: "Unidade",
-            accessor: "unidade" as const,
-            render: (m: Modalidade) => m.unidade?.nome || "-",
-          },
-        ]
-      : []),
     {
       header: "Status",
       accessor: "ativo" as const,

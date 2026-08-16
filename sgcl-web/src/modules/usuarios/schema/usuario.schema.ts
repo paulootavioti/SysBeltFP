@@ -13,7 +13,7 @@ const usuarioBaseSchema = z.object({
   nivelGraduacao: z.string().optional(),
   outrasGraduacoes: z.string().optional(),
   fotoUrl: z.string().nullish(),
-  // só é lido quando quem cadastra/edita é SUPERADMIN.
+  // só é lido quando DONO/ADMIN gerencia vínculos entre suas unidades.
   unidadeIds: z.array(z.number()).optional(),
 });
 

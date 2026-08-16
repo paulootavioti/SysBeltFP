@@ -8,9 +8,6 @@ import { Checkbox } from "../../../components/ui/Checkbox";
 import { Button } from "../../../components/ui/Button";
 import { ErrorMessage } from "../../../components/ui/ErrorMessage";
 
-import { useAuth } from "../../../contexts/useAuth";
-import type { Unidade } from "../../unidades/types/unidade";
-import { UnidadeService } from "../../unidades/services/UnidadeService";
 import type { Usuario } from "../../usuarios/types/usuario";
 import { UsuarioService } from "../../usuarios/services/UsuarioService";
 
@@ -27,10 +24,6 @@ interface ModalidadeFormProps {
 const PERFIS_COORDENADOR = ["ADMIN", "PROFESSOR"];
 
 export function ModalidadeForm({ modalidade, loading = false, onSubmit }: ModalidadeFormProps) {
-  const { usuario } = useAuth();
-  const ehSuperadmin = usuario?.perfil === "SUPERADMIN";
-
-  const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [candidatos, setCandidatos] = useState<Usuario[]>([]);
 
   const methods = useForm<ModalidadeFormData>({
@@ -47,12 +40,6 @@ export function ModalidadeForm({ modalidade, loading = false, onSubmit }: Modali
   });
 
   const { register, handleSubmit, formState: { errors } } = methods;
-
-  useEffect(() => {
-    if (ehSuperadmin && !modalidade) {
-      UnidadeService.listar().then((lista) => setUnidades(lista.filter((u) => u.ativo)));
-    }
-  }, [ehSuperadmin, modalidade]);
 
   useEffect(() => {
     UsuarioService.listar()
@@ -101,21 +88,6 @@ export function ModalidadeForm({ modalidade, loading = false, onSubmit }: Modali
           label="Exibir esta modalidade no site público"
           {...register("visivelNaLanding")}
         />
-
-        {ehSuperadmin && !modalidade && (
-          <>
-            <Select
-              label="Unidade"
-              options={unidades.map((u) => ({ label: u.nome, value: String(u.id) }))}
-              {...register("unidadeId")}
-            />
-            <ErrorMessage message={errors.unidadeId?.message ?? ""} />
-          </>
-        )}
-
-        {ehSuperadmin && modalidade?.unidade && (
-          <p className="modalidades-vazio">Unidade: {modalidade.unidade.nome}</p>
-        )}
 
         <Button type="submit" disabled={loading}>
           {loading ? "Salvando..." : modalidade ? "Salvar Alterações" : "Cadastrar Modalidade"}

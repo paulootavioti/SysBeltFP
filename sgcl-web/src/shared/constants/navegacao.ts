@@ -178,8 +178,7 @@ export const NAV_TREE: NavEntry[] = [
     label: "Configurações",
     icon: LuSettings,
     items: [
-      // "Unidades" só é visível pro SUPERADMIN (ver acessoPorPerfil.ts) —
-      // é quem administra as unidades/filiais do sistema como um todo.
+      // DONO/ADMIN administram as unidades/filiais do próprio assinante.
       item("/unidades", "Unidades", LuBuilding2),
       item("/arenas", "Arenas", LuDoorOpen),
       item("/modalidades", "Modalidades", LuSwords),

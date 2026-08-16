@@ -19,8 +19,7 @@ export type AuthContextData = {
   token: string | null;
   login: (email: string, senha: string) => Promise<Usuario>;
   logout: () => void;
-  // só tem efeito quando usuario.perfil === "SUPERADMIN" — null significa
-  // "Todas as unidades" (comportamento padrão, sem filtro).
+  // Unidade escolhida entre os vínculos operacionais do usuário.
   unidadeVisualizada: UnidadeVisualizada;
   definirUnidadeVisualizada: (unidade: UnidadeVisualizada) => void;
 };

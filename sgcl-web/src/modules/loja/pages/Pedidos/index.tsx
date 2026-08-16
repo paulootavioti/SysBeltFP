@@ -14,7 +14,6 @@ import { Loading } from "../../../../components/ui/Loading";
 import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 import { formatarMoeda } from "../../../dashboard/utils/formatters";
 import { useToast } from "../../../../contexts/toast/useToast";
-import { useAuth } from "../../../../contexts/useAuth";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 
 import { LojaService } from "../../services/LojaService";
@@ -31,9 +30,6 @@ const VARIANTE_BADGE_STATUS: Record<StatusPedido, "warning" | "success" | "dange
 export function Pedidos() {
   const navigate = useNavigate();
   const toast = useToast();
-  const { usuario } = useAuth();
-  const ehSuperadmin = usuario?.perfil === "SUPERADMIN";
-
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
@@ -113,15 +109,6 @@ export function Pedidos() {
       accessor: "aluno" as const,
       render: (pedido: Pedido) => pedido.aluno.apelido || pedido.aluno.nome,
     },
-    ...(ehSuperadmin
-      ? [
-          {
-            header: "Unidade",
-            accessor: "unidade" as const,
-            render: (pedido: Pedido) => pedido.unidade.nome,
-          },
-        ]
-      : []),
     {
       header: "Itens",
       accessor: "itens" as const,
