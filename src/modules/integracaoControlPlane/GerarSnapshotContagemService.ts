@@ -1,4 +1,4 @@
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { eventoIdDiario, SnapshotContagemV1 } from "./contratoContagem";
 
 type UnidadeAgregada = { id: number; nome: string; ativo: boolean };
@@ -10,10 +10,14 @@ export interface FonteContagem {
 }
 
 const fontePrisma: FonteContagem = {
-  listarUnidades: () => prisma.unidade.findMany({
-    select: { id: true, nome: true, ativo: true }, orderBy: { id: "asc" },
-  }),
+  listarUnidades: () => {
+    const prisma = prismaDaRequisicao();
+    return prisma.unidade.findMany({
+      select: { id: true, nome: true, ativo: true }, orderBy: { id: "asc" },
+    });
+  },
   contarAlunosAtivos: async () => {
+    const prisma = prismaDaRequisicao();
     const contagens = await prisma.alunoUnidade.groupBy({
       by: ["unidadeId"],
       where: { aluno: { ativo: true }, unidade: { ativo: true } },
