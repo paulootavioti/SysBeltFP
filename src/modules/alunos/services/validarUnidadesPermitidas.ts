@@ -1,10 +1,11 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 
 export async function validarUnidadesPermitidas(
   unidadePrincipalId: number,
   unidadesInformadas: number[] | undefined,
 ): Promise<number[]> {
+  const prisma = prismaDaRequisicao();
   const ids = [...new Set([unidadePrincipalId, ...(unidadesInformadas ?? [])])];
   if (ids.some((id) => !Number.isInteger(id) || id <= 0)) {
     throw new AppError("Unidades permitidas inválidas.");

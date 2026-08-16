@@ -1,9 +1,10 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class ListAniversariantesService {
 
   async execute(unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
 
     const mesAtual =
       new Date().getMonth() + 1;

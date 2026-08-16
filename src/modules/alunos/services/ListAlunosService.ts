@@ -1,9 +1,10 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
 
 export class ListAlunosService {
 
   async execute(unidadeId: number | null, perfil?: string) {
+    const prisma = prismaDaRequisicao();
     const escopoAluno = unidadeId === null
       ? {}
       : { unidadesPermitidas: { some: { unidadeId } } };
