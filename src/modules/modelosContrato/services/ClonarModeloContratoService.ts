@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 
@@ -7,6 +7,7 @@ import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 // ponto de partida pra um modelo diferente.
 export class ClonarModeloContratoService {
   async execute(id: number, unidadeId: number | null) {
+    const prisma = prismaDaRequisicao();
     const original = await prisma.modeloContrato.findUnique({ where: { id } });
 
     if (!original) {
