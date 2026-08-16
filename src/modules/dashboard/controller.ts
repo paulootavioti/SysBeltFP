@@ -1,6 +1,6 @@
 
 import { Request, Response } from "express";
-import { prisma } from "../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../shared/errors/AppError";
 import { GetResumoPeriodoService } from "./services/GetResumoPeriodoService";
 import { GetAlertasDashboardService } from "./services/GetAlertasDashboardService";
@@ -23,6 +23,7 @@ function periodoDaQuery(req: Request): Periodo {
 export class DashboardController {
 
   async resumo(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
 
     const unidade = escopoUnidade(req.user.unidadeId);
 
