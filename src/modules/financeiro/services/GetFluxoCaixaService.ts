@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { agruparPorBucket, calcularRangePeriodo, type Periodo } from "../../dashboard/utils/periodo";
 import type { FiltrosFinanceiro } from "../utils/filtros";
@@ -14,6 +14,7 @@ export interface PontoFluxoCaixa {
 // geral (`agruparPorBucket`), pra manter os dois gráficos consistentes.
 export class GetFluxoCaixaService {
   async execute(unidadeId: number | null, filtros: FiltrosFinanceiro = {}): Promise<PontoFluxoCaixa[]> {
+    const prisma = prismaDaRequisicao();
     const periodo: Periodo = filtros.periodo ?? "MENSAL";
     const range = calcularRangePeriodo(periodo);
     const unidade = escopoUnidade(unidadeId);
