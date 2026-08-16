@@ -95,6 +95,7 @@ export class RegistrarEventoAcessoService {
   }
 
   private async localizarCredencial(provedorPessoaId?: string | null, referenciaExterna?: string | null) {
+    const prisma = prismaDaRequisicao();
     if (provedorPessoaId) {
       const porProvedor = await prisma.credencialAcesso.findFirst({
         where: { provedorPessoaId },

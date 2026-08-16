@@ -92,6 +92,7 @@ export class AutorizarAcessoService {
   }
 
   private async avaliarAluno(alunoId: number, agora: Date): Promise<DecisaoAcesso> {
+    const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({
       where: { id: alunoId },
       include: { unidade: true },
