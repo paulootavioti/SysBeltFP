@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { FinalizarAulaService } from "../../aulas/services/FinalizarAulaService";
 
 interface Solicitante {
@@ -9,6 +9,7 @@ interface Solicitante {
 
 export class FinalizarAulaProfessorService {
   async execute(aulaId: number, solicitante: Solicitante, observacoes?: string) {
+    const prisma = prismaDaRequisicao();
     // reaproveita a checagem de turma própria/unidade e a transição de
     // status ABERTA -> FINALIZADA já usada pelo sgcl-web.
     await new FinalizarAulaService().execute(aulaId, solicitante, observacoes);

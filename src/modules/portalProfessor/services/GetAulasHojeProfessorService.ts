@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { intervaloHojeBrasilia, horarioBrasiliaHojeParaInstante } from "../utils/hoje";
 
 interface Solicitante {
@@ -11,6 +11,7 @@ type StatusItemHoje = "AGENDADA" | "EM_ANDAMENTO" | "CONCLUIDA";
 
 export class GetAulasHojeProfessorService {
   async execute(solicitante: Solicitante, referencia: Date = new Date()) {
+    const prisma = prismaDaRequisicao();
     const { inicio, fim } = intervaloHojeBrasilia(referencia);
 
     const programadasHoje = await prisma.aulaProgramada.findMany({
