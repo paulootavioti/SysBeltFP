@@ -1,4 +1,4 @@
-import { prisma } from "../../../shared/database/prisma";
+import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 
 // O que um plano da plataforma pode liberar. São os módulos que fazem
 // sentido vender à parte porque têm custo ou complexidade própria — não é
@@ -37,6 +37,7 @@ export async function contaTemRecurso(
   contaId: number,
   recurso: RecursoPlataforma
 ): Promise<boolean> {
+  const prisma = prismaDaRequisicao();
   const assinatura = await prisma.assinaturaPlataforma.findUnique({
     where: { contaId },
     select: { status: true, plano: { select: { recursos: true } } },
@@ -56,6 +57,7 @@ export async function unidadeTemRecurso(
   unidadeId: number,
   recurso: RecursoPlataforma
 ): Promise<boolean> {
+  const prisma = prismaDaRequisicao();
   const unidade = await prisma.unidade.findUnique({
     where: { id: unidadeId },
     select: { contaId: true },
