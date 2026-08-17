@@ -104,13 +104,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - app: sgcl-web
-            possui_testes: true
-          - app: sgcl-portal-familia
-            possui_testes: false
-          - app: sgcl-portal-professor
-            possui_testes: true
+        # Sem flag de "tem testes": os três rodam a suíte. Um app novo entra
+        # aqui já com testes, em vez de entrar isento — foi um `if` desses que
+        # deixou os dois portais sem cobertura sem que ninguém percebesse.
+        app: [sgcl-web, sgcl-portal-familia, sgcl-portal-professor]
 
     steps:
       - uses: actions/checkout@v4
@@ -124,8 +121,7 @@ jobs:
       - working-directory: ${{ matrix.app }}
         run: npm ci
 
-      - if: matrix.possui_testes
-        working-directory: ${{ matrix.app }}
+      - working-directory: ${{ matrix.app }}
         run: npm run test
 
       - working-directory: ${{ matrix.app }}
