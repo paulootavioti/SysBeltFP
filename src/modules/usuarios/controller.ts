@@ -9,6 +9,7 @@ import { UpdateUsuarioService } from "./services/UpdateUsuarioService";
 import { AppError } from "../../shared/errors/AppError";
 import { PERFIS_MULTI_UNIDADE } from "../../shared/constants/perfis";
 import { garantirConcessaoSuperadminPermitida } from "../../shared/security/superadminLegado";
+import { normalizarUnidadesDoAssinante } from "./utils/normalizarUnidadesDoAssinante";
 
 export class UsuariosController {
 
@@ -94,11 +95,10 @@ export class UsuariosController {
 
     garantirConcessaoSuperadminPermitida(req.body.perfil, req.user.perfil);
 
-    // vincular um usuário a mais de uma unidade só o SUPERADMIN pode fazer.
-    const unidadeIds =
-      req.user.perfil === "SUPERADMIN" && Array.isArray(req.body.unidadeIds)
-        ? req.body.unidadeIds.map(Number).filter((unidadeId: number) => Number.isInteger(unidadeId) && unidadeId > 0)
-        : undefined;
+    const unidadeIds = await normalizarUnidadesDoAssinante(
+      req.body.unidadeIds,
+      req.user.unidadeId
+    );
 
     if (unidadeIds && unidadeIds.length > 1 && !PERFIS_MULTI_UNIDADE.includes(req.body.perfil)) {
       throw new AppError("Só usuários Admin, Professor ou Recepção podem ser vinculados a mais de uma unidade.");

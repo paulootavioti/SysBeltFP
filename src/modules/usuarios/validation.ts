@@ -13,7 +13,7 @@ export const updateUsuarioSchema = z.object({
     .union([z.literal(""), z.string().min(6, "A senha precisa ter pelo menos 6 caracteres.")])
     .nullish(),
   perfil: z.enum(PERFIS),
-  // só é lido quando quem edita é SUPERADMIN.
+  // DONO/ADMIN podem vincular o usuário às filiais da própria academia.
   unidadeIds: z.array(z.coerce.number().int().positive()).nullish(),
   nivelGraduacao: z.string().nullish(),
   outrasGraduacoes: z.string().nullish(),

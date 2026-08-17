@@ -7,10 +7,9 @@ export const registerSchema = z.object({
   email: z.string().min(1, "Informe o e-mail.").email("E-mail inválido."),
   senha: z.string().min(6, "A senha precisa ter pelo menos 6 caracteres."),
   perfil: z.enum(PERFIS),
-  // só é lido quando quem cadastra é SUPERADMIN — um ADMIN normal sempre
-  // cadastra dentro da própria unidade, esse campo é ignorado nesse caso.
+  // Compatibilidade com clientes antigos; a unidade ativa vem da autenticação.
   unidadeId: z.coerce.number().int().positive().nullish(),
-  // idem: só o SUPERADMIN pode vincular o usuário a mais de uma unidade.
+  // DONO/ADMIN podem vincular o usuário às filiais da própria academia.
   unidadeIds: z.array(z.coerce.number().int().positive()).nullish(),
   nivelGraduacao: z.string().nullish(),
   outrasGraduacoes: z.string().nullish(),

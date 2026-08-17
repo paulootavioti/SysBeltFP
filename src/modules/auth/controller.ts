@@ -5,27 +5,22 @@ import { LoginService } from "./services/LoginService";
 import { AppError } from "../../shared/errors/AppError";
 import { PERFIS_MULTI_UNIDADE } from "../../shared/constants/perfis";
 import { garantirConcessaoSuperadminPermitida } from "../../shared/security/superadminLegado";
+import { normalizarUnidadesDoAssinante } from "../usuarios/utils/normalizarUnidadesDoAssinante";
 
 export class AuthController {
   async register(req: Request, res: Response) {
     garantirConcessaoSuperadminPermitida(req.body.perfil, req.user.perfil);
 
-    // vincular um usuário a mais de uma unidade é uma configuração que só
-    // o SUPERADMIN pode fazer — pra qualquer outro perfil que cadastra
-    // (ADMIN, sempre dentro da própria unidade), unidadeIds é ignorado.
-    const unidadeIdsBrutos =
-      req.user.perfil === "SUPERADMIN" && Array.isArray(req.body.unidadeIds)
-        ? req.body.unidadeIds.map(Number).filter((id: number) => Number.isInteger(id) && id > 0)
-        : [];
+    const unidadeIdsBrutos = (await normalizarUnidadesDoAssinante(
+      req.body.unidadeIds,
+      req.user.unidadeId
+    )) ?? [];
 
     if (unidadeIdsBrutos.length > 1 && !PERFIS_MULTI_UNIDADE.includes(req.body.perfil)) {
       throw new AppError("Só usuários Admin, Professor ou Recepção podem ser vinculados a mais de uma unidade.");
     }
 
-    // um ADMIN sempre cadastra dentro da própria unidade; só um SUPERADMIN
-    // (sem unidade fixa) pode e precisa informar em qual unidade o novo
-    // usuário entra. Um novo SUPERADMIN não pertence a nenhuma unidade.
-    const unidadeId = unidadeIdsBrutos[0] ?? req.user.unidadeId ?? req.body.unidadeId ?? null;
+    const unidadeId = unidadeIdsBrutos[0] ?? req.user.unidadeId;
 
     if (!unidadeId && req.body.perfil !== "SUPERADMIN") {
       throw new AppError("Informe a unidade para este usuário.");
