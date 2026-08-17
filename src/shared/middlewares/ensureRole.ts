@@ -1,15 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/AppError";
 import { PERFIS_QUE_HERDAM } from "../constants/perfis";
-import { garantirAcessoSuperadminLegado } from "../security/superadminLegado";
 
 export function ensureRole(roles: string[]) {
   return (req: Request, _res: Response, next: NextFunction) => {
-    if (req.user.perfil === "SUPERADMIN") {
-      garantirAcessoSuperadminLegado(req.user.perfil);
-      return next(); // compatibilidade temporária, somente durante rollback
-    }
-
     if (roles.includes(req.user.perfil)) {
       return next();
     }
