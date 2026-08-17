@@ -4,13 +4,10 @@ import { CreateUsuarioService } from "./services/CreateUsuarioService";
 import { LoginService } from "./services/LoginService";
 import { AppError } from "../../shared/errors/AppError";
 import { PERFIS_MULTI_UNIDADE } from "../../shared/constants/perfis";
-import { garantirConcessaoSuperadminPermitida } from "../../shared/security/superadminLegado";
 import { normalizarUnidadesDoAssinante } from "../usuarios/utils/normalizarUnidadesDoAssinante";
 
 export class AuthController {
   async register(req: Request, res: Response) {
-    garantirConcessaoSuperadminPermitida(req.body.perfil, req.user.perfil);
-
     const unidadeIdsBrutos = (await normalizarUnidadesDoAssinante(
       req.body.unidadeIds,
       req.user.unidadeId
@@ -22,7 +19,7 @@ export class AuthController {
 
     const unidadeId = unidadeIdsBrutos[0] ?? req.user.unidadeId;
 
-    if (!unidadeId && req.body.perfil !== "SUPERADMIN") {
+    if (!unidadeId) {
       throw new AppError("Informe a unidade para este usuário.");
     }
 

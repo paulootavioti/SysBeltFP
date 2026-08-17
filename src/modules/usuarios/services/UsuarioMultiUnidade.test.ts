@@ -132,29 +132,4 @@ describe("UpdateUsuarioService: troca do conjunto de unidades vinculadas", () =>
     expect(atualizado?.unidadeId).toBe(unidadeAId);
   });
 
-  it("virar SUPERADMIN limpa a unidade ativa e todos os vínculos", async () => {
-    const usuario = await new CreateUsuarioService().execute({
-      nome: "TESTE_MULTIUNIDADE_ADMIN4",
-      email: "teste_multiunidade_admin4@example.com",
-      senha: "senha123",
-      perfil: "ADMIN",
-      unidadeId: unidadeAId,
-      unidadeIds: [unidadeAId, unidadeBId],
-    });
-
-    const atualizado = await new UpdateUsuarioService().execute(
-      usuario.id,
-      {
-        nome: usuario.nome,
-        email: usuario.email,
-        perfil: "SUPERADMIN",
-      },
-      null
-    );
-
-    expect(atualizado.unidadeId).toBeNull();
-
-    const vinculos = await prisma.usuarioUnidade.findMany({ where: { usuarioId: usuario.id } });
-    expect(vinculos).toHaveLength(0);
-  });
 });

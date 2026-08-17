@@ -44,26 +44,6 @@ export class UpdateUsuarioService {
 
     const senhaHash = data.senha ? await hash(data.senha, 8) : undefined;
 
-    // virou SUPERADMIN: não pertence a nenhuma unidade — some com a ativa
-    // e com todos os vínculos, ainda que unidadeIds tenha vindo preenchido.
-    if (data.perfil === "SUPERADMIN") {
-      return prisma.usuario.update({
-        where: { id },
-        data: {
-          nome: data.nome,
-          apelido: data.apelido,
-          email: data.email,
-          ...(senhaHash ? { senha: senhaHash } : {}),
-          perfil: data.perfil,
-          nivelGraduacao: data.nivelGraduacao,
-          outrasGraduacoes: data.outrasGraduacoes,
-          fotoUrl: data.fotoUrl,
-          unidadeId: null,
-          unidadesVinculadas: { deleteMany: {} },
-        },
-      });
-    }
-
     // Mesma fronteira do cadastro: vínculo não atravessa conta, e o DONO
     // alcança todas as filiais da própria academia.
     const contaId = await garantirUnidadesDaMesmaConta(data.unidadeIds ?? []);
