@@ -36,8 +36,7 @@ O token carrega apenas `sub` (id do usuário) e `perfil`. A cada requisição, `
 
 Alguns perfis podem alterar `req.user.unidadeId` para aquela requisição através do header `X-Unidade-Id`:
 
-- **SUPERADMIN**: irrestrito — pode "visualizar como" qualquer unidade, ou omitir o header para ver todas.
-- **ADMIN / PROFESSOR / RECEPCAO** vinculados a mais de uma unidade: só é aceito se a unidade pedida estiver entre as vinculadas ao usuário (tabela `UsuarioUnidade`) — usado para trocar a "unidade ativa".
+- **DONO / ADMIN / PROFESSOR / RECEPCAO** vinculados a mais de uma unidade: só é aceito se a unidade pedida estiver entre as vinculadas ao usuário (tabela `UsuarioUnidade`) — usado para trocar a "unidade ativa". O `DONO` alcança todas as unidades da própria conta.
 
 Para qualquer outro caso o header é ignorado.
 
@@ -47,12 +46,21 @@ Para qualquer outro caso o header é ignorado.
 
 | Perfil | Resumo |
 |---|---|
-| **SUPERADMIN** | Acesso irrestrito a todas as unidades e telas; bypassa toda checagem de `ensureRole`. |
+| **DONO** | O dono da academia cliente. Alcança todas as filiais da própria conta e nenhuma de outra; gerencia unidades e vínculos de usuário. |
 | **ADMIN** | Gestão completa da(s) própria(s) unidade(s). |
 | **PROFESSOR** | Pedagógico, aulas, graduações, competições; dados de Aluno redigidos; pode estar vinculado a mais de uma unidade. |
 | **RECEPCAO** | Cadastros, financeiro, mensalidades, mensagens, relatórios da própria unidade. |
 
-Nas tabelas abaixo, "Perfis" lista quem passa em `ensureRole(...)` — o SUPERADMIN sempre tem acesso adicionalmente, mesmo quando não listado.
+Nas tabelas abaixo, "Perfis" lista quem passa em `ensureRole(...)`. O `DONO`
+passa em tudo que o `ADMIN` passa, por herança declarada em
+`PERFIS_QUE_HERDAM` (`src/shared/constants/perfis.ts`) — por isso ele nem
+sempre aparece listado.
+
+> **Perfil legado:** `SUPERADMIN` não existe mais. O operador do SaaS trabalha
+> no Control Plane, com autenticação própria. Usuários com esse perfil em
+> bancos anteriores à separação dos planos são recusados no login e em toda
+> requisição autenticada, com HTTP 403 e a mensagem "Operadores da plataforma
+> devem acessar o Control Plane".
 
 ---
 
@@ -88,7 +96,7 @@ Resposta: `{ "usuario": { id, nome, email, perfil, unidadeId, unidadeNome }, "to
 
 ## POST /auth/register
 
-Perfis: ADMIN (SUPERADMIN sempre pode).
+Perfis: ADMIN (e DONO, por herança).
 
 ```json
 {
@@ -98,9 +106,9 @@ Perfis: ADMIN (SUPERADMIN sempre pode).
 }
 ```
 
+- `perfil` aceita apenas `DONO`, `ADMIN`, `PROFESSOR` ou `RECEPCAO`.
 - Um ADMIN comum sempre cadastra dentro da própria unidade (`unidadeId`/`unidadeIds` do body são ignorados).
-- `unidadeIds` (mais de uma unidade) e `perfil: "SUPERADMIN"` só têm efeito quando quem cadastra já é SUPERADMIN.
-- `perfil: "SUPERADMIN"` cria um usuário sem unidade.
+- `unidadeIds` vincula o usuário a mais de uma filial **da mesma conta**. Uma lista que misture unidades de contas diferentes é recusada inteira, em vez de ter as unidades inválidas silenciosamente descartadas.
 
 ---
 
@@ -108,11 +116,11 @@ Perfis: ADMIN (SUPERADMIN sempre pode).
 
 | Método | Rota | Perfis | Descrição |
 |---|---|---|---|
-| POST | `/` | SUPERADMIN | Cadastra unidade |
-| GET | `/` | SUPERADMIN | Lista unidades (completo) |
+| POST | `/` | DONO, ADMIN | Cadastra unidade |
+| GET | `/` | DONO, ADMIN | Lista unidades (completo) |
 | GET | `/opcoes` | ADMIN, PROFESSOR | Lista enxuta (id/nome) — popula o seletor de consulta de grade de outra unidade |
-| PUT | `/:id` | SUPERADMIN | Atualiza unidade |
-| PATCH | `/:id/ativo` | SUPERADMIN | Ativa/inativa |
+| PUT | `/:id` | DONO, ADMIN | Atualiza unidade |
+| PATCH | `/:id/ativo` | DONO, ADMIN | Ativa/inativa |
 
 ---
 
@@ -134,8 +142,8 @@ Perfis: ADMIN (SUPERADMIN sempre pode).
 | GET | `/` | ADMIN | Lista usuários da unidade |
 | GET | `/professores` | ADMIN, PROFESSOR | Lista enxuta de professores — usada no seletor de professor substituto |
 | GET | `/minhas-unidades` | ADMIN, PROFESSOR, RECEPCAO | Unidades vinculadas ao usuário autenticado — popula o seletor de "unidade ativa" |
-| PUT | `/:id` | ADMIN | Atualiza usuário (`unidadeIds` só tem efeito se quem edita é SUPERADMIN) |
-| PATCH | `/:id/perfil` | ADMIN | Troca perfil (`SUPERADMIN` só pode ser concedido por outro SUPERADMIN) |
+| PUT | `/:id` | ADMIN | Atualiza usuário (`unidadeIds` alcança as filiais da própria conta) |
+| PATCH | `/:id/perfil` | ADMIN | Troca perfil entre `DONO`, `ADMIN`, `PROFESSOR` e `RECEPCAO` |
 | PATCH | `/:id/ativo` | ADMIN | Ativa/inativa |
 
 ---
@@ -381,9 +389,37 @@ X-Unidade-Id: <id>   (opcional — ver seção "Header X-Unidade-Id")
 
 ---
 
-# Roadmap
+# Cobertura deste documento
 
-Próximos endpoints previstos: Área dos Pais, Área do Professor, WhatsApp, PIX, relatórios em PDF, notificações push, agenda.
+Este documento descreve os módulos fundacionais. Os endpoints listados são
+verificáveis contra `src/modules/*/routes.ts`, que é sempre a fonte da
+verdade em caso de divergência.
+
+**Ainda não documentados aqui**, embora implementados: `pagamentos`,
+`assinaturas`, `contratos`, `modelosContrato`, `assinaturaEletronica`,
+`notificacoes`, `portalFamilia`, `portalProfessor`, `mensagensFamilia`,
+`publico`, `leads`, `whatsapp`, `controleAcesso`, `consentimentos`, `loja`,
+`eventos`, `metas`, `fotosTreino`, `formasPagamento`, `modalidades`,
+`concessaoPlataforma` e `integracaoControlPlane`.
+
+A API do Control Plane é separada e está descrita em
+[`control-plane-b2b.md`](control-plane-b2b.md).
+
+---
+
+# Plataforma — `/plataforma`
+
+| Método | Rota | Perfis | Descrição |
+|---|---|---|---|
+| GET | `/minha-assinatura` | ADMIN (e DONO) | Plano vigente, contagem de alunos por unidade, prévia do mês e histórico de faturas |
+
+É o **único** endpoint de plataforma exposto no Tenant Plane. Planos,
+assinantes, cobrança e fechamento pertencem exclusivamente ao Control Plane —
+manter os dois lados capazes de escrever o mesmo dado comercial criaria
+divergência sem fonte da verdade.
+
+A prévia do mês é calculada na hora, não lida de fatura, justamente para
+responder "se eu matricular mais 3 alunos, muda meu preço?".
 
 ---
 

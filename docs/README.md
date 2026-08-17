@@ -1,375 +1,325 @@
-# Sys Belt - Sistema Faixa Preta
+# Sys Belt
 
-> Sistema de Gestão da Cia de Lutas Weberty Viana
+> Plataforma SaaS de gestão para academias de artes marciais
 
 ---
 
 # Sobre o projeto
 
-O **Sys Belt - Sistema Faixa Preta** é uma plataforma multi-unidade (multi-tenant) desenvolvida para realizar a gestão completa de academias de Jiu-Jitsu.
+O **Sys Belt** é uma plataforma de gestão para academias de Jiu-Jitsu,
+vendida por assinatura mensal e cobrada por faixa de alunos.
 
-O projeto integra em um único sistema:
+Cada academia assinante opera sobre um **banco de dados exclusivo**. O
+isolamento entre clientes é físico: não há tabela compartilhada, não há coluna
+discriminadora separando academias dentro do mesmo banco, e nenhuma consulta
+do sistema operacional alcança dados de outro assinante.
 
-- Gestão de unidades e arenas (tatames/salas)
-- Gestão de alunos e responsáveis
-- Gestão pedagógica (currículo, planejamento, evolução técnica)
-- Controle de turmas, aulas e programação de aulas
-- Avaliação comportamental
-- Financeiro (mensalidades, planos)
-- Competições
-- Mensagens/avisos automáticos
-- Relatórios
-- Dashboard executivo
+Dentro de uma mesma academia, as unidades (filiais) compartilham dados entre
+si — um aluno pode treinar em mais de uma unidade da mesma rede.
 
-O grande diferencial do Sys Belt é unir a gestão administrativa multi-unidade com o planejamento pedagógico do Jiu-Jitsu Kids, com controle de acesso granular por perfil.
+O diferencial do produto é unir a gestão administrativa multi-unidade com o
+planejamento pedagógico do Jiu-Jitsu Kids, com controle de acesso por perfil.
 
 ---
 
-# Objetivos
+# Os dois planos
 
-O sistema atende quatro públicos principais.
+O sistema é dividido em dois planos com bancos separados.
 
-## Superadmin
+| | Control Plane | Tenant Plane |
+|---|---|---|
+| Código | `control-plane/` | `src/` |
+| Quem usa | Operador do SaaS | A academia assinante |
+| Banco | Um, exclusivo do SysBelt | Um por academia |
+| Guarda | Assinantes, planos, assinaturas, faturas, licenças, provisionamento, auditoria | Alunos, turmas, aulas, financeiro da academia |
+| Módulos | 14 | 44 |
+| Testes | 188 | 663 |
 
-- Cadastra e administra todas as unidades e arenas
-- Enxerga e opera qualquer unidade ("visualizar como")
-- Cria outros usuários Superadmin
-- Vincula usuários (Admin, Professor, Recepção) a uma ou mais unidades
+O Tenant Plane **não conhece** preço, fatura nem qualquer outro assinante. O
+que ele sabe sobre a própria assinatura chega por uma **concessão assinada**
+(Ed25519): o Control Plane assina uma projeção com os recursos contratados e o
+Tenant Plane verifica a assinatura localmente, sem consulta cruzada entre
+bancos em tempo de requisição.
 
-## Professores
+Documentos de referência:
 
-- Abrir aulas, fazer chamada, avaliar comportamento
-- Planejar aulas e acompanhar evolução técnica
-- Consultar (visão redigida) dados dos próprios alunos
-- Registrar graduações e competições
-- Transferir uma aula programada para outro professor, com justificativa
-- Consultar (somente leitura) a grade horária de outras unidades
+- [`architecture-decisions.md`](architecture-decisions.md) — ADRs, com destaque
+  para a ADR-010 (banco exclusivo por academia);
+- [`control-plane-b2b.md`](control-plane-b2b.md) — modelo funcional e de dados
+  do sistema comercial;
+- [`resolucao-tenant.md`](resolucao-tenant.md) — identificação por hostname,
+  contexto por requisição e seleção segura do banco;
+- [`operacao-bancos-exclusivos.md`](operacao-bancos-exclusivos.md) —
+  provisionamento, segredos, migrations, backup, rotação e encerramento;
+- [`mapa-extracao-control-plane.md`](mapa-extracao-control-plane.md) — destino
+  de cada tabela, rota, serviço e tela na separação dos planos.
 
-## Secretaria (Recepção)
+---
 
-- Cadastro de alunos, responsáveis e turmas
-- Matrículas, financeiro e planos
-- Atendimento aos pais, mensagens automáticas
+# Modelo comercial
 
-## Administração (Admin/Coordenação)
+Cobrança **por unidade**, em faixas de alunos:
 
-- Dashboard, indicadores e relatórios da própria unidade
-- Gestão de arenas, turmas, usuários e financeiro
-- Frequência, evolução e competições
+- cada faixa cobre até 10 alunos e custa R$ 37,00;
+- o valor da conta é a soma das faixas de cada unidade, mínimo de uma faixa
+  por unidade ativa;
+- aluno lotado em mais de uma unidade conta **uma vez em cada unidade**.
+
+Duas unidades com 12 e 8 alunos: `2 + 1 = 3 faixas = R$ 111,00`.
+
+O cálculo está em `src/modules/plataforma/utils/precoPlataforma.ts`, é puro
+(não lê banco nem relógio) e opera em centavos com aritmética inteira.
+
+---
+
+# Públicos e perfis
+
+Existem quatro perfis, todos dentro da academia. O operador do SaaS **não é um
+perfil do Tenant Plane** — ele trabalha no Control Plane, com autenticação
+própria.
+
+## DONO
+
+O dono da academia cliente. Alcança todas as filiais da própria conta e
+nenhuma de outra. Gerencia unidades, vincula usuários a unidades e vê a
+própria assinatura em `GET /plataforma/minha-assinatura`.
+
+Onde um `ADMIN` passa, o `DONO` passa — a herança é declarada uma única vez em
+`PERFIS_QUE_HERDAM` (`src/shared/constants/perfis.ts`), para que nenhuma rota
+precise lembrar de listar os dois.
+
+## ADMIN
+
+Gestão completa da(s) própria(s) unidade(s): dashboard, indicadores,
+relatórios, arenas, turmas, usuários e financeiro.
+
+## PROFESSOR
+
+Abre aulas, faz chamada, avalia comportamento, planeja aulas e acompanha
+evolução técnica. Registra graduações e competições. Vê dados de aluno em
+**visão redigida** — apenas nome, apelido, responsável, turma, presenças e
+graduações. Pode consultar, somente leitura, a grade de outras unidades.
+
+## RECEPCAO
+
+Cadastro de alunos, responsáveis e turmas; matrículas, financeiro, planos,
+atendimento e mensagens.
+
+> **Perfil legado:** `SUPERADMIN` não existe mais. Usuários com esse perfil em
+> bancos antigos são recusados no login e em toda requisição autenticada
+> (`src/shared/security/superadminLegado.ts`), com orientação para usar o
+> Control Plane. A guarda é intencional e não deve ser removida enquanto
+> existirem bancos anteriores à separação dos planos.
+
+Matriz completa: [`seguranca.md`](seguranca.md) e
+[`regras-de-negocio.md`](regras-de-negocio.md).
 
 ---
 
 # Principais funcionalidades
 
-## Gestão multi-unidade
-
-- Cadastro de unidades (filiais) e arenas — isolamento de dados por unidade
-- Superadmin pode "visualizar como" qualquer unidade ou todas ao mesmo tempo
-- Usuários (Admin, Professor, Recepção) podem ser vinculados a mais de uma unidade, com um seletor de "unidade ativa"
-
-## Gestão de alunos
-
-- Cadastro completo (dados pessoais, escola, saúde, kimono, foto)
-- Turma e responsáveis
-- Visão de dados redigida para o perfil Professor (só nome, apelido, responsável, turma, presenças e graduações)
-
-## Gestão pedagógica
-
-- Currículo, módulos, técnicas e planos de aula
-- Planejamento e evolução por presenças
-- Graduações (trilha Infantil e trilha Juvenil/Adulta)
-
-## Gestão de turmas e aulas
-
-- Turmas vinculadas a arena, professor e currículo
-- Programação prévia de aulas (grade semanal/mensal)
-- Transferência de aula para outro professor, com motivo obrigatório e checagem de conflito de horário
-
-## Gestão administrativa
-
-- Turmas, professores, usuários
-- Financeiro (mensalidades, planos)
-
-## Gestão esportiva
-
-- Competições, inscrição de atletas, resultados
+- **Unidades e arenas** — filiais e tatames/salas, com escopo por unidade e
+  seletor de unidade ativa para quem tem mais de um vínculo.
+- **Alunos** — cadastro completo (dados pessoais, escola, saúde, kimono,
+  foto), turma, responsáveis, lotação em mais de uma unidade.
+- **Pedagógico** — currículo, módulos, técnicas, planos de aula,
+  planejamento, prontuário, evolução por presenças.
+- **Graduações** — trilha Infantil (até Verde) e Juvenil/Adulta (Branca a
+  Preta), com idade mínima e tempo de permanência.
+- **Turmas e aulas** — grade semanal/mensal, programação prévia,
+  transferência de aula com motivo obrigatório e checagem de conflito.
+- **Comportamentos** — respeito, valentia, esforço, atenção, disciplina.
+- **Financeiro** — mensalidades, planos, recebimentos, caixa, inadimplência.
+- **Pagamentos** — gateway com credenciais próprias de cada assinante,
+  cifradas em repouso (AES-256-GCM).
+- **Contratos** — modelos, geração e assinatura eletrônica.
+- **Competições** — inscrição de atletas e registro de resultados.
+- **Comunicação** — avisos, mensagens, notificações e WhatsApp (liberado por
+  concessão).
+- **Controle de acesso** — reconhecimento facial, dependente de consentimento
+  válido.
+- **Loja, eventos, metas, fotos de treino, leads.**
+- **Relatórios e dashboard.**
 
 ---
 
 # Tecnologias
 
-## Backend
+**Backend** — Node.js, Express 5, Prisma ORM, PostgreSQL, JWT, Zod
 
-- Node.js
-- Express
-- Prisma ORM
-- JWT
-- PostgreSQL
+**Frontend** — React, TypeScript, Vite, React Router, React Hook Form + Zod,
+Context API
 
-## Frontend
+**Infraestrutura** — Netlify (functions serverless), Neon (PostgreSQL
+gerenciado), AWS Secrets Manager (cofre dos segredos de tenant)
 
-- React
-- TypeScript
-- Vite
-- React Router
-- React Hook Form + Zod
-- Context API
-
-## Ferramentas
-
-- VS Code
-- Git / GitHub
-- Prisma Studio
-- Vitest (testes)
-- Playwright (verificação manual de UI)
+**Qualidade** — Vitest, Supertest, GitHub Actions, Playwright (verificação
+manual de UI)
 
 ---
 
-# Arquitetura
-
-```
-Frontend (React)
-        │
-        ▼
-   API REST (Axios)
-        │
-        ▼
-     Express
-        │
-        ▼
-  Controllers → Services → Prisma
-        │
-        ▼
-     PostgreSQL
-```
-
-Detalhes completos em [`arquitetura.md`](arquitetura.md).
-
-Para a arquitetura B2B e o isolamento entre assinantes, consulte:
-
-- [`architecture-decisions.md`](architecture-decisions.md) — ADR-010, que
-  estabelece banco operacional exclusivo por academia/rede;
-- [`control-plane-b2b.md`](control-plane-b2b.md) — modelo funcional e de dados
-  do sistema comercial, de assinaturas e provisionamento.
-- [`resolucao-tenant.md`](resolucao-tenant.md) — identificação por hostname,
-  contexto por requisição e seleção segura do banco exclusivo.
-- [`operacao-bancos-exclusivos.md`](operacao-bancos-exclusivos.md) —
-  provisionamento, segredos, migrations, backup, rotação e encerramento.
-- [`mapa-extracao-control-plane.md`](mapa-extracao-control-plane.md) — destino
-  das tabelas, rotas, serviços, telas e perfis atuais.
-
----
-
-# Estrutura do projeto
+# Estrutura do repositório
 
 ```
 sysbeltfp/
-│
-├── src/            (backend — sgcl-api)
-├── sgcl-web/        (frontend)
-├── prisma/          (schema.prisma + migrations)
-├── docs/
-└── README.md
+├── src/                      # Tenant Plane — API REST (44 módulos)
+├── control-plane/            # Control Plane — sistema comercial B2B
+├── contracts/                # contratos versionados entre os planos
+├── sgcl-web/                 # frontend da equipe da academia
+├── sgcl-portal-familia/      # Portal da Família
+├── sgcl-portal-professor/    # Portal do Professor
+├── landing/                  # site institucional do SysBelt
+├── landing-academia/         # site institucional da academia
+├── prisma/                   # schema.prisma + 34 migrations
+├── netlify/                  # functions do Tenant Plane
+├── scripts/                  # preflight, auditoria e preparo do banco de teste
+└── docs/                     # esta documentação
 ```
 
 ---
 
-# Backend
+# Módulos do backend
 
-```
-src/
-  modules/    (21 módulos de domínio — ver lista abaixo)
-  shared/     (database, middlewares, errors, constants, utils)
-  @types/
-  app.ts
-  server.ts
-```
+`src/modules/` — 44 módulos:
 
----
+- **Estrutura** — `unidades`, `arenas`, `modalidades`
+- **Acesso** — `auth`, `usuarios`, `controleAcesso`, `consentimentos`
+- **Pessoas** — `alunos`, `responsaveis`, `leads`
+- **Ensino** — `turmas`, `aulas`, `curriculos`, `tecnicas`, `comportamentos`,
+  `graduacoes`, `metas`
+- **Financeiro** — `mensalidades`, `planos`, `financeiro`, `pagamentos`,
+  `formasPagamento`, `assinaturas`, `loja`
+- **Documentos** — `contratos`, `modelosContrato`, `assinaturaEletronica`
+- **Comunicação** — `avisos`, `mensagens`, `mensagensFamilia`, `notificacoes`,
+  `whatsapp`
+- **Portais** — `portalFamilia`, `portalProfessor`, `publico`
+- **Esportivo** — `competicoes`, `eventos`, `fotosTreino`
+- **Análise** — `relatorios`, `dashboard`
+- **Plataforma** — `plataforma` (somente leitura da própria assinatura),
+  `concessaoPlataforma`, `integracaoControlPlane`
+- **Apoio** — `uploads`
 
-# Frontend
-
-```
-sgcl-web/src/
-  components/  (layout/ e ui/ — Design System)
-  contexts/
-  modules/
-  pages/
-  routes/
-  services/
-  shared/
-```
+`src/shared/` — `constants`, `context`, `database`, `errors`, `middlewares`,
+`security`, `services`, `tenant`, `testing`, `utils`.
 
 ---
 
 # Como executar
 
-## Backend
+## Backend (Tenant Plane)
 
-```
+```bash
 npm install
 npm run dev
 ```
 
-Servidor:
+`http://localhost:3333`. Requer `.env` com `DATABASE_URL`, `JWT_SECRET` e
+`CHAVE_SEGREDOS` — ver `.env.example`.
 
-```
-http://localhost:3333
-```
+## Control Plane
 
-## Frontend
-
-```
-cd sgcl-web
+```bash
+cd control-plane
 npm install
 npm run dev
 ```
 
-Aplicação:
+`http://localhost:3334`. Requer `control-plane/.env` — ver
+`control-plane/.env.example`.
 
+> Rodando local, as rotas ficam na raiz. O prefixo `/api` de produção vem do
+> wrapper serverless (`netlify/functions/api.ts`), não do Express.
+
+## Frontends
+
+```bash
+cd sgcl-web && npm install && npm run dev              # 5173
+cd sgcl-portal-familia && npm install && npm run dev   # 5175
+cd sgcl-portal-professor && npm install && npm run dev # 5176
 ```
-http://localhost:5173
-```
+
+O backend já libera CORS para as três origens; para mudar, ajuste
+`CORS_ORIGIN`.
 
 ---
 
 # Banco de dados
 
-O sistema utiliza **PostgreSQL** em todos os ambientes (desenvolvimento e produção) — não há mais uso de SQLite.
+PostgreSQL em todos os ambientes.
 
-```
-prisma/
-  schema.prisma
-  migrations/
-```
-
-Para gerar e aplicar uma migração em desenvolvimento:
-
-```
-npx prisma migrate dev
+```bash
+npx prisma migrate dev      # criar e aplicar migração (desenvolvimento)
+npx prisma migrate deploy   # aplicar migrações existentes (produção)
+npx prisma generate         # regenerar o Client
 ```
 
-Para aplicar migrações já criadas (produção):
+> **Sempre rode `npx prisma generate` após mudar o schema ou trocar de
+> branch.** Um Client desatualizado produz erros de tipo em massa que
+> descrevem propriedades inexistentes — falhas fantasma que não correspondem a
+> nenhum defeito real do código.
 
-```
-npx prisma migrate deploy
-```
+Antes de `migrate deploy` em produção: **faça backup**. Migrações deste projeto
+já removeram colunas e tornaram `Unidade.contaId` `NOT NULL`.
 
-Para atualizar o Client:
-
-```
-npx prisma generate
-```
+Modelo completo: [`banco-de-dados.md`](banco-de-dados.md).
 
 ---
 
-# Autenticação e perfis
+# Testes
 
-A autenticação utiliza JWT. Fluxo:
-
+```bash
+npm run test:db:preparar    # uma vez, cria o banco da suíte
+npm test                    # 663 testes do Tenant Plane
+cd control-plane && npm test  # 188 testes do Control Plane
+cd sgcl-web && npm test       # 48 testes do frontend
 ```
-Login → JWT → Authorization Bearer → Middleware (ensureAuthenticated) → ensureRole → Controller → Service
-```
 
-Perfis disponíveis:
-
-- **SUPERADMIN** — acesso irrestrito a todas as unidades; bypassa qualquer checagem de `ensureRole`.
-- **ADMIN** — gestão completa da(s) própria(s) unidade(s).
-- **PROFESSOR** — pedagógico, aulas, graduações, competições; dados de aluno redigidos.
-- **RECEPCAO** — cadastros, financeiro, mensalidades, mensagens.
-
-Um usuário Admin, Professor ou Recepção pode estar vinculado a mais de uma unidade (tabela `UsuarioUnidade`) — nesse caso, escolhe qual unidade está "ativa" através de um seletor no cabeçalho, e um Superadmin pode "visualizar como" qualquer unidade específica ou todas juntas.
-
-Matriz completa de permissões por perfil e módulo: [`seguranca.md`](seguranca.md) e [`regras-de-negocio.md`](regras-de-negocio.md).
+A suíte **apaga registros** e recusa rodar contra qualquer banco que não se
+identifique como de teste. Estratégia completa: [`testes.md`](testes.md).
 
 ---
 
-# Organização dos módulos
-
-Módulos atuais do backend (`src/modules/`):
-
-- `unidades`, `arenas` — multi-tenant
-- `auth`, `usuarios` — autenticação e gestão de usuários
-- `alunos`, `responsaveis`
-- `turmas`, `aulas`
-- `curriculos`, `tecnicas`, `comportamentos`
-- `graduacoes`
-- `mensalidades`, `planos`, `financeiro`
-- `competicoes`
-- `avisos`, `mensagens`
-- `relatorios`, `dashboard`
-- `uploads`
-
-O frontend espelha a maior parte desses módulos em `sgcl-web/src/modules/`.
-
----
-
-# Estado atual do projeto
-
-Situação
+# Estado atual
 
 ```
-Desenvolvimento ativo — multi-unidade (multi-tenant) em produção
+1.0.0-rc — Tenant Plane em produção com uma academia real.
+Control Plane construído e testado, aguardando publicação.
+Resolução de tenant implementada e desligada por flag.
 ```
 
-O sistema já opera com múltiplas unidades isoladas, controle de acesso granular por perfil e usuários vinculados a mais de uma unidade — capacidades que antes eram tratadas como visão de longo prazo (SaaS) e hoje já são realidade.
-
----
-
-# Próximas funcionalidades
-
-- Evolução técnica avançada
-- Financeiro completo (PIX)
-- WhatsApp
-- Relatórios em PDF/Excel
-- Ranking, medalhas e estatísticas de competições
-- Certificados automáticos de graduação
-
-Ver [`roadmap.md`](roadmap.md) para o planejamento completo.
+Planejamento e próximos passos: [`roadmap.md`](roadmap.md).
 
 ---
 
 # Documentação
 
-Toda a documentação do projeto encontra-se na pasta `docs/`.
-
-Arquivos principais:
-
-- [`roadmap.md`](roadmap.md) — planejamento estratégico
-- [`arquitetura.md`](arquitetura.md) — arquitetura geral
-- [`backend.md`](backend.md) — convenções do backend
-- [`frontend.md`](frontend.md) — convenções do frontend
-- [`banco-de-dados.md`](banco-de-dados.md) — modelo de dados completo
-- [`api.md`](api.md) — endpoints da API
-- [`regras-de-negocio.md`](regras-de-negocio.md) — regras de negócio (RN)
-- [`seguranca.md`](seguranca.md) — segurança e controle de acesso
-- [`modelo-pedagogico.md`](modelo-pedagogico.md) — modelo pedagógico
-- [`ux-padrao.md`](ux-padrao.md) — padrão de UX/UI (paleta, tipografia, componentes)
-- [`deploy.md`](deploy.md) — processo de deploy
-- [`testes.md`](testes.md) — estratégia de testes
-- [`changelog.md`](changelog.md) — histórico de versões
-- [`architecture-decisions.md`](architecture-decisions.md) — ADRs
-
----
-
-# Licença
-
-Projeto desenvolvido exclusivamente para a **Cia de Lutas Weberty Viana**.
-
-Todos os direitos reservados.
+| Arquivo | Conteúdo |
+|---|---|
+| [`roadmap.md`](roadmap.md) | Estado atual e próximos passos |
+| [`arquitetura.md`](arquitetura.md) | Arquitetura geral e camadas |
+| [`architecture-decisions.md`](architecture-decisions.md) | ADRs |
+| [`control-plane-b2b.md`](control-plane-b2b.md) | Sistema comercial B2B |
+| [`resolucao-tenant.md`](resolucao-tenant.md) | Resolução por hostname e contexto |
+| [`operacao-bancos-exclusivos.md`](operacao-bancos-exclusivos.md) | Operação dos bancos por academia |
+| [`mapa-extracao-control-plane.md`](mapa-extracao-control-plane.md) | Mapa da separação dos planos |
+| [`backend.md`](backend.md) | Convenções do backend |
+| [`frontend.md`](frontend.md) | Convenções do frontend |
+| [`banco-de-dados.md`](banco-de-dados.md) | Modelo de dados |
+| [`api.md`](api.md) | Endpoints |
+| [`regras-de-negocio.md`](regras-de-negocio.md) | Regras de negócio (RN) |
+| [`seguranca.md`](seguranca.md) | Segurança e controle de acesso |
+| [`modelo-pedagogico.md`](modelo-pedagogico.md) | Modelo pedagógico |
+| [`ux-padrao.md`](ux-padrao.md) | Padrão de UX/UI |
+| [`deploy.md`](deploy.md) | Deploy |
+| [`testes.md`](testes.md) | Estratégia de testes |
+| [`coding-standards.md`](coding-standards.md) | Padrões de código |
+| [`changelog.md`](changelog.md) | Histórico |
 
 ---
 
 # Autor
 
-Projeto idealizado e desenvolvido por
+**Paulo Otávio** — Analista de Sistemas, Full Stack Developer
+Brasília – DF, Brasil
 
-**Paulo Otávio**
-
-Analista de Sistemas
-
-Full Stack Developer
-
-Brasília – DF
-
-Brasil
+Todos os direitos reservados.

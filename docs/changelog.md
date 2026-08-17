@@ -32,6 +32,81 @@ Funcionalidades descontinuadas.
 
 ---
 
+# 1.0.0-rc — Agosto/2026
+
+## Separação em dois planos e isolamento por academia
+
+Marco em que o Sys Belt deixa de ser um sistema de uma academia e passa a ser
+uma plataforma vendida por assinatura, com banco exclusivo por cliente.
+
+### Adicionado
+
+- **Control Plane** (`control-plane/`): sistema comercial B2B com banco
+  próprio — assinantes, contatos, planos, assinaturas, faturas, licenças por
+  unidade, operadores, auditoria, dashboard e provisionamento. 14 módulos,
+  188 testes.
+- **Diretório de tenants**: resolve slug → banco, autenticado backend-backend
+  por segredo compartilhado com comparação em tempo constante. Devolve a
+  referência do segredo no cofre, nunca a connection string.
+- **Concessões assinadas (Ed25519)**: o Control Plane assina uma projeção dos
+  recursos contratados; o Tenant Plane verifica localmente, sem consulta
+  cruzada entre bancos em tempo de requisição.
+- **Resolução de tenant por hostname**: parser de host, cache com TTL positivo
+  e negativo, provider de segredos no AWS Secrets Manager e registry de
+  clients Prisma com limite e expiração por ociosidade. Ativável por flag.
+- **Health check de readiness** (`GET /health/tenant-resolution`), registrado
+  antes da resolução para continuar diagnosticável com configuração
+  incompleta, e devolvendo apenas indicadores booleanos.
+- **Preflight de ativação** (`npm run tenant:preflight`) com as três fases
+  configuração → habilitada → obrigatória, recusando combinações
+  inconsistentes de flags.
+- **Auditoria de fronteira** (`npm run tenant:auditar-fronteira`): verifica se
+  o banco atual já está em condição de ser tratado como tenant único.
+- **Snapshot de contagem** Tenant → Control Plane, base da cobrança por faixa.
+- **Cobrança por faixa de alunos, somada por unidade**, com aluno lotado em
+  mais de uma unidade contando uma vez em cada. Cálculo puro, em centavos,
+  com teto por aritmética inteira.
+- **Cofre de credenciais de gateway** por assinante, cifradas com AES-256-GCM.
+- **Contratos versionados** entre os planos, em `contracts/`.
+- Perfil **DONO**, que alcança todas as filiais da própria conta e herda as
+  permissões de ADMIN.
+
+### Alterado
+
+- Toda a camada de dados migrou do client Prisma global para um client **por
+  requisição** (`prismaDaRequisicao()`), resolvido a partir do contexto do
+  tenant — 47 módulos.
+- A gestão de unidades e o vínculo de usuários a unidades passaram do operador
+  do SaaS para o DONO da academia.
+- O build do Control Plane passou a usar `tsconfig.build.json`, que exclui
+  arquivos de teste da emissão — o Netlify trata cada arquivo do diretório de
+  functions como uma serverless function, e o ponto em
+  `provisionar-background.test` é caractere inválido que aborta o deploy
+  inteiro.
+
+### Removido
+
+- **Perfil `SUPERADMIN`.** O operador do SaaS passou a ter autenticação e
+  banco próprios no Control Plane. Usuários com esse perfil em bancos
+  anteriores são recusados no login e em toda requisição autenticada, com
+  HTTP 403 — a guarda é intencional e permanece enquanto existirem bancos
+  anteriores à separação.
+- Rotas de administração comercial do Tenant Plane. `/plataforma` ficou com um
+  único endpoint de leitura (`GET /minha-assinatura`); planos, assinantes,
+  cobrança e fechamento pertencem exclusivamente ao Control Plane. Manter os
+  dois lados capazes de escrever o mesmo dado comercial criaria divergência
+  sem fonte da verdade.
+- Telas de administração B2B do `sgcl-web`.
+
+### Guardas
+
+- `PrismaGlobalArquitetura.test.ts` varre `src/` e falha se qualquer arquivo
+  de produção importar o Prisma global. Sem essa guarda, um único import
+  esquecido reintroduziria vazamento entre academias sem que nenhum teste
+  funcional acusasse.
+
+---
+
 # 0.1.0-alpha
 
 ## Fundação do Projeto

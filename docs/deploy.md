@@ -1,633 +1,262 @@
 # Deploy
 
-Versão: 1.0
+Versão do documento: 2.0
 
-Última atualização: Julho/2026
+Última atualização: Agosto/2026
 
 ---
 
 # Objetivo
 
-Este documento descreve o processo oficial de implantação (Deploy) do Sys Belt - Sistema Faixa Preta.
-
-Seu objetivo é garantir que qualquer desenvolvedor consiga publicar uma nova versão do sistema de forma segura, reproduzível e documentada.
+Descrever como publicar o Sys Belt, quais sites existem, o que cada um lê de
+ambiente e quais passos são manuais por decisão.
 
 ---
 
 # Ambientes
 
-O Sys Belt possui três ambientes.
+Existem dois ambientes reais: **desenvolvimento local** e **produção**. Não há
+homologação. O documento anterior descrevia SQLite em desenvolvimento e um
+ambiente Docker de homologação — ambos foram descontinuados.
 
-## Desenvolvimento
-
-Objetivo
-
-Desenvolvimento diário.
-
-Banco
-
-SQLite
-
-Frontend
-
-Vite
-
-Backend
-
-Node.js
+| | Desenvolvimento | Produção |
+|---|---|---|
+| Banco | PostgreSQL local | PostgreSQL gerenciado (Neon) |
+| Backend | `npm run dev` (ts-node-dev) | Netlify Functions |
+| Frontend | Vite dev server | Netlify (estático) |
 
 ---
 
-## Homologação
+# Sites publicados
 
-Objetivo
+Todos saem do mesmo repositório, diferenciados pelo **base directory**:
 
-Testes antes da produção.
+| Site | Base directory | O que é |
+|---|---|---|
+| `sysbeltfp` | *(raiz)* | Tenant Plane (API) + `sgcl-web` |
+| `sysbelt-control-plane` | `control-plane` | Control Plane B2B |
+| `sysbeltportalfamilia` | `sgcl-portal-familia` | Portal da Família |
+| `portalprofessorsysbelt` | `sgcl-portal-professor` | Portal do Professor |
+| `ciadelutas` | `landing-academia` | Site institucional da academia |
 
-Banco
-
-PostgreSQL
-
-Servidor
-
-Docker
-
----
-
-## Produção
-
-Objetivo
-
-Uso oficial da academia.
-
-Banco
-
-PostgreSQL
-
-Servidor
-
-Docker
-
-HTTPS
-
-Backup automático
-
-Monitoramento
+Quando o base directory está definido, o Netlify lê o `netlify.toml`
+**daquele diretório**, e os caminhos de `publish` e `functions` são relativos
+a ele.
 
 ---
 
-# Estrutura
+# Tenant Plane (`sysbeltfp`)
 
-```
-Internet
+## Build
 
-↓
+`netlify.toml` da raiz:
 
-Nginx
-
-↓
-
-Frontend React
-
-↓
-
-API Express
-
-↓
-
-PostgreSQL
+```toml
+command = "npm ci --include=dev && npx prisma generate && DATABASE_URL=${DIRECT_DATABASE_URL:-$DATABASE_URL} npx prisma migrate deploy && cd sgcl-web && npm ci --include=dev && npm run build"
+publish = "sgcl-web/dist"
 ```
 
----
+Dois detalhes que parecem redundantes e não são:
 
-# Tecnologias
+**`--include=dev`** é obrigatório porque `NODE_ENV = "production"` está
+definido em `[build.environment]`. Com essa variável, o npm omite
+`devDependencies` — e o build quebra em `tsc` com
+`TS2688: Cannot find type definition file for 'node'`. O erro engana: o `tsc`
+sobrevive como dependência transitiva, então o comando roda e falha na
+resolução de tipos, apontando para tipos em vez de para dependência faltando.
 
-Frontend
+**`DIRECT_DATABASE_URL`** existe porque `prisma migrate deploy` usa uma trava
+de sessão (`pg_advisory_lock`) que não funciona de forma confiável através de
+um pooler. Contra o endpoint `-pooler` do Neon, isso causa timeouts
+intermitentes (P1002). Só esse comando roda com a conexão direta; se a
+variável não existir, cai no `DATABASE_URL` de sempre, sem mudança de
+comportamento.
 
-React
+## Variáveis
 
-Vite
+| Variável | Papel |
+|---|---|
+| `DATABASE_URL` | Banco operacional |
+| `DIRECT_DATABASE_URL` | Conexão direta, só para migrations |
+| `JWT_SECRET` | Assinatura dos tokens |
+| `CHAVE_SEGREDOS` | Cofre AES-256-GCM das credenciais de gateway (32 bytes em hex = 64 caracteres) |
+| `CORS_ORIGIN` | Origens permitidas |
+| `TENANT_RESOLUTION_ENABLED` | Liga a resolução por hostname |
+| `TENANT_RESOLUTION_REQUIRED` | Torna o contexto de tenant obrigatório |
+| `CONTROL_PLANE_URL` | Origem do Control Plane (sem caminho) |
+| `TENANT_DIRECTORY_SECRET` | Segredo compartilhado do diretório |
+| `TENANT_APP_BASE_DOMAIN` | Domínio base dos tenants |
+| `TENANT_SCHEMA_COMPATIBLE_VERSIONS` | Migrações aceitas nos bancos de tenant |
+| `AWS_REGION` | Região do Secrets Manager |
 
-TypeScript
+> **`CHAVE_SEGREDOS` nunca vai para o Git.** Rotacioná-la torna ilegíveis todas
+> as credenciais já cifradas.
 
----
-
-Backend
-
-Node.js
-
-Express
-
-TypeScript
-
----
-
-Banco
-
-PostgreSQL
-
----
-
-ORM
-
-Prisma
-
----
-
-Container
-
-Docker
-
-Docker Compose
-
----
-
-Servidor Web
-
-Nginx
+> **`CONTROL_PLANE_URL` deve ser só a origem.** O caminho é montado com
+> `new URL("/api/diretorio/v1/tenants/<slug>", base)` — um caminho absoluto
+> descarta qualquer caminho presente na base. Escrever `.../api` não quebra
+> nada, mas fica no painel parecendo que significa algo.
 
 ---
 
-SSL
+# Control Plane (`sysbelt-control-plane`)
 
-Let's Encrypt
+## Configuração do site
 
----
+| Campo | Valor |
+|---|---|
+| Base directory | `control-plane` |
+| Build command | `npm ci --include=dev && npm run build` |
+| Publish | `public` |
+| Functions | `dist/netlify/functions` |
 
-# Variáveis de Ambiente
+Os três últimos vêm do `control-plane/netlify.toml` e não precisam ser
+preenchidos na interface — o arquivo prevalece sobre o painel.
 
-Backend
+O `build` usa `tsconfig.build.json`, que exclui `**/*.test.ts`. Sem isso, o
+`tsc` emitiria `dist/netlify/functions/provisionar-background.test.js`, e o
+Netlify trata **cada arquivo desse diretório como uma serverless function** — o
+ponto no nome é caractere inválido, e o deploy inteiro é abortado, não apenas
+aquela function. A checagem de tipos dos testes não se perde: `npm run
+typecheck` continua usando o `tsconfig.json` completo, e a CI roda os dois.
 
-```
-DATABASE_URL=
+## Variáveis
 
-JWT_SECRET=
+| Variável | Obrigatória | Papel |
+|---|---|---|
+| `CONTROL_PLANE_DATABASE_URL` | sim | Banco comercial |
+| `CONTROL_PLANE_JWT_SECRET` | sim | Tokens de operador |
+| `CONTROL_PLANE_DIRECTORY_SECRET` | sim | Segredo do diretório (≥ 32 caracteres) |
+| `CONTROL_PLANE_GRANT_PRIVATE_KEY` | para concessões | Chave Ed25519 |
+| `CONTROL_PLANE_WORKER_SECRET` | para provisionamento | Autentica o worker |
+| `PROVISIONAMENTO_REAL_HABILITADO` | não | Mantida `false` até cofre e Neon prontos |
+| `NEON_API_KEY`, `AWS_*` | para provisionamento | Adaptadores de infraestrutura |
 
-JWT_EXPIRES_IN=
+As não definidas **falham fechado**: o worker de provisionamento responde 503
+enquanto `PROVISIONAMENTO_REAL_HABILITADO` não for `true`, que é o estado
+desejado enquanto o caminho não está pronto.
 
-PORT=
-```
+`CONTROL_PLANE_DIRECTORY_SECRET` e `TENANT_DIRECTORY_SECRET` são **o mesmo
+segredo** com nomes diferentes nos dois lados. Gere com:
 
-Frontend
-
-```
-VITE_API_URL=
-```
-
-Nunca armazenar senhas diretamente no código.
-
----
-
-# Estrutura de Produção
-
-```
-/opt/sgcl
-
-backend/
-
-frontend/
-
-docker-compose.yml
-
-.env
-
-backups/
-
-logs/
+```bash
+openssl rand -hex 32
 ```
 
----
+## Migrações
 
-# Docker
+O `build` do Control Plane é apenas `tsc` — **não aplica migrações**. Este
+passo é manual e precede o primeiro deploy:
 
-Containers
+```bash
+cd control-plane
+CONTROL_PLANE_DATABASE_URL="postgresql://..." npx prisma migrate deploy
+```
 
-Frontend
-
-Backend
-
-PostgreSQL
-
-Nginx
-
----
-
-# Docker Compose
-
-Serviços
-
-frontend
-
-backend
-
-database
-
-nginx
+Esperado: `8 migrations found` e `All migrations have been successfully
+applied.`
 
 ---
 
-# Banco
+# Verificação pós-deploy
 
-Desenvolvimento
+## Control Plane
 
-SQLite
+```bash
+curl -s https://sysbelt-control-plane.netlify.app/api/health
+# {"service":"sysbelt-control-plane","status":"ok"}
 
-Produção
+curl -i https://sysbelt-control-plane.netlify.app/api/diretorio/v1/tenants/teste
+# 401 — {"mensagem":"Integração não autorizada."}
 
-PostgreSQL
-
----
-
-# Migrações
-
-Sempre executar:
-
-```
-npx prisma migrate deploy
+curl -i -H "x-sysbelt-directory-secret: $SEGREDO" \
+  https://sysbelt-control-plane.netlify.app/api/diretorio/v1/tenants/teste
+# 404 — autenticado; o tenant "teste" não existe
 ```
 
-Nunca utilizar:
+O **404 é o teste que importa**. Os outros dois provam que a function subiu; só
+o terceiro prova que o segredo bate dos dois lados.
 
+## Tenant Plane
+
+```bash
+curl -s https://sysbeltfp.netlify.app/api/health/tenant-resolution
 ```
-migrate dev
+
+```json
+{
+  "service": "tenant-resolution",
+  "status": "legacy",
+  "habilitada": false,
+  "obrigatoria": false,
+  "configuracaoValida": true,
+  "awsConfigurada": true,
+  "prontaParaAtivar": true
+}
 ```
 
-em produção.
+> **`prontaParaAtivar: true` não prova conectividade.**
+> `lerConfiguracaoResolucaoTenant` não faz nenhuma chamada de rede. O verde diz
+> que as variáveis existem e têm formato aceitável — nada mais. Um segredo
+> digitado errado num dos lados continua dando verde aqui.
 
----
+Ou, pelo script, que também recusa combinações inconsistentes de flags:
 
-# Prisma
-
-Atualizar Client
-
-```
-npx prisma generate
+```bash
+npm run tenant:preflight -- --fase=configuracao https://sysbeltfp.netlify.app
 ```
 
 ---
 
-# Build
+# Testar sem publicar
 
-Frontend
+Útil quando o build está indisponível — por exemplo, com os minutos de build
+do plano esgotados.
 
+Rodando local, **não há prefixo `/api`**: ele vem do wrapper serverless
+(`serverless(app, { basePath: "/api" })`), não do Express.
+
+```bash
+cd control-plane && npm run dev          # porta 3334
+curl -s localhost:3334/health
+curl -i -H "x-sysbelt-directory-secret: $SEGREDO" \
+  localhost:3334/diretorio/v1/tenants/teste
 ```
+
+```bash
+npm run dev                              # porta 3333
+curl -s localhost:3333/health/tenant-resolution
+```
+
+Local aceita `http://` em `CONTROL_PLANE_URL`: a exigência de HTTPS em
+`infraTenant.ts` só se aplica quando `NODE_ENV === "production"`.
+
+Para publicar sem consumir minutos de build, compile na máquina e envie o
+artefato pronto:
+
+```bash
+cd control-plane
 npm run build
+netlify deploy --prod --dir=public --functions=dist/netlify/functions
 ```
 
-Backend
-
-```
-npm run build
-```
+As variáveis continuam vindo do painel.
 
 ---
 
-# Inicialização
+# Cuidados em produção
 
-Backend
+**Backup antes de `prisma migrate deploy`.** Migrações deste projeto já
+removeram colunas e tornaram `Unidade.contaId` `NOT NULL`.
 
-```
-npm start
-```
+**`TENANT_RESOLUTION_REQUIRED=true` com `ENABLED=false` derruba a API.** O
+`throw` acontece na carga do módulo (`resolucaoTenantAtivavel.ts:10`) e nem o
+health check responde. As duas variáveis nunca devem divergir nesse sentido —
+ative sempre na ordem: configuração → habilitada → obrigatória.
 
-ou
+**A suíte de testes apaga registros.** Ela recusa qualquer banco que não se
+identifique como de teste. A escotilha `PERMITIR_TESTE_EM_BANCO_REAL=1` existe
+para casos conscientes e imprime aviso — nunca a use contra produção.
 
-```
-node dist/server.js
-```
-
----
-
-# Processo de Deploy
-
-1.
-
-Atualizar código
-
-↓
-
-2.
-
-Instalar dependências
-
-↓
-
-3.
-
-Executar migrações
-
-↓
-
-4.
-
-Gerar Prisma Client
-
-↓
-
-5.
-
-Build
-
-↓
-
-6.
-
-Reiniciar containers
-
-↓
-
-7.
-
-Validar aplicação
-
----
-
-# Atualização
-
-Fluxo
-
-Git Pull
-
-↓
-
-npm install
-
-↓
-
-Prisma Generate
-
-↓
-
-Migrate Deploy
-
-↓
-
-Build
-
-↓
-
-Restart
-
----
-
-# Backup
-
-Backup diário
-
-Banco PostgreSQL
-
-↓
-
-Arquivo SQL
-
-↓
-
-Compactação
-
-↓
-
-Armazenamento externo
-
----
-
-Retenção
-
-7 dias
-
-30 dias
-
-12 meses
-
----
-
-# Logs
-
-Backend
-
-Logs de aplicação
-
----
-
-Nginx
-
-Logs HTTP
-
----
-
-Banco
-
-Logs de consultas críticas
-
----
-
-# Monitoramento
-
-CPU
-
-RAM
-
-Espaço em disco
-
-Tempo de resposta
-
-Uso de banco
-
-Disponibilidade
-
----
-
-# SSL
-
-Todos os acessos deverão utilizar HTTPS.
-
-Certificado
-
-Let's Encrypt
-
-Renovação automática.
-
----
-
-# Segurança
-
-Nunca expor
-
-.env
-
-Banco
-
-JWT_SECRET
-
-Logs sensíveis
-
----
-
-# Firewall
-
-Permitir apenas
-
-80
-
-443
-
-22 (SSH)
-
-Bloquear portas internas.
-
----
-
-# Banco
-
-Acesso apenas pelo backend.
-
-Nunca permitir acesso público ao PostgreSQL.
-
----
-
-# Estratégia de Atualização
-
-Deploy azul/verde (planejado)
-
-ou
-
-Deploy Rolling
-
-Objetivo
-
-Zero indisponibilidade.
-
----
-
-# Recuperação
-
-Caso uma atualização falhe.
-
-Restaurar
-
-↓
-
-Container anterior
-
-↓
-
-Banco
-
-↓
-
-Backup
-
----
-
-# Versionamento
-
-Todas as versões deverão possuir:
-
-Tag Git
-
-Número da versão
-
-Registro no changelog
-
----
-
-# CI/CD (Futuro)
-
-Pipeline
-
-GitHub
-
-↓
-
-Testes
-
-↓
-
-Build
-
-↓
-
-Deploy
-
-↓
-
-Homologação
-
-↓
-
-Produção
-
----
-
-# Checklist de Deploy
-
-Antes
-
-- Código revisado
-- Testes executados
-- Migrações validadas
-
-Durante
-
-- Backup realizado
-- Deploy executado
-- Logs monitorados
-
-Depois
-
-- Login funcionando
-- Dashboard funcionando
-- Cadastro funcionando
-- Banco atualizado
-- API respondendo
-- Monitoramento ativo
-
----
-
-# Recuperação de Desastres
-
-Em caso de falha grave.
-
-1.
-
-Restaurar banco
-
-↓
-
-2.
-
-Restaurar containers
-
-↓
-
-3.
-
-Validar versão
-
-↓
-
-4.
-
-Liberar acesso
-
----
-
-# Roadmap
-
-Próximas melhorias
-
-- Kubernetes
-- Balanceamento de carga
-- Redis
-- CDN
-- Cache
-- Observabilidade
-- Prometheus
-- Grafana
-- Sentry
-- Deploy automático
-
----
-
-# Conclusão
-
-O processo de Deploy do Sys Belt foi projetado para garantir segurança, disponibilidade e rastreabilidade, permitindo que novas versões sejam publicadas com mínimo risco e máxima previsibilidade.
+**Segredos não entram em `.env` versionado, em commit, nem em chat.** Se um
+vazar, rotacione antes de qualquer outra coisa.

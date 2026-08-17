@@ -40,11 +40,31 @@ Campos padrão `createdAt` / `updatedAt`, sempre armazenados em UTC.
 
 Utilizar nomes positivos: `ativo`, `presente`, `responsavelFinanceiro`, `recebeComunicados`, `pago`. Nunca nomes negativos.
 
-## Multi-tenant (`unidadeId`)
+## Duas fronteiras diferentes: academia e unidade
 
-Toda entidade operacional carrega um campo `unidadeId` (FK para `Unidade`). O escopo por unidade é aplicado de forma centralizada nos Services através dos utilitários `escopoUnidade()` e `garantirAcessoUnidade()` (`shared/utils/escopoUnidade.ts`) — nunca filtrando manualmente em cada query.
+É preciso distinguir dois níveis de isolamento, que operam por mecanismos
+distintos.
 
-`unidadeId` nulo é exclusivo do usuário SUPERADMIN (e, por extensão, de `escopoUnidade(null)`, que remove o filtro — usado quando o SUPERADMIN está "vendo todas as unidades").
+**Entre academias, o isolamento é físico.** Cada academia assinante tem um
+**banco de dados exclusivo**. Não existe campo que separe academias dentro do
+mesmo banco, porque não existe banco compartilhado entre elas. O acesso passa
+sempre por `prismaDaRequisicao()`, que devolve o client do tenant resolvido
+para aquela requisição — nenhum arquivo de produção importa o Prisma global, e
+um teste de arquitetura falha se algum passar a importar.
+
+**Entre unidades da mesma academia, o isolamento é por coluna.** Toda entidade
+operacional carrega `unidadeId` (FK para `Unidade`), aplicado de forma
+centralizada nos Services através de `escopoUnidade()` e
+`garantirAcessoUnidade()` (`shared/utils/escopoUnidade.ts`) — nunca filtrando
+manualmente em cada query.
+
+Unidades da mesma academia **compartilham dados entre si**: um aluno pode
+treinar em mais de uma unidade da mesma rede, e conta uma vez em cada unidade
+onde está lotado para efeito de cobrança.
+
+`escopoUnidade(null)` remove o filtro de unidade e é usado pelo `DONO`, que
+alcança todas as filiais da própria conta — e apenas dela, porque o banco em
+que a consulta roda já é o da academia dele.
 
 ---
 
@@ -121,7 +141,7 @@ Responsável pela autenticação e controle de acesso.
 Campos
 
 - id
-- unidadeId (nulo só para SUPERADMIN; para os demais perfis, é a **unidade ativa** no momento)
+- unidadeId (a **unidade ativa** no momento; nulo para o `DONO`, que alcança todas as filiais da conta)
 - nome
 - apelido
 - email (único)
@@ -136,16 +156,20 @@ Campos
 Relacionamentos
 
 - `turmas` — turmas em que o usuário é o professor titular (`Turma.professorId`).
-- `unidadesVinculadas` (`UsuarioUnidade[]`) — todas as unidades que o usuário pode acessar. Admin, Professor e Recepção podem ter mais de uma; só o SUPERADMIN monta essa lista.
+- `unidadesVinculadas` (`UsuarioUnidade[]`) — todas as unidades que o usuário pode acessar. Qualquer perfil pode ter mais de uma; quem monta essa lista é o `DONO` (ou um `ADMIN`), sempre restrito às unidades da própria conta.
 - `aulasSubstituindo` (`AulaProgramada[]`) — aulas programadas em que esse usuário é o professor substituto (transferência de aula).
 - `avisosReconhecidos` — avisos/notificações já reconhecidos pelo usuário.
 
 Perfis
 
-- SUPERADMIN
+- DONO
 - ADMIN
 - PROFESSOR
 - RECEPCAO
+
+> `SUPERADMIN` foi removido. Registros com esse perfil em bancos anteriores à
+> separação dos planos permanecem no banco, mas são recusados no login e em
+> toda requisição autenticada.
 
 ---
 

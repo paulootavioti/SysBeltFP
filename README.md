@@ -1,14 +1,30 @@
 # Sys Belt - Sistema Faixa Preta
 
-> Plataforma de gestão multi-unidade para academias de Jiu-Jitsu, unindo administração, financeiro e planejamento pedagógico.
+> Plataforma SaaS de gestão para academias de artes marciais, unindo administração, financeiro e planejamento pedagógico.
 
-Projeto desenvolvido para a **Cia de Lutas Weberty Viana**.
+Primeira academia em produção: **Cia de Lutas Weberty Viana**.
 
 ---
 
 ## O que é
 
-O Sys Belt centraliza a gestão de uma ou mais unidades (filiais) de uma academia: alunos, responsáveis, turmas, arenas (tatames/salas), aulas, planejamento pedagógico, graduações, financeiro, competições e relatórios. Cada unidade tem seus dados isolados dos demais — o sistema é multi-tenant desde a base.
+O Sys Belt centraliza a gestão de uma ou mais unidades (filiais) de uma academia: alunos, responsáveis, turmas, arenas (tatames/salas), aulas, planejamento pedagógico, graduações, financeiro, competições e relatórios.
+
+O produto é vendido por assinatura mensal, cobrada por faixa de alunos: cada faixa cobre até 10 alunos e custa R$ 37,00, somada **por unidade** — uma academia com 12 alunos numa filial e 8 em outra paga 3 faixas.
+
+**Cada academia assinante opera sobre um banco de dados exclusivo.** O isolamento entre clientes é físico, não lógico: não há tabela compartilhada e nenhuma consulta alcança dados de outro assinante. Dentro da mesma academia, as unidades compartilham dados entre si.
+
+## Os dois planos
+
+| | Control Plane (`control-plane/`) | Tenant Plane (`src/`) |
+|---|---|---|
+| Quem usa | Operador do SaaS | A academia assinante |
+| Banco | Um, exclusivo do SysBelt | Um por academia |
+| Guarda | Assinantes, planos, faturas, licenças, provisionamento | Alunos, turmas, aulas, financeiro da academia |
+
+O Tenant Plane não conhece preço nem qualquer outro assinante. O que ele sabe sobre a própria assinatura chega por uma **concessão assinada** (Ed25519), verificada localmente — sem consulta cruzada entre bancos a cada requisição.
+
+Visão completa em [`docs/README.md`](docs/README.md) e [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Estrutura do repositório
 
@@ -16,7 +32,12 @@ O Sys Belt centraliza a gestão de uma ou mais unidades (filiais) de uma academi
 sysbeltfp/
 ├── src/                    # backend (API REST — Express + Prisma + PostgreSQL)
 ├── sgcl-web/               # frontend da equipe (React + TypeScript + Vite)
+├── control-plane/          # Control Plane B2B — sistema comercial (banco próprio)
+├── contracts/              # contratos versionados entre os dois planos
 ├── sgcl-portal-familia/    # Portal da Família — app separado (React + TypeScript + Vite)
+├── sgcl-portal-professor/  # Portal do Professor — app separado (mobile-first)
+├── landing/                # site institucional do SysBelt
+├── landing-academia/       # site institucional da academia
 ├── prisma/                 # schema.prisma e migrations
 ├── docs/                   # documentação completa do projeto
 └── netlify/                # functions usadas no deploy (Netlify)
@@ -45,7 +66,7 @@ Aplicação em `http://localhost:5173`.
 
 ### Portal do Professor
 
-App **separado** do `sgcl-web`, focado só no momento da aula (mobile-first, coluna única de largura de celular, sem sidebar/bottom tab bar). Diferente do Portal da Família: o professor **já é um `Usuario`** (perfil `PROFESSOR`) — reaproveita o mesmo login do `sgcl-web` (`POST /auth/login`), sem credencial nova. Depois do login, só perfis `PROFESSOR`/`ADMIN`/`SUPERADMIN` entram; qualquer outro perfil recebe uma mensagem explicando pra usar o `sgcl-web`. Consome a mesma API do backend (`/portal-professor/*`, além de reaproveitar `/aulas/programadas/:id/iniciar` e `/uploads` + `/fotos-treino` já existentes).
+App **separado** do `sgcl-web`, focado só no momento da aula (mobile-first, coluna única de largura de celular, sem sidebar/bottom tab bar). Diferente do Portal da Família: o professor **já é um `Usuario`** (perfil `PROFESSOR`) — reaproveita o mesmo login do `sgcl-web` (`POST /auth/login`), sem credencial nova. Depois do login, só perfis `PROFESSOR`/`ADMIN`/`DONO` entram; qualquer outro perfil recebe uma mensagem explicando pra usar o `sgcl-web`. Consome a mesma API do backend (`/portal-professor/*`, além de reaproveitar `/aulas/programadas/:id/iniciar` e `/uploads` + `/fotos-treino` já existentes).
 
 ```bash
 cd sgcl-portal-professor
@@ -196,7 +217,7 @@ Além da segurança, faz diferença de tempo: contra um Postgres local a suíte 
 
 | Perfil | Escopo |
 |---|---|
-| **SUPERADMIN** | Acesso irrestrito a todas as unidades; único perfil que cadastra unidades/arenas pelo Dashboard, cria outros SUPERADMIN e vincula usuários a múltiplas unidades. |
+| **DONO** | O dono da academia cliente. Alcança todas as filiais da própria conta e nenhuma de outra; cadastra unidades, vincula usuários a múltiplas unidades e consulta a própria assinatura. Onde um ADMIN passa, ele passa. |
 | **ADMIN** | Gestão completa da(s) própria(s) unidade(s) — pode estar vinculado a mais de uma. |
 | **PROFESSOR** | Aulas, chamada, planejamento pedagógico, graduações e competições; dados do Aluno redigidos (sem CPF/endereço/saúde/financeiro); pode dar aula em mais de uma unidade. |
 | **RECEPCAO** | Alunos, turmas, aulas, mensalidades, graduações, competições, planos, mensagens e relatórios da própria unidade. |

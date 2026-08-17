@@ -2,7 +2,7 @@
 
 Versão do documento: 1.0
 
-Última atualização: Julho/2026
+Última atualização: Agosto/2026
 
 ---
 
@@ -36,9 +36,7 @@ ORM
 
 Banco
 
-- SQLite (Desenvolvimento)
-
-- PostgreSQL (Produção)
+- PostgreSQL (todos os ambientes)
 
 Autenticação
 
@@ -346,13 +344,16 @@ Nunca utilizar SQL manual.
 
 # Banco
 
-Durante desenvolvimento
+PostgreSQL em todos os ambientes. Não há SQLite — ele existiu no início do
+projeto e foi descontinuado, para que desenvolvimento e produção não
+divergissem em tipos, constraints e comportamento transacional.
 
-SQLite
+Em produção, PostgreSQL gerenciado (Neon), com um banco exclusivo por academia
+assinante.
 
-Produção
-
-PostgreSQL
+Todo acesso passa por `prismaDaRequisicao()`, que devolve o client do tenant
+resolvido para aquela requisição. Nenhum arquivo de produção importa o client
+global — um teste de arquitetura falha se algum passar a importar.
 
 O Prisma permite alterar apenas o provider.
 
