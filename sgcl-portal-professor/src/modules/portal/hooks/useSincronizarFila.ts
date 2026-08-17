@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { AxiosError } from "axios";
 
 import { PortalProfessorService } from "../services/PortalProfessorService";
-import { lerFila, removerDaFila, enfileirar, type AcaoPendente } from "../utils/filaOffline";
+import { enfileirar, lerFila, type AcaoPendente } from "../utils/filaOffline";
+import { ehErroDeConexao, sincronizarFila } from "../utils/sincronizarFila";
 
 async function executarAcao(acao: AcaoPendente) {
   switch (acao.tipo) {
@@ -23,29 +23,11 @@ async function executarAcao(acao: AcaoPendente) {
   }
 }
 
-// só é "sem conexão" quando a request nem chegou a sair (sem response) —
-// um 400/403 real da API não deve ficar reenfileirado pra sempre.
-function ehErroDeConexao(error: unknown) {
-  return error instanceof AxiosError && !error.response;
-}
-
 export function useSincronizarFila() {
   const [pendentes, setPendentes] = useState(() => lerFila().length);
 
   const sincronizar = useCallback(async () => {
-    let fila = lerFila();
-    for (const acao of fila) {
-      try {
-        await executarAcao(acao);
-        fila = removerDaFila(acao.id);
-      } catch (error) {
-        if (ehErroDeConexao(error)) break;
-        // erro real (não é de conexão) — descarta pra não travar a fila
-        // com uma ação que nunca vai ter sucesso.
-        fila = removerDaFila(acao.id);
-      }
-    }
-    setPendentes(fila.length);
+    setPendentes(await sincronizarFila(executarAcao));
   }, []);
 
   useEffect(() => {
