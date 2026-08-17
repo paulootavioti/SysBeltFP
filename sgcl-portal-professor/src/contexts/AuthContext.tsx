@@ -2,13 +2,18 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { api } from "../services/api";
+import { ErroDeUsuario } from "../utils/ErroDeUsuario";
 import { AuthContext } from "./authContextData";
 import type { UsuarioProfessor } from "./authContextData";
 
 const CHAVE_USUARIO = "@portalProfessor:usuario";
 const CHAVE_TOKEN = "@portalProfessor:token";
 
-const PERFIS_PERMITIDOS = ["PROFESSOR", "ADMIN", "SUPERADMIN"];
+// DONO entra porque herda ADMIN em todo o resto do sistema; barrá-lo aqui
+// deixaria o dono da academia de fora do portal que ele usa para dar aula.
+// SUPERADMIN saiu da lista: o perfil não existe mais, e o backend recusa esse
+// login antes de chegar aqui.
+const PERFIS_PERMITIDOS = ["PROFESSOR", "ADMIN", "DONO"];
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -42,7 +47,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { usuario: usuarioLogado, token: tokenRecebido } = response.data;
 
     if (!PERFIS_PERMITIDOS.includes(usuarioLogado.perfil)) {
-      throw new Error(
+      throw new ErroDeUsuario(
         "Este acesso é exclusivo para professores. Use o sistema completo (sgcl-web) com seu login."
       );
     }

@@ -1,11 +1,12 @@
 import { api } from "../services/api";
 
-// O backend guarda a foto como caminho relativo a ELE ("/uploads/treinos/x.png"),
-// mas este app roda num domínio Netlify separado — usar o caminho cru num <img>
-// resolveria contra o domínio do portal, que não serve /uploads e devolve 404.
-// Por isso prefixamos com a base da API (mesma usada pelo axios).
+// O backend guarda a foto como caminho relativo a ELE ("/uploads/treinos/x.png").
+// Usar esse caminho cru num <img> resolveria contra o domínio do frontend, que
+// não serve /uploads. Por isso prefixamos com a base da API (a mesma do axios).
+// A url já vem assinada do backend (?exp=&sig=), então o <img> carrega sem
+// precisar de header de autenticação.
 export function resolverUrlUpload(url: string) {
-  if (/^(https?:)?\/\//.test(url) || url.startsWith("data:")) {
+  if (!url || /^(https?:)?\/\//.test(url) || url.startsWith("data:")) {
     return url;
   }
 
