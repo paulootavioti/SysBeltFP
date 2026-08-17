@@ -91,6 +91,33 @@ A extração será feita por fases compatíveis, não por remoção imediata:
 7. validar reconciliação;
 8. remover tabelas, rotas e código legado em versão posterior.
 
+### Situação da transição — Agosto/2026
+
+Fases 1 a 6 **concluídas**.
+
+- Contratos versionados em `contracts/`, com testes de fronteira.
+- Control Plane construído: 14 módulos, 188 testes, banco provisionado.
+- Concessão assinada com Ed25519, verificada localmente pelo Tenant Plane;
+  snapshot de contagem no sentido inverso.
+- Telas e rotas comerciais migradas. `/plataforma` ficou com um único endpoint
+  de leitura (`GET /minha-assinatura`), servido pelo próprio Tenant Plane a
+  partir da concessão — não por SSO com o Control Plane, como este ADR previa.
+  A área do cliente no Control Plane continua em aberto.
+- `SUPERADMIN` **eliminado**. Usuários com esse perfil em bancos anteriores
+  são recusados no login e em toda requisição autenticada, com HTTP 403
+  (`src/shared/security/superadminLegado.ts`).
+- Toda a camada de dados migrou para client Prisma por requisição, com teste
+  de arquitetura impedindo o uso do client global.
+
+Fases 7 e 8 **pendentes**: a reconciliação depende do primeiro tenant real
+provisionado, e a remoção de `Conta` do Tenant Plane depende dela. O script
+`npm run tenant:auditar-fronteira` mede a condição de saída — exige exatamente
+uma conta, unidades de uma única conta e nenhum `SUPERADMIN` ativo.
+
+A resolução de tenant por hostname está implementada e coberta por testes,
+porém **desligada em produção** (`TENANT_RESOLUTION_ENABLED=false`), à espera
+do domínio base e do cofre de segredos.
+
 ### Consequências
 
 - o financeiro B2B não compartilha banco nem autenticação com a operação da

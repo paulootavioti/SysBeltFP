@@ -1,667 +1,183 @@
 # Testes
 
-Versão: 1.0
+Versão do documento: 2.0
 
-Última atualização: Julho/2026
+Última atualização: Agosto/2026
 
 ---
 
-# Objetivo
+# Estado atual
 
-Este documento define a estratégia oficial de testes do Sys Belt - Sistema Faixa Preta.
+| Suíte | Arquivos | Testes |
+|---|---|---|
+| Tenant Plane (`src/`) | 142 | 663 |
+| Control Plane (`control-plane/`) | 67 | 188 |
+| `sgcl-web` | 9 | 48 |
+| `sgcl-portal-familia` | 0 | 0 |
+| `sgcl-portal-professor` | 0 | 0 |
 
-Seu objetivo é garantir que todas as funcionalidades entregues apresentem qualidade, estabilidade e segurança antes de serem disponibilizadas aos usuários.
+Os dois portais **não têm nenhum teste automatizado**. São justamente os
+frontends que lidam com dados de menores de idade e com autenticação de
+responsáveis. É a maior lacuna de qualidade do repositório e está registrada
+no [`roadmap.md`](roadmap.md).
+
+Tudo roda em CI (`.github/workflows/ci.yml`), em jobs separados por
+subprojeto, com um PostgreSQL de serviço.
 
 ---
 
 # Princípios
 
-Toda funcionalidade deverá ser:
+**Teste automatizado é parte da entrega, não etapa posterior.** A versão
+anterior deste documento dizia que testes manuais eram "a principal estratégia
+de validação". Não são mais.
 
-- testada
-- validada
-- homologada
-- documentada
+**O teste descreve o comportamento, não a implementação.** Um teste que quebra
+ao renomear um método interno, sem que nada tenha mudado para quem usa o
+sistema, custa mais do que protege.
 
-Nenhuma funcionalidade deve ser considerada concluída sem passar pelos critérios definidos neste documento.
+**Teste que passa por acidente é pior do que teste ausente**, porque produz
+confiança injustificada. Dois casos reais deste projeto:
 
----
-
-# Pirâmide de Testes
-
-                 E2E
-               Integração
-             Testes Unitários
-
----
-
-# Tipos de Teste
-
-O Sys Belt utiliza quatro níveis.
-
-- Testes manuais
-- Testes unitários
-- Testes de integração
-- Testes End-to-End
+- Um botão "Dar baixa" ficou fora da área visível de um modal de 600px. O
+  Playwright clicou nele mesmo assim e o teste passou. Só a captura de tela
+  revelou o problema.
+- Um `z.number().int()` aceitava `37.0` como `37` — um plano de R$ 37,00
+  passaria a cobrar R$ 0,37. O `int()` valida ser inteiro, não a escala. A
+  correção foi um piso explícito (`PISO_CENTAVOS = 100`).
 
 ---
 
-# Testes Manuais
+# Como rodar
 
-Atualmente representam a principal estratégia de validação do sistema.
+## Preparo, uma vez
 
-Cada Sprint deverá ser validada manualmente antes da entrega.
+```bash
+cp .env.test.example .env.test    # ajuste usuário/senha do seu Postgres
+npm run test:db:preparar
+```
 
----
+`test:db:preparar` cria o banco da suíte e aplica as migrações.
 
-# Testes Unitários
+## Execução
 
-Objetivo
+```bash
+npm test                          # tudo
+npm run test:unit                 # só src/shared
+npm run test:integration          # só src/modules
 
-Validar regras de negócio isoladamente.
+cd control-plane && npm test
+cd sgcl-web && npm test
+```
 
-Exemplos
-
-CreateAlunoService
-
-UpdateAlunoService
-
-LoginService
-
-StartAulaService
-
-FinalizarAulaService
-
-AtualizarEvolucaoAlunoService
+O Control Plane usa banco próprio (`control_plane_test`) e
+`CONTROL_PLANE_DATABASE_URL`.
 
 ---
 
-# Testes de Integração
+# A trava do banco
 
-Objetivo
+**A suíte apaga registros.** Antes de qualquer coisa, ela verifica que o banco
+alvo é local ou tem nome de teste, e aborta se não for.
 
-Validar comunicação entre:
+A escotilha `PERMITIR_TESTE_EM_BANCO_REAL=1` existe para casos conscientes e
+imprime aviso explícito. Nunca use contra produção.
 
-Controller
-
-↓
-
-Service
-
-↓
-
-Prisma
-
-↓
-
-Banco
+```
+[testes] o banco "neondb" em ep-....neon.tech não parece ser de teste.
+A suíte apaga registros — rodar aqui pode destruir dado real.
+```
 
 ---
 
-Exemplo
+# Falhas fantasma: o Prisma Client desatualizado
 
-POST /alunos
+Sintoma: dezenas ou centenas de testes falhando com propriedades que
+"não existem" no client — `prisma.concessaoPlataforma is undefined`,
+`Property 'alunoUnidade' does not exist`.
 
-↓
+Causa: o Client foi gerado a partir de um schema anterior.
 
-Banco
+```bash
+npx prisma generate
+```
 
-↓
+Rode isso **depois de toda mudança de schema e de toda troca de branch**, nos
+dois projetos. Esse erro já foi confundido duas vezes com defeito real neste
+repositório — uma vez com 298 falhas de tenant, outra com 5 erros de build no
+Control Plane. Nos dois casos o código estava correto.
 
-Resposta
-
-201
-
----
-
-# Testes End-to-End
-
-Objetivo
-
-Simular o comportamento do usuário.
-
-Fluxo
-
-Login
-
-↓
-
-Dashboard
-
-↓
-
-Cadastrar aluno
-
-↓
-
-Cadastrar responsável
-
-↓
-
-Criar aula
-
-↓
-
-Registrar presença
-
-↓
-
-Finalizar aula
-
-↓
-
-Consultar prontuário
+Se a falha for `Can't reach database server at localhost:5432`, o problema é
+o Postgres não estar rodando — não é o código.
 
 ---
 
-# Ferramentas
+# Níveis
 
-Planejamento
+## Unitário
 
-Vitest
+Funções puras e regras isoladas: cálculo de preço, competência, escopo de
+unidade, cifra de segredos, parsers.
 
-Supertest
+O motor de preço (`src/modules/plataforma/utils/precoPlataforma.ts`) é o
+exemplo do padrão — não lê banco nem relógio, então cada caso é uma chamada
+com entrada e saída explícitas.
 
-Playwright
+## Integração
 
----
+Service contra banco real de teste, com dados criados e limpos pelo próprio
+teste. É o nível majoritário do projeto.
 
-# Ambientes
+## HTTP ponta a ponta
 
-Desenvolvimento
+Supertest contra o app Express montado, exercitando middlewares, validação e
+autorização junto. Foi assim que o aceite de `37.0` como preço apareceu: o
+teste esperava 400 e recebeu 201.
 
-SQLite
+## Arquitetura
 
----
+Testes que verificam invariantes estruturais, não comportamento.
 
-Homologação
+`src/shared/database/PrismaGlobalArquitetura.test.ts` varre `src/` e falha se
+qualquer arquivo de produção importar o Prisma global. Sem ele, um único
+`import { prisma }` esquecido reintroduziria vazamento entre academias sem que
+nenhum teste funcional acusasse — a falha seria invisível até virar incidente.
 
-PostgreSQL
+## Manual com Playwright
 
----
+Para verificar o que asserção não pega: recorte, contraste, elemento fora da
+área visível, fluxo que trava. Captura de tela faz parte da verificação.
 
-Produção
-
-Validação final
-
----
-
-# Critérios Gerais
-
-Toda funcionalidade deverá possuir:
-
-Resposta correta
-
-Sem erros de console
-
-Sem erros de TypeScript
-
-Sem erros de ESLint
+Ao escrever um script, **escope o seletor**. Um `getByRole("combobox")` numa
+página com seletor de unidade no cabeçalho pega o do cabeçalho, não o do modal.
+Prefira `getByRole("dialog").getByRole(...)`.
 
 ---
 
-# Critérios por Módulo
+# O que sempre precisa de teste
 
-## Login
-
-Testar
-
-Login válido
-
-Senha inválida
-
-Usuário inexistente
-
-Usuário inativo
-
-JWT
-
-Logout
+- Regra de dinheiro — valor, faixa, arredondamento, vencimento.
+- Regra de acesso — quem pode, quem não pode, e o que acontece com perfil
+  legado.
+- Fronteira de tenant — nenhum caminho pode alcançar dados de outra academia.
+- Idempotência — a segunda chamada não pode produzir efeito duplicado.
+- Falha fechada — sem segredo, sem concessão, sem contexto: recusa.
+- Datas de calendário — a data não pode mudar conforme o fuso de quem consulta.
 
 ---
 
-## Dashboard
+# CI
 
-Validar
+`.github/workflows/ci.yml` roda, por subprojeto:
 
-Cards
+```
+npm ci → prisma migrate deploy → npm run typecheck → npm test → npm run build
+```
 
-Indicadores
+`typecheck` e `build` são passos distintos de propósito no Control Plane: o
+`build` usa `tsconfig.build.json`, que exclui `**/*.test.ts` para não emitir
+arquivo de teste no diretório de functions; o `typecheck` usa o
+`tsconfig.json` completo e continua conferindo os tipos dos testes.
 
-Carregamento
-
-Permissões
-
----
-
-## Alunos
-
-Cadastrar
-
-Editar
-
-Inativar
-
-Buscar
-
-Prontuário
-
-Aniversariantes
-
-Troca de turma
-
----
-
-## Responsáveis
-
-Cadastrar
-
-Editar
-
-Responsável financeiro
-
-Contato emergência
-
-Pode buscar
-
-Recebe comunicados
-
----
-
-## Turmas
-
-Cadastrar
-
-Editar
-
-Inativar
-
-Listar
-
-Professor
-
-Horários
-
----
-
-## Aulas
-
-Criar
-
-Selecionar turma
-
-Criar AulaAluno
-
-Registrar presença
-
-Registrar comportamento
-
-Finalizar
-
-Bloquear alterações
-
----
-
-## Evolução
-
-Contabilizar presença
-
-Atualizar grau
-
-Trocar faixa
-
-Registrar histórico
-
----
-
-## Graduações
-
-Cadastrar
-
-Editar
-
-Listar
-
-Histórico
-
-Consultar evolução
-
----
-
-## Mensalidades
-
-Gerar
-
-Editar
-
-Pagar
-
-Cancelar
-
-Atrasar
-
-Consultar histórico
-
----
-
-## Competições
-
-Cadastrar
-
-Editar
-
-Excluir
-
-Consultar histórico
-
----
-
-## Currículo
-
-Cadastrar técnica
-
-Editar técnica
-
-Inativar
-
-Consultar
-
----
-
-## Usuários
-
-Cadastrar
-
-Editar
-
-Inativar
-
-Trocar perfil
-
-Login
-
----
-
-# Testes de Interface
-
-Verificar
-
-Layout
-
-Responsividade
-
-Mensagens
-
-Loading
-
-EmptyState
-
-Modal
-
-Confirmações
-
----
-
-# Testes de Permissão
-
-ADMIN
-
-↓
-
-Todas rotas
-
----
-
-PROFESSOR
-
-↓
-
-Módulos pedagógicos
-
----
-
-RECEPCAO
-
-↓
-
-Cadastros
-
-↓
-
-Financeiro
-
----
-
-# Testes de Segurança
-
-JWT inválido
-
-JWT expirado
-
-Sem token
-
-Permissão insuficiente
-
-Rotas protegidas
-
----
-
-# Testes de Performance
-
-Carregamento Dashboard
-
-Listagem de alunos
-
-Prontuário
-
-Aulas
-
-Mensalidades
-
----
-
-# Testes de Banco
-
-Criar
-
-Editar
-
-Excluir lógico
-
-Relacionamentos
-
-Integridade
-
----
-
-# Checklist de Homologação
-
-## Login
-
-☐ Entrar
-
-☐ Sair
-
-☐ Token salvo
-
-☐ Token removido
-
----
-
-## Dashboard
-
-☐ Abre
-
-☐ Indicadores corretos
-
----
-
-## Alunos
-
-☐ Cadastro
-
-☐ Edição
-
-☐ Consulta
-
-☐ Prontuário
-
-☐ Inativação
-
----
-
-## Responsáveis
-
-☐ Cadastro
-
-☐ Consulta
-
-☐ Alteração
-
----
-
-## Turmas
-
-☐ Cadastro
-
-☐ Consulta
-
-☐ Alteração
-
----
-
-## Aulas
-
-☐ Criar
-
-☐ Registrar presença
-
-☐ Registrar comportamento
-
-☐ Finalizar
-
----
-
-## Evolução
-
-☐ Grau atualizado
-
-☐ Faixa atualizada
-
-☐ Histórico criado
-
----
-
-## Mensalidades
-
-☐ Gerar
-
-☐ Baixa
-
-☐ Consulta
-
----
-
-## Competições
-
-☐ Cadastro
-
-☐ Consulta
-
----
-
-# Critérios de Aceite
-
-Uma funcionalidade somente poderá ser considerada concluída quando:
-
-✔ Compilar sem erros
-
-✔ ESLint sem erros
-
-✔ TypeScript sem erros
-
-✔ Banco atualizado
-
-✔ Testes executados
-
-✔ Homologação concluída
-
-✔ Documentação atualizada
-
----
-
-# Regressão
-
-Antes de cada versão deverá ser executado um teste completo dos seguintes módulos:
-
-Login
-
-Dashboard
-
-Alunos
-
-Responsáveis
-
-Turmas
-
-Aulas
-
-Graduações
-
-Mensalidades
-
-Competições
-
-Relatórios
-
----
-
-# Roadmap
-
-Próximas melhorias
-
-Cobertura automática
-
-Testes unitários
-
-Integração contínua
-
-Playwright
-
-Cypress
-
-Mock Server
-
-Banco temporário
-
-Testes de carga
-
-Testes automatizados de regressão
-
----
-
-# Indicadores de Qualidade
-
-Objetivos da versão 1.0
-
-Cobertura de testes unitários
-
-80%
-
-Cobertura de integração
-
-70%
-
-Cobertura E2E
-
-Fluxos críticos
-
-100%
-
----
-
-# Conclusão
-
-Os testes garantem que o Sys Belt evolua com segurança e previsibilidade.
-
-Toda nova funcionalidade deverá passar pelos critérios definidos neste documento antes de ser considerada pronta para uso.
+A CI dispara em `pull_request`. Push direto em branch, sem PR aberto, **não
+dispara** — o que já causou a impressão de que a CI estava desligada.

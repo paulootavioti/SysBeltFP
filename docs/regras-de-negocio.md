@@ -1,8 +1,8 @@
 # Regras de Negócio
 
-Versão do documento: 2.0
+Versão do documento: 3.0
 
-Última atualização: Julho/2026 (multi-unidade, perfis e permissões, transferência de aula)
+Última atualização: Agosto/2026 (separação de planos, perfil DONO, assinatura da plataforma)
 
 ---
 
@@ -564,7 +564,7 @@ Toda rota possui controle de perfil.
 
 Perfis
 
-SUPERADMIN
+DONO
 
 ADMIN
 
@@ -578,11 +578,19 @@ Detalhamento completo de cada perfil nas seções "Unidades e Arenas" e "Perfis 
 
 # Unidades e Arenas
 
-O sistema é multi-tenant: cada Unidade (filial da academia) tem seus próprios dados isolados dos demais.
+O isolamento acontece em dois níveis diferentes.
+
+**Entre academias assinantes:** cada academia opera sobre um banco de dados
+exclusivo. Nenhuma consulta alcança dados de outra academia porque não há
+banco compartilhado entre elas.
+
+**Entre unidades da mesma academia:** cada Unidade (filial) tem seus dados
+escopados por `unidadeId`, mas as unidades da mesma academia **compartilham
+dados entre si** — um aluno pode treinar em mais de uma filial da rede.
 
 ## RN-160
 
-Toda entidade operacional (Aluno, Turma, Aula, Mensalidade, Graduação, Competição, Currículo, Técnica, Plano, Usuário não-Superadmin, etc.) pertence a exatamente uma Unidade.
+Toda entidade operacional (Aluno, Turma, Aula, Mensalidade, Graduação, Competição, Currículo, Técnica, Plano, Usuário, etc.) pertence a exatamente uma Unidade, exceto o usuário `DONO`, que alcança todas as filiais da própria conta.
 
 ---
 
@@ -608,40 +616,63 @@ O mesmo professor não pode ser escalado em duas turmas com dia/horário sobrepo
 
 ## RN-164
 
-Um usuário SUPERADMIN não pertence a nenhuma unidade (`unidadeId` nulo) e enxerga/administra todas as unidades.
+Um usuário `DONO` não é fixado a uma unidade (`unidadeId` nulo) e alcança todas as filiais da própria conta — e nenhuma de outra academia.
 
 ---
 
 ## RN-165
 
-O SUPERADMIN pode "visualizar como" uma unidade específica ou "todas as unidades" ao mesmo tempo, através de um seletor no Dashboard. Essa escolha filtra o sistema inteiro (Alunos, Turmas, Financeiro, Aulas, Usuários etc.) enquanto durar a sessão/seleção, sem alterar nenhum dado.
+O `DONO` pode alternar entre uma unidade específica e "todas as unidades" da própria conta, através de um seletor. Essa escolha filtra o sistema inteiro (Alunos, Turmas, Financeiro, Aulas, Usuários etc.) enquanto durar a seleção, sem alterar nenhum dado.
 
 ---
 
 ## RN-166
 
-Somente o SUPERADMIN cadastra, edita e ativa/inativa Unidades. Um ADMIN só cadastra/edita Arenas dentro da própria unidade.
+Cadastram, editam e ativam/inativam Unidades os perfis `DONO` e `ADMIN`. As unidades criadas pertencem sempre à conta de quem as cria.
+
+---
+
+## RN-167 — Operador da plataforma
+
+O operador do SaaS **não é um perfil do sistema da academia**. Ele trabalha no
+Control Plane, com autenticação própria e banco próprio.
+
+O perfil `SUPERADMIN`, que antes acumulava a operação do SaaS com a
+administração da academia, foi removido. Usuários com esse perfil em bancos
+anteriores à separação dos planos são recusados no login e em toda requisição
+autenticada, com HTTP 403.
+
+A regra existe porque acumular os dois papéis num único perfil significava que
+o mesmo login que administrava uma academia podia alcançar dados comerciais de
+todas — exatamente o que a separação de planos elimina.
 
 ---
 
 # Perfis e Permissões
 
-## RN-170 — SUPERADMIN
+## RN-170 — DONO
 
-Acesso irrestrito a todas as unidades e a todas as telas. Bypassa qualquer checagem de perfil (`ensureRole`) do backend. É o único perfil que pode:
+O dono da academia cliente. Alcança todas as filiais da própria conta e
+nenhuma de outra. Onde um `ADMIN` passa, ele passa — a herança é declarada uma
+única vez em `PERFIS_QUE_HERDAM`, para que nenhuma rota precise lembrar de
+listar os dois. Pode:
 
-- Cadastrar, editar e ativar/inativar Unidades e visualizar qualquer uma delas.
-- Conceder o perfil SUPERADMIN a outro usuário (via cadastro ou edição).
-- Vincular um usuário (Admin, Professor ou Recepção) a mais de uma Unidade.
+- Cadastrar, editar e ativar/inativar Unidades da própria conta.
+- Vincular um usuário (Admin, Professor ou Recepção) a mais de uma Unidade da própria conta.
+- Consultar a própria assinatura (`GET /plataforma/minha-assinatura`): plano vigente, contagem de alunos por unidade, prévia do mês e histórico de faturas.
+
+Uma lista de unidades que misture contas diferentes é recusada inteira, em vez
+de ter as unidades inválidas silenciosamente descartadas — descartar em
+silêncio esconderia um vínculo que o usuário acredita ter criado.
 
 ---
 
 ## RN-171 — ADMIN
 
-Acesso restrito à(s) própria(s) unidade(s) — pode estar vinculado a mais de uma (ver "Usuário Multi-Unidade"), mas nunca a "todas". Tem acesso de consulta (somente leitura) à grade horária de outras unidades, para efeito informativo. Pode:
+Acesso restrito à(s) própria(s) unidade(s) — pode estar vinculado a mais de uma (ver "Usuário Multi-Unidade"). Tem acesso de consulta (somente leitura) à grade horária de outras unidades, para efeito informativo. Pode:
 
 - Gerir as Arenas da própria unidade.
-- Cadastrar usuários Professor e Recepção para a própria unidade (sem checklist de múltiplas unidades — essa configuração é exclusiva do SUPERADMIN).
+- Cadastrar usuários Professor e Recepção para a própria unidade.
 - Gerir tudo o mais relativo à própria unidade (Alunos, Turmas, Aulas, Financeiro, Relatórios, Mensagens, Usuários etc.).
 
 ---
@@ -694,7 +725,7 @@ Sem acesso a Planejamento Pedagógico nem a Financeiro (essas duas telas são ex
 
 ## RN-174
 
-Os usuários Admin e Recepção podem ser cadastrados pelo Superadmin em uma ou mais unidades. O usuário Professor também pode ser vinculado a mais de uma unidade pelo Superadmin, já que pode dar aula em unidades/arenas diferentes.
+Os usuários Admin e Recepção podem ser cadastrados pelo Dono em uma ou mais unidades da conta. O usuário Professor também pode ser vinculado a mais de uma unidade, já que pode dar aula em unidades/arenas diferentes.
 
 ---
 
@@ -740,7 +771,7 @@ Um ADMIN pode transferir qualquer aula programada da própria unidade; um PROFES
 
 ## RN-190
 
-Um usuário Admin, Professor ou Recepção pode estar vinculado a mais de uma Unidade (tabela `UsuarioUnidade`) — quem monta essa lista de unidades é sempre o SUPERADMIN, através de um checklist no cadastro/edição do usuário.
+Um usuário Admin, Professor ou Recepção pode estar vinculado a mais de uma Unidade (tabela `UsuarioUnidade`) — quem monta essa lista é o Dono (ou um Admin), através de um checklist no cadastro/edição do usuário, sempre restrito às unidades da própria conta.
 
 ---
 
@@ -764,7 +795,7 @@ Se a unidade ativa de um usuário for removida da lista de unidades vinculadas, 
 
 ## RN-194
 
-Ao promover um usuário a SUPERADMIN, sua unidade ativa e todos os seus vínculos de unidade são removidos — SUPERADMIN nunca pertence a uma unidade específica.
+Ao promover um usuário a DONO, sua unidade ativa é liberada — o Dono não é fixado a uma unidade específica, pois alcança todas as filiais da própria conta.
 
 ---
 
@@ -810,19 +841,102 @@ Ação
 
 ---
 
+# Assinatura da plataforma
+
+Regras do modelo comercial do SysBelt. Elas pertencem ao Control Plane; o
+sistema da academia apenas **lê** a própria assinatura.
+
+## RN-200 — Cobrança por faixa de alunos
+
+Cada faixa cobre até 10 alunos e custa R$ 37,00.
+
+---
+
+## RN-201 — Faixa contada por unidade
+
+O valor da conta é a soma das faixas de cada unidade, calculadas
+individualmente — não sobre o total da academia. Toda unidade ativa custa no
+mínimo uma faixa.
+
+Uma academia com 12 alunos numa unidade e 8 em outra paga
+`2 + 1 = 3 faixas = R$ 111,00`. Se a contagem fosse feita sobre o total (20
+alunos), o resultado seria 2 faixas — a regra é deliberadamente por unidade.
+
+---
+
+## RN-202 — Aluno em mais de uma unidade
+
+Um aluno lotado em mais de uma unidade da mesma academia **conta uma vez em
+cada unidade** onde está lotado.
+
+Quando um aluno solicita treinar numa turma de outra unidade, a contagem de
+faixas é refeita e os dados passam a ser compartilhados entre as unidades
+envolvidas.
+
+---
+
+## RN-203 — Arredondamento sempre para cima, em aritmética inteira
+
+O número de faixas é o teto da divisão, calculado com aritmética inteira
+(`floor((alunos + porFaixa - 1) / porFaixa)`), não com `Math.ceil` sobre
+divisão em ponto flutuante.
+
+Dividir em ponto flutuante pode devolver uma faixa a mais quando a divisão não
+é exata em binário — e uma faixa a mais é dinheiro cobrado a mais do cliente.
+
+---
+
+## RN-204 — Valores em centavos
+
+Todo valor do domínio da plataforma é inteiro em centavos. Os montantes são
+reconciliados com gateways de pagamento, onde deriva de ponto flutuante é
+inaceitável.
+
+---
+
+## RN-205 — Preço negociado prevalece sobre o de tabela
+
+Uma assinatura pode ter `precoPorBlocoCentavos` próprio. Quando existe, é ele
+que vale para aquela conta, e é ele que aparece na tela do dono — não o preço
+de tabela do plano.
+
+---
+
+## RN-206 — A prévia do mês é calculada, não lida
+
+`GET /plataforma/minha-assinatura` calcula a prévia na hora, a partir da
+contagem atual de alunos, em vez de ler a última fatura. É o que permite
+responder "se eu matricular mais 3 alunos, muda meu preço?".
+
+---
+
+## RN-207 — Recursos liberados por concessão assinada
+
+Recursos opcionais (por exemplo, WhatsApp) são liberados por uma **concessão
+assinada** com chave Ed25519 emitida pelo Control Plane e verificada
+localmente pelo Tenant Plane.
+
+Sem concessão válida, o recurso é negado — falha fechada. Uma concessão
+adulterada falha na verificação da assinatura, em vez de conceder acesso.
+
+---
+
 # Integrações Futuras
-
-WhatsApp
-
-PIX
-
-Área dos Pais
-
-Área do Professor
 
 Aplicativo Mobile
 
-Inteligência Artificial
+Inteligência Artificial para planejamento de aulas
+
+Inteligência Artificial para evolução técnica
+
+Relatórios em PDF e Excel
+
+Ranking, medalhas e estatísticas de competições
+
+Certificados automáticos de graduação
+
+> WhatsApp, PIX, Portal da Família e Portal do Professor constavam nesta lista
+> em versões anteriores e já estão implementados.
 
 ---
 
