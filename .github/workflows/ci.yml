@@ -110,7 +110,7 @@ jobs:
           - app: sgcl-portal-familia
             possui_testes: false
           - app: sgcl-portal-professor
-            possui_testes: false
+            possui_testes: true
 
     steps:
       - uses: actions/checkout@v4

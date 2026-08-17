@@ -14,7 +14,13 @@ const CHAVE = "@portalProfessor:filaOffline";
 
 export function lerFila(): AcaoPendente[] {
   try {
-    return JSON.parse(localStorage.getItem(CHAVE) ?? "[]") as AcaoPendente[];
+    const bruto: unknown = JSON.parse(localStorage.getItem(CHAVE) ?? "[]");
+    // JSON válido não garante o formato certo. Se a chave for sobrescrita por
+    // qualquer outra coisa — um objeto, uma string —, devolver o valor cru faz
+    // o `for...of` da sincronização lançar, e aí a fila para de esvaziar sem
+    // nenhum sinal na tela: as presenças marcadas no tatame ficam presas no
+    // localStorage e nunca chegam ao servidor.
+    return Array.isArray(bruto) ? (bruto as AcaoPendente[]) : [];
   } catch {
     return [];
   }
