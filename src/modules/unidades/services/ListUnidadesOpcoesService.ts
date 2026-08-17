@@ -13,15 +13,15 @@ export class ListUnidadesOpcoesService {
     const contaId = await resolverConta(unidadeAtivaId);
 
     return prisma.unidade.findMany({
-      where: { ativo: true, ...(contaId === null ? {} : { contaId }) },
+      where: { ativo: true, contaId },
       select: { id: true, nome: true },
       orderBy: { nome: "asc" },
     });
   }
 }
 
-async function resolverConta(unidadeAtivaId: number | null): Promise<number | null> {
-  if (unidadeAtivaId === null) return null;
+async function resolverConta(unidadeAtivaId: number | null): Promise<number> {
+  if (unidadeAtivaId === null) return -1;
   const prisma = prismaDaRequisicao();
 
   const unidade = await prisma.unidade.findUnique({

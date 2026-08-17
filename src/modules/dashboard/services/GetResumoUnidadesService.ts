@@ -29,7 +29,7 @@ export class GetResumoUnidadesService {
     const hoje = new Date();
 
     const unidades = await prisma.unidade.findMany({
-      where: unidadeId === null ? {} : { id: unidadeId },
+      where: { id: unidadeId ?? -1 },
       orderBy: { nome: "asc" },
     });
 

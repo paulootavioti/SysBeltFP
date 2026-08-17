@@ -22,7 +22,7 @@ describe("resolverUnidadeConsulta", () => {
     expect(resolverUnidadeConsulta("ADMIN", 1, "-5")).toBe(1);
   });
 
-  it("SUPERADMIN também pode usar unidadeConsultaId", () => {
-    expect(resolverUnidadeConsulta("SUPERADMIN", null, "7")).toBe(7);
+  it("não concede consulta global ao perfil legado", () => {
+    expect(resolverUnidadeConsulta("SUPERADMIN", null, "7")).toBeNull();
   });
 });

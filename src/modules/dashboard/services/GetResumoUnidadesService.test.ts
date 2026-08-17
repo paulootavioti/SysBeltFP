@@ -17,15 +17,12 @@ beforeEach(limpar);
 afterAll(limpar);
 
 describe("GetResumoUnidadesService", () => {
-  it("SUPERADMIN (unidadeId null) vê todas as unidades", async () => {
+  it("sem unidade ativa não vê nenhuma unidade", async () => {
     await criarUnidadeDeTeste("TESTE_RESUMOUNIDADES_A");
     await criarUnidadeDeTeste("TESTE_RESUMOUNIDADES_B");
 
     const resultado = await service.execute(null);
-    const nomes = resultado.map((u) => u.nome);
-
-    expect(nomes).toContain("TESTE_RESUMOUNIDADES_A");
-    expect(nomes).toContain("TESTE_RESUMOUNIDADES_B");
+    expect(resultado).toEqual([]);
   });
 
   it("perfil comum só vê a própria unidade, com os contadores corretos", async () => {
