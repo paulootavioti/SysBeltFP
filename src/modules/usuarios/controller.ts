@@ -8,7 +8,6 @@ import { ToggleUsuarioAtivoService } from "./services/ToggleUsuarioAtivoService"
 import { UpdateUsuarioService } from "./services/UpdateUsuarioService";
 import { AppError } from "../../shared/errors/AppError";
 import { PERFIS_MULTI_UNIDADE } from "../../shared/constants/perfis";
-import { garantirConcessaoSuperadminPermitida } from "../../shared/security/superadminLegado";
 import { normalizarUnidadesDoAssinante } from "./utils/normalizarUnidadesDoAssinante";
 
 export class UsuariosController {
@@ -69,8 +68,6 @@ export class UsuariosController {
     const { perfil } =
       req.body;
 
-    garantirConcessaoSuperadminPermitida(perfil, req.user.perfil);
-
     const service =
       new UpdatePerfilUsuarioService();
 
@@ -92,8 +89,6 @@ export class UsuariosController {
 
     const { id } =
       req.params;
-
-    garantirConcessaoSuperadminPermitida(req.body.perfil, req.user.perfil);
 
     const unidadeIds = await normalizarUnidadesDoAssinante(
       req.body.unidadeIds,
