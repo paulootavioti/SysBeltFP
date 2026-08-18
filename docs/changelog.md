@@ -57,6 +57,18 @@ Funcionalidades descontinuadas.
   o `DONO` pode ficar sem unidade **ativa** (RN-164). A edição recusa rebaixar um
   `DONO` de perfil sem lhe dar unidade, que produziria o mesmo órfão.
 
+- **O `DONO` não conseguia cadastrar ninguém.** O cadastro deduzia o alcance de
+  quem cadastra a partir da unidade **ativa**, e o `DONO` não tem uma (RN-164).
+  Os dois caminhos batiam em erro: com `unidadeIds` no corpo, "Selecione uma
+  unidade ativa"; sem, "Informe a unidade para este usuário". Agora o alcance vem
+  do contexto — as unidades da conta.
+- **O `DONO` não conseguia voltar para "todas as unidades".** O seletor pede
+  "todas" apagando o `X-Unidade-Id`, e sem cabeçalho a requisição caía na unidade
+  gravada na linha do usuário — que o cadastro sempre preenchia. Um `DONO` ficava
+  preso na filial com que foi criado, contrariando RN-165. Agora ele nasce sem
+  unidade ativa, e a autenticação impõe isso pelo perfil, de modo que os `DONO`
+  criados antes também se soltam, sem precisar mexer em dado gravado.
+
 ### Alterado
 
 - `escopoUnidade(null)` deixa de significar "sem filtro" e passa a significar "as

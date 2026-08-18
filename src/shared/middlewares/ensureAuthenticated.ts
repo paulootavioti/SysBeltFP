@@ -63,6 +63,20 @@ export async function ensureAuthenticated(
     // lista por parâmetro em cada uma das dezenas de queries.
     definirUnidadesDoUsuario(await unidadesAlcancadas(usuario.id, usuario.unidadeId));
 
+    // O DONO não é fixado a uma unidade (RN-164): a requisição dele começa em
+    // "todas as unidades" da conta, e o X-Unidade-Id abaixo prende numa filial
+    // quando ele escolhe uma no seletor (RN-165).
+    //
+    // Vale mesmo que a linha dele no banco tenha uma unidade gravada. O
+    // cadastro passou a gravar nulo, mas quem foi criado antes tem filial ali,
+    // e ficaria presa nela para sempre — o seletor volta a "todas" apagando o
+    // cabeçalho, e sem cabeçalho a requisição caía no valor gravado. Note que
+    // o alcance acima foi resolvido ANTES, a partir do valor gravado: é o que
+    // mantém um DONO antigo, sem vínculo nenhum, ainda enxergando a conta.
+    if (usuario.perfil === "DONO") {
+      req.user.unidadeId = null;
+    }
+
     if (PERFIS_MULTI_UNIDADE.includes(usuario.perfil) && req.headers["x-unidade-id"]) {
       // Perfis multiunidade podem trocar a unidade ativa somente quando
       // existe vínculo explícito em UsuarioUnidade.
