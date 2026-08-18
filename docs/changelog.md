@@ -32,6 +32,62 @@ Funcionalidades descontinuadas.
 
 ---
 
+# 1.0.0-rc.2 — Agosto/2026
+
+## Control Plane no ar, e cobertura dos portais
+
+### Adicionado
+
+- **Painel do operador** (`control-plane/web`): login, visão geral, listagem
+  de assinantes com busca e detalhe completo — cadastro, assinatura vigente,
+  ambiente, licenças por unidade, contatos, eventos de provisionamento e
+  faturas. Servido pelo MESMO site da API, então as chamadas vão para `/api`
+  na própria origem: sem CORS, sem variável de URL para manter em dia, e sem
+  a possibilidade de o painel apontar para um Control Plane diferente do que
+  o serve.
+- **Publicação pelo GitHub Actions**. Duas restrições levaram a isso: os
+  minutos de build do plano Free estavam esgotados, e a CLI do Netlify não
+  roda em macOS anterior ao 12 (`dyld: Symbol not found:
+  _SecTrustCopyCertificateChain`). O workflow compila nos runners e envia só o
+  artefato — contorna as duas. Roda a suíte antes de publicar, porque a CI só
+  dispara em pull request e um push direto no `main` chegaria sem verificação.
+- **Testes nos dois portais**, que estavam em zero: fila offline e
+  sincronização no Portal do Professor, sessão e escopo de aluno no Portal da
+  Família.
+- **Expiração de sessão** nos quatro frontends: um 401 do backend desloga e
+  leva ao login com o aviso de que a sessão expirou. Antes, o app seguia
+  "logado" com todas as telas quebradas.
+
+### Corrigido
+
+- A fila offline do Portal do Professor parava de esvaziar **em silêncio**
+  quando a chave do `localStorage` continha algo que não fosse uma lista — as
+  presenças marcadas no tatame ficavam presas no aparelho.
+- O `sgcl-web` mostrava o texto da própria tela ("senha inválida") quando o
+  problema era o backend fora do ar. `getApiErrorMessage` passou a distinguir
+  falta de conexão de credencial recusada, e as três cópias divergentes da
+  função convergiram.
+- O `DONO` era barrado do Portal do Professor: a lista de perfis permitidos
+  ainda citava `SUPERADMIN` e omitia `DONO`.
+- O Portal da Família restaurava a seleção de um aluno que já tinha saído do
+  vínculo do responsável. O backend recusava o acesso de qualquer forma, mas a
+  tela pedia o que ia ser negado e quebrava sem explicação.
+- O `.env` do Control Plane não era lido fora do Netlify: `dotenv` só era
+  importado no `prisma.config.ts`, então `migrate deploy` enxergava o arquivo
+  e o runtime não.
+
+### Alterado
+
+- A matriz de frontends da CI perdeu a flag `possui_testes`. Era ela que
+  permitia um app novo entrar isento — foi assim que os portais ficaram
+  descobertos desde que nasceram.
+- O build do Control Plane virou um comando só (`npm run build:completo`),
+  que instala e compila o painel junto. Rodar só `npm run build` compilava a
+  API e parava aí, e a falha seguinte era ilegível: erros de tipo `'unknown'`
+  em arquivos sem defeito, por cascata da tipagem que não resolvia.
+
+---
+
 # 1.0.0-rc — Agosto/2026
 
 ## Separação em dois planos e isolamento por academia
