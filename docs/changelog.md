@@ -79,6 +79,16 @@ Funcionalidades descontinuadas.
   unidade ativa, e a autenticação impõe isso pelo perfil, de modo que os `DONO`
   criados antes também se soltam, sem precisar mexer em dado gravado.
 
+### Adicionado
+
+- **Teste de componente no `sgcl-web`** — o primeiro do repositório. O
+  `SeletorUnidadeAtiva` é montado em jsdom com `@testing-library/react` e
+  operado por papel de elemento: 14 casos cobrindo quem vê o seletor, quem tem
+  a opção "todas as unidades" e o que cada escolha dispara. Contra a versão
+  anterior do componente, 5 deles falham — os três defeitos que só o navegador
+  tinha pegado. O ambiente jsdom é declarado por arquivo, então os testes de
+  função seguem rodando em Node.
+
 ### Alterado
 
 - `escopoUnidade(null)` deixa de significar "sem filtro" e passa a significar "as
