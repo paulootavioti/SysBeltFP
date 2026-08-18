@@ -89,6 +89,16 @@ Funcionalidades descontinuadas.
   tinha pegado. O ambiente jsdom é declarado por arquivo, então os testes de
   função seguem rodando em Node.
 
+### Melhorado
+
+- **A lista de perfis do `sgcl-web` deixou de ser copiada em cada arquivo.**
+  Vive em `shared/constants/perfis.ts`, e um teste lê o arquivo do backend para
+  falhar quando as duas discordam — foi essa divergência que fez o seletor de
+  unidade sumir da tela para o `DONO`. A cópia do `UsuarioForm` continua
+  separada de propósito, e agora se chama `PERFIS_COM_VINCULO_ESCOLHIDO`: ali o
+  `DONO` fica de fora porque o backend o vincula à conta inteira, e oferecer um
+  checklist a ele prometeria uma escolha que a gravação desfaz.
+
 ### Alterado
 
 - `escopoUnidade(null)` deixa de significar "sem filtro" e passa a significar "as

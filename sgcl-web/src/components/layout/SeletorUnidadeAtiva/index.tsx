@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "../../../contexts/useAuth";
 import { UsuarioService } from "../../../modules/usuarios/services/UsuarioService";
+import {
+  PERFIS_MULTI_UNIDADE,
+  PERFIS_QUE_VEEM_TODAS,
+} from "../../../shared/constants/perfis";
 
 import "../SeletorUnidadeVisualizada/styles.css";
 
@@ -9,15 +13,6 @@ interface UnidadeOpcao {
   id: number;
   nome: string;
 }
-
-// Quem pode estar vinculado a mais de uma unidade escolhe aqui em qual está
-// trabalhando agora. Admin, Professor e Recepção precisam sempre de uma
-// unidade ativa; o Dono, não — ver TODAS é o estado natural dele (RN-164).
-const PERFIS_MULTI_UNIDADE = ["DONO", "ADMIN", "PROFESSOR", "RECEPCAO"];
-
-// Só o Dono alcança a academia inteira de uma vez (RN-165). Para os demais,
-// "todas" seria pedir dados de unidades onde eles não trabalham.
-const PERFIS_QUE_VEEM_TODAS = ["DONO"];
 
 // A ausência de unidade ativa vira string vazia no <select>, e é ela que o
 // contexto traduz em "não mandar o X-Unidade-Id".

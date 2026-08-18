@@ -288,7 +288,7 @@ npm run test:db:preparar    # uma vez, cria o banco da suíte
 npm test                            # 704 testes do Tenant Plane
 cd control-plane && npm test        # 188 testes do Control Plane
 cd control-plane/web && npm test    #  77 testes do painel do operador
-cd sgcl-web && npm test             #  86 testes do frontend da equipe
+cd sgcl-web && npm test             #  91 testes do frontend da equipe
 cd sgcl-portal-familia && npm test  #  42 testes
 cd sgcl-portal-professor && npm test #  49 testes
 ```
