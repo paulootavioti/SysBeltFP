@@ -33,6 +33,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Node 20 para instalar, testar e compilar: é a versão que o Netlify usa
+      # em produção (NODE_VERSION no netlify.toml). Compilar noutra versão
+      # produziria um artefato que nunca foi verificado na que roda de verdade.
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -49,6 +52,33 @@ jobs:
 
       - working-directory: control-plane
         run: npm run build:completo
+
+      # A CLI do Netlify exige Node 22+ (`@netlify/zip-it-and-ship-it` declara
+      # `node >=22.12.0`). Só o envio troca de versão; o artefato que sobe já
+      # foi compilado acima, no Node 20.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Falha cedo e com mensagem clara. Sem isto, a CLI só diz "Authentication
+      # required", que não distingue segredo ausente de segredo inválido — e
+      # não avisa o engano mais comum: cadastrar em "Variables" em vez de
+      # "Secrets", já que `secrets.` não enxerga a outra aba.
+      - name: Conferir segredos do Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          faltando=""
+          [ -z "$NETLIFY_AUTH_TOKEN" ] && faltando="$faltando NETLIFY_AUTH_TOKEN"
+          [ -z "$NETLIFY_SITE_ID" ] && faltando="$faltando NETLIFY_SITE_ID"
+          if [ -n "$faltando" ]; then
+            echo "::error::Segredo(s) ausente(s):$faltando"
+            echo "Cadastre em Settings > Secrets and variables > Actions, aba SECRETS."
+            echo "A aba Variables não serve: o workflow lê secrets.*, que não enxerga vars.*"
+            exit 1
+          fi
+          echo "Segredos presentes."
 
       - working-directory: control-plane
         run: npx netlify-cli@27 deploy --prod --dir=web/dist --functions=dist/netlify/functions
