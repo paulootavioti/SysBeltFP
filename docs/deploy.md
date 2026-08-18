@@ -106,7 +106,7 @@ comportamento.
 | Campo | Valor |
 |---|---|
 | Base directory | `control-plane` |
-| Build command | `npm ci --include=dev && npm run build && cd web && npm ci --include=dev && npm run build` |
+| Build command | `npm ci --include=dev && npm run build:completo` |
 | Publish | `web/dist` |
 | Functions | `dist/netlify/functions` |
 
@@ -255,9 +255,21 @@ artefato pronto:
 
 ```bash
 cd control-plane
-npm run build
-npm run build && (cd web && npm run build)
+npm ci --include=dev
+npm run build:completo
 netlify deploy --prod --dir=web/dist --functions=dist/netlify/functions
+```
+
+`build:completo` instala as dependências do painel antes de compilá-lo. Rodar
+só `npm run build` compila a API e para aí; se `web/node_modules` não existir,
+o build do painel falha com uma dezena de `Cannot find module` — e vários
+aparecem como erro de tipo (`'unknown'`) em arquivos que não têm defeito
+nenhum, por cascata da tipagem que não resolve.
+
+Se `netlify` não for encontrado, a CLI não está instalada nesta máquina:
+
+```bash
+npm install -g netlify-cli
 ```
 
 As variáveis continuam vindo do painel.
