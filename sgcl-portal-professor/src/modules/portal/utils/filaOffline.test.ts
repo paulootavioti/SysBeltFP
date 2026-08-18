@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { instalarLocalStorageDeTeste } from "../../../testing/localStorageDeTeste";
+import { instalarStoragesDeTeste } from "../../../testing/storagesDeTeste";
 import { enfileirar, lerFila, removerDaFila } from "./filaOffline";
 
 const CHAVE = "@portalProfessor:filaOffline";
-const storage = instalarLocalStorageDeTeste();
+const storage = instalarStoragesDeTeste();
 
 const presenca = { tipo: "presenca", aulaId: 7, payload: { alunoId: 1, presente: true } } as const;
 

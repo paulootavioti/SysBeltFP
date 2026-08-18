@@ -1,5 +1,6 @@
 import axios from "axios";
 
+import { marcarSessaoExpirada } from "../utils/sessaoExpirada";
 import { criarInterceptorDeExpiracao } from "../utils/expiracaoDeSessao";
 
 const baseURL =
@@ -21,5 +22,10 @@ export function registrarExpiracaoDeSessao(callback: () => void) {
 
 api.interceptors.response.use(
   (resposta) => resposta,
-  criarInterceptorDeExpiracao(() => aoExpirarSessao())
+  criarInterceptorDeExpiracao(() => {
+    // Marca antes de deslogar: o logout dispara o redirecionamento, e a tela
+    // de login precisa encontrar o aviso já gravado quando montar.
+    marcarSessaoExpirada();
+    aoExpirarSessao();
+  })
 );

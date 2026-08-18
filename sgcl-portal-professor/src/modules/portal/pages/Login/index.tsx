@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,6 +9,7 @@ import { Button } from "../../../../components/ui/Button";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 
 import { getApiErrorMessage } from "../../../../utils/getApiErrorMessage";
+import { lerSessaoExpirada, limparSessaoExpirada } from "../../../../utils/sessaoExpirada";
 
 import "./styles.css";
 
@@ -18,8 +19,14 @@ export function Login() {
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState("");
+  // O aviso é lido na montagem e limpo logo depois, para não reaparecer numa
+  // próxima visita à tela de login dentro da mesma aba.
+  const [erro, setErro] = useState(() => lerSessaoExpirada() ?? "");
   const [carregando, setCarregando] = useState(false);
+
+  useEffect(() => {
+    limparSessaoExpirada();
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
