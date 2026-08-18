@@ -10,10 +10,18 @@ interface UnidadeOpcao {
   nome: string;
 }
 
-// Admin, Professor e Recepção podem estar vinculados a mais de uma unidade
-// — esse seletor deixa esses perfis escolherem em qual estão trabalhando
-// agora. Sempre precisa haver uma unidade ativa escolhida.
-const PERFIS_MULTI_UNIDADE = ["ADMIN", "PROFESSOR", "RECEPCAO"];
+// Quem pode estar vinculado a mais de uma unidade escolhe aqui em qual está
+// trabalhando agora. Admin, Professor e Recepção precisam sempre de uma
+// unidade ativa; o Dono, não — ver TODAS é o estado natural dele (RN-164).
+const PERFIS_MULTI_UNIDADE = ["DONO", "ADMIN", "PROFESSOR", "RECEPCAO"];
+
+// Só o Dono alcança a academia inteira de uma vez (RN-165). Para os demais,
+// "todas" seria pedir dados de unidades onde eles não trabalham.
+const PERFIS_QUE_VEEM_TODAS = ["DONO"];
+
+// A ausência de unidade ativa vira string vazia no <select>, e é ela que o
+// contexto traduz em "não mandar o X-Unidade-Id".
+const TODAS = "";
 
 export function SeletorUnidadeAtiva() {
   const { usuario, unidadeVisualizada, definirUnidadeVisualizada } = useAuth();
@@ -27,17 +35,26 @@ export function SeletorUnidadeAtiva() {
 
   if (!habilitado || unidades.length <= 1) return null;
 
+  const podeVerTodas = PERFIS_QUE_VEEM_TODAS.includes(usuario?.perfil ?? "");
   const unidadeAtivaId = unidadeVisualizada?.id ?? usuario?.unidadeId ?? null;
 
   function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const unidade = unidades.find((u) => String(u.id) === event.target.value);
-    if (unidade) definirUnidadeVisualizada({ id: unidade.id, nome: unidade.nome });
+
+    // Sem unidade correspondente é a opção "todas": limpa a escolha em vez de
+    // ignorar o evento, que era o que prendia o Dono na última filial.
+    if (unidade) {
+      definirUnidadeVisualizada({ id: unidade.id, nome: unidade.nome });
+    } else if (podeVerTodas) {
+      definirUnidadeVisualizada(null);
+    }
   }
 
   return (
     <label className="seletor-unidade-visualizada" title="Escolha em qual unidade você está trabalhando agora">
       <span>Unidade ativa</span>
-      <select value={unidadeAtivaId ? String(unidadeAtivaId) : ""} onChange={handleChange}>
+      <select value={unidadeAtivaId ? String(unidadeAtivaId) : TODAS} onChange={handleChange}>
+        {podeVerTodas && <option value={TODAS}>Todas as unidades</option>}
         {unidades.map((unidade) => (
           <option key={unidade.id} value={String(unidade.id)}>
             {unidade.nome}
