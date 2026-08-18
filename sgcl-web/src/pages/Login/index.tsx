@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../contexts/useAuth";
@@ -9,6 +9,7 @@ import { ErrorMessage } from "../../components/ui/ErrorMessage";
 
 import { SiteFooter } from "../../components/layout/SiteFooter";
 import { getApiErrorMessage } from "../../shared/utils/getApiErrorMessage";
+import { lerSessaoExpirada, limparSessaoExpirada } from "../../shared/utils/sessaoExpirada";
 import { ROTA_PADRAO_POR_PERFIL, type Perfil } from "../../shared/constants/acessoPorPerfil";
 
 import "./styles.css";
@@ -27,8 +28,14 @@ export function Login() {
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState("");
+  // O aviso é lido na montagem e limpo logo depois, para não reaparecer numa
+  // próxima visita à tela de login dentro da mesma aba.
+  const [erro, setErro] = useState(() => lerSessaoExpirada() ?? "");
   const [carregando, setCarregando] = useState(false);
+
+  useEffect(() => {
+    limparSessaoExpirada();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

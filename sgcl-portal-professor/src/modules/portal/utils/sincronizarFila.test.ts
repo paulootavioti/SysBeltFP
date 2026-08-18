@@ -1,11 +1,11 @@
 import { AxiosError, AxiosHeaders } from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { instalarLocalStorageDeTeste } from "../../../testing/localStorageDeTeste";
+import { instalarStoragesDeTeste } from "../../../testing/storagesDeTeste";
 import { enfileirar, lerFila, type AcaoPendente } from "./filaOffline";
 import { ehErroDeConexao, sincronizarFila } from "./sincronizarFila";
 
-const storage = instalarLocalStorageDeTeste();
+const storage = instalarStoragesDeTeste();
 
 function erroSemConexao() {
   return new AxiosError("Network Error");

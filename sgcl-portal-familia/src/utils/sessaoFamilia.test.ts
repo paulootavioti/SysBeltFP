@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { AlunoResumo, UsuarioFamilia } from "../contexts/authContextData";
-import { instalarLocalStorageDeTeste } from "../testing/localStorageDeTeste";
+import { instalarStoragesDeTeste } from "../testing/storagesDeTeste";
 import {
   CHAVE_ALUNOS,
   CHAVE_ALUNO_SELECIONADO,
@@ -14,7 +14,7 @@ import {
   limparSessao,
 } from "./sessaoFamilia";
 
-const storage = instalarLocalStorageDeTeste();
+const storage = instalarStoragesDeTeste();
 
 const aluno = (id: number, nome: string): AlunoResumo => ({
   id,
