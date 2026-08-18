@@ -61,13 +61,10 @@ describe("seletor de unidades", () => {
     expect(nomes).not.toContain(`${PREFIXO}Alfa Filial`);
   });
 
-  it("operador do SaaS (sem unidade ativa) enxerga todas", async () => {
+  it("sem unidade ativa não enxerga nenhuma academia", async () => {
     await cenarioComDoisAssinantes();
 
-    const nomes = (await service.execute(null)).map((o) => o.nome);
-
-    expect(nomes).toContain(`${PREFIXO}Alfa Matriz`);
-    expect(nomes).toContain(`${PREFIXO}Beta Matriz`);
+    expect(await service.execute(null)).toEqual([]);
   });
 
   it("unidade ativa inexistente não vira acesso a tudo", async () => {
