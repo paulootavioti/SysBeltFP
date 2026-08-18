@@ -1,0 +1,57 @@
+# Publica o Control Plane (API + painel do operador) a partir dos runners do
+# GitHub, e não da máquina de quem desenvolve.
+#
+# Dois motivos:
+#
+#   1. A CLI do Netlify não roda em macOS anterior ao 12 — o esbuild que ela
+#      traz falha com "Symbol not found: _SecTrustCopyCertificateChain".
+#   2. O build acontece aqui, não na infraestrutura do Netlify, então este
+#      caminho continua funcionando com os minutos de build esgotados.
+#
+# O que ele NÃO faz: aplicar migrations. Isso permanece manual e deliberado —
+# ver docs/deploy.md.
+name: Deploy Control Plane
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "control-plane/**"
+      - ".github/workflows/deploy-control-plane.yml"
+
+# Um deploy por vez. Sem isto, dois merges próximos disputariam a publicação e
+# o último a terminar — não o último a ser mesclado — venceria.
+concurrency:
+  group: deploy-control-plane
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: control-plane/package-lock.json
+
+      - working-directory: control-plane
+        run: npm ci --include=dev
+
+      # A suíte roda antes de publicar. O workflow de CI só dispara em pull
+      # request; um push direto no main chegaria aqui sem nenhuma verificação.
+      - working-directory: control-plane
+        run: npm run test
+
+      - working-directory: control-plane
+        run: npm run build:completo
+
+      - working-directory: control-plane
+        run: npx netlify-cli@27 deploy --prod --dir=web/dist --functions=dist/netlify/functions
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
