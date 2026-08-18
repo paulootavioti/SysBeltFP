@@ -34,6 +34,7 @@ O sistema é dividido em dois planos com bancos separados.
 | Guarda | Assinantes, planos, assinaturas, faturas, licenças, provisionamento, auditoria | Alunos, turmas, aulas, financeiro da academia |
 | Módulos | 14 | 44 |
 | Testes | 188 | 663 |
+| Frontend | `control-plane/web` | `sgcl-web` e os dois portais |
 
 O Tenant Plane **não conhece** preço, fatura nem qualquer outro assinante. O
 que ele sabe sobre a própria assinatura chega por uma **concessão assinada**
@@ -164,6 +165,7 @@ manual de UI)
 sysbeltfp/
 ├── src/                      # Tenant Plane — API REST (44 módulos)
 ├── control-plane/            # Control Plane — sistema comercial B2B
+│   └── web/                  # painel do operador (servido pelo mesmo site)
 ├── contracts/                # contratos versionados entre os planos
 ├── sgcl-web/                 # frontend da equipe da academia
 ├── sgcl-portal-familia/      # Portal da Família
@@ -221,11 +223,24 @@ npm run dev
 ```bash
 cd control-plane
 npm install
-npm run dev
+npm run dev            # API na porta 3334
+
+cd web
+npm install
+npm run dev            # painel do operador na porta 5177
 ```
 
-`http://localhost:3334`. Requer `control-plane/.env` — ver
-`control-plane/.env.example`.
+Requer `control-plane/.env` — ver `control-plane/.env.example`. O painel
+encaminha `/api` para a API local, reproduzindo o arranjo de produção, onde os
+dois são servidos pelo mesmo site.
+
+Para criar o primeiro operador:
+
+```bash
+cd control-plane
+CONTROL_PLANE_ADMIN_NAME="..." CONTROL_PLANE_ADMIN_EMAIL="..." \
+CONTROL_PLANE_ADMIN_PASSWORD="..." npm run seed:operator
+```
 
 > Rodando local, as rotas ficam na raiz. O prefixo `/api` de produção vem do
 > wrapper serverless (`netlify/functions/api.ts`), não do Express.
