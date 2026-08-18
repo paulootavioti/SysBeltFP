@@ -618,11 +618,15 @@ O mesmo professor não pode ser escalado em duas turmas com dia/horário sobrepo
 
 Um usuário `DONO` não é fixado a uma unidade (`unidadeId` nulo) e alcança todas as filiais da própria conta — e nenhuma de outra academia.
 
+O alcance é aplicado como filtro, não como ausência de filtro: as unidades da conta do usuário são resolvidas na autenticação e usadas no `where` de toda consulta escopada. Enquanto as academias dividirem o mesmo banco, consultar sem filtro devolveria o assinante vizinho.
+
 ---
 
 ## RN-165
 
 O `DONO` pode alternar entre uma unidade específica e "todas as unidades" da própria conta, através de um seletor. Essa escolha filtra o sistema inteiro (Alunos, Turmas, Financeiro, Aulas, Usuários etc.) enquanto durar a seleção, sem alterar nenhum dado.
+
+A escolha só estreita: uma unidade que não esteja no alcance de quem pediu é ignorada e o escopo normal continua valendo. Vale para o seletor e para os filtros de tela que aceitam id de unidade (grade horária, financeiro).
 
 ---
 

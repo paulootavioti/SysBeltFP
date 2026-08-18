@@ -41,6 +41,40 @@ export async function unidadesDaConta(contaId: number): Promise<number[]> {
 }
 
 /**
+ * Todas as unidades que um usuário pode alcançar: as da conta dele.
+ *
+ * Com unidade ativa, a conta sai dela. Sem unidade ativa — o DONO, RN-164 —
+ * sai de um vínculo qualquer, porque `garantirUnidadesDaMesmaConta` impede
+ * que os vínculos de um usuário atravessem contas.
+ *
+ * Sem unidade ativa e sem vínculo nenhum não há conta a que atribuir o
+ * usuário: o alcance é vazio. É o caso de um cadastro feito sem unidade por
+ * engano — ele não vê nada, em vez de ver o banco inteiro.
+ */
+export async function unidadesAlcancadas(
+  usuarioId: number,
+  unidadeAtivaId: number | null
+): Promise<number[]> {
+  const prisma = prismaDaRequisicao();
+
+  if (unidadeAtivaId !== null) {
+    const unidades = await prisma.unidade.findMany({
+      where: { conta: { unidades: { some: { id: unidadeAtivaId } } } },
+      select: { id: true },
+    });
+
+    return unidades.map((unidade) => unidade.id);
+  }
+
+  const vinculo = await prisma.usuarioUnidade.findFirst({
+    where: { usuarioId },
+    select: { unidade: { select: { contaId: true } } },
+  });
+
+  return vinculo ? unidadesDaConta(vinculo.unidade.contaId) : [];
+}
+
+/**
  * Confirma que a lista de unidades pertence toda à MESMA conta e devolve
  * qual é. Recusa a lista inteira quando há mistura — não escolhe uma
  * "maioria" nem descarta as estranhas em silêncio, porque nesse caso não

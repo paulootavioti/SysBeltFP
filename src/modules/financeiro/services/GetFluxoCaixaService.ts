@@ -1,5 +1,5 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
-import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
+import { escopoUnidadeFiltrada } from "../../../shared/utils/escopoUnidade";
 import { agruparPorBucket, calcularRangePeriodo, type Periodo } from "../../dashboard/utils/periodo";
 import type { FiltrosFinanceiro } from "../utils/filtros";
 
@@ -17,10 +17,7 @@ export class GetFluxoCaixaService {
     const prisma = prismaDaRequisicao();
     const periodo: Periodo = filtros.periodo ?? "MENSAL";
     const range = calcularRangePeriodo(periodo);
-    const unidade = escopoUnidade(unidadeId);
-
-    const filtroUnidadeExtra =
-      unidadeId === null && filtros.unidadeId ? { unidadeId: filtros.unidadeId } : {};
+    const unidade = escopoUnidadeFiltrada(unidadeId, filtros.unidadeId);
 
     const filtroProfessor = filtros.professorId
       ? { aluno: { turma: { professorId: filtros.professorId } } }
@@ -30,7 +27,6 @@ export class GetFluxoCaixaService {
       prisma.mensalidade.findMany({
         where: {
           ...unidade,
-          ...filtroUnidadeExtra,
           ...filtroProfessor,
           vencimento: { gte: range.inicio, lt: range.fim },
         },
@@ -39,7 +35,6 @@ export class GetFluxoCaixaService {
       prisma.mensalidade.findMany({
         where: {
           ...unidade,
-          ...filtroUnidadeExtra,
           ...filtroProfessor,
           status: "PAGA",
           dataPagamento: { gte: range.inicio, lt: range.fim },

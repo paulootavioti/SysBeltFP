@@ -3,7 +3,11 @@ import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/AppError";
 import { prismaDaRequisicao } from "../database/prismaDaRequisicao";
 import { PERFIS_MULTI_UNIDADE } from "../constants/perfis";
-import { definirUsuarioDoContexto } from "../context/contextoRequisicao";
+import {
+  definirUnidadesDoUsuario,
+  definirUsuarioDoContexto,
+} from "../context/contextoRequisicao";
+import { unidadesAlcancadas } from "../utils/contaDoUsuario";
 import { verificarTokenDaRequisicao } from "../tenant/tokenDaRequisicao";
 import { garantirAcessoSuperadminLegado } from "../security/superadminLegado";
 
@@ -52,6 +56,12 @@ export async function ensureAuthenticated(
     };
 
     definirUsuarioDoContexto(usuario.id);
+
+    // O alcance de qualquer usuário é a conta dele — nunca o banco inteiro,
+    // que pode conter mais de um assinante. Resolvido uma vez por requisição
+    // e guardado no contexto: é o que permite escopar por conta sem passar a
+    // lista por parâmetro em cada uma das dezenas de queries.
+    definirUnidadesDoUsuario(await unidadesAlcancadas(usuario.id, usuario.unidadeId));
 
     if (PERFIS_MULTI_UNIDADE.includes(usuario.perfil) && req.headers["x-unidade-id"]) {
       // Perfis multiunidade podem trocar a unidade ativa somente quando

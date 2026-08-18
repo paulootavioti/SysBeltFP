@@ -1,13 +1,18 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
+import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 
 export class ListAlunosService {
 
   async execute(unidadeId: number | null, perfil?: string) {
     const prisma = prismaDaRequisicao();
-    const escopoAluno = unidadeId === null
-      ? {}
-      : { unidadesPermitidas: { some: { unidadeId } } };
+
+    // O aluno pode estar autorizado em mais de uma unidade (AlunoUnidade),
+    // então o escopo entra pela junção. Sem alcance no `where` (rotina
+    // interna) a listagem continua sendo do tenant inteiro.
+    const alcance = escopoUnidade(unidadeId);
+    const escopoAluno =
+      alcance.unidadeId === undefined ? {} : { unidadesPermitidas: { some: alcance } };
 
     // PROFESSOR só pode VER: nome, apelido, nome do responsável e turma —
     // nada de CPF, endereço, saúde ou financeiro do aluno. `ativo` e

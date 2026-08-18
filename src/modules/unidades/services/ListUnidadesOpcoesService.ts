@@ -1,27 +1,33 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
+import { escopoDeUnidadePropria } from "../../../shared/utils/escopoUnidade";
 
 // Versão enxuta de ListUnidadesService — só id/nome das unidades ativas,
 // pra popular seletores (ex.: consulta de grade horária de outra unidade)
-// sem expor os dados completos de todas as unidades pra quem não é SUPERADMIN.
+// sem expor os dados completos de todas as unidades.
 //
 // Restrito à CONTA de quem pergunta: um ADMIN escolhe entre as filiais da
 // própria academia e não pode nem enxergar o nome das unidades de outro
-// assinante. Só o operador do SaaS (SUPERADMIN, sem unidade ativa) vê todas.
+// assinante. O DONO, que não tem unidade fixa (RN-164), precisa continuar
+// vendo as filiais da conta dele — é justamente aqui que ele alterna entre
+// elas (RN-165).
 export class ListUnidadesOpcoesService {
   async execute(unidadeAtivaId: number | null) {
     const prisma = prismaDaRequisicao();
-    const contaId = await resolverConta(unidadeAtivaId);
+
+    const escopo =
+      unidadeAtivaId === null
+        ? escopoDeUnidadePropria(null)
+        : { contaId: await resolverConta(unidadeAtivaId) };
 
     return prisma.unidade.findMany({
-      where: { ativo: true, ...(contaId === null ? {} : { contaId }) },
+      where: { ativo: true, ...escopo },
       select: { id: true, nome: true },
       orderBy: { nome: "asc" },
     });
   }
 }
 
-async function resolverConta(unidadeAtivaId: number | null): Promise<number | null> {
-  if (unidadeAtivaId === null) return null;
+async function resolverConta(unidadeAtivaId: number): Promise<number> {
   const prisma = prismaDaRequisicao();
 
   const unidade = await prisma.unidade.findUnique({

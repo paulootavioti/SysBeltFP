@@ -92,6 +92,11 @@ describe("usuário autenticado", () => {
 describe("fora de uma requisição", () => {
   it("devolve campos nulos em vez de estourar", () => {
     // cron, script de manutenção, teste unitário.
-    expect(obterContextoRequisicao()).toEqual({ ip: null, dispositivo: null, usuarioId: null });
+    expect(obterContextoRequisicao()).toEqual({
+      ip: null,
+      dispositivo: null,
+      usuarioId: null,
+      unidadesDoUsuario: null,
+    });
   });
 });

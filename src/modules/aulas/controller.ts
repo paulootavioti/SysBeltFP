@@ -24,6 +24,7 @@ import { GetResumoTurmasAulasService } from "./services/GetResumoTurmasAulasServ
 import { AvisoCancelamentoAulaService } from "../mensagens/services/AvisoCancelamentoAulaService";
 import { PERIODOS_CONTAGEM_VALIDOS, type PeriodoContagem } from "./utils/periodoContagem";
 import { resolverUnidadeConsulta } from "./utils/resolverUnidadeConsulta";
+import { obterContextoRequisicao } from "../../shared/context/contextoRequisicao";
 
 function lerPeriodo(req: Request): PeriodoContagem | undefined {
   if (!req.query.periodo) return undefined;
@@ -122,7 +123,12 @@ export class AulasController {
         turmaId: req.query.turmaId ? Number(req.query.turmaId) : undefined,
         periodo: lerPeriodo(req),
       },
-      resolverUnidadeConsulta(req.user.perfil, req.user.unidadeId, req.query.unidadeConsultaId)
+      resolverUnidadeConsulta(
+        req.user.perfil,
+        req.user.unidadeId,
+        req.query.unidadeConsultaId,
+        obterContextoRequisicao().unidadesDoUsuario ?? []
+      )
     );
 
     return res.json(programacoes);
@@ -220,7 +226,12 @@ export class AulasController {
     const referencia = req.query.data ? new Date(String(req.query.data)) : new Date();
 
     const grade = await service.execute(
-      resolverUnidadeConsulta(req.user.perfil, req.user.unidadeId, req.query.unidadeConsultaId),
+      resolverUnidadeConsulta(
+        req.user.perfil,
+        req.user.unidadeId,
+        req.query.unidadeConsultaId,
+        obterContextoRequisicao().unidadesDoUsuario ?? []
+      ),
       referencia
     );
 

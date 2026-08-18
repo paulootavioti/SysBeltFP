@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 
-import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
+import { escopoUnidadeFiltrada } from "../../../shared/utils/escopoUnidade";
 import { calcularRangePeriodo, type Periodo } from "../../dashboard/utils/periodo";
 
 export interface FiltrosFinanceiro {
@@ -10,19 +10,19 @@ export interface FiltrosFinanceiro {
 }
 
 // Monta o `where` de Mensalidade a partir dos filtros de período/unidade/
-// professor pedidos pelo produto. O filtro de unidade só tem efeito pro
-// SUPERADMIN (escopo nulo) — um ADMIN/RECEPCAO já está preso à própria
-// unidade por `escopoUnidade`, então um `unidadeId` de outra unidade nesse
-// caso é simplesmente ignorado (nunca vaza dado de outra unidade).
+// professor pedidos pelo produto.
+//
+// O filtro de unidade só estreita dentro do alcance de quem pergunta: um
+// ADMIN/RECEPCAO já está preso à própria unidade, e o DONO (RN-164) escolhe
+// entre as filiais da conta dele. Uma unidade fora do alcance é ignorada —
+// antes ela sobrescrevia o escopo e lia o financeiro de outra academia.
 export function montarWhereMensalidade(
   unidadeIdUsuario: number | null,
   filtros: FiltrosFinanceiro
 ): Prisma.MensalidadeWhereInput {
-  const where: Prisma.MensalidadeWhereInput = { ...escopoUnidade(unidadeIdUsuario) };
-
-  if (unidadeIdUsuario === null && filtros.unidadeId) {
-    where.unidadeId = filtros.unidadeId;
-  }
+  const where: Prisma.MensalidadeWhereInput = {
+    ...escopoUnidadeFiltrada(unidadeIdUsuario, filtros.unidadeId),
+  };
 
   if (filtros.periodo) {
     const range = calcularRangePeriodo(filtros.periodo);

@@ -62,9 +62,25 @@ Unidades da mesma academia **compartilham dados entre si**: um aluno pode
 treinar em mais de uma unidade da mesma rede, e conta uma vez em cada unidade
 onde está lotado para efeito de cobrança.
 
-`escopoUnidade(null)` remove o filtro de unidade e é usado pelo `DONO`, que
-alcança todas as filiais da própria conta — e apenas dela, porque o banco em
-que a consulta roda já é o da academia dele.
+`escopoUnidade(null)` — sem unidade ativa — é o caso do `DONO`, que alcança
+todas as filiais da própria conta (RN-164). Ele **não** remove o filtro: filtra
+pelas unidades da conta de quem pediu, lidas do contexto da requisição
+(`unidadesDoUsuario`, resolvido uma vez por `ensureAuthenticated`).
+
+A distinção importa porque o banco pode conter mais de um assinante. Enquanto
+`TENANT_RESOLUTION_ENABLED` estiver desligado, todas as academias dividem o
+mesmo banco, e "sem filtro de unidade" devolveria os dados do assinante
+vizinho. Depois da separação física, o filtro por conta vira redundante — mas
+redundância de isolamento é o que se quer ter.
+
+Um filtro de tela (`unidadeConsultaId` na grade, `unidadeId` no financeiro) só
+**estreita** dentro desse alcance: uma unidade fora dele é ignorada, nunca
+sobrescreve o escopo (`escopoUnidadeFiltrada`, `resolverUnidadeConsulta`).
+
+Resta um caso legítimo de consulta sem filtro nenhum: **rotina interna sem
+usuário** — o cron de cobrança recorrente e os lembretes, que varrem o tenant
+inteiro. O que separa os dois é haver usuário no contexto; havendo usuário sem
+alcance preenchido, o resultado é vazio, nunca total.
 
 ---
 
