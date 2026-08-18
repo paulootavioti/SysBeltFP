@@ -1,5 +1,5 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
-import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
+import { escopoUnidadeFiltrada } from "../../../shared/utils/escopoUnidade";
 import { montarWhereMensalidade, type FiltrosFinanceiro } from "../utils/filtros";
 
 export interface DashboardFinanceiro {
@@ -94,10 +94,7 @@ export class GetDashboardFinanceiroService {
       select: { id: true, valorFinal: true, vencimento: true, aluno: { select: { nome: true } } },
     });
 
-    const whereUnidadeAssinatura = {
-      ...escopoUnidade(unidadeId),
-      ...(unidadeId === null && filtros.unidadeId ? { unidadeId: filtros.unidadeId } : {}),
-    };
+    const whereUnidadeAssinatura = escopoUnidadeFiltrada(unidadeId, filtros.unidadeId);
 
     const assinaturasAtivas = await prisma.assinatura.findMany({
       where: { ...whereUnidadeAssinatura, status: "ATIVA" },

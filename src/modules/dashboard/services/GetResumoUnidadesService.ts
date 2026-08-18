@@ -1,5 +1,6 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { calcularRangePeriodo, type Periodo } from "../utils/periodo";
+import { escopoDeUnidadePropria } from "../../../shared/utils/escopoUnidade";
 
 export interface UnidadeDashboard {
   id: number;
@@ -15,8 +16,8 @@ export interface UnidadeDashboard {
 }
 
 // Resumo por unidade pro painel "Unidades e Arenas" do dashboard.
-// SUPERADMIN (unidadeId null) vê todas; qualquer outro perfil só vê a
-// própria unidade ativa (mesma regra de escopo do resto do sistema).
+// Quem tem unidade ativa vê só a dela; quem não tem — o DONO (RN-164) — vê as
+// unidades da própria conta. Mesma regra de escopo do resto do sistema.
 //
 // Não existe hoje um status "EM_IMPLANTACAO" no schema (só o booleano
 // `Unidade.ativo`), nem um conceito de "Arena" com métricas próprias
@@ -29,7 +30,7 @@ export class GetResumoUnidadesService {
     const hoje = new Date();
 
     const unidades = await prisma.unidade.findMany({
-      where: unidadeId === null ? {} : { id: unidadeId },
+      where: escopoDeUnidadePropria(unidadeId),
       orderBy: { nome: "asc" },
     });
 

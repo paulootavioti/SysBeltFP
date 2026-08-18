@@ -32,6 +32,43 @@ Funcionalidades descontinuadas.
 
 ---
 
+# 1.0.0-rc.3 — Agosto/2026
+
+## Escopo por conta: fechando a fronteira entre assinantes
+
+### Corrigido
+
+- **Consulta sem unidade ativa devolvia o assinante vizinho.** `escopoUnidade(null)`
+  removia o filtro de unidade — herança de quando `SUPERADMIN` existia e um banco
+  continha uma academia só. Com mais de um assinante no mesmo banco (a situação
+  atual, enquanto `TENANT_RESOLUTION_ENABLED` está desligado), o `DONO` de uma
+  academia enxergava turmas, alunos e financeiro de outra. Agora o alcance é a
+  conta de quem pergunta, resolvida uma vez na autenticação.
+- **Filtros de tela sobrescreviam o escopo.** O `unidadeConsultaId` da grade
+  horária e o `unidadeId` do financeiro entravam no `where` sem checagem: bastava
+  passar o id de uma unidade de outra academia para ler os dados dela. Agora o
+  filtro só estreita dentro do alcance; fora dele, é ignorado.
+- **Listagem de alunos escapava pela junção.** `AlunoUnidade` não passava por
+  `escopoUnidade`, então o escopo não atravessava a tabela de ligação.
+
+### Alterado
+
+- `escopoUnidade(null)` deixa de significar "sem filtro" e passa a significar "as
+  unidades da conta". Sem filtro nenhum sobrou só para **rotina interna sem
+  usuário** (cron de cobrança, lembretes), que precisa varrer o tenant. Havendo
+  usuário autenticado sem alcance resolvido, o resultado é vazio — falha fechado.
+- `resolverUnidadeConsulta` deixou de listar `SUPERADMIN`, que já não autentica
+  (RN-167), e passou a receber as unidades permitidas.
+
+### Melhorado
+
+- RN-164 e RN-165 dizem agora que o alcance do `DONO` é aplicado como filtro, e
+  que a seleção de unidade só estreita. `banco-de-dados.md` corrige a premissa de
+  que o banco da consulta já seria o da academia — só será depois da separação
+  física.
+
+---
+
 # 1.0.0-rc.2 — Agosto/2026
 
 ## Control Plane no ar, e cobertura dos portais

@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { prisma } from "../../../shared/database/prisma";
+import { comContextoRequisicao } from "../../../shared/context/contextoRequisicao";
 import { GetResumoUnidadesService } from "./GetResumoUnidadesService";
 import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
@@ -17,15 +18,21 @@ beforeEach(limpar);
 afterAll(limpar);
 
 describe("GetResumoUnidadesService", () => {
-  it("SUPERADMIN (unidadeId null) vê todas as unidades", async () => {
-    await criarUnidadeDeTeste("TESTE_RESUMOUNIDADES_A");
-    await criarUnidadeDeTeste("TESTE_RESUMOUNIDADES_B");
+  // Sem unidade ativa o resumo é da conta inteira (o DONO, RN-164) — e não
+  // do banco inteiro, que pode ter mais de um assinante.
+  it("sem unidade ativa, resume as unidades da própria conta", async () => {
+    const a = await criarUnidadeDeTeste("TESTE_RESUMOUNIDADES_A");
+    const b = await criarUnidadeDeTeste("TESTE_RESUMOUNIDADES_B");
+    const deOutroAssinante = await criarUnidadeDeTeste("TESTE_RESUMOUNIDADES_ALHEIA");
 
-    const resultado = await service.execute(null);
-    const nomes = resultado.map((u) => u.nome);
+    const nomes = await comContextoRequisicao(
+      { usuarioId: 1, unidadesDoUsuario: [a.id, b.id] },
+      async () => (await service.execute(null)).map((u) => u.nome)
+    );
 
     expect(nomes).toContain("TESTE_RESUMOUNIDADES_A");
     expect(nomes).toContain("TESTE_RESUMOUNIDADES_B");
+    expect(nomes).not.toContain(deOutroAssinante.nome);
   });
 
   it("perfil comum só vê a própria unidade, com os contadores corretos", async () => {

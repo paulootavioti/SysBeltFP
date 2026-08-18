@@ -18,6 +18,14 @@ export interface ContextoRequisicao {
   // preenchido por ensureAuthenticated, depois que o token é validado —
   // permite auditar services que não recebem usuarioId por parâmetro.
   usuarioId: number | null;
+  // As unidades da conta do usuário autenticado — o alcance máximo dele,
+  // resolvido uma vez por ensureAuthenticated. Nulo em rotina interna, que
+  // não tem usuário.
+  //
+  // Vive no contexto, e não num parâmetro, porque `escopoUnidade` é
+  // síncrona e usada em umas cinquenta queries: transformá-la em async
+  // obrigaria a tocar todas elas e a confiar que ninguém esqueça um await.
+  unidadesDoUsuario: number[] | null;
 }
 
 const armazenamento = new AsyncLocalStorage<ContextoRequisicao>();
@@ -53,14 +61,26 @@ function extrairDispositivo(req: Request): string | null {
 
 export function contextoRequisicao(req: Request, _res: Response, next: NextFunction) {
   armazenamento.run(
-    { ip: extrairIp(req), dispositivo: extrairDispositivo(req), usuarioId: null },
+    {
+      ip: extrairIp(req),
+      dispositivo: extrairDispositivo(req),
+      usuarioId: null,
+      unidadesDoUsuario: null,
+    },
     next
   );
 }
 
 /** Contexto da requisição atual; campos nulos fora de uma requisição. */
 export function obterContextoRequisicao(): ContextoRequisicao {
-  return armazenamento.getStore() ?? { ip: null, dispositivo: null, usuarioId: null };
+  return (
+    armazenamento.getStore() ?? {
+      ip: null,
+      dispositivo: null,
+      usuarioId: null,
+      unidadesDoUsuario: null,
+    }
+  );
 }
 
 /** Registra quem está autenticado nesta requisição. */
@@ -70,7 +90,20 @@ export function definirUsuarioDoContexto(usuarioId: number) {
   if (contexto) contexto.usuarioId = usuarioId;
 }
 
+/** Registra as unidades da conta do usuário autenticado. */
+export function definirUnidadesDoUsuario(unidadeIds: number[]) {
+  const contexto = armazenamento.getStore();
+
+  if (contexto) contexto.unidadesDoUsuario = unidadeIds;
+}
+
 /** Executa `acao` dentro de um contexto — usado em testes e scripts. */
-export function comContextoRequisicao<T>(contexto: ContextoRequisicao, acao: () => T): T {
-  return armazenamento.run(contexto, acao);
+export function comContextoRequisicao<T>(
+  contexto: Partial<ContextoRequisicao>,
+  acao: () => T
+): T {
+  return armazenamento.run(
+    { ip: null, dispositivo: null, usuarioId: null, unidadesDoUsuario: null, ...contexto },
+    acao
+  );
 }
