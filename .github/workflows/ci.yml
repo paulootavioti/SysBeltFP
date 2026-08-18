@@ -104,10 +104,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Sem flag de "tem testes": os três rodam a suíte. Um app novo entra
+        # Sem flag de "tem testes": todos rodam a suíte. Um app novo entra
         # aqui já com testes, em vez de entrar isento — foi um `if` desses que
         # deixou os dois portais sem cobertura sem que ninguém percebesse.
-        app: [sgcl-web, sgcl-portal-familia, sgcl-portal-professor]
+        app:
+          [sgcl-web, sgcl-portal-familia, sgcl-portal-professor, control-plane/web]
 
     steps:
       - uses: actions/checkout@v4

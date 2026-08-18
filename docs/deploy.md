@@ -106,12 +106,22 @@ comportamento.
 | Campo | Valor |
 |---|---|
 | Base directory | `control-plane` |
-| Build command | `npm ci --include=dev && npm run build` |
-| Publish | `public` |
+| Build command | `npm ci --include=dev && npm run build && cd web && npm ci --include=dev && npm run build` |
+| Publish | `web/dist` |
 | Functions | `dist/netlify/functions` |
 
 Os três últimos vêm do `control-plane/netlify.toml` e não precisam ser
 preenchidos na interface — o arquivo prevalece sobre o painel.
+
+O site publica **duas coisas ao mesmo tempo**: a API, como function, e o painel
+do operador (`control-plane/web`), como estático. Eles compartilham a origem de
+propósito — o painel chama `/api` no próprio host, então não há CORS, não há
+variável de URL para manter em dia e não existe a possibilidade de o painel
+apontar para um Control Plane diferente do que o serve.
+
+O `netlify.toml` traz um fallback de SPA (`/*` → `/index.html`) **depois** da
+regra de `/api/*`. A ordem importa: o Netlify aplica a primeira regra que
+casar, e invertendo-as toda chamada de API viraria o HTML do painel.
 
 O `build` usa `tsconfig.build.json`, que exclui `**/*.test.ts`. Sem isso, o
 `tsc` emitiria `dist/netlify/functions/provisionar-background.test.js`, e o
@@ -217,11 +227,20 @@ Rodando local, **não há prefixo `/api`**: ele vem do wrapper serverless
 (`serverless(app, { basePath: "/api" })`), não do Express.
 
 ```bash
-cd control-plane && npm run dev          # porta 3334
+cd control-plane && npm run dev          # API na porta 3334
 curl -s localhost:3334/health
 curl -i -H "x-sysbelt-directory-secret: $SEGREDO" \
   localhost:3334/diretorio/v1/tenants/teste
 ```
+
+Para o painel do operador, com a API já rodando:
+
+```bash
+cd control-plane/web && npm run dev      # painel na porta 5177
+```
+
+O Vite encaminha `/api` para a 3334 e remove o prefixo, reproduzindo o arranjo
+de produção — onde o `/api` é criado pelo wrapper serverless, não pelo Express.
 
 ```bash
 npm run dev                              # porta 3333
@@ -237,7 +256,8 @@ artefato pronto:
 ```bash
 cd control-plane
 npm run build
-netlify deploy --prod --dir=public --functions=dist/netlify/functions
+npm run build && (cd web && npm run build)
+netlify deploy --prod --dir=web/dist --functions=dist/netlify/functions
 ```
 
 As variáveis continuam vindo do painel.
