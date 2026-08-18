@@ -620,6 +620,8 @@ Um usuário `DONO` não é fixado a uma unidade (`unidadeId` nulo) e alcança to
 
 O alcance é aplicado como filtro, não como ausência de filtro: as unidades da conta do usuário são resolvidas na autenticação e usadas no `where` de toda consulta escopada. Enquanto as academias dividirem o mesmo banco, consultar sem filtro devolveria o assinante vizinho.
 
+Todo usuário pertence a pelo menos uma unidade, e só o `DONO` pode ficar sem unidade **ativa** — é dela que sai a conta a que ele pertence. Um usuário sem unidade nenhuma não tem conta, não é alcançado por escopo algum e entraria no sistema sem enxergar nada; o cadastro e a edição recusam criá-lo.
+
 ---
 
 ## RN-165
