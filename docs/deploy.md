@@ -253,11 +253,33 @@ Local aceita `http://` em `CONTROL_PLANE_URL`: a exigência de HTTPS em
 Para publicar sem consumir minutos de build, compile na máquina e envie o
 artefato pronto:
 
+O caminho recomendado é o workflow **Deploy Control Plane** do GitHub Actions
+(`.github/workflows/deploy-control-plane.yml`). Ele roda a cada push no `main`
+que toque em `control-plane/`, e também sob demanda pelo botão *Run workflow*.
+
+Como o build acontece nos runners do GitHub e só o artefato pronto é enviado,
+esse caminho **não consome minutos de build do Netlify** — funciona mesmo com
+a cota esgotada.
+
+Exige dois segredos no repositório (Settings → Secrets and variables →
+Actions):
+
+| Segredo | Onde obter |
+|---|---|
+| `NETLIFY_AUTH_TOKEN` | Netlify → User settings → Applications → New access token |
+| `NETLIFY_SITE_ID` | Netlify → o site → Site configuration → Site ID |
+
+O workflow roda a suíte antes de publicar. O workflow de CI só dispara em
+pull request, então um push direto no `main` chegaria ao deploy sem nenhuma
+verificação.
+
+## Publicando da própria máquina
+
 ```bash
 cd control-plane
 npm ci --include=dev
 npm run build:completo
-netlify deploy --prod --dir=web/dist --functions=dist/netlify/functions
+npx netlify-cli deploy --prod --dir=web/dist --functions=dist/netlify/functions
 ```
 
 `build:completo` instala as dependências do painel antes de compilá-lo. Rodar
@@ -266,13 +288,15 @@ o build do painel falha com uma dezena de `Cannot find module` — e vários
 aparecem como erro de tipo (`'unknown'`) em arquivos que não têm defeito
 nenhum, por cascata da tipagem que não resolve.
 
-Se `netlify` não for encontrado, a CLI não está instalada nesta máquina:
+> **A CLI do Netlify exige macOS 12 ou superior.** Em versões anteriores, o
+> esbuild que ela traz aborta com
+> `dyld: Symbol not found: _SecTrustCopyCertificateChain` — a API não existe
+> nesses sistemas. Não é questão de permissão nem de forma de instalar:
+> `npx`, `sudo` e prefixo de usuário falham igual. Nessas máquinas, use o
+> workflow do GitHub Actions.
 
-```bash
-npm install -g netlify-cli
-```
-
-As variáveis continuam vindo do painel.
+As variáveis de ambiente continuam vindo do painel do Netlify em qualquer um
+dos dois caminhos.
 
 ---
 
