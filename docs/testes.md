@@ -10,16 +10,20 @@ Versão do documento: 2.0
 
 | Suíte | Arquivos | Testes |
 |---|---|---|
-| Tenant Plane (`src/`) | 142 | 663 |
+| Tenant Plane (`src/`) | 148 | 704 |
 | Control Plane (`control-plane/`) | 67 | 188 |
-| `sgcl-web` | 9 | 48 |
-| `sgcl-portal-familia` | 0 | 0 |
-| `sgcl-portal-professor` | 0 | 0 |
+| `sgcl-web` | 13 | 86 |
+| `control-plane/web` (painel do operador) | 6 | 77 |
+| `sgcl-portal-professor` | 6 | 49 |
+| `sgcl-portal-familia` | 5 | 42 |
 
-Os dois portais **não têm nenhum teste automatizado**. São justamente os
-frontends que lidam com dados de menores de idade e com autenticação de
-responsáveis. É a maior lacuna de qualidade do repositório e está registrada
-no [`roadmap.md`](roadmap.md).
+Números contados rodando as suítes, não estimados — se esta tabela divergir do
+que `npm test` imprime, ela é que está errada.
+
+Os dois portais saíram do zero em `1.0.0-rc.2`. O que ainda falta é
+profundidade de **componente**: fora o `SeletorUnidadeAtiva` no `sgcl-web`, os
+frontends são testados só no nível de função, e defeito de tela escapa disso
+(ver o nível "Componente" abaixo).
 
 Tudo roda em CI (`.github/workflows/ci.yml`), em jobs separados por
 subprojeto, com um PostgreSQL de serviço.
@@ -122,6 +126,34 @@ unidade, cifra de segredos, parsers.
 O motor de preço (`src/modules/plataforma/utils/precoPlataforma.ts`) é o
 exemplo do padrão — não lê banco nem relógio, então cada caso é uma chamada
 com entrada e saída explícitas.
+
+## Componente
+
+Componente React montado em jsdom com `@testing-library/react`, consultado
+pelo papel do elemento (`getByRole`) e operado como a pessoa opera.
+
+Existe porque uma classe inteira de defeito não é alcançável de outro jeito. O
+`SeletorUnidadeAtiva` acumulou três: não renderizava para o `DONO`, não tinha a
+opção "todas as unidades", e o `onChange` ignorava o evento quando não achava
+filial — deixando o `DONO` preso na última escolhida. Os três passaram por uma
+suíte verde e só apareceram no navegador. Nenhum é sobre uma função; todos são
+sobre o que a tela mostra e o que o clique faz.
+
+Por enquanto só o `sgcl-web` tem esse nível
+(`components/layout/SeletorUnidadeAtiva/index.test.tsx`). Duas convenções, que
+existem porque o vitest daqui não roda com `globals: true`:
+
+- O ambiente é declarado **por arquivo**, com `@vitest-environment jsdom` no
+  topo. Assim os testes de função continuam em Node, que é mais rápido, e nada
+  precisa mudar na configuração.
+- A limpeza entre renders é **explícita** (`afterEach(cleanup)`). Sem ela o
+  testing-library não desmonta nada sozinho, o render de um teste sobra para o
+  seguinte, e as buscas por papel passam a achar dois elementos — falha
+  confusa, porque o erro aponta o teste seguinte e não o anterior.
+
+Mock no limite do módulo, não do componente: aqui só `UsuarioService` é
+substituído. O contexto de autenticação entra pelo `Provider` de verdade, que é
+o que garante que a fiação continua funcionando.
 
 ## Integração
 

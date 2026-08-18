@@ -33,7 +33,7 @@ O sistema é dividido em dois planos com bancos separados.
 | Banco | Um, exclusivo do SysBelt | Um por academia |
 | Guarda | Assinantes, planos, assinaturas, faturas, licenças, provisionamento, auditoria | Alunos, turmas, aulas, financeiro da academia |
 | Módulos | 14 | 44 |
-| Testes | 188 | 663 |
+| Testes | 188 | 704 |
 | Frontend | `control-plane/web` — painel do operador | `sgcl-web` e os dois portais |
 | Publicado em | `sysbelt-control-plane.netlify.app` | `sysbeltfp.netlify.app` |
 
@@ -285,16 +285,21 @@ Modelo completo: [`banco-de-dados.md`](banco-de-dados.md).
 
 ```bash
 npm run test:db:preparar    # uma vez, cria o banco da suíte
-npm test                            # 663 testes do Tenant Plane
+npm test                            # 704 testes do Tenant Plane
 cd control-plane && npm test        # 188 testes do Control Plane
-cd control-plane/web && npm test    #  50 testes do painel do operador
-cd sgcl-web && npm test             #  72 testes do frontend da equipe
+cd control-plane/web && npm test    #  77 testes do painel do operador
+cd sgcl-web && npm test             #  86 testes do frontend da equipe
 cd sgcl-portal-familia && npm test  #  42 testes
 cd sgcl-portal-professor && npm test #  49 testes
 ```
 
 A suíte **apaga registros** e recusa rodar contra qualquer banco que não se
 identifique como de teste. Estratégia completa: [`testes.md`](testes.md).
+
+O `sgcl-web` é o único frontend com **teste de componente** até agora
+(`SeletorUnidadeAtiva`), em jsdom com `@testing-library/react`. O ambiente é
+declarado por arquivo (`@vitest-environment jsdom` no topo), então os testes de
+função continuam rodando em Node, que é mais rápido.
 
 ---
 
