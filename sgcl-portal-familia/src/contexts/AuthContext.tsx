@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
-import { api } from "../services/api";
+import { api, registrarExpiracaoDeSessao } from "../services/api";
 import {
   escolherAlunoSelecionado,
   gravarAlunoSelecionado,
@@ -70,6 +70,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     gravarAlunoSelecionado(id);
     setAlunoSelecionadoId(id);
   }
+
+  // O interceptor da `api` não conhece a sessão; é aqui que ele passa a saber
+  // o que fazer quando o backend recusa o token. Sem isso, uma sessão expirada
+  // deixava o app "logado" com todas as telas quebradas e nenhum caminho de
+  // volta ao login a não ser limpar o storage à mão.
+  useEffect(() => {
+    registrarExpiracaoDeSessao(logout);
+  });
 
   return (
     <AuthContext.Provider
