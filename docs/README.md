@@ -34,7 +34,8 @@ O sistema é dividido em dois planos com bancos separados.
 | Guarda | Assinantes, planos, assinaturas, faturas, licenças, provisionamento, auditoria | Alunos, turmas, aulas, financeiro da academia |
 | Módulos | 14 | 44 |
 | Testes | 188 | 663 |
-| Frontend | `control-plane/web` | `sgcl-web` e os dois portais |
+| Frontend | `control-plane/web` — painel do operador | `sgcl-web` e os dois portais |
+| Publicado em | `sysbelt-control-plane.netlify.app` | `sysbeltfp.netlify.app` |
 
 O Tenant Plane **não conhece** preço, fatura nem qualquer outro assinante. O
 que ele sabe sobre a própria assinatura chega por uma **concessão assinada**
@@ -284,9 +285,12 @@ Modelo completo: [`banco-de-dados.md`](banco-de-dados.md).
 
 ```bash
 npm run test:db:preparar    # uma vez, cria o banco da suíte
-npm test                    # 663 testes do Tenant Plane
-cd control-plane && npm test  # 188 testes do Control Plane
-cd sgcl-web && npm test       # 48 testes do frontend
+npm test                            # 663 testes do Tenant Plane
+cd control-plane && npm test        # 188 testes do Control Plane
+cd control-plane/web && npm test    #  50 testes do painel do operador
+cd sgcl-web && npm test             #  72 testes do frontend da equipe
+cd sgcl-portal-familia && npm test  #  42 testes
+cd sgcl-portal-professor && npm test #  49 testes
 ```
 
 A suíte **apaga registros** e recusa rodar contra qualquer banco que não se
@@ -298,9 +302,14 @@ identifique como de teste. Estratégia completa: [`testes.md`](testes.md).
 
 ```
 1.0.0-rc — Tenant Plane em produção com uma academia real.
-Control Plane construído e testado, aguardando publicação.
+Control Plane publicado, com painel de operador, aguardando o primeiro
+assinante provisionado.
 Resolução de tenant implementada e desligada por flag.
 ```
+
+Publicação do Control Plane pelo GitHub Actions
+(`.github/workflows/deploy-control-plane.yml`): roda a suíte, compila e envia
+o artefato pronto. Migrations continuam manuais — ver [`deploy.md`](deploy.md).
 
 Planejamento e próximos passos: [`roadmap.md`](roadmap.md).
 

@@ -66,7 +66,8 @@ Também é a autoridade do **diretório de tenants**: dado um slug, responde qua
 banco atende aquela academia — sem nunca devolver a connection string, apenas
 a referência do segredo no cofre.
 
-14 módulos, 188 testes.
+14 módulos, 188 testes, mais o painel do operador (`control-plane/web`) com
+50 testes.
 
 ## Tenant Plane (`src/`)
 
@@ -94,7 +95,8 @@ contracts/
 # Estado atual
 
 Versão: **1.0.0-rc** — Tenant Plane em produção com uma academia real;
-Control Plane construído e testado, aguardando publicação.
+Control Plane publicado, com painel de operador, aguardando o primeiro
+assinante provisionado.
 
 ## Concluído
 
@@ -131,6 +133,13 @@ Control Plane construído e testado, aguardando publicação.
 | Cofre de credenciais de gateway (AES-256-GCM) | Completo |
 | Precificação por faixa e por unidade | Completo |
 | Banco do Control Plane provisionado (Neon, 8 migrações aplicadas) | Concluído |
+| Control Plane publicado, com API e painel na mesma origem | Concluído |
+| Painel do operador: login, visão geral, assinantes e detalhe | Concluído |
+| Publicação automatizada pelo GitHub Actions | Concluído |
+
+O painel cobre **ler** o domínio comercial. As ações — contratar assinatura,
+emitir e baixar fatura, disparar e retomar provisionamento — ainda são feitas
+por chamada direta à API, que já as expõe.
 
 ### Separação dos planos
 
@@ -169,26 +178,27 @@ antes, contra o banco único atual.
 
 Em ordem de dependência. Cada etapa tem um critério de conclusão verificável.
 
-## 1. Publicar o Control Plane
+## 1. Publicar o Control Plane — CONCLUÍDO
 
-**Bloqueio ativo:** a conta Netlify esgotou os minutos de build do plano Free.
-Os sites publicados continuam no ar; novos builds estão pausados.
+Publicado em `https://sysbelt-control-plane.netlify.app`, servindo a API e o
+painel do operador na mesma origem. Verificado em produção: `/api/health`
+responde `status: ok`, o diretório responde 401 sem o segredo e 404 com ele, e
+uma rota do painel responde 200 sem engolir as rotas de API.
 
-Caminhos:
+O caminho até aqui deixou duas restrições registradas, porque voltam a
+importar sempre que alguém for publicar:
 
-- **a)** aguardar a virada do mês;
-- **b)** fazer upgrade do plano;
-- **c)** compilar localmente e publicar o artefato pronto pela CLI
-  (`netlify deploy --prod --dir=public --functions=dist/netlify/functions`),
-  que não consome minutos de build por não rodar build na infraestrutura do
-  Netlify. Não verificado neste estado da conta.
+**Os minutos de build do plano Free estavam esgotados.** Isso pausa os builds
+que o Netlify roda, não a publicação de artefato pronto.
 
-Enquanto isso, a validação funcional pode ser feita local, contra o banco Neon
-real — ver [`resolucao-tenant.md`](resolucao-tenant.md).
+**A CLI do Netlify exige macOS 12 ou superior.** Em versões anteriores o
+esbuild aborta com `dyld: Symbol not found: _SecTrustCopyCertificateChain`, e
+não há forma de instalar que contorne isso.
 
-**Concluído quando:** `GET /api/health` responde `status: ok` e
-`GET /api/diretorio/v1/tenants/<slug>` responde 401 sem o header do segredo e
-404 com ele.
+As duas juntas levaram à publicação pelo GitHub Actions
+(`.github/workflows/deploy-control-plane.yml`), que é hoje o caminho
+recomendado: roda em Linux, compila nos runners do GitHub e envia só o
+artefato. Detalhes em [`deploy.md`](deploy.md).
 
 ## 2. Domínio base dos tenants
 
@@ -261,12 +271,27 @@ enquanto houver bloqueio.
 Migrações deste projeto já removeram colunas e tornaram `Unidade.contaId`
 `NOT NULL`.
 
-## 7. Cobertura de testes dos portais
+## 7. Cobertura de testes dos portais — CONCLUÍDO
 
-`sgcl-portal-familia` e `sgcl-portal-professor` não têm nenhum arquivo de
-teste. São os dois frontends que lidam com dados de menores de idade e com
-autenticação de responsáveis — a ausência de teste automatizado ali é a maior
-lacuna de qualidade do repositório hoje.
+Os dois portais saíram de zero teste. Quatro defeitos reais apareceram no
+caminho, e nenhum deles teria sido encontrado por leitura de código:
+
+- a fila offline do Portal do Professor parava de esvaziar **em silêncio**
+  quando a chave do `localStorage` continha algo que não fosse uma lista — as
+  presenças marcadas no tatame ficavam presas no aparelho;
+- o `sgcl-web` mostrava o texto da tela de login ("senha inválida") quando o
+  problema era o backend fora do ar, porque não distinguia falta de conexão de
+  credencial recusada;
+- o `DONO` era barrado do Portal do Professor: a lista de perfis permitidos
+  ainda citava `SUPERADMIN` e omitia `DONO`;
+- o Portal da Família restaurava a seleção de um aluno que já tinha saído do
+  vínculo do responsável — ao completar 18 anos, o aluno passa a acessar a
+  própria conta. O backend recusava o acesso de qualquer forma, mas a tela
+  pedia o que ia ser negado e quebrava sem explicação.
+
+A matriz de frontends da CI perdeu a flag `possui_testes`: era ela que
+permitia um app novo entrar isento, e foi assim que os portais ficaram
+descobertos desde que nasceram.
 
 ---
 
@@ -274,13 +299,15 @@ lacuna de qualidade do repositório hoje.
 
 | Item | Impacto |
 |---|---|
-| `archive/` versionado (código morto de `presencas`) | Ruído; confunde busca |
+| `archive/` versionado — 7 arquivos de código morto de `presencas` | Ruído; confunde busca |
 | Arquivo `:` rastreado no Git | Criado por redirecionamento acidental |
-| Comentários citando `SUPERADMIN` em ~12 arquivos | Descrevem regra que não existe mais |
+| 11 arquivos de produção citando `SUPERADMIN` em comentários | Descrevem regra que não existe mais |
 | `PERFIS_COM_CONSULTA_CROSS_UNIT` inclui `"SUPERADMIN"` | String morta em `resolverUnidadeConsulta.ts:5` |
-| Rota `/presencas` comentada em `app.ts:114` | Decisão nunca formalizada |
+| Rota `/presencas` comentada em `app.ts` | Decisão nunca formalizada |
+| `deploy-control-plane.yml` não aplica migrations | Deliberado; ver [`deploy.md`](deploy.md) |
 
-Nenhuma destas quebra comportamento — são limpeza.
+Nenhuma destas quebra comportamento — são limpeza. Os números foram conferidos
+contra o repositório, não estimados.
 
 ---
 
@@ -291,7 +318,8 @@ Nenhuma destas quebra comportamento — são limpeza.
 - [x] Primeira academia usando oficialmente o sistema
 - [x] Isolamento por tenant implementado e guardado por teste de arquitetura
 - [x] Control Plane construído, testado e com banco provisionado
-- [ ] Control Plane publicado
+- [x] Control Plane publicado, com painel de operador
+- [x] Publicação reproduzível, independente da máquina de quem desenvolve
 - [ ] Domínio base registrado
 - [ ] Cofre de segredos configurado
 - [ ] Resolução de tenant ativada
