@@ -50,6 +50,12 @@ Funcionalidades descontinuadas.
   filtro só estreita dentro do alcance; fora dele, é ignorado.
 - **Listagem de alunos escapava pela junção.** `AlunoUnidade` não passava por
   `escopoUnidade`, então o escopo não atravessava a tabela de ligação.
+- **Cadastro deixava criar usuário sem unidade nenhuma.** O `CreateUsuarioService`
+  gravava `unidadeId` nulo sem vínculo: um usuário que não pertence a conta
+  alguma, e que depois do escopo por conta entra no sistema enxergando nada, sem
+  explicação na tela. Agora todo usuário precisa de pelo menos uma unidade, e só
+  o `DONO` pode ficar sem unidade **ativa** (RN-164). A edição recusa rebaixar um
+  `DONO` de perfil sem lhe dar unidade, que produziria o mesmo órfão.
 
 ### Alterado
 

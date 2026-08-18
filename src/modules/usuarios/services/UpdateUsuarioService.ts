@@ -61,6 +61,13 @@ export class UpdateUsuarioService {
         ? idsVinculo[0]
         : undefined;
 
+    // Mesma invariante do cadastro: só o DONO fica sem unidade ativa
+    // (RN-164). Sem isto, rebaixar um DONO de perfil deixaria para trás um
+    // ADMIN sem unidade — sem escopo, sem enxergar nada.
+    if (usuario.unidadeId === null && novaUnidadeAtiva === undefined && data.perfil !== "DONO") {
+      throw new AppError("Informe a unidade deste usuário antes de mudar o perfil.");
+    }
+
     return prisma.usuario.update({
       where: { id },
       data: {

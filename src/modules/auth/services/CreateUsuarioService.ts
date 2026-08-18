@@ -59,10 +59,24 @@ export class CreateUsuarioService {
     // unidade ativa. Recusa a lista misturada em vez de gravar.
     const contaId = await garantirUnidadesDaMesmaConta(idsPedidos);
 
+    // Sem nenhuma unidade não há conta a que atribuir o usuário, e o escopo
+    // de conta não tem por onde alcançá-lo: ele entra no banco enxergando
+    // nada, sem que a tela diga por quê. Recusar aqui, e não só no
+    // controller, vale para todo caminho de criação — script, seed, import.
+    if (contaId === null) {
+      throw new AppError("Informe pelo menos uma unidade para este usuário.");
+    }
+
+    // Só o DONO pode ficar sem unidade ATIVA (RN-164): é assim que ele
+    // alcança as filiais todas. Qualquer outro perfil trabalha numa unidade,
+    // e sem ela não teria escopo nenhum.
+    if (unidadeId === null && perfil !== "DONO") {
+      throw new AppError("Só o perfil Dono pode ficar sem unidade ativa.");
+    }
+
     // O DONO alcança a academia inteira: recebe vínculo com todas as
     // filiais da conta, não só com as que vieram no formulário.
-    const idsVinculo =
-      perfil === "DONO" && contaId !== null ? await unidadesDaConta(contaId) : idsPedidos;
+    const idsVinculo = perfil === "DONO" ? await unidadesDaConta(contaId) : idsPedidos;
 
     return prisma.usuario.create({
       data: {
