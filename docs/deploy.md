@@ -269,6 +269,12 @@ Actions):
 | `NETLIFY_AUTH_TOKEN` | Netlify → User settings → Applications → New access token |
 | `NETLIFY_SITE_ID` | Netlify → o site → Site configuration → Site ID |
 
+> Cadastre na aba **Secrets**, não em **Variables**. As duas ficam na mesma
+> tela e são fáceis de confundir, mas `${{ secrets.X }}` não enxerga o que
+> está em Variables — o valor existe e o workflow falha com
+> `Authentication required`, sem dizer o porquê. Há um passo de conferência
+> antes do deploy justamente para tornar esse engano legível.
+
 O workflow roda a suíte antes de publicar. O workflow de CI só dispara em
 pull request, então um push direto no `main` chegaria ao deploy sem nenhuma
 verificação.
