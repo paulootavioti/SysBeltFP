@@ -62,6 +62,16 @@ Funcionalidades descontinuadas.
   Os dois caminhos batiam em erro: com `unidadeIds` no corpo, "Selecione uma
   unidade ativa"; sem, "Informe a unidade para este usuário". Agora o alcance vem
   do contexto — as unidades da conta.
+- **O seletor de unidade não aparecia para o `DONO`, e não tinha "todas".** A
+  lista de perfis multiunidade do front (`SeletorUnidadeAtiva`) é uma cópia da
+  do backend e ficou sem o `DONO`, então o componente não renderizava para ele.
+  E nenhuma opção correspondia a "todas as unidades": o `onChange` só sabia
+  escolher uma filial, nunca limpar a escolha. O estado existia no backend e
+  não tinha controle na tela.
+- **A sessão devolvida no login contradizia a tela.** Para um `DONO` gravado com
+  filial, o login devolvia essa filial e o seletor exibia o nome dela enquanto o
+  resto da tela listava a academia inteira. O login passa a devolver o mesmo que
+  a autenticação aplica.
 - **O `DONO` não conseguia voltar para "todas as unidades".** O seletor pede
   "todas" apagando o `X-Unidade-Id`, e sem cabeçalho a requisição caía na unidade
   gravada na linha do usuário — que o cadastro sempre preenchia. Um `DONO` ficava

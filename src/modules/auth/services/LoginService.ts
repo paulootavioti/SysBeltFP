@@ -80,14 +80,20 @@ export class LoginService {
       "sysbelt-web",
     );
 
+    // O DONO não é fixado a uma unidade (RN-164) e a autenticação zera a
+    // unidade ativa dele a cada requisição. A sessão precisa dizer a mesma
+    // coisa: devolvendo a filial gravada, o seletor exibiria "Alfa Zona Sul"
+    // enquanto a tela lista a academia inteira.
+    const semUnidadeFixa = usuario.perfil === "DONO";
+
     return {
       usuario: {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
         perfil: usuario.perfil,
-        unidadeId: usuario.unidadeId,
-        unidadeNome: usuario.unidade?.nome ?? null
+        unidadeId: semUnidadeFixa ? null : usuario.unidadeId,
+        unidadeNome: semUnidadeFixa ? null : (usuario.unidade?.nome ?? null)
       },
       token
     };
