@@ -9,6 +9,7 @@ import { UpdateUsuarioService } from "./services/UpdateUsuarioService";
 import { AppError } from "../../shared/errors/AppError";
 import { PERFIS_MULTI_UNIDADE } from "../../shared/constants/perfis";
 import { normalizarUnidadesDoAssinante } from "./utils/normalizarUnidadesDoAssinante";
+import { obterContextoRequisicao } from "../../shared/context/contextoRequisicao";
 
 export class UsuariosController {
 
@@ -92,7 +93,7 @@ export class UsuariosController {
 
     const unidadeIds = await normalizarUnidadesDoAssinante(
       req.body.unidadeIds,
-      req.user.unidadeId
+      obterContextoRequisicao().unidadesDoUsuario ?? []
     );
 
     if (unidadeIds && unidadeIds.length > 1 && !PERFIS_MULTI_UNIDADE.includes(req.body.perfil)) {

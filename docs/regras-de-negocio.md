@@ -622,6 +622,10 @@ O alcance é aplicado como filtro, não como ausência de filtro: as unidades da
 
 Todo usuário pertence a pelo menos uma unidade, e só o `DONO` pode ficar sem unidade **ativa** — é dela que sai a conta a que ele pertence. Um usuário sem unidade nenhuma não tem conta, não é alcançado por escopo algum e entraria no sistema sem enxergar nada; o cadastro e a edição recusam criá-lo.
 
+A ausência de unidade ativa do `DONO` não depende do que está gravado na linha dele: a autenticação a impõe pelo perfil. O alcance, esse, é resolvido a partir do valor gravado antes disso — um `DONO` antigo, sem vínculo, continua alcançando a conta.
+
+Para cadastrar outras pessoas, o `DONO` usa o alcance dele (as unidades da conta), não a unidade ativa — que ele não tem.
+
 ---
 
 ## RN-165
@@ -629,6 +633,8 @@ Todo usuário pertence a pelo menos uma unidade, e só o `DONO` pode ficar sem u
 O `DONO` pode alternar entre uma unidade específica e "todas as unidades" da própria conta, através de um seletor. Essa escolha filtra o sistema inteiro (Alunos, Turmas, Financeiro, Aulas, Usuários etc.) enquanto durar a seleção, sem alterar nenhum dado.
 
 A escolha só estreita: uma unidade que não esteja no alcance de quem pediu é ignorada e o escopo normal continua valendo. Vale para o seletor e para os filtros de tela que aceitam id de unidade (grade horária, financeiro).
+
+Na prática, "uma filial" é o cabeçalho `X-Unidade-Id`, e "todas as unidades" é a ausência dele — o front apaga o cabeçalho ao voltar para "todas".
 
 ---
 
