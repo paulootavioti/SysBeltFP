@@ -12,7 +12,7 @@ Versão do documento: 2.0
 |---|---|---|
 | Tenant Plane (`src/`) | 148 | 704 |
 | Control Plane (`control-plane/`) | 67 | 188 |
-| `sgcl-web` | 13 | 86 |
+| `sgcl-web` | 14 | 91 |
 | `control-plane/web` (painel do operador) | 6 | 77 |
 | `sgcl-portal-professor` | 6 | 49 |
 | `sgcl-portal-familia` | 5 | 42 |
@@ -174,6 +174,15 @@ Testes que verificam invariantes estruturais, não comportamento.
 qualquer arquivo de produção importar o Prisma global. Sem ele, um único
 `import { prisma }` esquecido reintroduziria vazamento entre academias sem que
 nenhum teste funcional acusasse — a falha seria invisível até virar incidente.
+
+`sgcl-web/src/shared/constants/perfis.test.ts` lê o arquivo de perfis do
+backend (com `?raw` do Vite) e falha se as duas listas discordarem. Frontend e
+API são pacotes npm separados, então a lista de lá é espelhada aqui, e espelho
+diverge calado: foi assim que o `DONO` entrou na lista do backend, ficou de
+fora da do frontend, e o seletor de unidade sumiu da tela para o único perfil
+que precisa dele. Ler fonte de outro projeto não é elegante, mas é o único
+ponto onde essa divergência é observável. Se um dia os dois virarem um pacote
+compartilhado, o teste sai junto.
 
 ## Manual com Playwright
 

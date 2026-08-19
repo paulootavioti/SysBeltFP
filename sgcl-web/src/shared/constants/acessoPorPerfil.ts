@@ -1,4 +1,6 @@
-export type Perfil = "DONO" | "ADMIN" | "PROFESSOR" | "RECEPCAO";
+export type { Perfil } from "./perfis";
+
+import type { Perfil } from "./perfis";
 
 interface RegraAcesso {
   prefixo: string;

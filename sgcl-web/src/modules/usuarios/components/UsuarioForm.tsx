@@ -27,10 +27,16 @@ const PERFIS_BASE = [
   { label: "Professor", value: "PROFESSOR" },
   { label: "Recepção", value: "RECEPCAO" },
 ];
-// Admin, Professor e Recepção podem ser vinculados a mais de uma unidade —
-// Professor porque pode dar aula em unidades/arenas diferentes, em
-// horários diferentes.
-const PERFIS_MULTI_UNIDADE = ["ADMIN", "PROFESSOR", "RECEPCAO"];
+// Perfis cujos vínculos de unidade se escolhem à mão. Admin, Professor e
+// Recepção podem estar em mais de uma — Professor porque pode dar aula em
+// unidades/arenas diferentes, em horários diferentes.
+//
+// NÃO é a mesma lista de `shared/constants/perfis`, embora se pareça: lá são
+// os perfis que ALTERNAM de unidade ativa, e o DONO entra. Aqui ele fica de
+// fora de propósito — o backend vincula o DONO a todas as unidades da conta
+// (`unidadesDaConta`, em Create/UpdateUsuarioService), então oferecer um
+// checklist a ele seria prometer uma escolha que a gravação desfaz.
+const PERFIS_COM_VINCULO_ESCOLHIDO = ["ADMIN", "PROFESSOR", "RECEPCAO"];
 
 export function UsuarioForm({ usuario, loading = false, onSubmit }: UsuarioFormProps) {
   const emEdicao = Boolean(usuario);
@@ -58,7 +64,7 @@ export function UsuarioForm({ usuario, loading = false, onSubmit }: UsuarioFormP
   const { register, handleSubmit, watch, formState: { errors } } = methods;
   const perfil = watch("perfil");
   const ehProfessor = perfil === "PROFESSOR";
-  const mostrarChecklistUnidades = podeGerenciarUnidades && PERFIS_MULTI_UNIDADE.includes(perfil);
+  const mostrarChecklistUnidades = podeGerenciarUnidades && PERFIS_COM_VINCULO_ESCOLHIDO.includes(perfil);
   const opcoesPerfil = PERFIS_BASE;
 
   useEffect(() => {
