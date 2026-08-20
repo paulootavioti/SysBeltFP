@@ -11,9 +11,9 @@ Versão do documento: 2.0
 | Suíte | Arquivos | Testes |
 |---|---|---|
 | Tenant Plane (`src/`) | 148 | 704 |
-| Control Plane (`control-plane/`) | 67 | 188 |
+| Control Plane ([repositório independente](https://github.com/paulootavioti/control-plane)) | 67 | 188 |
 | `sgcl-web` | 14 | 91 |
-| `control-plane/web` (painel do operador) | 6 | 77 |
+| `web/` do Control Plane (painel do operador) | 6 | 77 |
 | `sgcl-portal-professor` | 6 | 49 |
 | `sgcl-portal-familia` | 5 | 42 |
 
@@ -25,8 +25,9 @@ profundidade de **componente**: fora o `SeletorUnidadeAtiva` no `sgcl-web`, os
 frontends são testados só no nível de função, e defeito de tela escapa disso
 (ver o nível "Componente" abaixo).
 
-Tudo roda em CI (`.github/workflows/ci.yml`), em jobs separados por
-subprojeto, com um PostgreSQL de serviço.
+O Tenant Plane e seus frontends rodam em `.github/workflows/ci.yml`. O Control
+Plane possui CI próprio no repositório independente. Ambos usam PostgreSQL de
+serviço quando necessário.
 
 ---
 
@@ -70,12 +71,13 @@ npm test                          # tudo
 npm run test:unit                 # só src/shared
 npm run test:integration          # só src/modules
 
-cd control-plane && npm test
+cd ../control-plane && npm test
 cd sgcl-web && npm test
 ```
 
 O Control Plane usa banco próprio (`control_plane_test`) e
-`CONTROL_PLANE_DATABASE_URL`.
+`CONTROL_PLANE_DATABASE_URL`; seus comandos devem ser executados no repositório
+independente.
 
 ---
 
@@ -209,13 +211,13 @@ Prefira `getByRole("dialog").getByRole(...)`.
 
 # CI
 
-`.github/workflows/ci.yml` roda, por subprojeto:
+`.github/workflows/ci.yml` deste repositório roda, por subprojeto:
 
 ```
 npm ci → prisma migrate deploy → npm run typecheck → npm test → npm run build
 ```
 
-`typecheck` e `build` são passos distintos de propósito no Control Plane: o
+No repositório do Control Plane, `typecheck` e `build` são passos distintos: o
 `build` usa `tsconfig.build.json`, que exclui `**/*.test.ts` para não emitir
 arquivo de teste no diretório de functions; o `typecheck` usa o
 `tsconfig.json` completo e continua conferindo os tipos dos testes.
