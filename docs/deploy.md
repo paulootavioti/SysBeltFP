@@ -29,12 +29,13 @@ ambiente Docker de homologação — ambos foram descontinuados.
 
 # Sites publicados
 
-Todos saem do mesmo repositório, diferenciados pelo **base directory**:
+O Tenant Plane e seus portais saem deste repositório. O Control Plane possui
+[repositório próprio](https://github.com/paulootavioti/control-plane):
 
 | Site | Base directory | O que é |
 |---|---|---|
 | `sysbeltfp` | *(raiz)* | Tenant Plane (API) + `sgcl-web` |
-| `sysbelt-control-plane` | `control-plane` | Control Plane B2B |
+| `sysbelt-control-plane` | raiz do repositório `control-plane` | Control Plane B2B |
 | `sysbeltportalfamilia` | `sgcl-portal-familia` | Portal da Família |
 | `portalprofessorsysbelt` | `sgcl-portal-professor` | Portal do Professor |
 | `ciadelutas` | `landing-academia` | Site institucional da academia |
@@ -105,16 +106,17 @@ comportamento.
 
 | Campo | Valor |
 |---|---|
-| Base directory | `control-plane` |
+| Repositório | `paulootavioti/control-plane` |
+| Base directory | *(raiz)* |
 | Build command | `npm ci --include=dev && npm run build:completo` |
 | Publish | `web/dist` |
 | Functions | `dist/netlify/functions` |
 
-Os três últimos vêm do `control-plane/netlify.toml` e não precisam ser
+Os três últimos vêm do `netlify.toml` da raiz do repositório independente e não precisam ser
 preenchidos na interface — o arquivo prevalece sobre o painel.
 
 O site publica **duas coisas ao mesmo tempo**: a API, como function, e o painel
-do operador (`control-plane/web`), como estático. Eles compartilham a origem de
+do operador (`web/`), como estático. Eles compartilham a origem de
 propósito — o painel chama `/api` no próprio host, então não há CORS, não há
 variável de URL para manter em dia e não existe a possibilidade de o painel
 apontar para um Control Plane diferente do que o serve.
@@ -159,7 +161,7 @@ O `build` do Control Plane é apenas `tsc` — **não aplica migrações**. Este
 passo é manual e precede o primeiro deploy:
 
 ```bash
-cd control-plane
+cd ../control-plane
 CONTROL_PLANE_DATABASE_URL="postgresql://..." npx prisma migrate deploy
 ```
 
@@ -227,7 +229,7 @@ Rodando local, **não há prefixo `/api`**: ele vem do wrapper serverless
 (`serverless(app, { basePath: "/api" })`), não do Express.
 
 ```bash
-cd control-plane && npm run dev          # API na porta 3334
+cd ../control-plane && npm run dev       # API na porta 3334
 curl -s localhost:3334/health
 curl -i -H "x-sysbelt-directory-secret: $SEGREDO" \
   localhost:3334/diretorio/v1/tenants/teste
@@ -236,7 +238,7 @@ curl -i -H "x-sysbelt-directory-secret: $SEGREDO" \
 Para o painel do operador, com a API já rodando:
 
 ```bash
-cd control-plane/web && npm run dev      # painel na porta 5177
+cd ../control-plane/web && npm run dev   # painel na porta 5177
 ```
 
 O Vite encaminha `/api` para a 3334 e remove o prefixo, reproduzindo o arranjo
@@ -254,8 +256,8 @@ Para publicar sem consumir minutos de build, compile na máquina e envie o
 artefato pronto:
 
 O caminho recomendado é o workflow **Deploy Control Plane** do GitHub Actions
-(`.github/workflows/deploy-control-plane.yml`). Ele roda a cada push no `main`
-que toque em `control-plane/`, e também sob demanda pelo botão *Run workflow*.
+no repositório independente (`.github/workflows/deploy.yml`). Ele roda a cada
+push no `main` e também sob demanda pelo botão *Run workflow*.
 
 Como o build acontece nos runners do GitHub e só o artefato pronto é enviado,
 esse caminho **não consome minutos de build do Netlify** — funciona mesmo com
@@ -282,7 +284,7 @@ verificação.
 ## Publicando da própria máquina
 
 ```bash
-cd control-plane
+cd ../control-plane
 npm ci --include=dev
 npm run build:completo
 npx netlify-cli deploy --prod --dir=web/dist --functions=dist/netlify/functions

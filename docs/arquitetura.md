@@ -17,7 +17,7 @@ próprio banco, seu próprio deploy e sua própria autenticação.
                ▼                                      ▼
      ┌───────────────────┐                 ┌────────────────────────┐
      │   Control Plane   │                 │      Tenant Plane      │
-     │  (control-plane/) │                 │         (src/)         │
+     │  (repo próprio)   │                 │         (src/)         │
      └───────────────────┘                 └────────────────────────┘
                │                                      │
                │  concessão assinada (Ed25519)        │
@@ -169,9 +169,11 @@ Detalhes: [`resolucao-tenant.md`](resolucao-tenant.md).
 # Control Plane
 
 Express + Prisma + PostgreSQL, publicado como function serverless no Netlify.
+O código vive em
+[`paulootavioti/control-plane`](https://github.com/paulootavioti/control-plane).
 
 ```
-control-plane/src/modules/
+src/modules/  # no repositório control-plane
 ├── auth · operadores          autenticação e gestão de operadores
 ├── assinantes · contatos      quem é o cliente
 ├── planos · assinaturas       o que ele contratou

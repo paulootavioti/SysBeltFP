@@ -28,13 +28,13 @@ O sistema é dividido em dois planos com bancos separados.
 
 | | Control Plane | Tenant Plane |
 |---|---|---|
-| Código | `control-plane/` | `src/` |
+| Código | [repositório `control-plane`](https://github.com/paulootavioti/control-plane) | `src/` |
 | Quem usa | Operador do SaaS | A academia assinante |
 | Banco | Um, exclusivo do SysBelt | Um por academia |
 | Guarda | Assinantes, planos, assinaturas, faturas, licenças, provisionamento, auditoria | Alunos, turmas, aulas, financeiro da academia |
 | Módulos | 14 | 44 |
 | Testes | 188 | 704 |
-| Frontend | `control-plane/web` — painel do operador | `sgcl-web` e os dois portais |
+| Frontend | `web/` no repositório independente — painel do operador | `sgcl-web` e os dois portais |
 | Publicado em | `sysbelt-control-plane.netlify.app` | `sysbeltfp.netlify.app` |
 
 O Tenant Plane **não conhece** preço, fatura nem qualquer outro assinante. O
@@ -165,8 +165,6 @@ manual de UI)
 ```
 sysbeltfp/
 ├── src/                      # Tenant Plane — API REST (44 módulos)
-├── control-plane/            # Control Plane — sistema comercial B2B
-│   └── web/                  # painel do operador (servido pelo mesmo site)
 ├── contracts/                # contratos versionados entre os planos
 ├── sgcl-web/                 # frontend da equipe da academia
 ├── sgcl-portal-familia/      # Portal da Família
@@ -221,8 +219,10 @@ npm run dev
 
 ## Control Plane
 
+O repositório deve estar clonado ao lado do SysBelt:
+
 ```bash
-cd control-plane
+cd ../control-plane
 npm install
 npm run dev            # API na porta 3334
 
@@ -231,14 +231,14 @@ npm install
 npm run dev            # painel do operador na porta 5177
 ```
 
-Requer `control-plane/.env` — ver `control-plane/.env.example`. O painel
+Requer `../control-plane/.env` — ver `../control-plane/.env.example`. O painel
 encaminha `/api` para a API local, reproduzindo o arranjo de produção, onde os
 dois são servidos pelo mesmo site.
 
 Para criar o primeiro operador:
 
 ```bash
-cd control-plane
+cd ../control-plane
 CONTROL_PLANE_ADMIN_NAME="..." CONTROL_PLANE_ADMIN_EMAIL="..." \
 CONTROL_PLANE_ADMIN_PASSWORD="..." npm run seed:operator
 ```
@@ -286,8 +286,8 @@ Modelo completo: [`banco-de-dados.md`](banco-de-dados.md).
 ```bash
 npm run test:db:preparar    # uma vez, cria o banco da suíte
 npm test                            # 704 testes do Tenant Plane
-cd control-plane && npm test        # 188 testes do Control Plane
-cd control-plane/web && npm test    #  77 testes do painel do operador
+cd ../control-plane && npm test      # 188 testes do Control Plane
+cd ../control-plane/web && npm test  #  77 testes do painel do operador
 cd sgcl-web && npm test             #  91 testes do frontend da equipe
 cd sgcl-portal-familia && npm test  #  42 testes
 cd sgcl-portal-professor && npm test #  49 testes
@@ -312,9 +312,10 @@ assinante provisionado.
 Resolução de tenant implementada e desligada por flag.
 ```
 
-Publicação do Control Plane pelo GitHub Actions
-(`.github/workflows/deploy-control-plane.yml`): roda a suíte, compila e envia
-o artefato pronto. Migrations continuam manuais — ver [`deploy.md`](deploy.md).
+Publicação do Control Plane pelo GitHub Actions do
+[repositório independente](https://github.com/paulootavioti/control-plane),
+no workflow `.github/workflows/deploy.yml`: roda a suíte, compila e envia o
+artefato pronto. Migrations continuam manuais — ver [`deploy.md`](deploy.md).
 
 Planejamento e próximos passos: [`roadmap.md`](roadmap.md).
 

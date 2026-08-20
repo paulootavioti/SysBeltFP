@@ -5,10 +5,12 @@
 
 ## Estado da implementação
 
-A fundação independente está em `control-plane/`, com pacote Node, configuração
-Prisma, testes e deploy Netlify próprios. Nenhuma dependência do Tenant Plane é
-importada por essa aplicação. O módulo legado `src/modules/plataforma` continua
-ativo durante a transição e só será removido após migração e reconciliação.
+A fundação independente foi extraída para
+[`paulootavioti/control-plane`](https://github.com/paulootavioti/control-plane),
+com pacote Node, configuração Prisma, testes e deploy Netlify próprios. Nenhuma
+dependência do Tenant Plane é importada por essa aplicação. O módulo legado
+`src/modules/plataforma` continua ativo durante a transição e só será removido
+após migração e reconciliação.
 
 O primeiro schema comercial já modela `Assinante`, `ContatoAssinante`, `Plano`,
 `PlanoVersao`, `Assinatura`, `Fatura` e `FaturaItem`. Provisionamento, ambiente

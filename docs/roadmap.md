@@ -56,7 +56,7 @@ a mais é dinheiro cobrado a mais.
 O sistema é dividido em dois planos com bancos separados e responsabilidades
 que não se sobrepõem.
 
-## Control Plane (`control-plane/`)
+## Control Plane ([repositório independente](https://github.com/paulootavioti/control-plane))
 
 O sistema comercial do SysBelt. Guarda assinantes, planos, assinaturas,
 faturas, licenças por unidade, operadores, auditoria e o inventário de
@@ -66,8 +66,7 @@ Também é a autoridade do **diretório de tenants**: dado um slug, responde qua
 banco atende aquela academia — sem nunca devolver a connection string, apenas
 a referência do segredo no cofre.
 
-14 módulos, 188 testes, mais o painel do operador (`control-plane/web`) com
-50 testes.
+14 módulos, 188 testes, mais o painel do operador (`web/`) com 77 testes.
 
 ## Tenant Plane (`src/`)
 
@@ -195,10 +194,10 @@ que o Netlify roda, não a publicação de artefato pronto.
 esbuild aborta com `dyld: Symbol not found: _SecTrustCopyCertificateChain`, e
 não há forma de instalar que contorne isso.
 
-As duas juntas levaram à publicação pelo GitHub Actions
-(`.github/workflows/deploy-control-plane.yml`), que é hoje o caminho
-recomendado: roda em Linux, compila nos runners do GitHub e envia só o
-artefato. Detalhes em [`deploy.md`](deploy.md).
+As duas juntas levaram à publicação pelo GitHub Actions do repositório
+independente (`.github/workflows/deploy.yml`), que é hoje o caminho recomendado:
+roda em Linux, compila nos runners do GitHub e envia só o artefato. Detalhes em
+[`deploy.md`](deploy.md).
 
 ## 2. Domínio base dos tenants
 
@@ -304,7 +303,7 @@ descobertos desde que nasceram.
 | 11 arquivos de produção citando `SUPERADMIN` em comentários | Descrevem regra que não existe mais |
 | `PERFIS_COM_CONSULTA_CROSS_UNIT` inclui `"SUPERADMIN"` | String morta em `resolverUnidadeConsulta.ts:5` |
 | Rota `/presencas` comentada em `app.ts` | Decisão nunca formalizada |
-| `deploy-control-plane.yml` não aplica migrations | Deliberado; ver [`deploy.md`](deploy.md) |
+| O workflow externo do Control Plane não aplica migrations | Deliberado; ver [`deploy.md`](deploy.md) |
 
 Nenhuma destas quebra comportamento — são limpeza. Os números foram conferidos
 contra o repositório, não estimados.
