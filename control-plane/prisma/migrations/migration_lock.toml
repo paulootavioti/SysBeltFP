@@ -1,2 +1,0 @@
-# Não edite manualmente após a primeira aplicação em um ambiente compartilhado.
-provider = "postgresql"
