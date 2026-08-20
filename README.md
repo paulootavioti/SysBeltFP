@@ -16,7 +16,7 @@ O produto é vendido por assinatura mensal, cobrada por faixa de alunos: cada fa
 
 ## Os dois planos
 
-| | Control Plane (`control-plane/`) | Tenant Plane (`src/`) |
+| | Control Plane ([repositório independente](https://github.com/paulootavioti/control-plane)) | Tenant Plane (`src/`) |
 |---|---|---|
 | Quem usa | Operador do SaaS | A academia assinante |
 | Banco | Um, exclusivo do SysBelt | Um por academia |
@@ -32,8 +32,7 @@ Visão completa em [`docs/README.md`](docs/README.md) e [`docs/roadmap.md`](docs
 sysbeltfp/
 ├── src/                    # backend (API REST — Express + Prisma + PostgreSQL)
 ├── sgcl-web/               # frontend da equipe (React + TypeScript + Vite)
-├── control-plane/          # Control Plane B2B — sistema comercial (banco próprio)
-├── contracts/              # contratos versionados entre os dois planos
+├── contracts/              # contratos versionados com o Control Plane externo
 ├── sgcl-portal-familia/    # Portal da Família — app separado (React + TypeScript + Vite)
 ├── sgcl-portal-professor/  # Portal do Professor — app separado (mobile-first)
 ├── landing/                # site institucional do SysBelt
