@@ -112,19 +112,7 @@ h2 {
   font-size: var(--font-xs);
 }
 
-.botao-texto {
-  background: none;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-light);
-  border-radius: var(--radius-md);
-  padding: var(--space-1) var(--space-2);
-  cursor: pointer;
-  font: inherit;
-}
-
-.botao-texto:hover {
-  color: var(--color-text);
-}
+/* .botao-texto — use Button component from shared UI library instead */
 
 .conteudo {
   max-width: var(--layout-content-max);
@@ -245,24 +233,7 @@ h2 {
   color: var(--color-surface) !important;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9em;
-}
-
-th {
-  text-align: left;
-  color: var(--color-text-light);
-  font-weight: 500;
-  padding-bottom: var(--space-2);
-  border-bottom: 2px solid var(--color-border);
-}
-
-td {
-  padding: var(--space-2) 0;
-  border-top: 1px solid var(--color-border);
-}
+/* table, th, td — use Table component from shared UI library instead */
 
 .lista {
   list-style: none;
@@ -280,25 +251,8 @@ td {
   margin-bottom: var(--space-3);
 }
 
-.etiqueta {
-  font-size: var(--font-xs);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-full);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-light);
-  white-space: nowrap;
-}
-
-.etiqueta-ativo {
-  border-color: var(--color-success);
-  color: var(--color-success);
-}
-
-.etiqueta-suspenso,
-.etiqueta-erro_provisionamiento {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-}
+/* Badge/etiqueta styling — use StatusBadge component from shared UI library instead
+   (.etiqueta, .etiqueta-ativo, .etiqueta-suspenso, .etiqueta-erro_provisionamiento) */
 
 .atributos {
   display: grid;
@@ -331,22 +285,10 @@ td {
   overflow-wrap: anywhere;
 }
 
-.busca {
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  margin-bottom: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text);
-  font: inherit;
-}
+/* .busca — use Input component from shared UI library instead */
 
-.total,
-.carregando,
-.vazio {
-  color: var(--color-text-light);
-}
+/* Empty state styling — use EmptyState component from shared UI library instead
+   (.vazio, .carregando, .mensagem-vazio) */
 
 .mensagem {
   margin: var(--space-3) 0;
@@ -354,10 +296,6 @@ td {
 
 .mensagem-erro {
   color: var(--color-danger);
-}
-
-.mensagem-vazio {
-  color: var(--color-text-light);
 }
 
 /* Login --------------------------------------------------------------- */
@@ -397,43 +335,10 @@ td {
   font-size: 0.85em;
 }
 
-label {
-  display: grid;
-  gap: var(--space-1);
-  font-size: 0.85em;
-  color: var(--color-text-light);
-}
+/* Form field styling — use Input component from shared UI library instead
+   (label, input, input:focus-visible) */
 
-input {
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text);
-  font: inherit;
-}
-
-input:focus-visible,
-.busca:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 1px;
-}
-
-button[type="submit"] {
-  padding: var(--space-2);
-  background: var(--color-accent);
-  color: var(--color-on-accent);
-  border: none;
-  border-radius: var(--radius-md);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-button[type="submit"]:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
+/* button[type="submit"] — use Button component from shared UI library instead */
 
 /* Detalhe do assinante ------------------------------------------------ */
 
@@ -477,22 +382,8 @@ button[type="submit"]:disabled {
   grid-column: 1 / -1;
 }
 
-.negociado,
-.alerta {
-  display: inline-block;
-  margin-left: var(--space-1);
-  font-size: 0.7em;
-  padding: 0.05em var(--space-1);
-  border-radius: var(--radius-full);
-  border: 1px solid var(--color-border);
-  color: var(--color-accent);
-  white-space: nowrap;
-}
-
-.alerta {
-  color: var(--color-danger);
-  border-color: var(--color-danger);
-}
+/* State badges — use StatusBadge component from shared UI library instead
+   (.negociado, .alerta) */
 
 .lista-simples {
   list-style: none;
@@ -612,25 +503,7 @@ code {
   padding-top: var(--space-3);
 }
 
-select {
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text);
-  font: inherit;
-}
-
-select:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 1px;
-}
-
-input:disabled,
-select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+/* select and disabled states — use Input/Select component from shared UI library instead */
 
 .erro-campo {
   color: var(--color-danger);
