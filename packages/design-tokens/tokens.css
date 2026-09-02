@@ -28,6 +28,9 @@
   --font-sm: 14px;
   --font-md: 16px;
   --font-lg: 20px;
+  --font-display-sm: 22px;
+  --font-display-md: 32px;
+  --font-display-lg: 46px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

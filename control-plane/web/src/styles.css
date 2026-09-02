@@ -150,8 +150,8 @@ h2 {
 }
 
 .contagens strong {
-  font-size: 2.5rem;
-  min-width: 2.2rem;
+  font-size: var(--font-display-lg);
+  min-width: 1.4em;
 }
 
 .contagens span {
@@ -170,12 +170,12 @@ h2 {
 .kpi-grid-principal > * {
   background: var(--color-surface);
   border: 0;
-  border-radius: 0;
+  border-radius: var(--radius-sm);
   padding: var(--space-5);
 }
 
 .kpi-grid-principal h2 {
-  font-size: 46px;
+  font-size: var(--font-display-lg);
   line-height: 1.05;
   margin: 0;
 }
@@ -200,12 +200,12 @@ h2 {
 .kpi-grid-secundario > * {
   background: var(--color-surface);
   border: 0;
-  border-radius: 0;
+  border-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
 }
 
 .kpi-grid-secundario h2 {
-  font-size: 22px;
+  font-size: var(--font-display-sm);
   line-height: 1.1;
   margin: 0;
 }
