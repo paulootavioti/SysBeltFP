@@ -68,6 +68,8 @@
   --color-text: #f2f4f7;
   --color-text-light: #b2bbc6;
   --color-text-tertiary: #98a3af;
+  --color-accent: #d4a029;
   --color-accent-text: #ead275;
+  --color-danger: #f0736a;
   --color-focus: #57a7ff;
 }
