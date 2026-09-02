@@ -40,10 +40,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return tokenStorage;
   });
 
-  async function login(email: string, senha: string) {
+  async function login(email: string, senha: string, desafio?: string, codigo?: string) {
     // reaproveita o MESMO login do sgcl-web (POST /auth/login) — o
     // professor já é um Usuario, não existe credencial nova pra ele.
-    const response = await api.post("/auth/login", { email, senha });
+    const response = desafio
+      ? await api.post("/auth/login/2fa", { desafio, codigo })
+      : await api.post("/auth/login", { email, senha });
+    if (response.data.requerDoisFatores) return response.data;
     const { usuario: usuarioLogado, token: tokenRecebido } = response.data;
 
     if (!PERFIS_PERMITIDOS.includes(usuarioLogado.perfil)) {

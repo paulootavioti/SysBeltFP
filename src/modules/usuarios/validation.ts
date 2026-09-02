@@ -19,3 +19,11 @@ export const updateUsuarioSchema = z.object({
   outrasGraduacoes: z.string().nullish(),
   fotoUrl: z.string().nullish(),
 });
+
+export const confirmarDoisFatoresSchema = z.object({
+  codigo: z.string().regex(/^\d{6}$/, "Informe o código de 6 dígitos."),
+});
+
+export const desativarDoisFatoresSchema = confirmarDoisFatoresSchema.extend({
+  senha: z.string().min(1, "Informe a senha atual."),
+});

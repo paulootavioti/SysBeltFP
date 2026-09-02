@@ -26,6 +26,13 @@ export interface PrecoCalculado {
   valorCentavos: number;
 }
 
+export const PRECO_PUBLICO_PLATAFORMA = Object.freeze({
+  alunosGratis: 3,
+  alunosPorBloco: 10,
+  precoPorBlocoCentavos: 3700,
+  blocosMinimos: 1,
+});
+
 export function calcularPrecoPorFaixa(
   alunosContados: number,
   parametros: ParametrosPreco

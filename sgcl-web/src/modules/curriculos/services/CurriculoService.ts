@@ -7,6 +7,22 @@ import type {
   TecnicaCurriculoFormData,
 } from "../schema/curriculo.schema";
 
+type BlocoCurriculoPayload = {
+  tipo: "AQUECIMENTO" | "JOGO" | "SPARRING" | "PAUSA" | "ALONGAMENTO";
+  nome: string;
+  ordem: number;
+  duracaoPrevistaSegundos: number;
+  rounds?: number;
+  duracaoRoundSegundos?: number;
+  descansoSegundos?: number;
+  anuncio?: string;
+};
+
+type AulaCurriculoPayload = Omit<AulaCurriculoFormData, "duracaoMinutos" | "blocos"> & {
+  duracaoMinutos?: number;
+  blocos?: BlocoCurriculoPayload[];
+};
+
 // "Sem modalidade" chega como string vazia do <select>; mandar "" faria o
 // z.coerce.number() do backend virar 0 e falhar no .positive().
 function corpoCurriculo(data: CurriculoFormData) {
@@ -30,15 +46,12 @@ export class CurriculoService {
   }
 
   static async criarAula(
-    data: Omit<AulaCurriculoFormData, "duracaoMinutos"> & {
-      duracaoMinutos?: number;
-      moduloId: number;
-    }
+    data: AulaCurriculoPayload & { moduloId: number }
   ) {
     return ApiClient.post("/curriculos/aulas", data);
   }
 
-  static async criarTecnica(data: TecnicaCurriculoFormData & { aulaCurriculoId: number }) {
+  static async criarTecnica(data: Omit<TecnicaCurriculoFormData, "duracaoPrevistaMinutos"> & { aulaCurriculoId: number; duracaoPrevistaSegundos: number }) {
     return ApiClient.post("/curriculos/tecnicas", data);
   }
 
@@ -52,12 +65,12 @@ export class CurriculoService {
 
   static async atualizarAula(
     id: number,
-    data: Omit<AulaCurriculoFormData, "duracaoMinutos"> & { duracaoMinutos?: number }
+    data: AulaCurriculoPayload
   ) {
     return ApiClient.put(`/curriculos/aulas/${id}`, data);
   }
 
-  static async atualizarTecnica(id: number, data: TecnicaCurriculoFormData) {
+  static async atualizarTecnica(id: number, data: Omit<TecnicaCurriculoFormData, "duracaoPrevistaMinutos"> & { duracaoPrevistaSegundos: number }) {
     return ApiClient.put(`/curriculos/tecnicas/${id}`, data);
   }
 

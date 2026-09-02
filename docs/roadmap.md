@@ -13,12 +13,10 @@ Versão do documento: 3.0
 O Sys Belt é uma plataforma SaaS de gestão para academias de artes marciais,
 vendida por assinatura mensal e cobrada por faixa de alunos.
 
-Cada academia assinante opera sobre um **banco de dados exclusivo**. Não há
-tabela compartilhada entre clientes, não há coluna `clienteId` separando
-registros de academias diferentes no mesmo banco, e nenhuma consulta do
-sistema operacional pode alcançar dados de outro assinante — o isolamento é
-físico, não lógico. A decisão está registrada em
-[`architecture-decisions.md`](architecture-decisions.md), ADR-010.
+Todos os assinantes operam no mesmo banco PostgreSQL. `Conta` separa tenants e
+`Unidade` separa filiais; nenhuma operacao pode atravessar esse escopo. A
+decisao esta na ADR-014 e em
+[`arquitetura-multitenant.md`](arquitetura-multitenant.md).
 
 O produto une, numa única plataforma:
 
@@ -53,8 +51,7 @@ a mais é dinheiro cobrado a mais.
 
 # Arquitetura em dois planos
 
-O sistema é dividido em dois planos com bancos separados e responsabilidades
-que não se sobrepõem.
+O sistema possui dois planos funcionais com responsabilidades distintas.
 
 ## Control Plane (`control-plane/`)
 
@@ -62,9 +59,8 @@ O sistema comercial do SysBelt. Guarda assinantes, planos, assinaturas,
 faturas, licenças por unidade, operadores, auditoria e o inventário de
 provisionamento. É onde o operador do SaaS trabalha.
 
-Também é a autoridade do **diretório de tenants**: dado um slug, responde qual
-banco atende aquela academia — sem nunca devolver a connection string, apenas
-a referência do segredo no cofre.
+Tambem e autoridade do **diretorio de tenants**: dado um slug, identifica a
+conta e seu estado. Nunca seleciona ou devolve connection string por academia.
 
 14 módulos, 188 testes, mais o painel do operador (`control-plane/web`) com
 50 testes.

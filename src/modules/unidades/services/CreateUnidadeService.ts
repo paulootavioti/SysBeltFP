@@ -4,6 +4,7 @@ import { AppError } from "../../../shared/errors/AppError";
 interface CreateUnidadeDTO {
   nome: string;
   contaId: number;
+  usuarioCriadorId?: number;
 }
 
 // Uma filial nova nasce sempre dentro de uma conta — é o que impede que
@@ -31,9 +32,14 @@ export class CreateUnidadeService {
       select: { id: true },
     });
 
-    if (donos.length > 0) {
+    const usuariosParaVincular = [
+      ...donos.map((dono) => dono.id),
+      ...(data.usuarioCriadorId ? [data.usuarioCriadorId] : []),
+    ];
+
+    if (usuariosParaVincular.length > 0) {
       await prisma.usuarioUnidade.createMany({
-        data: donos.map((dono) => ({ usuarioId: dono.id, unidadeId: unidade.id })),
+        data: [...new Set(usuariosParaVincular)].map((usuarioId) => ({ usuarioId, unidadeId: unidade.id })),
         skipDuplicates: true,
       });
     }

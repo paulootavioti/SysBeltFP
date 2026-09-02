@@ -61,6 +61,11 @@ enum StatusAmbienteTenant {
   DESATIVADO
 }
 
+enum TipoCanalMensageria {
+  WHATSAPP
+  INSTAGRAM
+}
+
 enum TipoEventoProvisionamento {
   CRIAR_AMBIENTE
   APLICAR_MIGRATIONS
@@ -117,8 +122,27 @@ model Assinante {
   licencas    LicencaUnidade[]
   snapshotsContagem SnapshotContagem[]
   auditorias   AuditLogPlataforma[]
+  contasMensageria ContaMensageriaDiretorio[]
 
   @@index([status])
+}
+
+// Índice técnico global usado antes de abrir o banco do tenant. Não contém
+// tokens nem dados dos contatos; guarda somente referências para o cofre.
+model ContaMensageriaDiretorio {
+  id                    String               @id @default(uuid()) @db.Uuid
+  assinanteId           String               @db.Uuid
+  tipo                  TipoCanalMensageria
+  identificadorExterno  String
+  appSecretRef          String
+  ativo                 Boolean              @default(true)
+  criadoEm              DateTime             @default(now())
+  atualizadoEm          DateTime             @updatedAt
+
+  assinante Assinante @relation(fields: [assinanteId], references: [id], onDelete: Restrict)
+
+  @@unique([tipo, identificadorExterno])
+  @@index([assinanteId, ativo])
 }
 
 model AuditLogPlataforma {

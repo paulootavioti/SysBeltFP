@@ -3,6 +3,10 @@
 > Inventário do código atual e destino de cada responsabilidade. Este mapa é
 > a referência do passo 5 da separação B2B.
 
+> **Nota de 31/08/2026:** este mapa preserva o historico da extracao, mas a
+> remocao de `Conta` e o provisionamento de banco por tenant foram cancelados
+> pela ADR-014. `Conta` permanece como fronteira no banco compartilhado.
+
 ## Estado da implementação
 
 A fundação independente está em `control-plane/`, com pacote Node, configuração
@@ -77,9 +81,8 @@ são o produto B2B vendido pelo Sys Belt.
 
 ### Mudanças no Tenant Plane
 
-`Unidade.contaId` e a relação com `Conta` serão removidas após a migração. Um
-banco exclusivo já é a fronteira da academia; todas as unidades nele contidas
-pertencem à mesma rede.
+`Unidade.contaId` e a relacao com `Conta` permanecem como fronteira obrigatoria
+entre assinantes no banco compartilhado.
 
 Será introduzida uma projeção operacional, provisoriamente chamada
 `ConcessaoPlataforma`, contendo apenas:
@@ -138,14 +141,14 @@ atual não será compartilhado com o Tenant Plane.
 | Código atual | Problema | Substituição |
 |---|---|---|
 | `src/app.ts` registra `/plataforma` | Mistura APIs B2B e tenant | Remover após disponibilizar endpoints de contrato. |
-| `shared/utils/contaDoUsuario.ts` | Usa `Conta` como fronteira | Operar sobre todas as unidades do banco exclusivo. |
-| `CreateUsuarioService`/`UpdateUsuarioService` | Valida unidades pela conta | Apenas validar que IDs existem neste banco. |
-| `CreateUnidadeService` | Recebe/infere `contaId` | Criar unidade local e sincronizar licença. |
-| `ListUnidadesOpcoesService` | Escopo global por conta | Listar somente unidades do banco atual. |
-| `unidades/validation.ts` | Aceita `contaId` | Remover o campo da API tenant. |
+| `shared/utils/contaDoUsuario.ts` | Usa `Conta` como fronteira | Manter e reforcar a validacao entre contas. |
+| `CreateUsuarioService`/`UpdateUsuarioService` | Valida unidades pela conta | Manter a validacao de mesma conta. |
+| `CreateUnidadeService` | Recebe/infere `contaId` | Criar unidade vinculada a conta autenticada. |
+| `ListUnidadesOpcoesService` | Escopo global por conta | Manter escopo pela conta autenticada. |
+| `unidades/validation.ts` | Aceita `contaId` | Nao confiar em `contaId` enviado pelo cliente. |
 | `whatsapp/EnviarMensagemWhatsappService` | Consulta plano comercial local | Consultar concessão local válida. |
-| testes `PerfilDonoEFronteira` | Simulam várias contas no mesmo banco | Substituir por testes de isolamento entre bancos/contextos. |
-| `shared/testing/criarUnidadeDeTeste.ts` | Cria conta e assinatura auxiliar | Criar somente unidade e concessão fake quando necessária. |
+| testes `PerfilDonoEFronteira` | Simulam varias contas no mesmo banco | Manter e ampliar a cobertura negativa entre contas. |
+| `shared/testing/criarUnidadeDeTeste.ts` | Cria conta e assinatura auxiliar | Manter dados isolados por conta nos testes. |
 
 Outros recursos premium (`GATEWAY_AUTOMATICO` e `CONTROLE_ACESSO`) deverão usar
 a mesma função central de concessão, mesmo onde hoje a trava ainda não esteja

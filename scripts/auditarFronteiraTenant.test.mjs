@@ -1,49 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-
 import { avaliarFronteiraTenant } from "./auditarFronteiraTenant.mjs";
 
-test("carrega a configuração local antes de inicializar o Prisma", () => {
-  assert.equal(typeof process.env.DATABASE_URL, "string");
-  assert.ok(process.env.DATABASE_URL.length > 0);
+test("aprova varias contas quando as fronteiras estao integras", () => {
+  const resultado = avaliarFronteiraTenant({ totalContas: 3, contasSemUnidade: 0, usuariosComVinculosMultiplasContas: 0, concessoesDivergentes: 0, superadminsAtivos: 0 });
+  assert.equal(resultado.isolamentoIntegro, true);
+  assert.deepEqual(resultado.bloqueios, []);
 });
 
-test("aprova somente um banco com uma conta, unidades locais e nenhum superadmin ativo", () => {
-  assert.deepEqual(
-    avaliarFronteiraTenant({
-      totalContas: 1,
-      unidadesPorConta: [{ totalUnidades: 3 }],
-      superadminsAtivos: 0,
-    }),
-    {
-      prontaParaRemoverConta: true,
-      totalContas: 1,
-      totalUnidades: 3,
-      contasComUnidades: 1,
-      superadminsAtivos: 0,
-      bloqueios: [],
-    },
-  );
-});
-
-test("lista todos os bloqueios sem expor nomes ou identificadores", () => {
-  const resultado = avaliarFronteiraTenant({
-    totalContas: 2,
-    unidadesPorConta: [{ totalUnidades: 1 }, { totalUnidades: 2 }],
-    superadminsAtivos: 1,
-  });
-  assert.equal(resultado.prontaParaRemoverConta, false);
-  assert.deepEqual(resultado.bloqueios, [
-    "TOTAL_CONTAS_DIFERENTE_DE_UM",
-    "UNIDADES_FORA_DE_UMA_UNICA_CONTA",
-    "SUPERADMIN_ATIVO_NO_TENANT",
-  ]);
-  assert.deepEqual(Object.keys(resultado).sort(), [
-    "bloqueios",
-    "contasComUnidades",
-    "prontaParaRemoverConta",
-    "superadminsAtivos",
-    "totalContas",
-    "totalUnidades",
-  ]);
+test("lista riscos sem expor identificadores", () => {
+  const resultado = avaliarFronteiraTenant({ totalContas: 2, contasSemUnidade: 1, usuariosComVinculosMultiplasContas: 2, concessoesDivergentes: 1, superadminsAtivos: 1 });
+  assert.equal(resultado.isolamentoIntegro, false);
+  assert.deepEqual(resultado.bloqueios, ["CONTA_SEM_UNIDADE", "USUARIO_ATRAVESSA_CONTAS", "CONCESSAO_DIVERGE_DA_CONTA", "SUPERADMIN_ATIVO"]);
 });

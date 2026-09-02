@@ -45,7 +45,7 @@ function exigirToken(accessToken: string): string {
 async function chamar<T>(
   caminho: string,
   opcoes: {
-    metodo: "GET" | "POST";
+    metodo: "GET" | "POST" | "PUT";
     accessToken: string;
     corpo?: unknown;
     chaveIdempotencia?: string;
@@ -106,6 +106,7 @@ interface CriarPagamentoPixDTO {
   referenciaExterna: string;
   expiraEm?: Date | null;
   pagador: { email: string; nome?: string | null };
+  chaveIdempotencia?: string;
 }
 
 export async function criarPagamentoPix(
@@ -116,7 +117,8 @@ export async function criarPagamentoPix(
     accessToken: dados.accessToken,
     // a referência externa é a mensalidade: é por ela que o webhook
     // reencontra o que dar baixa.
-    chaveIdempotencia: `mensalidade-${dados.referenciaExterna}-${randomUUID()}`,
+    chaveIdempotencia:
+      dados.chaveIdempotencia ?? `mensalidade-${dados.referenciaExterna}-${randomUUID()}`,
     corpo: {
       transaction_amount: Number(dados.valor.toFixed(2)),
       description: dados.descricao,
@@ -145,4 +147,43 @@ export async function estornarPagamento(id: string, accessToken: string): Promis
     chaveIdempotencia: `estorno-${id}`,
     corpo: {},
   });
+}
+
+interface AssinaturaMercadoPago {
+  id: string;
+  status: string;
+  init_point?: string;
+}
+
+export async function criarAssinaturaPendente(dados: {
+  accessToken: string;
+  referenciaExterna: string;
+  email: string;
+  descricao: string;
+  valor: number;
+  dataFim?: Date | null;
+  urlRetorno: string;
+}): Promise<AssinaturaMercadoPago> {
+  return chamar<AssinaturaMercadoPago>("/preapproval", {
+    metodo: "POST",
+    accessToken: dados.accessToken,
+    corpo: {
+      reason: dados.descricao,
+      external_reference: dados.referenciaExterna,
+      payer_email: dados.email,
+      auto_recurring: {
+        frequency: 1,
+        frequency_type: "months",
+        transaction_amount: Number(dados.valor.toFixed(2)),
+        currency_id: "BRL",
+        end_date: dados.dataFim?.toISOString(),
+      },
+      back_url: dados.urlRetorno,
+      status: "pending",
+    },
+  });
+}
+
+export async function atualizarAssinaturaMercadoPago(id: string, accessToken: string, status: string): Promise<void> {
+  await chamar(`/preapproval/${id}`, { metodo: "PUT", accessToken, corpo: { status } });
 }

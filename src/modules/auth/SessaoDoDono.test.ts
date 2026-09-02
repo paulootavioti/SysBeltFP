@@ -55,7 +55,9 @@ describe("sessão devolvida no login", () => {
   it("o DONO entra sem unidade ativa, mesmo com filial gravada", async () => {
     const dono = await criar("DONO", filialId);
 
-    const { usuario } = await new LoginService().execute({ email: dono.email, senha: SENHA });
+    const resultado = await new LoginService().execute({ email: dono.email, senha: SENHA });
+    if (!("usuario" in resultado)) throw new Error("Sessão não emitida.");
+    const { usuario } = resultado;
 
     expect(usuario.unidadeId).toBeNull();
     expect(usuario.unidadeNome).toBeNull();
@@ -64,7 +66,9 @@ describe("sessão devolvida no login", () => {
   it("os demais perfis entram na unidade deles", async () => {
     const admin = await criar("ADMIN", filialId);
 
-    const { usuario } = await new LoginService().execute({ email: admin.email, senha: SENHA });
+    const resultado = await new LoginService().execute({ email: admin.email, senha: SENHA });
+    if (!("usuario" in resultado)) throw new Error("Sessão não emitida.");
+    const { usuario } = resultado;
 
     expect(usuario.unidadeId).toBe(filialId);
     expect(usuario.unidadeNome).toBe(`${PREFIXO}Filial`);

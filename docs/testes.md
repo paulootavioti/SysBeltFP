@@ -1,5 +1,29 @@
 # Testes
 
+## Validacao multitenant compartilhada
+
+Para validar uma instalacao limpa sem tocar em producao:
+
+```bash
+npm run test:db:preparar
+npm run seed:admin
+npm run tenant:auditar-isolamento
+npm test
+```
+
+O auditor aceita varias contas e bloqueia conta sem unidade, usuario vinculado
+a unidades de contas diferentes, concessao divergente e `SUPERADMIN` ativo.
+Os testes de fronteira devem sempre criar pelo menos duas contas.
+
+Em 01/09/2026, o banco `sysbelt_test` foi recriado desde zero com 51
+migrations, o auditor retornou `isolamentoIntegro: true` e a suite operacional
+concluiu 746 testes. O Control Plane concluiu 192 testes.
+
+O `npm audit` do Control Plane aponta `deepmerge-ts` transitivo do Prisma CLI.
+Ele afeta ferramenta de desenvolvimento e a correcao sugerida pelo npm e um
+downgrade forcado do Prisma; nao aplicar `npm audit fix --force`. Reavaliar
+quando o Prisma publicar uma versao compativel sem o advisory.
+
 Versão do documento: 2.0
 
 Última atualização: Agosto/2026

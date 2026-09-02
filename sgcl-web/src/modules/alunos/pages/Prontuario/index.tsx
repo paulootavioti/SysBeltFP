@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { Page } from "../../../../components/sgcl/layout/Page";
 import { Section } from "../../../../components/sgcl/layout/Section";
 import { InfoCard } from "../../../../components/sgcl/cards/InfoCard";
-import { StatusBadge } from "../../../../components/sgcl/feedback/StatusBadge";
+import { StatusBadge } from "../../../../components/ui/StatusBadge";
 
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Loading } from "../../../../components/ui/Loading";

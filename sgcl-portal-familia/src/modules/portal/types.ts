@@ -23,6 +23,8 @@ export interface Resumo {
     turmaNome: string;
     horarioInicio: string;
     horarioFim: string;
+    arenaNome: string | null;
+    professorNome: string | null;
   } | null;
 }
 
@@ -84,6 +86,17 @@ export interface NaoLidasPorAluno {
   naoLidas: number;
 }
 
+export interface ConsentimentoFamilia {
+  id: number;
+  tipo: "TRATAMENTO_DADOS" | "USO_IMAGEM" | "BIOMETRIA" | "DADOS_SAUDE" | "COMUNICACOES";
+  concedido: boolean;
+  versaoPolitica: string;
+  textoAceito: string | null;
+  createdAt: string;
+  revogadoEm: string | null;
+  responsavel: { nome: string } | null;
+}
+
 export type CategoriaProduto =
   | "KIMONO"
   | "RASHGUARD"
@@ -120,7 +133,11 @@ export interface Produto {
   descricao?: string | null;
   imagemUrl?: string | null;
   variantes: ProdutoVariante[];
-  unidade: { id: number; nome: string };
+  unidade: {
+    id: number;
+    nome: string;
+    formasPagamento: { id: number; tipo: string; nomePersonalizado?: string | null }[];
+  };
 }
 
 export interface ItemCarrinho {
@@ -139,8 +156,42 @@ export interface ItemPedido {
 export interface Pedido {
   id: number;
   total: number;
-  status: "AGUARDANDO_RETIRADA" | "ENTREGUE" | "CANCELADO";
+  status: "AGUARDANDO_PAGAMENTO" | "AGUARDANDO_RETIRADA" | "ENTREGUE" | "CANCELADO";
   criadoEm: string;
   entregueEm?: string | null;
   itens: ItemPedido[];
+  pagamento?: {
+    cobrancaId: number;
+    gateway: string;
+    status: string;
+    linkPagamento?: string;
+    pixCopiaECola?: string;
+    pixQrCodeBase64?: string;
+    erro?: string;
+  };
+  cobrancas?: { id: number; status: string; linkPagamento?: string | null; pixCopiaECola?: string | null }[];
+}
+
+export type SituacaoContrato =
+  | "PENDENTE_ASSINATURA" | "ASSINADO" | "ATIVO" | "SUSPENSO"
+  | "CANCELADO" | "ENCERRADO" | "RENOVADO";
+
+export interface ContratoFamilia {
+  id: number;
+  numero: number;
+  valor: number;
+  dataInicioVigencia: string;
+  dataFimVigencia?: string | null;
+  situacao: SituacaoContrato;
+  conteudoGerado: string;
+  tipoAssinatura?: "DIGITAL" | "ELETRONICA" | "PRESENCIAL" | null;
+  assinadoEm?: string | null;
+  contratoAssinadoUrl?: string | null;
+  createdAt: string;
+  modeloContrato: { nome: string; versao: number };
+  solicitacoesAssinatura: {
+    status: string;
+    linkAssinatura?: string | null;
+    documentoAssinadoUrl?: string | null;
+  }[];
 }

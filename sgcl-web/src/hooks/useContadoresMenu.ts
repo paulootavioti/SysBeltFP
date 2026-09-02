@@ -8,6 +8,7 @@ const CONTADORES_VAZIOS: ContadoresMenu = {
   graduacoesPendentes: 0,
   mensagensFamiliaNaoLidas: 0,
   pedidosAguardandoRetirada: 0,
+  conversasNaoLidas: 0,
 };
 
 const INTERVALO_ATUALIZACAO_MS = 60000;

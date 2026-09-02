@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/AppError";
-import { erroSeguroParaLog } from "../security/sanitizarErro";
+import { logger } from "../observability/logger";
 
 export function errorHandler(
   error: Error,
@@ -17,10 +17,11 @@ export function errorHandler(
 
   }
 
-  console.error("Erro não tratado", erroSeguroParaLog(error));
+  logger.error("erro_nao_tratado", error, { metodo: req.method, rota: req.originalUrl.split("?")[0] });
 
   return res.status(500).json({
-    message: "Erro interno do servidor."
+    message: "Erro interno do servidor.",
+    requestId: res.getHeader("X-Request-Id"),
   });
 
 }

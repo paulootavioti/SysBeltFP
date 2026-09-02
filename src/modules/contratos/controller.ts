@@ -8,9 +8,20 @@ import { AlterarSituacaoContratoService } from "./services/AlterarSituacaoContra
 import { RegistrarAssinaturaService } from "./services/RegistrarAssinaturaService";
 import { RenovarContratoService } from "./services/RenovarContratoService";
 import { RenovarContratosVencidosService } from "./services/RenovarContratosVencidosService";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
+import { executarPorConta } from "../../shared/jobs/executarPorConta";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
+import { EnviarContratoAssinaturaEletronicaService } from "./services/EnviarContratoAssinaturaEletronicaService";
 
 export class ContratosController {
+  async enviarAssinaturaEletronica(req: Request, res: Response) {
+    const service = new EnviarContratoAssinaturaEletronicaService();
+    const solicitacao = await service.execute(
+      Number(req.params.id), req.user.unidadeId, req.user.id
+    );
+    return res.status(201).json(solicitacao);
+  }
+
   async create(req: Request, res: Response) {
     const service = new CreateContratoService();
 
@@ -112,7 +123,7 @@ export class ContratosController {
   async renovarVencidosCron(_req: Request, res: Response) {
     const service = new RenovarContratosVencidosService();
 
-    const resultado = await service.execute(null);
+    const resultado = await executarPorConta(prismaDaRequisicao(), (unidadeId) => service.execute(unidadeId));
 
     return res.json(resultado);
   }

@@ -1,15 +1,18 @@
 # Control Plane B2B do Sys Belt
 
 > Modelo funcional e de dados do sistema que administra as academias
-> assinantes do Sys Belt. Este documento detalha a ADR-010 sem escolher ainda
-> o mecanismo de conexão aos bancos exclusivos.
+> assinantes do Sys Belt.
+
+> **Atualizacao de arquitetura (31/08/2026):** referencias abaixo a ambiente,
+> provisionamento ou banco exclusivo sao historicas e foram superadas pela
+> ADR-014. O Control Plane administra a identidade da `Conta`, mas nao cria ou
+> seleciona banco por assinante.
 
 ## 1. Objetivo
 
 O Control Plane é o sistema comercial e operacional do fornecedor do Sys Belt.
 Ele cadastra academias clientes, vende planos, controla licenças por unidade,
-emite cobranças B2B e provisiona um banco PostgreSQL exclusivo para cada
-academia ou rede.
+emite cobrancas B2B e sincroniza concessoes com a conta operacional.
 
 Ele não substitui o sistema usado pela academia no dia a dia e não armazena
 dados de alunos, aulas ou mensalidades cobradas dos alunos.
@@ -24,7 +27,7 @@ dados de alunos, aulas ou mensalidades cobradas dos alunos.
 | Ambiente | Conjunto de recursos exclusivos provisionados para um assinante. |
 | Tenant | Identidade técnica do assinante no sistema operacional. |
 | Control Plane | Sistema central de contratos, cobrança e provisionamento. |
-| Tenant Plane | Aplicação operacional e banco exclusivo usados pela academia. |
+| Tenant Plane | Aplicacao operacional e banco compartilhado isolado por Conta. |
 | Plano | Oferta comercial com preço, limites e funcionalidades. |
 | Assinatura | Contratação de um plano por um assinante. |
 
@@ -43,7 +46,7 @@ Plane, `Unidade` continuará representando as filiais da academia.
 - preço por unidade e faixa de alunos;
 - faturamento e pagamentos do Sys Belt;
 - provisionamento e saúde do ambiente;
-- versão do schema de cada banco exclusivo;
+- versao do schema do banco operacional compartilhado;
 - trilha de auditoria das ações do operador;
 - comunicação segura com o Tenant Plane.
 
@@ -294,7 +297,7 @@ ATIVO/SUSPENSO → DESATIVADO
 2. escolhe plano, condição comercial e período de teste;
 3. cria a assinatura;
 4. solicita provisionamento com chave de idempotência;
-5. banco exclusivo é criado e migrado;
+5. conta, unidade inicial e concessao sao criadas no banco compartilhado;
 6. administrador inicial é criado no Tenant Plane;
 7. verificação de saúde é executada;
 8. ambiente e assinante passam para `ATIVO`;

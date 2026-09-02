@@ -9,22 +9,16 @@ export class ResolverTenantService {
       select: {
         tenantKey: true,
         status: true,
-        secretRef: true,
-        schemaVersaoAtual: true,
-        credentialVersion: true,
         assinante: { select: { slug: true } },
       },
     });
-    if (!ambiente?.secretRef || !ambiente.schemaVersaoAtual) {
+    if (!ambiente) {
       throw new Error("TENANT_NAO_ENCONTRADO");
     }
     return {
       tenantKey: ambiente.tenantKey,
       slug: ambiente.assinante.slug,
       status: ambiente.status,
-      secretRef: ambiente.secretRef,
-      schemaVersion: ambiente.schemaVersaoAtual,
-      credentialVersion: ambiente.credentialVersion ?? 1,
     };
   }
 }

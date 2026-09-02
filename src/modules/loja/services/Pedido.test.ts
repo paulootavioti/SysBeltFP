@@ -7,6 +7,7 @@ import { GetLojaFamiliaService } from "../../portalFamilia/services/GetLojaFamil
 import { ListPedidosService } from "./ListPedidosService";
 import { MarcarPedidoEntregueService } from "./MarcarPedidoEntregueService";
 import { CancelarPedidoService } from "./CancelarPedidoService";
+import { ConfirmarPagamentoPedidoService } from "./ConfirmarPagamentoPedidoService";
 import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
 
 const criarPedidoService = new CriarPedidoFamiliaService();
@@ -14,6 +15,7 @@ const getLojaFamiliaService = new GetLojaFamiliaService();
 const listService = new ListPedidosService();
 const entregarService = new MarcarPedidoEntregueService();
 const cancelarService = new CancelarPedidoService();
+const confirmarPagamentoService = new ConfirmarPagamentoPedidoService();
 
 let unidadeAId: number;
 let unidadeBId: number;
@@ -22,6 +24,10 @@ let varianteId: number;
 let varianteBId: number;
 
 async function limpar() {
+  await prisma.auditLog.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_PEDIDO_" } } } });
+  await prisma.cobrancaPagamento.deleteMany({
+    where: { pedido: { unidade: { nome: { startsWith: "TESTE_PEDIDO_" } } } },
+  });
   await prisma.itemPedido.deleteMany({
     where: { pedido: { unidade: { nome: { startsWith: "TESTE_PEDIDO_" } } } },
   });
@@ -81,7 +87,8 @@ describe("CriarPedidoFamiliaService", () => {
     const pedido = await criarPedidoService.execute(alunoAId, [{ varianteId, quantidade: 2 }]);
 
     expect(pedido.total).toBe(400);
-    expect(pedido.status).toBe("AGUARDANDO_RETIRADA");
+    expect(pedido.status).toBe("AGUARDANDO_PAGAMENTO");
+    expect(pedido.pagamento.status).toBe("AGUARDANDO_CONFIRMACAO_MANUAL");
 
     const variante = await prisma.produtoVariante.findUnique({ where: { id: varianteId } });
     expect(variante?.estoque).toBe(3);
@@ -145,7 +152,7 @@ describe("ListPedidosService / MarcarPedidoEntregueService / CancelarPedidoServi
     const listaB = await listService.execute(unidadeBId);
     expect(listaB).toHaveLength(0);
 
-    const aguardando = await listService.execute(unidadeAId, { status: "AGUARDANDO_RETIRADA" });
+    const aguardando = await listService.execute(unidadeAId, { status: "AGUARDANDO_PAGAMENTO" });
     expect(aguardando).toHaveLength(1);
 
     const entregues = await listService.execute(unidadeAId, { status: "ENTREGUE" });
@@ -156,6 +163,9 @@ describe("ListPedidosService / MarcarPedidoEntregueService / CancelarPedidoServi
     const pedido = await criarPedidoService.execute(alunoAId, [{ varianteId, quantidade: 1 }]);
 
     await expect(entregarService.execute(pedido.id, unidadeBId)).rejects.toThrow(AppError);
+    await expect(entregarService.execute(pedido.id, unidadeAId)).rejects.toThrow(AppError);
+
+    await confirmarPagamentoService.execute(pedido.id, "teste");
 
     const entregue = await entregarService.execute(pedido.id, unidadeAId);
     expect(entregue.status).toBe("ENTREGUE");

@@ -6,8 +6,12 @@ import { GetProdutosDestaquePublicoService } from "./services/GetProdutosDestaqu
 import { GetGaleriaPublicaService } from "./services/GetGaleriaPublicaService";
 import { GetModalidadesPublicoService } from "./services/GetModalidadesPublicoService";
 import { CriarLeadPublicoService } from "./services/CriarLeadPublicoService";
+import { PRECO_PUBLICO_PLATAFORMA } from "../plataforma/utils/precoPlataforma";
 
 export class PublicoController {
+  async precoPlataforma(_req: Request, res: Response) {
+    return res.json(PRECO_PUBLICO_PLATAFORMA);
+  }
   async modalidades(req: Request, res: Response) {
     const service = new GetModalidadesPublicoService();
     const modalidades = await service.execute();

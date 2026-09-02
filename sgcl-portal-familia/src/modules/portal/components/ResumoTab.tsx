@@ -20,9 +20,10 @@ const BADGE_STATUS: Record<string, { label: string; variant: "warning" | "succes
 
 interface ResumoTabProps {
   alunoId: number;
+  onOpenPrivacy: () => void;
 }
 
-export function ResumoTab({ alunoId }: ResumoTabProps) {
+export function ResumoTab({ alunoId, onOpenPrivacy }: ResumoTabProps) {
   const [resumo, setResumo] = useState<Resumo | null>(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
@@ -42,7 +43,23 @@ export function ResumoTab({ alunoId }: ResumoTabProps) {
   const badge = mensalidade ? BADGE_STATUS[mensalidade.status] : null;
 
   return (
-    <div className="resumo-tab-grid">
+    <div className="resumo-tab">
+      <section className="resumo-proxima-aula" aria-labelledby="proxima-aula-titulo">
+        <p>Próxima aula</p>
+        <h2 id="proxima-aula-titulo">
+          {proximaAula
+            ? <><time dateTime={proximaAula.data}>{formatarData(proximaAula.data)}</time><strong>{proximaAula.horarioInicio}</strong></>
+            : "Sem aula agendada"}
+        </h2>
+        {proximaAula && (
+          <div>
+            <b>{proximaAula.turmaNome}</b>
+            <span>{[proximaAula.arenaNome, proximaAula.professorNome].filter(Boolean).join(" · ")}</span>
+          </div>
+        )}
+      </section>
+
+      <div className="resumo-tab-grid">
       <InfoCard title="Faixa atual" value={aluno.faixa} description={`Grau ${aluno.grau}`} />
 
       <InfoCard
@@ -67,15 +84,11 @@ export function ResumoTab({ alunoId }: ResumoTabProps) {
         </div>
       )}
 
-      <InfoCard
-        title="Próxima aula"
-        value={
-          proximaAula
-            ? `${formatarData(proximaAula.data)} — ${proximaAula.horarioInicio}`
-            : "Sem aula agendada"
-        }
-        description={proximaAula ? proximaAula.turmaNome : undefined}
-      />
+      </div>
+      <button type="button" className="resumo-privacidade" onClick={onOpenPrivacy}>
+        <span><b>Privacidade dos dados</b>Consulte quem pode ver os dados e gerencie os consentimentos.</span>
+        <strong aria-hidden>›</strong>
+      </button>
     </div>
   );
 }

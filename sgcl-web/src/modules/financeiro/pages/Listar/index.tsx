@@ -21,6 +21,7 @@ import { DashboardSectionError } from "../../../dashboard/components/DashboardSe
 import { formatarMoeda, formatarPercentual, formatarData } from "../../../dashboard/utils/formatters";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { ContasTable } from "../../components/ContasTable";
+import { ConciliacaoPagamentos } from "../../components/ConciliacaoPagamentos";
 
 import type { ProfessorOpcao } from "../../../usuarios/types/usuario";
 import type { TipoExportacaoFinanceiro } from "../../services/FinanceiroService";
@@ -263,6 +264,11 @@ export function Financeiro() {
                   emptyDescription="Nenhuma mensalidade foi cancelada no período."
                 />
               ),
+            },
+            {
+              value: "conciliacao",
+              label: "Conciliação",
+              content: <ConciliacaoPagamentos />,
             },
             {
               value: "estornos",

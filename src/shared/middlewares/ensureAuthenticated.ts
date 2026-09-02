@@ -14,6 +14,7 @@ import { garantirAcessoSuperadminLegado } from "../security/superadminLegado";
 interface TokenPayload {
   sub: string;
   perfil: string;
+  tipo?: string;
 }
 
 export async function ensureAuthenticated(
@@ -33,6 +34,10 @@ export async function ensureAuthenticated(
   try {
     const decoded = verificarTokenDaRequisicao<TokenPayload>(token, "sysbelt-web");
 
+    if (decoded.tipo === "desafio-2fa") {
+      throw new AppError("Token de sessão inválido.", 401);
+    }
+
     const usuario = await prisma.usuario.findUnique({
       where: {
         id: Number(decoded.sub)
@@ -51,6 +56,8 @@ export async function ensureAuthenticated(
 
     req.user = {
       id: usuario.id,
+      nome: usuario.nome,
+      email: usuario.email,
       perfil: usuario.perfil,
       unidadeId: usuario.unidadeId
     };
@@ -84,7 +91,11 @@ export async function ensureAuthenticated(
 
       if (Number.isInteger(unidadeSolicitada) && unidadeSolicitada > 0) {
         const vinculo = await prisma.usuarioUnidade.findFirst({
-          where: { usuarioId: usuario.id, unidadeId: unidadeSolicitada },
+          where: {
+            usuarioId: usuario.id,
+            unidadeId: unidadeSolicitada,
+            unidade: { ativo: true },
+          },
         });
 
         if (vinculo) {

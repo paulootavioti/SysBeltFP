@@ -155,6 +155,16 @@
   font-size: var(--font-sm);
 }
 
+.aula-curriculo-body .curriculo-duracao-alerta {
+  color: var(--danger);
+  font-weight: 700;
+  padding: var(--space-2);
+  border-left: 3px solid var(--danger);
+}
+
+.curriculo-fila-resumo { margin: var(--space-3) 0 0; padding: 0; list-style: none; }
+.curriculo-fila-resumo li { display: flex; justify-content: space-between; gap: var(--space-3); padding: 6px 0; border-top: 1px solid var(--border); }
+
 .jogos-lista {
   display: flex;
   gap: var(--space-2);
@@ -224,4 +234,36 @@
 .tecnica-excluir-botao:hover {
   background: var(--danger);
   color: #fff;
+}
+
+.curriculo-blocos-editor {
+  margin: var(--space-4) 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.curriculo-blocos-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.curriculo-blocos-cabecalho h3,
+.curriculo-blocos-cabecalho p { margin: 0; }
+.curriculo-blocos-cabecalho p { color: var(--text-light); }
+
+.curriculo-bloco-linha {
+  display: grid;
+  grid-template-columns: minmax(150px, .8fr) minmax(180px, 1.4fr) repeat(3, minmax(110px, .7fr)) auto;
+  align-items: end;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 900px) {
+  .curriculo-bloco-linha { grid-template-columns: 1fr 1fr; }
+  .curriculo-blocos-cabecalho { flex-direction: column; }
 }

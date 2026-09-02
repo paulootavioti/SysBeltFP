@@ -14,10 +14,12 @@ export type UnidadeVisualizada = {
   nome: string;
 } | null;
 
+export type DesafioDoisFatores = { requerDoisFatores: true; desafio: string };
+
 export type AuthContextData = {
   usuario: Usuario | null;
   token: string | null;
-  login: (email: string, senha: string) => Promise<Usuario>;
+  login: (email: string, senha: string, desafio?: string, codigo?: string) => Promise<Usuario | DesafioDoisFatores>;
   logout: () => void;
   // Unidade escolhida entre os vínculos operacionais do usuário.
   unidadeVisualizada: UnidadeVisualizada;

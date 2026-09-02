@@ -1,5 +1,5 @@
 import { api } from "../../../services/api";
-import type { AulasHojeResponse, AulaDetalhe, ResumoAula, FotoTreino } from "../types";
+import type { AulasHojeResponse, AulaDetalhe, ResumoAula, FotoTreino, RegistroExecucaoBloco, EventoComandoVoz } from "../types";
 
 export class PortalProfessorService {
   static async hoje() {
@@ -38,6 +38,16 @@ export class PortalProfessorService {
 
   static async registrarObservacao(aulaId: number, texto: string) {
     const response = await api.post(`/portal-professor/aulas/${aulaId}/observacao`, { texto });
+    return response.data;
+  }
+
+  static async registrarBloco(aulaId: number, dados: RegistroExecucaoBloco) {
+    const response = await api.post(`/portal-professor/aulas/${aulaId}/blocos`, dados);
+    return response.data;
+  }
+
+  static async consumirComandosVoz(aulaId: number) {
+    const response = await api.get<EventoComandoVoz[]>(`/portal-professor/aulas/${aulaId}/comandos-voz`);
     return response.data;
   }
 

@@ -1,6 +1,7 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { buscarConflitoTurma, mensagemConflitoTurma } from "../../../shared/utils/conflitoHorario";
+import { validarRecursosTurma } from "./validarRecursosTurma";
 
 interface CreateTurmaDTO {
   unidadeId: number;
@@ -19,6 +20,8 @@ interface CreateTurmaDTO {
 export class CreateTurmaService {
   async execute(data: CreateTurmaDTO) {
     const prisma = prismaDaRequisicao();
+
+    await validarRecursosTurma(data.unidadeId, data);
 
     const conflito = await buscarConflitoTurma({
       unidadeId: data.unidadeId,

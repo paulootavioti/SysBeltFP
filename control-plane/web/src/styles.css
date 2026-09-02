@@ -1,3 +1,5 @@
+@import "../../../packages/design-tokens/tokens.css";
+
 :root {
   --fundo: #0f1216;
   --superficie: #171b21;
@@ -5,8 +7,10 @@
   --texto: #e8ebef;
   --texto-fraco: #97a1ad;
   --destaque: #d4a029;
+  --foco: #57a7ff;
+  color-scheme: dark;
   --erro: #f0736a;
-  --raio: 10px;
+  --raio: var(--radius-md);
 }
 
 * {
@@ -17,9 +21,14 @@ body {
   margin: 0;
   background: var(--fundo);
   color: var(--texto);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
 }
 
 h1 {

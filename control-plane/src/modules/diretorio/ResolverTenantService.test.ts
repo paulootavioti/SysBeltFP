@@ -11,8 +11,7 @@ describe("ResolverTenantService", () => {
     const resultado = await new ResolverTenantService({ ambienteTenant: { findFirst } } as never).execute("academia-centro");
     expect(resultado).toEqual({
       tenantKey: "64d729dc-8cbc-4fbf-9259-f28809faf55d", slug: "academia-centro",
-      status: "ATIVO", secretRef: "arn:aws:secretsmanager:tenant",
-      schemaVersion: "2026.08.1", credentialVersion: 3,
+      status: "ATIVO",
     });
     expect(findFirst.mock.calls[0][0].select).not.toHaveProperty("providerProjectId");
     expect(findFirst.mock.calls[0][0].select).not.toHaveProperty("databaseName");

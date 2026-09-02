@@ -45,11 +45,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return unidade;
   });
 
-  async function login(email: string, senha: string) {
-    const response = await api.post("/auth/login", {
-      email,
-      senha,
-    });
+  async function login(email: string, senha: string, desafio?: string, codigo?: string) {
+    const response = desafio
+      ? await api.post("/auth/login/2fa", { desafio, codigo })
+      : await api.post("/auth/login", { email, senha });
+
+    if (response.data.requerDoisFatores) return response.data;
 
     const { usuario, token } = response.data;
 

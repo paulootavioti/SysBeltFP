@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FiCreditCard, FiExternalLink } from "react-icons/fi";
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Button } from "../../../../components/ui/Button";
@@ -103,6 +104,20 @@ export function Assinaturas() {
     }
   }
 
+  async function handleAtivarGateway(assinatura: Assinatura) {
+    try {
+      setErro("");
+      const atualizada = await AssinaturaService.ativarGateway(assinatura.id);
+      await carregarAssinaturas();
+      if (atualizada.linkAutorizacao) window.open(atualizada.linkAutorizacao, "_blank", "noopener,noreferrer");
+      toast.success("Link de autorização da recorrência gerado.");
+    } catch (error) {
+      const mensagem = getApiErrorMessage(error, "Erro ao ativar cobrança recorrente.");
+      setErro(mensagem);
+      toast.error(mensagem);
+    }
+  }
+
   const columns = [
     { header: "Aluno", accessor: "aluno" as const, render: (a: Assinatura) => a.aluno?.nome },
     { header: "Valor", accessor: "valor" as const, render: (a: Assinatura) => formatarMoeda(a.valor) },
@@ -119,10 +134,21 @@ export function Assinaturas() {
       render: (a: Assinatura) => <Badge variant={VARIANTE_STATUS[a.status]}>{STATUS_ASSINATURA_LABEL[a.status]}</Badge>,
     },
     {
+      header: "Gateway",
+      accessor: "gatewayStatus" as const,
+      render: (a: Assinatura) => a.gatewayStatus ? <Badge variant={a.gatewayStatus === "authorized" ? "success" : "warning"}>{a.gatewayStatus}</Badge> : "Manual",
+    },
+    {
       header: "Ações",
       accessor: "id" as const,
       render: (a: Assinatura) => (
         <div className="assinaturas-table-actions">
+          {ehAdmin && !a.gatewayAssinaturaId && a.formaPagamentoId && (
+            <Button type="button" size="sm" onClick={() => handleAtivarGateway(a)} title="Gerar autorização para cobrança recorrente"><FiCreditCard aria-hidden /> Ativar cartão</Button>
+          )}
+          {a.linkAutorizacao && a.gatewayStatus !== "authorized" && (
+            <Button type="button" size="sm" variant="secondary" onClick={() => window.open(a.linkAutorizacao!, "_blank", "noopener,noreferrer")}><FiExternalLink aria-hidden /> Autorizar</Button>
+          )}
           <Button type="button" size="sm" variant="secondary" onClick={() => handleEditarAssinatura(a)} disabled={a.status === "CONCLUIDA"}>
             Editar
           </Button>

@@ -10,7 +10,9 @@ export type ResultadoWebhook =
   | "PAGAMENTO_REGISTRADO"
   | "JA_PROCESSADO"
   | "IGNORADO"
-  | "MENSALIDADE_NAO_ENCONTRADA";
+  | "MENSALIDADE_NAO_ENCONTRADA"
+  | "PEDIDO_NAO_ENCONTRADO"
+  | "PEDIDO_LIBERADO";
 
 interface ReceberWebhookDTO {
   gateway: PaymentGateway;
@@ -69,6 +71,18 @@ export class ReceberWebhookPagamentoService {
 
     const desfecho = await this.aplicar(evento);
 
+    if (evento.recursoId) {
+      await prisma.cobrancaPagamento.updateMany({
+        where: { gateway: nomeGateway, gatewayId: evento.recursoId },
+        data: {
+          status: evento.situacao ?? "DESCONHECIDO",
+          consultadoEm: new Date(),
+          reconciliadoEm: evento.situacao === "PAGO" ? new Date() : null,
+          erro: desfecho.resultado === "IGNORADO" ? desfecho.detalhe : null,
+        },
+      });
+    }
+
     await prisma.eventoWebhookPagamento.update({
       where: { id: registro.id },
       data: { processadoEm: new Date(), resultado: desfecho.resultado, erro: desfecho.detalhe ?? null },
@@ -86,6 +100,21 @@ export class ReceberWebhookPagamentoService {
       // Pendente e recusado não mudam nada: a mensalidade continua em
       // aberto e o aluno pode tentar de novo.
       return { resultado: "IGNORADO", detalhe: `Situação ${evento.situacao ?? "desconhecida"}.` };
+    }
+
+    if (evento.referenciaExterna?.startsWith("pedido:")) {
+      const pedidoId = Number(evento.referenciaExterna.slice("pedido:".length));
+      if (!Number.isInteger(pedidoId) || pedidoId <= 0) return { resultado: "IGNORADO", detalhe: "Referência de pedido inválida." };
+      const pedido = await prisma.pedido.findUnique({ where: { id: pedidoId } });
+      if (!pedido) return { resultado: "PEDIDO_NAO_ENCONTRADO" };
+      if (["AGUARDANDO_RETIRADA", "ENTREGUE"].includes(pedido.status)) return { resultado: "JA_PROCESSADO" };
+      if (pedido.status === "CANCELADO") return { resultado: "IGNORADO", detalhe: "Pedido cancelado; pagamento precisa de tratamento manual." };
+      await prisma.pedido.update({ where: { id: pedido.id }, data: { status: "AGUARDANDO_RETIRADA", pagoEm: new Date() } });
+      await auditLogService.registrar({
+        unidadeId: pedido.unidadeId, origemSistema: `webhook:${this.nomeGateway}`, entidade: "Pedido", entidadeId: pedido.id,
+        operacao: "PAGAMENTO", valoresAntes: { status: pedido.status }, valoresDepois: { status: "AGUARDANDO_RETIRADA", recursoId: evento.recursoId },
+      });
+      return { resultado: "PEDIDO_LIBERADO" };
     }
 
     const mensalidadeId = Number(evento.referenciaExterna);

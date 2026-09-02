@@ -41,7 +41,39 @@ export interface TecnicaCurriculo {
   descricao: string | null;
   obrigatoria: boolean;
   ordem: number;
+  duracaoPrevistaSegundos: number;
 }
+
+export type TipoBlocoAula = "AQUECIMENTO" | "JOGO" | "TECNICA" | "SPARRING" | "PAUSA" | "ALONGAMENTO";
+
+export interface BlocoAulaCompilado {
+  chave: string;
+  tipo: TipoBlocoAula;
+  nome: string;
+  ordem: number;
+  duracaoPrevistaSegundos: number;
+  obrigatoria: boolean;
+  tecnicaId?: number;
+  rounds?: number;
+  duracaoRoundSegundos?: number;
+  descansoSegundos?: number;
+  anuncio?: string;
+}
+
+export interface RegistroExecucaoBloco {
+  chaveBloco: string;
+  tipo: TipoBlocoAula;
+  nome: string;
+  ordem: number;
+  duracaoPrevistaSegundos: number;
+  duracaoRealSegundos: number;
+  status: "CUMPRIDO" | "PULADO";
+  iniciadoEm: string;
+  finalizadoEm: string;
+  tecnicaId?: number;
+}
+
+export interface EventoComandoVoz { id: number; acao: "INICIAR" | "PAUSAR" | "AVANCAR" | "CONSULTAR" | "BLOCO_PAUSA"; duracaoBlocoSegundos: number | null; avisoAntesFimSegundos: number | null }
 
 export interface AulaCurriculoDetalhe {
   id: number;
@@ -50,6 +82,7 @@ export interface AulaCurriculoDetalhe {
   descricao: string | null;
   jogosSugeridos: string | null;
   tecnicas: TecnicaCurriculo[];
+  filaCompilada: { blocos: BlocoAulaCompilado[]; duracaoTotalSegundos: number };
 }
 
 export interface ResponsavelResumo {
@@ -109,6 +142,7 @@ export interface AulaDetalhe {
   tecnicasRealizadas: TecnicaCurriculo[];
   alunos: AulaAlunoDetalhe[];
   notas: NotaAula[];
+  execucoesBlocos: Array<RegistroExecucaoBloco & { id: number }>;
 }
 
 export interface FotoTreino {

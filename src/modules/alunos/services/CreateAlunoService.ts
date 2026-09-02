@@ -92,6 +92,9 @@ export class CreateAlunoService {
     const alunoExistente = await prisma.aluno.findFirst({
       where: {
         nome: data.nome,
+        // A unicidade nunca atravessa tenants no banco compartilhado.
+        // Outros vínculos da mesma conta são tratados por AlunoUnidade.
+        unidadeId: data.unidadeId,
         dataNascimento: {
           gte: inicioDia,
           lt: fimDia,

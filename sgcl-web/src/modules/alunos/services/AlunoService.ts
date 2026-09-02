@@ -15,6 +15,22 @@ export class AlunoService {
     return ApiClient.get<AlunoBasico[]>("/alunos");
   }
 
+  static async listarPaginado(parametros: {
+    pagina: number;
+    porPagina: number;
+    busca?: string;
+    status?: string;
+    turmaId?: string;
+  }) {
+    const query = new URLSearchParams({ pagina: String(parametros.pagina), porPagina: String(parametros.porPagina) });
+    if (parametros.busca) query.set("busca", parametros.busca);
+    if (parametros.status) query.set("status", parametros.status);
+    if (parametros.turmaId) query.set("turmaId", parametros.turmaId);
+    return ApiClient.get<{ itens: Aluno[]; pagina: number; porPagina: number; total: number; totalPaginas: number }>(
+      `/alunos?${query.toString()}`,
+    );
+  }
+
   static async buscar(id: number) {
     return ApiClient.get<Aluno>(`/alunos/${id}`);
   }

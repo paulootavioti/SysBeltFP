@@ -7,6 +7,17 @@ export interface EstadoAula {
   aulaId: number;
   etapa: number;
   iniciadoEm: number;
+  timer?: EstadoTimerAula;
+}
+
+export interface EstadoTimerAula {
+  indiceAtual: number;
+  restanteSegundos: number;
+  rodando: boolean;
+  atualizadoEm: number;
+  iniciadoBlocoEm: number;
+  chavesConcluidas: string[];
+  pausaVoz?: { chave: string; duracaoSegundos: number; restanteSegundos: number; iniciadoEm: number; avisoAntesFimSegundos: number | null };
 }
 
 export function lerEstadoAula(aulaId: number): EstadoAula | null {
@@ -20,6 +31,11 @@ export function lerEstadoAula(aulaId: number): EstadoAula | null {
 
 export function salvarEstadoAula(estado: EstadoAula) {
   localStorage.setItem(CHAVE, JSON.stringify(estado));
+}
+
+export function salvarEstadoTimerAula(aulaId: number, timer: EstadoTimerAula) {
+  const atual = lerEstadoAula(aulaId);
+  if (atual) salvarEstadoAula({ ...atual, timer });
 }
 
 export function limparEstadoAula(aulaId: number) {

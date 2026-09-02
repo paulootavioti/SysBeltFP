@@ -178,6 +178,16 @@ export function Curriculos() {
       const payload = {
         ...data,
         duracaoMinutos: data.duracaoMinutos ? Number(data.duracaoMinutos) : undefined,
+        blocos: (data.blocos ?? []).map((bloco, ordem) => ({
+          tipo: bloco.tipo,
+          nome: bloco.nome,
+          ordem,
+          duracaoPrevistaSegundos: Number(bloco.duracaoMinutos || bloco.duracaoRoundMinutos || 1) * 60,
+          rounds: bloco.tipo === "SPARRING" ? Number(bloco.rounds || 4) : undefined,
+          duracaoRoundSegundos: bloco.tipo === "SPARRING" ? Number(bloco.duracaoRoundMinutos || 4) * 60 : undefined,
+          descansoSegundos: bloco.tipo === "SPARRING" ? Number(bloco.descansoSegundos || 60) : undefined,
+          anuncio: bloco.tipo === "PAUSA" ? bloco.anuncio || undefined : undefined,
+        })),
       };
       if (editando) {
         await CurriculoService.atualizarAula(editando.id, payload);
@@ -197,10 +207,11 @@ export function Curriculos() {
     try {
       setSalvando(true);
       setErro("");
+      const payload = { ...data, duracaoPrevistaSegundos: Number(data.duracaoPrevistaMinutos) * 60 };
       if (editando) {
-        await CurriculoService.atualizarTecnica(editando.id, data);
+        await CurriculoService.atualizarTecnica(editando.id, payload);
       } else {
-        await CurriculoService.criarTecnica({ ...data, aulaCurriculoId });
+        await CurriculoService.criarTecnica({ ...payload, aulaCurriculoId });
       }
       await carregarCurriculos();
       setModal(null);
@@ -500,6 +511,15 @@ export function Curriculos() {
                   jogosSugeridos: modal.editando.jogosSugeridos ?? "",
                   duracaoMinutos:
                     modal.editando.duracaoMinutos != null ? String(modal.editando.duracaoMinutos) : "",
+                  blocos: modal.editando.blocos.map((bloco) => ({
+                    tipo: bloco.tipo,
+                    nome: bloco.nome,
+                    duracaoMinutos: String(Math.max(1, Math.round(bloco.duracaoPrevistaSegundos / 60))),
+                    rounds: bloco.rounds ? String(bloco.rounds) : "4",
+                    duracaoRoundMinutos: bloco.duracaoRoundSegundos ? String(Math.max(1, Math.round(bloco.duracaoRoundSegundos / 60))) : "4",
+                    descansoSegundos: bloco.descansoSegundos != null ? String(bloco.descansoSegundos) : "60",
+                    anuncio: bloco.anuncio ?? "",
+                  })),
                 }
               : undefined
           }
@@ -521,6 +541,7 @@ export function Curriculos() {
                   categoria: modal.editando.categoria ?? "",
                   descricao: modal.editando.descricao ?? "",
                   obrigatoria: modal.editando.obrigatoria,
+                  duracaoPrevistaMinutos: String(Math.max(1, Math.round(modal.editando.duracaoPrevistaSegundos / 60))),
                 }
               : undefined
           }

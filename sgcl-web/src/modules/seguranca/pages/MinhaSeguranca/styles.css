@@ -1,0 +1,16 @@
+.seguranca-conta { max-width: 760px; margin: 0 auto; }
+.seguranca-cabecalho { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
+.seguranca-cabecalho h1, .seguranca-configuracao h2 { margin: 0; }
+.seguranca-cabecalho p, .seguranca-configuracao p { margin: 4px 0 0; color: var(--color-text-light); }
+.seguranca-painel { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); }
+.seguranca-status { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
+.seguranca-status div { display: flex; flex-direction: column; gap: 2px; }
+.seguranca-status span { color: var(--color-text-light); font-size: var(--font-sm); }
+.seguranca-configuracao { border-top: 1px solid var(--color-border); margin-top: var(--space-5); padding-top: var(--space-5); }
+.seguranca-chave { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-4) 0 var(--space-2); }
+.seguranca-chave code { min-width: 0; overflow-wrap: anywhere; padding: var(--space-3); background: var(--color-background); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.seguranca-chave button { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); cursor: pointer; }
+.seguranca-formulario { display: grid; gap: var(--space-3); margin-top: var(--space-5); align-items: end; }
+.seguranca-formulario .button { display: inline-flex; justify-content: center; align-items: center; gap: var(--space-2); }
+.seguranca-sucesso { color: var(--color-success); font-weight: 600; }
+@media (min-width: 700px) { .seguranca-formulario { grid-template-columns: minmax(0, 1fr) auto; } .seguranca-configuracao .seguranca-formulario:has(.input-wrapper + .input-wrapper) { grid-template-columns: 1fr 1fr auto; } }

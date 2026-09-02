@@ -23,6 +23,7 @@ let outraUnidadeId: number;
 
 async function limpar() {
   await prisma.lead.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_PUBLICO_" } } } });
+  await prisma.canalCaptacao.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_PUBLICO_" } } } });
   await prisma.fotoTreino.deleteMany({ where: { aula: { unidade: { nome: { startsWith: "TESTE_PUBLICO_" } } } } });
   await prisma.aula.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_PUBLICO_" } } } });
   await prisma.produto.deleteMany({ where: { unidade: { nome: { startsWith: "TESTE_PUBLICO_" } } } });
@@ -215,6 +216,6 @@ describe("CriarLeadPublicoService", () => {
     const lead = await leadService.execute({ nome: "Fulano", contato: "11999999999", interesse: "Jiu-Jitsu Adulto" });
 
     expect(lead.unidadeId).toBe(unidadeId);
-    expect(lead.status).toBe("NOVO");
+    expect(lead.estagio).toBe("NOVO");
   });
 });

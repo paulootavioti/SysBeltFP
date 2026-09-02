@@ -1,10 +1,3 @@
-// Camada de abstração de envio de e-mail. Nenhum provedor real está
-// integrado ainda (mesmo estágio de PaymentGateway — ver
-// src/modules/pagamentos/gateways/NullPaymentGateway.ts): esta interface e
-// o stub abaixo existem pra que, quando um provedor (SMTP, SES, Resend etc.)
-// for configurado, nenhuma regra de negócio precise mudar — elas sempre
-// conversam com um `EmailService`, nunca com o SDK de um provedor específico.
-
 export interface EmailService {
   enviar(destinatario: string, assunto: string, corpo: string): Promise<void>;
 }
@@ -17,6 +10,32 @@ export class NullEmailService implements EmailService {
   }
 }
 
-export function obterEmailService(): EmailService {
+export class ResendEmailService implements EmailService {
+  constructor(
+    private readonly apiKey: string,
+    private readonly remetente: string,
+  ) {}
+
+  async enviar(destinatario: string, assunto: string, corpo: string): Promise<void> {
+    const resposta = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ from: this.remetente, to: [destinatario], subject: assunto, text: corpo }),
+    });
+
+    if (!resposta.ok) {
+      throw new Error(`EMAIL_PROVIDER_ERROR:${resposta.status}`);
+    }
+  }
+}
+
+export function obterEmailService(env: NodeJS.ProcessEnv = process.env): EmailService {
+  if (env.RESEND_API_KEY && env.EMAIL_FROM) {
+    return new ResendEmailService(env.RESEND_API_KEY, env.EMAIL_FROM);
+  }
+
   return new NullEmailService();
 }

@@ -10,6 +10,8 @@ import { EnviarMensagemFamiliaService } from "./EnviarMensagemFamiliaService";
 import { GetMensagensNaoLidasFamiliaService } from "./GetMensagensNaoLidasFamiliaService";
 import { ListConversasFamiliaService } from "../../mensagensFamilia/services/ListConversasFamiliaService";
 import { criarUnidadeDeTeste } from "../../../shared/testing/criarUnidadeDeTeste";
+import { AlterarSenhaFamiliaService } from "./AlterarSenhaFamiliaService";
+import { ListContratosFamiliaService } from "./ListContratosFamiliaService";
 
 const loginService = new LoginFamiliaService();
 const resumoService = new GetResumoFamiliaService();
@@ -17,6 +19,8 @@ const listMensagensService = new ListMensagensFamiliaService();
 const enviarMensagemService = new EnviarMensagemFamiliaService();
 const naoLidasService = new GetMensagensNaoLidasFamiliaService();
 const listConversasService = new ListConversasFamiliaService();
+const alterarSenhaService = new AlterarSenhaFamiliaService();
+const listContratosService = new ListContratosFamiliaService();
 
 let unidadeId: number;
 
@@ -28,6 +32,10 @@ function dataComIdade(idade: number): Date {
 }
 
 async function limpar() {
+  await prisma.eventoAssinaturaEletronica.deleteMany({ where: { solicitacao: { contrato: { aluno: { nome: { startsWith: "TESTE_VITEST_PORTAL_" } } } } } });
+  await prisma.solicitacaoAssinatura.deleteMany({ where: { contrato: { aluno: { nome: { startsWith: "TESTE_VITEST_PORTAL_" } } } } });
+  await prisma.contrato.deleteMany({ where: { aluno: { nome: { startsWith: "TESTE_VITEST_PORTAL_" } } } });
+  await prisma.modeloContrato.deleteMany({ where: { unidade: { nome: "TESTE_PORTAL_FAMILIA_UNIDADE" } } });
   await prisma.mensagemFamilia.deleteMany({ where: { aluno: { nome: { startsWith: "TESTE_VITEST_PORTAL_" } } } });
   await prisma.aulaAluno.deleteMany({ where: { aluno: { nome: { startsWith: "TESTE_VITEST_PORTAL_" } } } });
   await prisma.aula.deleteMany({ where: { turma: { nome: "TESTE_VITEST_TURMA_PORTAL" } } });
@@ -194,6 +202,112 @@ describe("LoginFamiliaService", () => {
     expect(sessao.alunos.map((aluno) => aluno.id).sort()).toEqual(
       [irmaoMaisNovo.id, irmaoMaisVelho.id].sort()
     );
+  });
+});
+
+describe("Autoatendimento da família", () => {
+  it("altera a senha e passa a autenticar somente com a nova credencial", async () => {
+    const aluno = await prisma.aluno.create({
+      data: { unidadeId, nome: "TESTE_VITEST_PORTAL_TROCA_SENHA", dataNascimento: dataComIdade(12) },
+    });
+    await prisma.responsavel.create({
+      data: {
+        unidadeId,
+        alunoId: aluno.id,
+        nome: "TESTE_VITEST_PORTAL_RESP_SENHA",
+        email: "troca.senha@teste-vitest-portal.com",
+        senhaPortal: await hash("senha-antiga", 8),
+      },
+    });
+
+    await alterarSenhaService.execute(
+      "troca.senha@teste-vitest-portal.com",
+      "senha-antiga",
+      "senha-nova-segura"
+    );
+
+    await expect(loginService.execute({
+      email: "troca.senha@teste-vitest-portal.com",
+      senha: "senha-antiga",
+    })).rejects.toThrow(AppError);
+    await expect(loginService.execute({
+      email: "troca.senha@teste-vitest-portal.com",
+      senha: "senha-nova-segura",
+    })).resolves.toEqual(expect.objectContaining({ usuario: expect.objectContaining({ tipo: "RESPONSAVEL" }) }));
+  });
+
+  it("rejeita a troca quando a senha atual está incorreta", async () => {
+    const aluno = await prisma.aluno.create({
+      data: { unidadeId, nome: "TESTE_VITEST_PORTAL_SENHA_INCORRETA", dataNascimento: dataComIdade(12) },
+    });
+    await prisma.responsavel.create({
+      data: {
+        unidadeId,
+        alunoId: aluno.id,
+        nome: "TESTE_VITEST_PORTAL_RESP_SENHA_INCORRETA",
+        email: "senha.incorreta@teste-vitest-portal.com",
+        senhaPortal: await hash("senha-correta", 8),
+      },
+    });
+
+    await expect(alterarSenhaService.execute(
+      "senha.incorreta@teste-vitest-portal.com",
+      "outra-senha",
+      "senha-nova-segura"
+    )).rejects.toThrow("A senha atual está incorreta.");
+  });
+
+  it("lista contratos disponíveis e omite rascunhos", async () => {
+    const aluno = await prisma.aluno.create({
+      data: { unidadeId, nome: "TESTE_VITEST_PORTAL_DOCUMENTOS", dataNascimento: dataComIdade(12) },
+    });
+    const modelo = await prisma.modeloContrato.create({
+      data: { unidadeId, nome: "Contrato de matrícula", conteudo: "Termos do contrato" },
+    });
+    const pendente = await prisma.contrato.create({
+      data: {
+        unidadeId,
+        alunoId: aluno.id,
+        modeloContratoId: modelo.id,
+        numero: 1,
+        valor: 150,
+        dataInicioVigencia: new Date("2026-08-01T12:00:00.000Z"),
+        conteudoGerado: "Contrato pronto para assinatura",
+        situacao: "PENDENTE_ASSINATURA",
+      },
+    });
+    await prisma.contrato.create({
+      data: {
+        unidadeId,
+        alunoId: aluno.id,
+        modeloContratoId: modelo.id,
+        numero: 2,
+        valor: 150,
+        dataInicioVigencia: new Date("2026-09-01T12:00:00.000Z"),
+        conteudoGerado: "Rascunho interno",
+        situacao: "RASCUNHO",
+      },
+    });
+    await prisma.solicitacaoAssinatura.create({
+      data: {
+        unidadeId,
+        contratoId: pendente.id,
+        provedor: "TESTE",
+        status: "PENDENTE",
+        linkAssinatura: "https://assinatura.exemplo.test/documento",
+      },
+    });
+
+    const contratos = await listContratosService.execute(aluno.id);
+
+    expect(contratos).toHaveLength(1);
+    expect(contratos[0]).toEqual(expect.objectContaining({
+      id: pendente.id,
+      conteudoGerado: "Contrato pronto para assinatura",
+      solicitacoesAssinatura: [expect.objectContaining({
+        linkAssinatura: "https://assinatura.exemplo.test/documento",
+      })],
+    }));
   });
 });
 

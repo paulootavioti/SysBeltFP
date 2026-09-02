@@ -348,12 +348,12 @@ PostgreSQL em todos os ambientes. Não há SQLite — ele existiu no início do
 projeto e foi descontinuado, para que desenvolvimento e produção não
 divergissem em tipos, constraints e comportamento transacional.
 
-Em produção, PostgreSQL gerenciado (Neon), com um banco exclusivo por academia
-assinante.
+Em producao, PostgreSQL gerenciado (Neon), com um banco operacional
+compartilhado por todos os assinantes e isolamento logico por `Conta` e
+`Unidade`.
 
-Todo acesso passa por `prismaDaRequisicao()`, que devolve o client do tenant
-resolvido para aquela requisição. Nenhum arquivo de produção importa o client
-global — um teste de arquitetura falha se algum passar a importar.
+Todo acesso passa por `prismaDaRequisicao()`, usando a conexao compartilhada.
+O contexto e os helpers de escopo limitam a conta e as unidades autorizadas.
 
 O Prisma permite alterar apenas o provider.
 

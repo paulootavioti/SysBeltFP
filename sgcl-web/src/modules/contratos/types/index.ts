@@ -72,4 +72,24 @@ export interface Contrato {
   formaPagamento?: { id: number; tipo: string; nomePersonalizado?: string | null } | null;
   contratoAnterior?: { id: number; numero: number; situacao: SituacaoContrato } | null;
   renovacoes?: { id: number; numero: number; situacao: SituacaoContrato; createdAt: string }[];
+  solicitacoesAssinatura?: SolicitacaoAssinatura[];
+}
+
+export interface SolicitacaoAssinatura {
+  id: number;
+  provedor: string;
+  provedorDocumentoId?: string | null;
+  status: string;
+  linkAssinatura?: string | null;
+  documentoAssinadoUrl?: string | null;
+  erro?: string | null;
+  enviadoEm?: string | null;
+  concluidoEm?: string | null;
+  createdAt: string;
+  eventos?: {
+    id: number;
+    tipo: string;
+    resultado?: string | null;
+    createdAt: string;
+  }[];
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { FiExternalLink, FiSend } from "react-icons/fi";
 import { useParams, useNavigate } from "react-router-dom";
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
@@ -145,6 +146,24 @@ export function DetalheContrato() {
     }
   }
 
+  async function handleEnviarAssinaturaEletronica() {
+    if (!contrato) return;
+    try {
+      setProcessando(true);
+      setErro("");
+      const solicitacao = await ContratoService.enviarAssinaturaEletronica(contrato.id);
+      toast.success("Contrato enviado ao Autentique.");
+      await recarregar();
+      if (solicitacao.linkAssinatura) window.open(solicitacao.linkAssinatura, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      const mensagem = getApiErrorMessage(error, "Erro ao enviar contrato para assinatura.");
+      setErro(mensagem);
+      toast.error(mensagem);
+    } finally {
+      setProcessando(false);
+    }
+  }
+
   if (loading) {
     return (
       <Layout>
@@ -232,6 +251,25 @@ export function DetalheContrato() {
 
         <div className="contrato-detalhe-conteudo">{contrato.conteudoGerado}</div>
 
+        {contrato.solicitacoesAssinatura && contrato.solicitacoesAssinatura.length > 0 && (
+          <section className="contrato-assinatura-historico">
+            <h2>Assinatura eletrônica</h2>
+            <ol>
+              {contrato.solicitacoesAssinatura.map((solicitacao) => (
+                <li key={solicitacao.id}>
+                  <div><strong>{solicitacao.provedor}</strong><span>{formatarData(solicitacao.createdAt)}</span></div>
+                  <Badge variant={solicitacao.status === "CONCLUIDO" ? "success" : solicitacao.status === "FALHA" || solicitacao.status === "RECUSADO" ? "danger" : "warning"}>{solicitacao.status}</Badge>
+                  {solicitacao.linkAssinatura && <a href={solicitacao.linkAssinatura} target="_blank" rel="noreferrer"><FiExternalLink aria-hidden /> Abrir assinatura</a>}
+                  {solicitacao.erro && <p>{solicitacao.erro}</p>}
+                  {solicitacao.eventos && solicitacao.eventos.length > 0 && (
+                    <p>{solicitacao.eventos.map((evento) => evento.tipo).join(" · ")}</p>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
         {ehAdmin && (
           <div className="contrato-detalhe-acoes">
             {contrato.situacao === "RASCUNHO" && (
@@ -242,6 +280,9 @@ export function DetalheContrato() {
                 <Button type="button" disabled={processando} onClick={() => handleAlterarSituacao("PENDENTE_ASSINATURA")}>
                   Enviar para Assinatura
                 </Button>
+                <Button type="button" disabled={processando} onClick={handleEnviarAssinaturaEletronica}>
+                  <FiSend aria-hidden /> Enviar pelo Autentique
+                </Button>
                 <Button type="button" variant="danger" onClick={() => setModalCancelarAberto(true)}>
                   Cancelar
                 </Button>
@@ -250,6 +291,9 @@ export function DetalheContrato() {
 
             {contrato.situacao === "PENDENTE_ASSINATURA" && (
               <>
+                {!contrato.solicitacoesAssinatura?.some((item) => ["ENVIANDO", "PENDENTE"].includes(item.status)) && (
+                  <Button type="button" disabled={processando} onClick={handleEnviarAssinaturaEletronica}><FiSend aria-hidden /> Enviar pelo Autentique</Button>
+                )}
                 <Button type="button" disabled={processando} onClick={() => setModalAssinarAberto(true)}>
                   Registrar Assinatura
                 </Button>

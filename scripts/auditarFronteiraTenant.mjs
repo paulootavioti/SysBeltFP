@@ -2,34 +2,34 @@ import { pathToFileURL } from "node:url";
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
-export function avaliarFronteiraTenant({ totalContas, unidadesPorConta, superadminsAtivos }) {
+export function avaliarFronteiraTenant({ totalContas, contasSemUnidade, usuariosComVinculosMultiplasContas, concessoesDivergentes, superadminsAtivos }) {
   const bloqueios = [];
-  if (totalContas !== 1) bloqueios.push("TOTAL_CONTAS_DIFERENTE_DE_UM");
-  if (unidadesPorConta.length !== 1 || (unidadesPorConta[0]?.totalUnidades ?? 0) < 1) {
-    bloqueios.push("UNIDADES_FORA_DE_UMA_UNICA_CONTA");
-  }
-  if (superadminsAtivos > 0) bloqueios.push("SUPERADMIN_ATIVO_NO_TENANT");
-
-  return {
-    prontaParaRemoverConta: bloqueios.length === 0,
-    totalContas,
-    totalUnidades: unidadesPorConta.reduce((total, grupo) => total + grupo.totalUnidades, 0),
-    contasComUnidades: unidadesPorConta.length,
-    superadminsAtivos,
-    bloqueios,
-  };
+  if (totalContas < 1) bloqueios.push("NENHUMA_CONTA_CADASTRADA");
+  if (contasSemUnidade > 0) bloqueios.push("CONTA_SEM_UNIDADE");
+  if (usuariosComVinculosMultiplasContas > 0) bloqueios.push("USUARIO_ATRAVESSA_CONTAS");
+  if (concessoesDivergentes > 0) bloqueios.push("CONCESSAO_DIVERGE_DA_CONTA");
+  if (superadminsAtivos > 0) bloqueios.push("SUPERADMIN_ATIVO");
+  return { isolamentoIntegro: bloqueios.length === 0, totalContas, contasSemUnidade, usuariosComVinculosMultiplasContas, concessoesDivergentes, superadminsAtivos, bloqueios };
 }
 
 export async function auditarFronteiraTenant(prisma) {
-  const [totalContas, grupos, superadminsAtivos] = await Promise.all([
-    prisma.conta.count(),
-    prisma.unidade.groupBy({ by: ["contaId"], _count: { _all: true } }),
+  const [contas, vinculos, concessoes, superadminsAtivos] = await Promise.all([
+    prisma.conta.findMany({ select: { _count: { select: { unidades: true } } } }),
+    prisma.usuarioUnidade.findMany({ select: { usuarioId: true, unidade: { select: { contaId: true } } } }),
+    prisma.concessaoPlataforma.findMany({ select: { tenantKey: true, conta: { select: { tenantKey: true } } } }),
     prisma.usuario.count({ where: { perfil: "SUPERADMIN", ativo: true } }),
   ]);
-
+  const contasPorUsuario = new Map();
+  for (const vinculo of vinculos) {
+    const ids = contasPorUsuario.get(vinculo.usuarioId) ?? new Set();
+    ids.add(vinculo.unidade.contaId);
+    contasPorUsuario.set(vinculo.usuarioId, ids);
+  }
   return avaliarFronteiraTenant({
-    totalContas,
-    unidadesPorConta: grupos.map((grupo) => ({ totalUnidades: grupo._count._all })),
+    totalContas: contas.length,
+    contasSemUnidade: contas.filter((conta) => conta._count.unidades === 0).length,
+    usuariosComVinculosMultiplasContas: [...contasPorUsuario.values()].filter((ids) => ids.size > 1).length,
+    concessoesDivergentes: concessoes.filter((item) => item.tenantKey !== item.conta.tenantKey).length,
     superadminsAtivos,
   });
 }
@@ -39,15 +39,11 @@ async function executar() {
   try {
     const resultado = await auditarFronteiraTenant(prisma);
     console.log(JSON.stringify(resultado, null, 2));
-    if (!resultado.prontaParaRemoverConta) process.exitCode = 1;
+    if (!resultado.isolamentoIntegro) process.exitCode = 1;
   } catch {
-    console.error("Não foi possível auditar a fronteira do Tenant Plane.");
+    console.error("Não foi possível auditar o isolamento multitenant.");
     process.exitCode = 2;
-  } finally {
-    await prisma.$disconnect();
-  }
+  } finally { await prisma.$disconnect(); }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await executar();
-}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await executar();

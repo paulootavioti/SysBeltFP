@@ -2,7 +2,7 @@
 
 Versão: 2.0
 
-Última atualização: Julho/2026 (matriz de permissões dos 4 perfis, isolamento multi-unidade, redação de dados por perfil)
+Última atualização: Agosto/2026 (banco compartilhado, isolamento por Conta e Unidade)
 
 ---
 
@@ -30,6 +30,14 @@ Toda funcionalidade do Sys Belt deve obedecer aos seguintes princípios:
 - Disponibilidade
 - Rastreabilidade
 - Menor privilégio
+
+## Regra de isolamento entre assinantes
+
+O banco operacional e compartilhado. `Conta` e a fronteira confidencial entre
+assinantes e `Unidade` limita o alcance dentro da conta. Autenticacao valida
+identidade; autorizacao por perfil e escopo valida cada operacao. Toda lista,
+busca, agregado, exportacao, cache, job e webhook deve preservar essa
+fronteira. Consulte [arquitetura-multitenant.md](arquitetura-multitenant.md).
 
 ---
 

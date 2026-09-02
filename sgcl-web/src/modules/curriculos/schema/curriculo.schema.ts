@@ -23,6 +23,15 @@ export const aulaCurriculoSchema = z.object({
   descricao: z.string().optional(),
   duracaoMinutos: z.string().optional(),
   jogosSugeridos: z.string().optional(),
+  blocos: z.array(z.object({
+    tipo: z.enum(["AQUECIMENTO", "JOGO", "SPARRING", "PAUSA", "ALONGAMENTO"]),
+    nome: z.string().min(1, "Informe o nome do bloco."),
+    duracaoMinutos: z.string().min(1, "Informe a duração."),
+    rounds: z.string().optional(),
+    duracaoRoundMinutos: z.string().optional(),
+    descansoSegundos: z.string().optional(),
+    anuncio: z.string().optional(),
+  })).optional(),
 });
 
 export type AulaCurriculoFormData = z.infer<typeof aulaCurriculoSchema>;
@@ -32,6 +41,7 @@ export const tecnicaCurriculoSchema = z.object({
   categoria: z.string().optional(),
   descricao: z.string().optional(),
   obrigatoria: z.boolean().optional(),
+  duracaoPrevistaMinutos: z.string().min(1, "Informe a duração prevista."),
 });
 
 export type TecnicaCurriculoFormData = z.infer<typeof tecnicaCurriculoSchema>;

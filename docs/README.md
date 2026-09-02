@@ -9,10 +9,9 @@
 O **Sys Belt** é uma plataforma de gestão para academias de Jiu-Jitsu,
 vendida por assinatura mensal e cobrada por faixa de alunos.
 
-Cada academia assinante opera sobre um **banco de dados exclusivo**. O
-isolamento entre clientes é físico: não há tabela compartilhada, não há coluna
-discriminadora separando academias dentro do mesmo banco, e nenhuma consulta
-do sistema operacional alcança dados de outro assinante.
+Todos os assinantes operam sobre um **banco PostgreSQL compartilhado**. O
+isolamento e logico e obrigatorio: `Conta` separa assinantes, `Unidade` separa
+filiais e nenhuma consulta pode atravessar essa fronteira.
 
 Dentro de uma mesma academia, as unidades (filiais) compartilham dados entre
 si — um aluno pode treinar em mais de uma unidade da mesma rede.
@@ -24,13 +23,14 @@ planejamento pedagógico do Jiu-Jitsu Kids, com controle de acesso por perfil.
 
 # Os dois planos
 
-O sistema é dividido em dois planos com bancos separados.
+O sistema possui dois planos funcionais. O banco operacional e compartilhado
+pelas contas; o Control Plane mantem seu dominio comercial separado.
 
 | | Control Plane | Tenant Plane |
 |---|---|---|
 | Código | `control-plane/` | `src/` |
 | Quem usa | Operador do SaaS | A academia assinante |
-| Banco | Um, exclusivo do SysBelt | Um por academia |
+| Banco | Comercial do SysBelt | Um operacional compartilhado por todos os assinantes |
 | Guarda | Assinantes, planos, assinaturas, faturas, licenças, provisionamento, auditoria | Alunos, turmas, aulas, financeiro da academia |
 | Módulos | 14 | 44 |
 | Testes | 188 | 704 |
@@ -45,14 +45,16 @@ bancos em tempo de requisição.
 
 Documentos de referência:
 
-- [`architecture-decisions.md`](architecture-decisions.md) — ADRs, com destaque
-  para a ADR-010 (banco exclusivo por academia);
+- [`arquitetura-multitenant.md`](arquitetura-multitenant.md) — regra vigente de
+  banco compartilhado e isolamento entre contas;
+- [`percurso-funcional.md`](percurso-funcional.md) — percurso por interface e
+  inventario dos modulos;
 - [`control-plane-b2b.md`](control-plane-b2b.md) — modelo funcional e de dados
   do sistema comercial;
 - [`resolucao-tenant.md`](resolucao-tenant.md) — identificação por hostname,
   contexto por requisição e seleção segura do banco;
-- [`operacao-bancos-exclusivos.md`](operacao-bancos-exclusivos.md) —
-  provisionamento, segredos, migrations, backup, rotação e encerramento;
+- [`operacao-bancos-exclusivos.md`](operacao-bancos-exclusivos.md) — registro
+  historico descontinuado;
 - [`mapa-extracao-control-plane.md`](mapa-extracao-control-plane.md) — destino
   de cada tabela, rota, serviço e tela na separação dos planos.
 

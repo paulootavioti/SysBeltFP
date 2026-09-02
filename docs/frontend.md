@@ -633,9 +633,7 @@ Notebook
 
 Tablet
 
-Futuramente
-
-Mobile
+Mobile-first nos portais da Família e do Professor, ambos instaláveis como PWA. O painel administrativo mantém layout responsivo para rotinas de gestão.
 
 ---
 

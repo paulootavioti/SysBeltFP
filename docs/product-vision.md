@@ -58,7 +58,8 @@ Assinatura mensal por faixa de alunos:
 - aluno que treina em mais de uma unidade da mesma academia conta uma vez em
   cada unidade.
 
-Cada academia assinante opera sobre um banco de dados exclusivo.
+Todos os assinantes compartilham o banco operacional, com sigilo garantido
+por isolamento obrigatorio de `Conta` e `Unidade`.
 
 ---
 
@@ -90,6 +91,7 @@ O que o produto deliberadamente **não** faz:
 - **Não** é um sistema de academia de musculação. O modelo de dados assume
   currículo técnico, faixa e grau.
 - **Não** compartilha dados entre academias assinantes, nem para
-  benchmarking anônimo. O isolamento é físico e essa é a promessa central.
+  benchmarking anonimo. O isolamento logico entre contas e obrigatorio e essa
+  e a promessa central.
 - **Não** armazena template biométrico. O reconhecimento facial guarda apenas
   o identificador do provedor externo.

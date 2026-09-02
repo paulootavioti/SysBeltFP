@@ -12,7 +12,7 @@ import { useCronometro } from "../../hooks/useCronometro";
 import { useWakeLock } from "../../hooks/useWakeLock";
 import { useSincronizarFila } from "../../hooks/useSincronizarFila";
 import { lerEstadoAula, salvarEstadoAula, limparEstadoAula } from "../../utils/estadoAula";
-import type { AulaDetalhe } from "../../types";
+import type { AulaDetalhe, RegistroExecucaoBloco } from "../../types";
 
 import { AulaHeader } from "./components/AulaHeader";
 import { AulaRodape } from "./components/AulaRodape";
@@ -47,7 +47,7 @@ export function Aula() {
 
   useEffect(() => {
     if (!aula || aula.status === "FINALIZADA") return;
-    salvarEstadoAula({ aulaId, etapa, iniciadoEm });
+    salvarEstadoAula({ aulaId, etapa, iniciadoEm, timer: lerEstadoAula(aulaId)?.timer });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [etapa, aula?.status]);
 
@@ -94,27 +94,16 @@ export function Aula() {
     }
   }
 
-  async function handleToggleTecnica(tecnicaId: number, executada: boolean) {
-    if (!aula) return;
-    const anterior = aula;
-    const tecnica = aula.aulaCurriculo?.tecnicas.find((item) => item.id === tecnicaId);
-    if (!tecnica) return;
-
-    setAula({
-      ...aula,
-      tecnicasRealizadas: executada
-        ? [...aula.tecnicasRealizadas, tecnica]
-        : aula.tecnicasRealizadas.filter((item) => item.id !== tecnicaId),
-    });
-
+  async function handleRegistrarBloco(registro: RegistroExecucaoBloco) {
     try {
-      await PortalProfessorService.marcarTecnica(aulaId, tecnicaId, executada);
+      await PortalProfessorService.registrarBloco(aulaId, registro);
     } catch (error) {
-      if (!enfileirarSeOffline({ tipo: "tecnica", aulaId, payload: { tecnicaId, executada } }, error)) {
-        setAula(anterior);
-        setErro(getApiErrorMessage(error, "Não foi possível registrar a técnica."));
+      if (!enfileirarSeOffline({ tipo: "bloco", aulaId, payload: { ...registro } }, error)) {
+        setErro(getApiErrorMessage(error, "Não foi possível registrar o bloco."));
+        throw error;
       }
     }
+    setAula((atual) => atual ? { ...atual, execucoesBlocos: [...atual.execucoesBlocos.filter((item) => item.chaveBloco !== registro.chaveBloco), { ...registro, id: Date.now() }] } : atual);
   }
 
   async function handleSalvarNota(alunoId: number, dados: { tag?: string; texto?: string }) {
@@ -219,9 +208,13 @@ export function Aula() {
 
         {etapa === 2 && (
           <Etapa2Plano
+            aulaId={aulaId}
             aulaCurriculo={aula.aulaCurriculo}
-            tecnicasRealizadasIds={aula.tecnicasRealizadas.map((tecnica) => tecnica.id)}
-            onToggleTecnica={handleToggleTecnica}
+            totalAlunos={aula.alunos.length}
+            totalPresentes={alunosPresentes.length}
+            registrosExistentes={aula.execucoesBlocos}
+            onRegistrar={handleRegistrarBloco}
+            onEncerrar={handleFinalizar}
           />
         )}
 
@@ -245,7 +238,7 @@ export function Aula() {
         )}
       </main>
 
-      <AulaRodape etapaAtual={etapa} onVoltar={handleVoltar} onAvancar={handleAvancar} finalizando={finalizando} />
+      {etapa !== 2 && <AulaRodape etapaAtual={etapa} onVoltar={handleVoltar} onAvancar={handleAvancar} finalizando={finalizando} />}
 
       <BottomSheet open={confirmSairAberto} title="Sair da aula?" onClose={() => setConfirmSairAberto(false)}>
         <p className="aula-sair-texto">A presença já marcada fica salva. Você pode retomar depois.</p>

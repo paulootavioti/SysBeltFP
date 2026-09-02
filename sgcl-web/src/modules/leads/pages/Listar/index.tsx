@@ -7,33 +7,35 @@ import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Table } from "../../../../components/ui/Table";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
-import { useToast } from "../../../../contexts/toast/useToast";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 
 import { LeadsService } from "../../services/LeadsService";
-import { STATUS_LEAD_LABEL, type Lead, type StatusLead } from "../../types";
+import { ESTAGIO_LEAD_LABEL, type EstagioLead, type Lead } from "../../types";
 
 import "./styles.css";
 
-const OPCOES_STATUS = Object.entries(STATUS_LEAD_LABEL).map(([value, label]) => ({ value, label }));
+const OPCOES_ESTAGIO = Object.entries(ESTAGIO_LEAD_LABEL).map(([value, label]) => ({ value, label }));
 
 export function Leads() {
-  const toast = useToast();
-
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [pagina, setPagina] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPaginas, setTotalPaginas] = useState(1);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
 
-  const [filtroStatus, setFiltroStatus] = useState<StatusLead | "">("");
+  const [filtroEstagio, setFiltroEstagio] = useState<EstagioLead | "">("");
 
-  const filtros = useMemo(() => ({ status: filtroStatus || undefined }), [filtroStatus]);
+  const filtros = useMemo(() => ({ estagio: filtroEstagio || undefined, pagina }), [filtroEstagio, pagina]);
 
   async function carregar() {
     try {
       setLoading(true);
       setErro("");
       const data = await LeadsService.listar(filtros);
-      setLeads(data);
+      setLeads(data.itens);
+      setTotal(data.total);
+      setTotalPaginas(data.totalPaginas);
     } catch (error) {
       setErro(getApiErrorMessage(error, "Erro ao carregar leads."));
     } finally {
@@ -46,30 +48,15 @@ export function Leads() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtros]);
 
-  async function handleAlterarStatus(id: number, status: string) {
-    try {
-      await LeadsService.atualizarStatus(id, status as StatusLead);
-      await carregar();
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Erro ao atualizar status do lead."));
-    }
-  }
-
   const columns = [
     { header: "Nome", accessor: "nome" as const },
-    { header: "WhatsApp", accessor: "contato" as const },
-    { header: "Interesse", accessor: "interesse" as const },
+    { header: "WhatsApp", accessor: "telefoneE164" as const, render: (lead: Lead) => `+${lead.telefoneE164}` },
+    { header: "Interesse", accessor: "modalidadeInteresse" as const, render: (lead: Lead) => lead.modalidadeInteresse?.nome ?? "Não informado" },
+    { header: "Canal", accessor: "canal" as const, render: (lead: Lead) => lead.canal.nome },
     {
-      header: "Status",
-      accessor: "status" as const,
-      render: (lead: Lead) => (
-        <Select
-          value={lead.status}
-          options={OPCOES_STATUS}
-          onChange={(e) => handleAlterarStatus(lead.id, e.target.value)}
-          className="leads-status-select"
-        />
-      ),
+      header: "Estágio",
+      accessor: "estagio" as const,
+      render: (lead: Lead) => ESTAGIO_LEAD_LABEL[lead.estagio],
     },
     {
       header: "Recebido em",
@@ -80,16 +67,16 @@ export function Leads() {
 
   return (
     <Layout>
-      <PageHeader title="Leads" subtitle="Contatos recebidos pelo formulário da landing page pública." />
+      <PageHeader title="Leads" subtitle="Contatos captados pelos canais comerciais da unidade." />
 
       <ErrorMessage message={erro} />
 
       <div className="leads-filtros">
         <Select
-          label="Status"
-          options={OPCOES_STATUS}
-          value={filtroStatus}
-          onChange={(e) => setFiltroStatus(e.target.value as StatusLead | "")}
+          label="Estágio"
+          options={OPCOES_ESTAGIO}
+          value={filtroEstagio}
+          onChange={(e) => { setFiltroEstagio(e.target.value as EstagioLead | ""); setPagina(1); }}
         />
       </div>
 
@@ -98,7 +85,7 @@ export function Leads() {
       ) : leads.length === 0 ? (
         <EmptyState title="Nenhum lead encontrado" description="Os contatos recebidos pela landing page aparecem aqui." />
       ) : (
-        <Table columns={columns} data={leads} />
+        <Table columns={columns} data={leads} pagination={{ paginaAtual: pagina, totalPaginas, totalItens: total, itensPorPagina: 25, onChangePagina: setPagina }} />
       )}
     </Layout>
   );

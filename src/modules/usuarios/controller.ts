@@ -10,8 +10,25 @@ import { AppError } from "../../shared/errors/AppError";
 import { PERFIS_MULTI_UNIDADE } from "../../shared/constants/perfis";
 import { normalizarUnidadesDoAssinante } from "./utils/normalizarUnidadesDoAssinante";
 import { obterContextoRequisicao } from "../../shared/context/contextoRequisicao";
+import { SegurancaContaService } from "./services/SegurancaContaService";
 
 export class UsuariosController {
+
+  async obterMinhaSeguranca(req: Request, res: Response) {
+    return res.json(await new SegurancaContaService().obter(req.user.id));
+  }
+
+  async iniciarDoisFatores(req: Request, res: Response) {
+    return res.json(await new SegurancaContaService().iniciar(req.user.id));
+  }
+
+  async confirmarDoisFatores(req: Request, res: Response) {
+    return res.json(await new SegurancaContaService().confirmar(req.user.id, req.body.codigo));
+  }
+
+  async desativarDoisFatores(req: Request, res: Response) {
+    return res.json(await new SegurancaContaService().desativar(req.user.id, req.body.senha, req.body.codigo));
+  }
 
   async list(
     req: Request,

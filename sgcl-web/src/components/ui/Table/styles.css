@@ -41,6 +41,9 @@
   background: var(--color-accent-soft, var(--color-background));
 }
 
+.table-row-clickable { cursor: pointer; }
+.table-row-clickable:focus-visible { outline-offset: -3px; }
+
 @media (max-width: 900px) {
   .table th,
   .table td {

@@ -108,3 +108,10 @@
   cursor: pointer;
   text-decoration: underline;
 }
+
+.conciliacao-acoes {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  min-width: 220px;
+}

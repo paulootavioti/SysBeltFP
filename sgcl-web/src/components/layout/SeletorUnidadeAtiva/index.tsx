@@ -28,9 +28,9 @@ export function SeletorUnidadeAtiva() {
     if (habilitado) UsuarioService.listarMinhasUnidades().then(setUnidades);
   }, [habilitado]);
 
-  if (!habilitado || unidades.length <= 1) return null;
-
   const podeVerTodas = PERFIS_QUE_VEEM_TODAS.includes(usuario?.perfil ?? "");
+  if (!habilitado || unidades.length === 0 || (unidades.length === 1 && !podeVerTodas)) return null;
+
   const unidadeAtivaId = unidadeVisualizada?.id ?? usuario?.unidadeId ?? null;
 
   function handleChange(event: React.ChangeEvent<HTMLSelectElement>) {

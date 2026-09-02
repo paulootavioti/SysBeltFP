@@ -40,19 +40,18 @@ Campos padrão `createdAt` / `updatedAt`, sempre armazenados em UTC.
 
 Utilizar nomes positivos: `ativo`, `presente`, `responsavelFinanceiro`, `recebeComunicados`, `pago`. Nunca nomes negativos.
 
-## Duas fronteiras diferentes: academia e unidade
+## Duas fronteiras logicas: conta e unidade
 
 É preciso distinguir dois níveis de isolamento, que operam por mecanismos
 distintos.
 
-**Entre academias, o isolamento é físico.** Cada academia assinante tem um
-**banco de dados exclusivo**. Não existe campo que separe academias dentro do
-mesmo banco, porque não existe banco compartilhado entre elas. O acesso passa
-sempre por `prismaDaRequisicao()`, que devolve o client do tenant resolvido
-para aquela requisição — nenhum arquivo de produção importa o Prisma global, e
-um teste de arquitetura falha se algum passar a importar.
+**Entre assinantes, o isolamento e logico.** Todas as academias usam o mesmo
+banco. `Conta` e a fronteira de tenant; cada `Unidade` pertence a uma conta e
+os dados operacionais chegam a ela por `unidadeId` ou relacao equivalente.
+`prismaDaRequisicao()` usa a conexao compartilhada e nao escolhe banco por
+assinante.
 
-**Entre unidades da mesma academia, o isolamento é por coluna.** Toda entidade
+**Entre unidades da mesma academia, o isolamento tambem e por coluna.** Toda entidade
 operacional carrega `unidadeId` (FK para `Unidade`), aplicado de forma
 centralizada nos Services através de `escopoUnidade()` e
 `garantirAcessoUnidade()` (`shared/utils/escopoUnidade.ts`) — nunca filtrando
@@ -67,20 +66,18 @@ todas as filiais da própria conta (RN-164). Ele **não** remove o filtro: filtr
 pelas unidades da conta de quem pediu, lidas do contexto da requisição
 (`unidadesDoUsuario`, resolvido uma vez por `ensureAuthenticated`).
 
-A distinção importa porque o banco pode conter mais de um assinante. Enquanto
-`TENANT_RESOLUTION_ENABLED` estiver desligado, todas as academias dividem o
-mesmo banco, e "sem filtro de unidade" devolveria os dados do assinante
-vizinho. Depois da separação física, o filtro por conta vira redundante — mas
-redundância de isolamento é o que se quer ter.
+A distincao importa porque o banco sempre contera mais de um assinante. Um
+acesso sem filtro de conta/unidade pode expor dados vizinhos e e proibido.
 
 Um filtro de tela (`unidadeConsultaId` na grade, `unidadeId` no financeiro) só
 **estreita** dentro desse alcance: uma unidade fora dele é ignorada, nunca
 sobrescreve o escopo (`escopoUnidadeFiltrada`, `resolverUnidadeConsulta`).
 
-Resta um caso legítimo de consulta sem filtro nenhum: **rotina interna sem
-usuário** — o cron de cobrança recorrente e os lembretes, que varrem o tenant
-inteiro. O que separa os dois é haver usuário no contexto; havendo usuário sem
-alcance preenchido, o resultado é vazio, nunca total.
+Rotinas internas sem usuario podem varrer o banco somente quando forem jobs
+globais deliberados. Devem iterar e registrar conta/unidade por lote. Em uma
+rota de assinante, ausencia de usuario nunca autoriza consulta irrestrita.
+
+Detalhes e checklist: [arquitetura-multitenant.md](arquitetura-multitenant.md).
 
 ---
 

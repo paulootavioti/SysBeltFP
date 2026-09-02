@@ -119,6 +119,18 @@
   width: 100%;
 }
 
+.login-link {
+  color: var(--color-primary);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
+.login-link:hover { text-decoration: underline; }
+.login-link-direita { align-self: flex-end; margin-top: calc(var(--space-2) * -1); }
+.login-sucesso { margin: 0; color: var(--color-success, #18794e); font-size: var(--font-sm); line-height: 1.5; text-align: center; }
+
 .login-portais {
   padding: 0 var(--space-6) var(--space-6);
   display: flex;

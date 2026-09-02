@@ -1,11 +1,11 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LuLayoutDashboard,
   LuCalendarCheck,
   LuWallet,
-  LuCalendarDays,
   LuMessageCircle,
-  LuShoppingBag,
+  LuEllipsis,
 } from "react-icons/lu";
 
 import { useAuth } from "../../../../contexts/useAuth";
@@ -18,11 +18,15 @@ import { Badge } from "../../../../components/ui/Badge";
 import { ResumoTab } from "../../components/ResumoTab";
 import { FrequenciaTab } from "../../components/FrequenciaTab";
 import { MensalidadesTab } from "../../components/MensalidadesTab";
-import { AgendaTab } from "../../components/AgendaTab";
 import { MensagensTab } from "../../components/MensagensTab";
-import { LojaTab } from "../../components/LojaTab";
+import { MaisTab } from "../../components/MaisTab";
 
 import "./styles.css";
+
+interface EventoInstalacao extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
 // label das abas: ícone em cima + texto embaixo, pra virar barra de
 // navegação inferior no mobile (ver Tabs/styles.css) — no desktop a
@@ -41,6 +45,29 @@ export function Portal() {
   const navigate = useNavigate();
   const { usuario, alunos, alunoSelecionadoId, selecionarAluno, logout } = useAuth();
   const naoLidasPorAluno = useContadorMensagens();
+  const [abaAtiva, setAbaAtiva] = useState("resumo");
+  const [abrirPrivacidadeEm, setAbrirPrivacidadeEm] = useState(0);
+  const [eventoInstalacao, setEventoInstalacao] = useState<EventoInstalacao | null>(null);
+
+  useEffect(() => {
+    const receber = (evento: Event) => {
+      evento.preventDefault();
+      setEventoInstalacao(evento as EventoInstalacao);
+    };
+    window.addEventListener("beforeinstallprompt", receber);
+    return () => window.removeEventListener("beforeinstallprompt", receber);
+  }, []);
+
+  async function instalarAplicativo() {
+    if (!eventoInstalacao) return;
+    await eventoInstalacao.prompt();
+    if ((await eventoInstalacao.userChoice).outcome === "accepted") setEventoInstalacao(null);
+  }
+
+  function abrirPrivacidade() {
+    setAbrirPrivacidadeEm((valor) => valor + 1);
+    setAbaAtiva("mais");
+  }
 
   function handleLogout() {
     logout();
@@ -59,6 +86,12 @@ export function Portal() {
           Sair
         </Button>
       </header>
+
+      {eventoInstalacao && (
+        <button type="button" className="portal-instalar" onClick={instalarAplicativo}>
+          Instalar Portal da Família
+        </button>
+      )}
 
       {alunos.length > 1 && (
         <>
@@ -106,25 +139,26 @@ export function Portal() {
       ) : (
         <Tabs
           key={alunoSelecionadoId}
+          value={abaAtiva}
+          onChange={setAbaAtiva}
           tabs={[
-            { value: "resumo", label: tabLabel(LuLayoutDashboard, "Resumo"), content: <ResumoTab alunoId={alunoSelecionadoId} /> },
+            { value: "resumo", label: tabLabel(LuLayoutDashboard, "Início"), content: <ResumoTab alunoId={alunoSelecionadoId} onOpenPrivacy={abrirPrivacidade} /> },
             {
               value: "frequencia",
-              label: tabLabel(LuCalendarCheck, "Frequência"),
+              label: tabLabel(LuCalendarCheck, "Evolução"),
               content: <FrequenciaTab alunoId={alunoSelecionadoId} />,
             },
             {
               value: "mensalidades",
-              label: tabLabel(LuWallet, "Mensalidades"),
+              label: tabLabel(LuWallet, "Pagar"),
               content: <MensalidadesTab alunoId={alunoSelecionadoId} />,
             },
-            { value: "agenda", label: tabLabel(LuCalendarDays, "Agenda"), content: <AgendaTab alunoId={alunoSelecionadoId} /> },
-            { value: "loja", label: tabLabel(LuShoppingBag, "Loja"), content: <LojaTab alunoId={alunoSelecionadoId} /> },
             {
               value: "mensagens",
-              label: tabLabel(LuMessageCircle, "Mensagens", naoLidasPorAluno[alunoSelecionadoId]),
+              label: tabLabel(LuMessageCircle, "Falar", naoLidasPorAluno[alunoSelecionadoId]),
               content: <MensagensTab alunoId={alunoSelecionadoId} />,
             },
+            { value: "mais", label: tabLabel(LuEllipsis, "Mais"), content: <MaisTab alunoId={alunoSelecionadoId} abrirPrivacidadeEm={abrirPrivacidadeEm} /> },
           ]}
         />
       )}

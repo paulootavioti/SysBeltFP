@@ -13,6 +13,8 @@ import {
   criarPagamentoPix,
   estornarPagamento,
   type PagamentoMercadoPago,
+  criarAssinaturaPendente,
+  atualizarAssinaturaMercadoPago,
 } from "./mercadoPago/clienteMercadoPago";
 import type { CredenciaisGateway } from "./credenciais";
 
@@ -64,6 +66,7 @@ export class MercadoPagoGateway implements PaymentGateway {
       referenciaExterna: dados.referenciaExterna,
       expiraEm: dados.vencimento,
       pagador: { email, nome: dados.pagador?.nome },
+      chaveIdempotencia: dados.chaveIdempotencia,
     });
 
     const transacao = pagamento.point_of_interaction?.transaction_data;
@@ -78,15 +81,22 @@ export class MercadoPagoGateway implements PaymentGateway {
     };
   }
 
-  async criarAssinatura(_dados: CriarAssinaturaDTO): Promise<CriarAssinaturaResultado> {
-    // Recorrência no Mercado Pago é outra API (preapproval), com fluxo de
-    // autorização próprio do pagador. Falha explícita em vez de fingir
-    // que a assinatura foi criada — ver roadmap.
-    throw new GatewayNaoImplementadoError("Mercado Pago (assinatura recorrente)");
+  async criarAssinatura(dados: CriarAssinaturaDTO): Promise<CriarAssinaturaResultado> {
+    if (!dados.pagador?.email) throw new AppError("Cadastre o e-mail do pagador para ativar a cobrança recorrente.");
+    const assinatura = await criarAssinaturaPendente({
+      accessToken: this.credenciais.accessToken,
+      referenciaExterna: dados.referenciaExterna,
+      email: dados.pagador.email,
+      descricao: dados.descricao ?? "Mensalidade recorrente",
+      valor: dados.valor,
+      dataFim: dados.dataFim,
+      urlRetorno: dados.urlRetorno ?? process.env.PORTAL_FAMILIA_URL ?? "http://localhost:5175",
+    });
+    return { gatewayAssinaturaId: assinatura.id, status: assinatura.status, linkAutorizacao: assinatura.init_point };
   }
 
-  async cancelarAssinatura(): Promise<void> {
-    throw new GatewayNaoImplementadoError("Mercado Pago (assinatura recorrente)");
+  async cancelarAssinatura(gatewayAssinaturaId: string): Promise<void> {
+    await atualizarAssinaturaMercadoPago(gatewayAssinaturaId, this.credenciais.accessToken, "cancelled");
   }
 
   async estornar(gatewayId: string): Promise<void> {

@@ -17,11 +17,11 @@ export function ToastContainer({ toasts, onFechar }: ToastContainerProps) {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="toast-container">
+    <div className="toast-container" role="status" aria-live="polite" aria-atomic="false">
       {toasts.map((toast) => {
         const Icone = ICONES[toast.tipo];
         return (
-          <div key={toast.id} className={`toast toast-${toast.tipo}`} role="alert">
+          <div key={toast.id} className={`toast toast-${toast.tipo}`}>
             <Icone size={18} />
             <span className="toast-mensagem">{toast.mensagem}</span>
             <button

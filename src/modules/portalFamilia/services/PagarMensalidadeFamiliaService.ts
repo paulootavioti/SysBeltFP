@@ -1,6 +1,7 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
-import { obterGatewayConcedido } from "../../pagamentos/gateways";
+import { nomeDoGateway, obterGatewayConcedido } from "../../pagamentos/gateways";
+import { randomUUID } from "crypto";
 
 // Qual gateway atende depende da forma de pagamento da mensalidade
 // (`FormaPagamento.configuracao.gateway`). Sem gateway configurado, cai
@@ -49,19 +50,65 @@ export class PagarMensalidadeFamiliaService {
 
     const pagador = escolherPagador(mensalidade.aluno);
 
-    const resultado = await gateway.criarCobranca({
-      valor: mensalidade.valorFinal || mensalidade.valor,
-      vencimento: mensalidade.vencimento,
-      descricao: mensalidade.descricao,
-      referenciaExterna: String(mensalidade.id),
-      pagador,
+    const ultimaTentativa = await prisma.cobrancaPagamento.findFirst({
+      where: { mensalidadeId: mensalidade.id },
+      orderBy: { numeroTentativa: "desc" },
+      select: { numeroTentativa: true },
     });
+    const chaveIdempotencia = `mensalidade-${mensalidade.id}-${randomUUID()}`;
+    const cobranca = await prisma.cobrancaPagamento.create({
+      data: {
+        unidadeId: mensalidade.unidadeId,
+        mensalidadeId: mensalidade.id,
+        formaPagamentoId: mensalidade.formaPagamentoId,
+        gateway: nomeDoGateway(mensalidade.formaPagamento?.configuracao) ?? "MANUAL",
+        chaveIdempotencia,
+        numeroTentativa: (ultimaTentativa?.numeroTentativa ?? 0) + 1,
+      },
+    });
+
+    let resultado;
+
+    try {
+      resultado = await gateway.criarCobranca({
+        valor: mensalidade.valorFinal || mensalidade.valor,
+        vencimento: mensalidade.vencimento,
+        descricao: mensalidade.descricao,
+        referenciaExterna: String(mensalidade.id),
+        pagador,
+        chaveIdempotencia,
+      });
+
+      await prisma.cobrancaPagamento.update({
+        where: { id: cobranca.id },
+        data: {
+          gatewayId: resultado.gatewayId,
+          status: resultado.status,
+          linkPagamento: resultado.linkPagamento,
+          pixCopiaECola: resultado.pixCopiaECola,
+          pixQrCodeBase64: resultado.pixQrCodeBase64,
+          expiraEm: resultado.expiraEm,
+          erro: null,
+        },
+      });
+    } catch (erro) {
+      await prisma.cobrancaPagamento.update({
+        where: { id: cobranca.id },
+        data: { status: "FALHA", erro: mensagemDoErro(erro) },
+      });
+      throw erro;
+    }
 
     return {
       gateway: gateway.nome,
+      cobrancaId: cobranca.id,
       ...resultado,
     };
   }
+}
+
+function mensagemDoErro(erro: unknown): string {
+  return erro instanceof Error ? erro.message.slice(0, 1000) : "Falha desconhecida no gateway.";
 }
 
 // O responsável financeiro é a primeira escolha; depois qualquer

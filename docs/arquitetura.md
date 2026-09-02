@@ -1,6 +1,6 @@
 # Arquitetura do Sistema
 
-Versão do documento: 2.0
+Versão do documento: 3.0
 
 Última atualização: Agosto/2026
 
@@ -8,8 +8,9 @@ Versão do documento: 2.0
 
 # Visão geral
 
-O Sys Belt é composto por **dois planos independentes**, cada um com seu
-próprio banco, seu próprio deploy e sua própria autenticação.
+O Sys Belt possui um Control Plane comercial e um plano operacional. Todos os
+assinantes do plano operacional compartilham um banco PostgreSQL, isolados por
+`Conta` e `Unidade`.
 
 ```
         Operador do SaaS                      Academia assinante
@@ -28,18 +29,20 @@ próprio banco, seu próprio deploy e sua própria autenticação.
                │                                      │
                ▼                                      ▼
       ┌─────────────────┐              ┌──────────────────────────────┐
-      │ Banco comercial │              │ Um banco POR ACADEMIA        │
-      │   (exclusivo)   │              │ academia-a · academia-b · …  │
+      │ Banco comercial │              │ Banco operacional compartilhado│
+      │ do Control Plane│              │ Conta A · Conta B · Conta C   │
       └─────────────────┘              └──────────────────────────────┘
 ```
 
-A separação existe para que o isolamento entre clientes seja **físico**. Não
-há tabela compartilhada entre academias, nem coluna discriminadora dentro de
-um banco comum. Um erro de filtro numa query não pode vazar dados de outro
-assinante, porque a query sequer alcança outro banco.
+A separacao entre assinantes e **logica e obrigatoria**. `Conta` define o
+tenant, `Unidade` define a filial e os services aplicam o alcance autorizado.
 
-A decisão está registrada como ADR-010 em
+A decisao vigente esta registrada como ADR-014 em
 [`architecture-decisions.md`](architecture-decisions.md).
+
+O restante deste documento ainda contem detalhes historicos da transicao. Em
+caso de conflito, prevalece
+[`arquitetura-multitenant.md`](arquitetura-multitenant.md).
 
 ---
 

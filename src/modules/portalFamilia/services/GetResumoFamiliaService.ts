@@ -42,7 +42,14 @@ export class GetResumoFamiliaService {
             status: "PENDENTE",
           },
           orderBy: { data: "asc" },
-          include: { turma: true },
+          include: {
+            turma: {
+              include: {
+                arena: { select: { nome: true } },
+                professor: { select: { nome: true } },
+              },
+            },
+          },
         })
       : null;
 
@@ -74,6 +81,8 @@ export class GetResumoFamiliaService {
             turmaNome: proximaAula.turma.nome,
             horarioInicio: proximaAula.turma.horarioInicio,
             horarioFim: proximaAula.turma.horarioFim,
+            arenaNome: proximaAula.turma.arena?.nome ?? null,
+            professorNome: proximaAula.turma.professor?.nome ?? null,
           }
         : null,
     };

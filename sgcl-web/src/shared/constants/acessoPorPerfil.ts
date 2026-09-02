@@ -13,6 +13,7 @@ const REGRAS_ACESSO: RegraAcesso[] = [
   // Cadastro de unidades (academias/filiais) — DONO/ADMIN administram as
   // unidades do próprio assinante.
   { prefixo: "/unidades", perfis: ["ADMIN"] },
+  { prefixo: "/comandos-voz", perfis: ["ADMIN"] },
   // Arenas (tatames/espaços) da unidade ativa.
   { prefixo: "/arenas", perfis: ["ADMIN", "RECEPCAO"] },
   // Modalidades organizam turmas, currículos e a vitrine do site.
@@ -35,9 +36,10 @@ const REGRAS_ACESSO: RegraAcesso[] = [
   { prefixo: "/planos", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
   { prefixo: "/mensagens", perfis: ["ADMIN", "RECEPCAO"] },
   { prefixo: "/mensagens-familia", perfis: ["ADMIN", "RECEPCAO"] },
+  { prefixo: "/atendimento", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
   { prefixo: "/metas", perfis: ["ADMIN"] },
   { prefixo: "/eventos", perfis: ["ADMIN", "RECEPCAO"] },
-  { prefixo: "/leads", perfis: ["ADMIN", "RECEPCAO"] },
+  { prefixo: "/leads", perfis: ["ADMIN", "PROFESSOR", "RECEPCAO"] },
   { prefixo: "/professor", perfis: ["ADMIN", "PROFESSOR"] },
   // A assinatura da academia no SysBelt: quanto custa, quantos alunos
   // estão sendo contados, quais faturas foram emitidas. É assunto do dono

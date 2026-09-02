@@ -16,8 +16,8 @@ export class CancelarPedidoService {
 
     garantirAcessoUnidade(unidadeId, pedido.unidadeId, "Pedido não encontrado.");
 
-    if (pedido.status !== "AGUARDANDO_RETIRADA") {
-      throw new AppError("Só é possível cancelar um pedido aguardando retirada.");
+    if (!["AGUARDANDO_PAGAMENTO", "AGUARDANDO_RETIRADA"].includes(pedido.status)) {
+      throw new AppError("Só é possível cancelar um pedido ainda não entregue.");
     }
 
     return prisma.$transaction(async (tx) => {
@@ -39,7 +39,7 @@ export class CancelarPedidoService {
 
       return tx.pedido.update({
         where: { id },
-        data: { status: "CANCELADO" },
+        data: { status: "CANCELADO", canceladoEm: new Date() },
       });
     });
   }

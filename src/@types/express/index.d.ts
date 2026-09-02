@@ -4,6 +4,8 @@ declare namespace Express {
 
     user: {
       id: number;
+      nome: string;
+      email: string;
       perfil: string;
       unidadeId: number | null;
     };

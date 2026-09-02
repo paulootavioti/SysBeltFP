@@ -1,9 +1,30 @@
 import { Router } from "express";
 import { PagamentosController } from "./controller";
+import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
+import { ensureRole } from "../../shared/middlewares/ensureRole";
 
 const pagamentosRoutes = Router();
 
 const pagamentosController = new PagamentosController();
+
+pagamentosRoutes.get(
+  "/conciliacao",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "RECEPCAO"]),
+  pagamentosController.listarConciliacao
+);
+pagamentosRoutes.post(
+  "/conciliacao/:id/reconciliar",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  pagamentosController.reconciliar
+);
+pagamentosRoutes.post(
+  "/conciliacao/:id/tentar-novamente",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  pagamentosController.tentarNovamente
+);
 
 // Webhooks de gateway não carregam o JWT da aplicação — a autenticação é
 // por assinatura/segredo do próprio gateway, verificada dentro do
