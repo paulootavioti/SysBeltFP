@@ -23,6 +23,8 @@ lojaRoutes.patch("/produtos/:id/ativo", lojaController.toggleAtivo);
 
 lojaRoutes.get("/pedidos", lojaController.listPedidos);
 
+lojaRoutes.patch("/pedidos/:id/confirmar-pagamento", lojaController.confirmarPagamento);
+
 lojaRoutes.patch("/pedidos/:id/entregar", lojaController.marcarPedidoEntregue);
 
 lojaRoutes.patch("/pedidos/:id/cancelar", lojaController.cancelarPedido);

@@ -52,7 +52,7 @@ export class EnviarMensagemWhatsappService {
     // Não grava registro: diferente de "sem consentimento", que é história
     // que a LGPD pede pra guardar, concessão sem o recurso não é um fato
     // sobre o aluno — gravar encheria a tabela de linhas sem valor.
-    if (!(await this.temRecurso("WHATSAPP"))) {
+    if (!(await this.temRecurso("WHATSAPP", new Date(), undefined, dto.unidadeId))) {
       return { resultado: "SEM_RECURSO_NO_PLANO" };
     }
 

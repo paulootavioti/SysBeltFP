@@ -2,6 +2,7 @@ import { ApiClient } from "../../../shared/api/ApiClient";
 import { api } from "../../../services/api";
 import type { MensalidadeComAluno } from "../../mensalidades/types";
 import type { DashboardFinanceiro, FinanceiroResumo, FiltrosFinanceiro, PontoFluxoCaixa } from "../types";
+import type { CobrancaPagamento } from "../types";
 
 export type { FinanceiroResumo };
 
@@ -49,6 +50,18 @@ export class FinanceiroService {
 
   static async dashboard(filtros?: FiltrosFinanceiro) {
     return ApiClient.get<DashboardFinanceiro>(`/financeiro/dashboard${montarQuery(filtros)}`);
+  }
+
+  static async conciliacao() {
+    return ApiClient.get<CobrancaPagamento[]>("/pagamentos/conciliacao");
+  }
+
+  static async reconciliar(cobrancaId: number) {
+    return ApiClient.post<CobrancaPagamento>(`/pagamentos/conciliacao/${cobrancaId}/reconciliar`, {});
+  }
+
+  static async tentarNovamente(cobrancaId: number) {
+    return ApiClient.post(`/pagamentos/conciliacao/${cobrancaId}/tentar-novamente`, {});
   }
 
   // Exportação devolve texto CSV puro (não JSON) — usa o cliente axios

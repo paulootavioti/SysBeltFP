@@ -77,18 +77,16 @@ comportamento.
 
 | Variável | Papel |
 |---|---|
-| `DATABASE_URL` | Banco operacional |
+| `DATABASE_URL` | Banco operacional compartilhado por todos os assinantes |
 | `DIRECT_DATABASE_URL` | Conexão direta, só para migrations |
 | `JWT_SECRET` | Assinatura dos tokens |
 | `CHAVE_SEGREDOS` | Cofre AES-256-GCM das credenciais de gateway (32 bytes em hex = 64 caracteres) |
 | `CORS_ORIGIN` | Origens permitidas |
-| `TENANT_RESOLUTION_ENABLED` | Liga a resolução por hostname |
-| `TENANT_RESOLUTION_REQUIRED` | Torna o contexto de tenant obrigatório |
 | `CONTROL_PLANE_URL` | Origem do Control Plane (sem caminho) |
-| `TENANT_DIRECTORY_SECRET` | Segredo compartilhado do diretório |
-| `TENANT_APP_BASE_DOMAIN` | Domínio base dos tenants |
-| `TENANT_SCHEMA_COMPATIBLE_VERSIONS` | Migrações aceitas nos bancos de tenant |
-| `AWS_REGION` | Região do Secrets Manager |
+| `TENANT_DIRECTORY_SECRET` | Legado da resolucao multi-banco |
+| `TENANT_APP_BASE_DOMAIN` | Legado; futuro dominio identifica Conta, nao banco |
+| `TENANT_SCHEMA_COMPATIBLE_VERSIONS` | Legado da resolucao multi-banco |
+| `AWS_REGION` | Regiao para integracoes AWS que permanecerem necessarias |
 
 > **`CHAVE_SEGREDOS` nunca vai para o Git.** Rotacioná-la torna ilegíveis todas
 > as credenciais já cifradas.
@@ -313,10 +311,8 @@ dos dois caminhos.
 **Backup antes de `prisma migrate deploy`.** Migrações deste projeto já
 removeram colunas e tornaram `Unidade.contaId` `NOT NULL`.
 
-**`TENANT_RESOLUTION_REQUIRED=true` com `ENABLED=false` derruba a API.** O
-`throw` acontece na carga do módulo (`resolucaoTenantAtivavel.ts:10`) e nem o
-health check responde. As duas variáveis nunca devem divergir nesse sentido —
-ative sempre na ordem: configuração → habilitada → obrigatória.
+As flags e o preflight de resolucao multi-banco foram removidos. O runtime usa
+exclusivamente `DATABASE_URL`; dominio e slug resolvem identidade de `Conta`.
 
 **A suíte de testes apaga registros.** Ela recusa qualquer banco que não se
 identifique como de teste. A escotilha `PERMITIR_TESTE_EM_BANCO_REAL=1` existe

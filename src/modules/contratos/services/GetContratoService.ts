@@ -8,13 +8,17 @@ export class GetContratoService {
     const contrato = await prisma.contrato.findUnique({
       where: { id },
       include: {
-        aluno: { select: { id: true, nome: true, dataNascimento: true } },
-        contratanteResponsavel: { select: { id: true, nome: true, cpf: true } },
+        aluno: { select: { id: true, nome: true, dataNascimento: true, email: true } },
+        contratanteResponsavel: { select: { id: true, nome: true, cpf: true, email: true } },
         modeloContrato: { select: { id: true, nome: true, versao: true } },
         plano: { select: { id: true, nome: true } },
         formaPagamento: true,
         contratoAnterior: { select: { id: true, numero: true, situacao: true } },
         renovacoes: { select: { id: true, numero: true, situacao: true, createdAt: true } },
+        solicitacoesAssinatura: {
+          orderBy: { createdAt: "desc" },
+          include: { eventos: { orderBy: { createdAt: "desc" } } },
+        },
       },
     });
 

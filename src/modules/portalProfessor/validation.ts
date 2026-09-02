@@ -28,6 +28,19 @@ export const finalizarAulaProfessorSchema = z.object({
   observacoes: z.string().trim().nullish(),
 });
 
+export const registrarExecucaoBlocoSchema = z.object({
+  chaveBloco: z.string().trim().min(1).max(100),
+  tipo: z.enum(["AQUECIMENTO", "JOGO", "TECNICA", "SPARRING", "PAUSA", "ALONGAMENTO"]),
+  nome: z.string().trim().min(1).max(160),
+  ordem: z.coerce.number().int().min(0),
+  duracaoPrevistaSegundos: z.coerce.number().int().positive().max(28800),
+  duracaoRealSegundos: z.coerce.number().int().min(0).max(28800),
+  status: z.enum(["CUMPRIDO", "PULADO"]),
+  iniciadoEm: z.string().datetime(),
+  finalizadoEm: z.string().datetime(),
+  tecnicaId: z.coerce.number().int().positive().nullish(),
+});
+
 // campos vêm de multipart/form-data (após o multer), por isso chegam como
 // string mesmo o "visivelNaLanding" — normalizado antes do parse do zod.
 export const publicarFotoAulaProfessorSchema = z.object({

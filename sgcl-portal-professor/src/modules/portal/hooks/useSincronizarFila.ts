@@ -20,6 +20,8 @@ async function executarAcao(acao: AcaoPendente) {
       );
     case "observacao":
       return PortalProfessorService.registrarObservacao(acao.aulaId, acao.payload.texto as string);
+    case "bloco":
+      return PortalProfessorService.registrarBloco(acao.aulaId, acao.payload as never);
   }
 }
 

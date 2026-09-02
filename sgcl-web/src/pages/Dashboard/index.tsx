@@ -72,19 +72,13 @@ export function Dashboard() {
         ) : resumoPeriodo.erro ? (
           <DashboardSectionError mensagem={resumoPeriodo.erro} onTentarNovamente={recarregarResumoPeriodo} />
         ) : !kpis ? null : (
-          <div className="kpi-grid" style={{ opacity: resumoPeriodo.carregando ? 0.6 : 1 }}>
+          <div className="dashboard-resumo" style={{ opacity: resumoPeriodo.carregando ? 0.6 : 1 }}>
+            <div className="dashboard-kpis-principais">
             <DashboardKpiCard
               titulo="Receita no Período"
               valor={formatarMoeda(kpis.receita)}
               complemento={`Média de ${formatarMoeda(kpis.receitaMedia)} ${kpis.unidadeMediaNovasMatriculas}`}
               variacao={kpis.variacaoReceita}
-            />
-
-            <DashboardKpiCard
-              titulo="Ticket Médio"
-              valor={`${formatarMoeda(kpis.ticketMedio)} por aluno`}
-              complemento={`${kpis.alunosPagantes} aluno(s) pagante(s) no período`}
-              semDados={kpis.alunosPagantes === 0}
             />
 
             <DashboardKpiCard
@@ -95,34 +89,45 @@ export function Dashboard() {
             />
 
             <DashboardKpiCard
-              titulo="Novas Matrículas"
-              valor={String(kpis.novosAlunos)}
-              complemento={`${kpis.cancelamentos} cancelamento(s) • saldo ${kpis.saldoAlunos >= 0 ? "+" : ""}${kpis.saldoAlunos}`}
-              variacao={kpis.variacaoNovasMatriculas}
-            />
-
-            <DashboardKpiCard
-              titulo="Média de Novas Matrículas"
-              valor={`${formatarDecimal(kpis.mediaNovasMatriculas)} ${kpis.unidadeMediaNovasMatriculas}`}
-            />
-
-            <DashboardKpiCard
               titulo="Taxa de Frequência"
               valor={formatarPercentual(kpis.taxaFrequencia)}
               complemento={`${kpis.presencas} de ${kpis.presencasEsperadas} presenças esperadas`}
               variacao={kpis.variacaoFrequencia}
               semDados={kpis.presencasEsperadas === 0}
             />
+            </div>
+
+            <div className="dashboard-kpis-secundarios">
+            <DashboardKpiCard
+              titulo="Ticket Médio"
+              valor={formatarMoeda(kpis.ticketMedio)}
+              complemento={`${kpis.alunosPagantes} aluno(s) pagante(s)`}
+              semDados={kpis.alunosPagantes === 0}
+            />
 
             <DashboardKpiCard
-              titulo="Mensalidades Vencidas"
-              valor={String(kpis.mensalidadesVencidas)}
-              complemento={`${formatarPercentual(kpis.taxaInadimplencia)} de inadimplência no período`}
+              titulo="Inadimplência"
+              valor={formatarPercentual(kpis.taxaInadimplencia)}
+              complemento={`${kpis.mensalidadesVencidas} mensalidade(s) vencida(s)`}
             />
 
             <DashboardKpiCard titulo="Graduações Realizadas" valor={String(kpis.graduacoes)} />
+            <DashboardKpiCard
+              titulo="Novas Matrículas"
+              valor={String(kpis.novosAlunos)}
+              complemento={`${kpis.cancelamentos} cancelamento(s) · saldo ${kpis.saldoAlunos >= 0 ? "+" : ""}${kpis.saldoAlunos}`}
+              variacao={kpis.variacaoNovasMatriculas}
+            />
+            <DashboardKpiCard titulo="Média de Matrículas" valor={`${formatarDecimal(kpis.mediaNovasMatriculas)} ${kpis.unidadeMediaNovasMatriculas}`} />
+            </div>
           </div>
         )}
+      </DashboardSection>
+
+      <DashboardSection titulo="Exige uma decisão sua" subtitulo="Pendências organizadas por prioridade.">
+        {alertas.carregando ? <Loading /> : alertas.erro ? (
+          <DashboardSectionError mensagem={alertas.erro} onTentarNovamente={recarregarAlertas} />
+        ) : <DashboardAlertList alertas={alertasCompletos} />}
       </DashboardSection>
 
       <DashboardSection titulo="Gráficos de Desempenho" subtitulo="Reagem ao período selecionado acima.">
@@ -142,16 +147,6 @@ export function Dashboard() {
           <DashboardSectionError mensagem={metas.erro} onTentarNovamente={recarregarMetas} />
         ) : (
           <DashboardGoals metas={metas.dados ?? []} />
-        )}
-      </DashboardSection>
-
-      <DashboardSection titulo="Atenção do Gestor" subtitulo="O que exige uma ação agora.">
-        {alertas.carregando ? (
-          <Loading />
-        ) : alertas.erro ? (
-          <DashboardSectionError mensagem={alertas.erro} onTentarNovamente={recarregarAlertas} />
-        ) : (
-          <DashboardAlertList alertas={alertasCompletos} />
         )}
       </DashboardSection>
 

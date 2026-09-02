@@ -8,6 +8,7 @@ export interface ContadoresMenu {
   graduacoesPendentes: number;
   mensagensFamiliaNaoLidas: number;
   pedidosAguardandoRetirada: number;
+  conversasNaoLidas: number;
 }
 
 const listProximasGraduacoesService = new ListProximasGraduacoesService();
@@ -27,6 +28,7 @@ export class GetContadoresMenuService {
       proximasGraduacoes,
       mensagensFamiliaNaoLidas,
       pedidosAguardandoRetirada,
+      conversasNaoLidas,
     ] = await Promise.all([
       prisma.mensalidade.count({
         where: { pago: false, vencimento: { lt: new Date() }, ...escopoUnidade(unidadeId) },
@@ -41,6 +43,9 @@ export class GetContadoresMenuService {
       prisma.pedido.count({
         where: { status: "AGUARDANDO_RETIRADA", ...escopoUnidade(unidadeId) },
       }),
+      prisma.conversaMensageria.count({
+        where: { naoLidas: { gt: 0 }, ...escopoUnidade(unidadeId) },
+      }),
     ]);
 
     return {
@@ -49,6 +54,7 @@ export class GetContadoresMenuService {
       graduacoesPendentes: proximasGraduacoes.length,
       mensagensFamiliaNaoLidas,
       pedidosAguardandoRetirada,
+      conversasNaoLidas,
     };
   }
 }

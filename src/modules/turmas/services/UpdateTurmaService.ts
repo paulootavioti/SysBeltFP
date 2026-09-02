@@ -2,6 +2,7 @@ import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao"
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { buscarConflitoTurma, mensagemConflitoTurma } from "../../../shared/utils/conflitoHorario";
+import { validarRecursosTurma } from "./validarRecursosTurma";
 
 interface UpdateTurmaDTO {
   nome: string;
@@ -26,6 +27,8 @@ export class UpdateTurmaService {
     }
 
     garantirAcessoUnidade(unidadeId, turmaExistente.unidadeId, "Turma não encontrada.");
+
+    await validarRecursosTurma(turmaExistente.unidadeId, data);
 
     const conflito = await buscarConflitoTurma({
       unidadeId: turmaExistente.unidadeId,

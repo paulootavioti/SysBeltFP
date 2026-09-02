@@ -13,6 +13,7 @@ export interface CriarCobrancaDTO {
   // PIX e boleto exigem identificar o pagador. Opcional no contrato
   // porque o gateway manual não precisa — mas os reais recusam sem.
   pagador?: { email?: string | null; nome?: string | null } | null;
+  chaveIdempotencia?: string;
 }
 
 export interface CriarCobrancaResultado {
@@ -30,11 +31,16 @@ export interface CriarAssinaturaDTO {
   valor: number;
   diaVencimento: number;
   referenciaExterna: string; // id da Assinatura
+  pagador?: { email?: string | null; nome?: string | null } | null;
+  descricao?: string | null;
+  dataFim?: Date | null;
+  urlRetorno?: string;
 }
 
 export interface CriarAssinaturaResultado {
   gatewayAssinaturaId: string;
   status: string;
+  linkAutorizacao?: string;
 }
 
 export interface WebhookEvento {

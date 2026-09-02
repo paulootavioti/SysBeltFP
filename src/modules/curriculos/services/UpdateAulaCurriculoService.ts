@@ -9,6 +9,16 @@ interface UpdateAulaCurriculoDTO {
   duracaoMinutos?: number;
   jogosSugeridos?: string;
   ordem?: number;
+  blocos?: Array<{
+    tipo: "AQUECIMENTO" | "JOGO" | "SPARRING" | "PAUSA" | "ALONGAMENTO";
+    nome: string;
+    ordem: number;
+    duracaoPrevistaSegundos: number;
+    rounds?: number | null;
+    duracaoRoundSegundos?: number | null;
+    descansoSegundos?: number | null;
+    anuncio?: string | null;
+  }>;
 }
 
 export class UpdateAulaCurriculoService {
@@ -29,16 +39,23 @@ export class UpdateAulaCurriculoService {
       "Aula do currículo não encontrada."
     );
 
-    return prisma.aulaCurriculo.update({
-      where: { id },
-      data: {
-        titulo: data.titulo,
-        objetivo: data.objetivo,
-        descricao: data.descricao,
-        duracaoMinutos: data.duracaoMinutos,
-        jogosSugeridos: data.jogosSugeridos,
-        ordem: data.ordem,
-      },
+    return prisma.$transaction(async (tx) => {
+      if (data.blocos) {
+        await tx.blocoAulaCurriculo.deleteMany({ where: { aulaCurriculoId: id } });
+      }
+      return tx.aulaCurriculo.update({
+        where: { id },
+        data: {
+          titulo: data.titulo,
+          objetivo: data.objetivo,
+          descricao: data.descricao,
+          duracaoMinutos: data.duracaoMinutos,
+          jogosSugeridos: data.jogosSugeridos,
+          ordem: data.ordem,
+          blocos: data.blocos?.length ? { create: data.blocos } : undefined,
+        },
+        include: { blocos: { orderBy: { ordem: "asc" } }, tecnicas: { orderBy: { ordem: "asc" } } },
+      });
     });
   }
 }

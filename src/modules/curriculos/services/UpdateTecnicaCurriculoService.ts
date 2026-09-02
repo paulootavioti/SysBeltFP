@@ -8,6 +8,7 @@ interface UpdateTecnicaCurriculoDTO {
   descricao?: string;
   obrigatoria?: boolean;
   ordem?: number;
+  duracaoPrevistaSegundos?: number;
 }
 
 export class UpdateTecnicaCurriculoService {
@@ -36,6 +37,7 @@ export class UpdateTecnicaCurriculoService {
         descricao: data.descricao,
         obrigatoria: data.obrigatoria,
         ordem: data.ordem,
+        duracaoPrevistaSegundos: data.duracaoPrevistaSegundos,
       },
     });
   }

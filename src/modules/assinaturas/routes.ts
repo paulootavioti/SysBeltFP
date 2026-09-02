@@ -41,6 +41,13 @@ assinaturasRoutes.patch(
   assinaturasController.alterarStatus
 );
 
+assinaturasRoutes.post(
+  "/:id/ativar-gateway",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  assinaturasController.ativarGateway
+);
+
 // disparo manual pelo ADMIN, escopado à própria unidade.
 assinaturasRoutes.post(
   "/gerar-cobrancas",

@@ -13,6 +13,11 @@ import type { AulasHojeResponse, AulaHojeItem } from "../../types";
 import "./styles.css";
 import { formatarData } from "../../../../utils/formatarData";
 
+interface EventoInstalacao extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 // Telas nativas dentro do próprio Portal — consomem o backend direto (mesmo
 // token já autenticado aqui), sem abrir outro app nem pedir login de novo.
 const ATALHOS = [
@@ -61,10 +66,27 @@ export function Home() {
   const [iniciando, setIniciando] = useState(false);
   const [erro, setErro] = useState("");
   const [aulaConcluida, setAulaConcluida] = useState<AulaHojeItem | null>(null);
+  const [eventoInstalacao, setEventoInstalacao] = useState<EventoInstalacao | null>(null);
 
   useEffect(() => {
     carregar();
   }, []);
+
+  useEffect(() => {
+    const receber = (evento: Event) => {
+      evento.preventDefault();
+      setEventoInstalacao(evento as EventoInstalacao);
+    };
+    window.addEventListener("beforeinstallprompt", receber);
+    return () => window.removeEventListener("beforeinstallprompt", receber);
+  }, []);
+
+  async function instalarAplicativo() {
+    if (!eventoInstalacao) return;
+    await eventoInstalacao.prompt();
+    const escolha = await eventoInstalacao.userChoice;
+    if (escolha.outcome === "accepted") setEventoInstalacao(null);
+  }
 
   async function carregar() {
     try {
@@ -128,6 +150,7 @@ export function Home() {
       </header>
 
       <main className="home-conteudo">
+        {eventoInstalacao && <button type="button" className="home-instalar" onClick={instalarAplicativo}>Instalar Portal do Professor</button>}
         {carregando && <Loading message="Carregando suas aulas..." />}
 
         {!carregando && erro && <ErrorMessage message={erro} onRetry={carregar} />}

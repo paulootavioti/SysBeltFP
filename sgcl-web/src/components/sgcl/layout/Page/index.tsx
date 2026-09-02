@@ -11,9 +11,9 @@ interface PageProps {
 export function Page({ children }: PageProps) {
   return (
     <Layout>
-      <main className="sgcl-page">
+      <div className="sgcl-page">
         {children}
-      </main>
+      </div>
     </Layout>
   );
 }

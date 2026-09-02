@@ -1,6 +1,7 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { GetAulaService } from "../../aulas/services/GetAulaService";
 import { calcularFrequenciaPorPeriodo } from "../../../shared/utils/calcularFrequencia";
+import { compilarFilaAula } from "../../curriculos/utils/compilarFilaAula";
 
 interface Solicitante {
   id: number;
@@ -42,6 +43,13 @@ export class GetAulaProfessorService {
       frequenciaMes: frequenciaPorAluno.get(registro.alunoId) ?? 0,
     }));
 
-    return { ...aula, alunos, notas };
+    return {
+      ...aula,
+      aulaCurriculo: aula.aulaCurriculo
+        ? { ...aula.aulaCurriculo, filaCompilada: compilarFilaAula(aula.aulaCurriculo) }
+        : null,
+      alunos,
+      notas,
+    };
   }
 }

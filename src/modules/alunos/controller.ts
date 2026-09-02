@@ -15,9 +15,31 @@ import { ToggleAlunoAtivoService } from "./services/ToggleAlunoAtivoService";
 import { GetAlunoCompletoService } from "./services/GetAlunoCompletoService";
 import { SetSenhaPortalAlunoService } from "./services/SetSenhaPortalAlunoService";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
+import { AppError } from "../../shared/errors/AppError";
+import { ImportarAlunosCsvService } from "./services/ImportarAlunosCsvService";
 
 
 export class AlunosController {
+  async previsualizarImportacao(req: Request, res: Response) {
+    if (!req.file) throw new AppError("Selecione um arquivo CSV.");
+    return res.json(await new ImportarAlunosCsvService().previsualizar(req.file.buffer, requireUnidadeId(req)));
+  }
+
+  async importarCsv(req: Request, res: Response) {
+    if (!req.file) throw new AppError("Selecione um arquivo CSV.");
+    const estrategia = req.body.estrategiaDuplicados === "ATUALIZAR" ? "ATUALIZAR" : "IGNORAR";
+    const resultado = await new ImportarAlunosCsvService().confirmar(
+      req.file.buffer,
+      requireUnidadeId(req),
+      req.file.originalname,
+      estrategia
+    );
+    return res.status(201).json(resultado);
+  }
+
+  async desfazerImportacao(req: Request, res: Response) {
+    return res.json(await new ImportarAlunosCsvService().desfazer(Number(req.params.id), requireUnidadeId(req)));
+  }
   async create(req: Request, res: Response) {
     const service = new CreateAlunoService();
 
@@ -28,8 +50,22 @@ export class AlunosController {
 
   async list(req: Request, res: Response) {
     const service = new ListAlunosService();
-
-    const alunos = await service.execute(req.user.unidadeId, req.user.perfil);
+    const solicitouPaginacao = req.query.pagina !== undefined;
+    const pagina = Math.max(1, Number(req.query.pagina) || 1);
+    const porPagina = Math.min(100, Math.max(1, Number(req.query.porPagina) || 15));
+    const alunos = solicitouPaginacao
+      ? await service.execute(
+          req.user.unidadeId,
+          req.user.perfil,
+          {
+            pagina,
+            porPagina,
+            busca: String(req.query.busca ?? "").trim() || undefined,
+            status: String(req.query.status ?? "") || undefined,
+            turmaId: Number(req.query.turmaId) || undefined,
+          },
+        )
+      : await service.execute(req.user.unidadeId, req.user.perfil);
 
     return res.json(alunos);
   }

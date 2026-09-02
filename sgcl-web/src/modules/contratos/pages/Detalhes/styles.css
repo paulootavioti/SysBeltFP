@@ -59,6 +59,50 @@
   margin-bottom: var(--space-4);
 }
 
+.contrato-assinatura-historico {
+  margin: var(--space-4) 0;
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+}
+
+.contrato-assinatura-historico h2 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-lg);
+}
+
+.contrato-assinatura-historico ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.contrato-assinatura-historico li {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.contrato-assinatura-historico li div,
+.contrato-assinatura-historico li p {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.contrato-assinatura-historico a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+@media (max-width: 700px) {
+  .contrato-assinatura-historico li { grid-template-columns: 1fr; }
+}
+
 .contrato-detalhe-acoes {
   display: flex;
   flex-wrap: wrap;

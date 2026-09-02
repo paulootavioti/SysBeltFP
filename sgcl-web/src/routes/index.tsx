@@ -1,7 +1,8 @@
-import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
 
 import { Login } from "../pages/Login";
+import { RecuperarSenha } from "../pages/RecuperarSenha";
 import { Loading } from "../components/ui/Loading";
 import { PrivateRoute } from "./PrivateRoute";
 
@@ -13,7 +14,6 @@ const CadastroAluno = lazy(() => import("../modules/alunos/pages/Cadastro").then
 const EditarAluno = lazy(() => import("../modules/alunos/pages/Editar").then((m) => ({ default: m.EditarAluno })));
 
 const Aulas = lazy(() => import("../modules/aulas/pages/Listar").then((m) => ({ default: m.Aulas })));
-const ChamadaAula = lazy(() => import("../modules/aulas/pages/Chamada").then((m) => ({ default: m.ChamadaAula })));
 const ProntuarioAluno = lazy(() => import("../modules/alunos/pages/Prontuario").then((m) => ({ default: m.ProntuarioAluno })));
 
 const ListarMensalidades = lazy(() => import("../modules/mensalidades/pages/Listar").then((m) => ({ default: m.ListarMensalidades })));
@@ -50,13 +50,23 @@ const Contratos = lazy(() => import("../modules/contratos/pages/Listar").then((m
 const Loja = lazy(() => import("../modules/loja/pages/Listar").then((m) => ({ default: m.Loja })));
 const Pedidos = lazy(() => import("../modules/loja/pages/Pedidos").then((m) => ({ default: m.Pedidos })));
 const Leads = lazy(() => import("../modules/leads/pages/Listar").then((m) => ({ default: m.Leads })));
+const CaixaEntrada = lazy(() => import("../modules/atendimento/pages/CaixaEntrada").then((m) => ({ default: m.CaixaEntrada })));
 const DetalheContrato = lazy(() => import("../modules/contratos/pages/Detalhes").then((m) => ({ default: m.DetalheContrato })));
 
 const CentralDeAjuda = lazy(() => import("../modules/ajuda/pages/Central").then((m) => ({ default: m.CentralDeAjuda })));
+const MinhaSeguranca = lazy(() => import("../modules/seguranca/pages/MinhaSeguranca").then((m) => ({ default: m.MinhaSeguranca })));
+const ComandosVoz = lazy(() => import("../modules/comandosVoz").then((m) => ({ default: m.ComandosVoz })));
 
-const AreaDoProfessor = lazy(() =>
-  import("../modules/professor/pages/AreaDoProfessor").then((m) => ({ default: m.AreaDoProfessor }))
-);
+function AbrirPortalProfessor({ comAula = false }: { comAula?: boolean }) {
+  const { id } = useParams();
+
+  useEffect(() => {
+    const base = (import.meta.env.VITE_PORTAL_PROFESSOR_URL || "http://localhost:5176").replace(/\/$/, "");
+    window.location.replace(comAula && id ? `${base}/aula/${id}` : base);
+  }, [comAula, id]);
+
+  return <Loading />;
+}
 
 const Eventos = lazy(() => import("../modules/eventos/pages/Listar").then((m) => ({ default: m.Eventos })));
 const NovoEvento = lazy(() => import("../modules/eventos/pages/Novo").then((m) => ({ default: m.NovoEvento })));
@@ -68,6 +78,8 @@ export function AppRoutes() {
     <Suspense fallback={<Loading />}>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+        <Route path="/redefinir-senha" element={<RecuperarSenha />} />
 
         <Route
           path="/dashboard"
@@ -136,7 +148,7 @@ export function AppRoutes() {
           path="/aulas/:id/chamada"
           element={
             <PrivateRoute>
-              <ChamadaAula />
+              <AbrirPortalProfessor comAula />
             </PrivateRoute>
           }
         />
@@ -408,6 +420,15 @@ export function AppRoutes() {
         />
 
         <Route
+          path="/atendimento"
+          element={
+            <PrivateRoute>
+              <CaixaEntrada />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
           path="/assinaturas"
           element={
             <PrivateRoute>
@@ -452,11 +473,14 @@ export function AppRoutes() {
           }
         />
 
+        <Route path="/seguranca" element={<PrivateRoute><MinhaSeguranca /></PrivateRoute>} />
+        <Route path="/comandos-voz" element={<PrivateRoute><ComandosVoz /></PrivateRoute>} />
+
         <Route
           path="/professor"
           element={
             <PrivateRoute>
-              <AreaDoProfessor />
+              <AbrirPortalProfessor />
             </PrivateRoute>
           }
         />

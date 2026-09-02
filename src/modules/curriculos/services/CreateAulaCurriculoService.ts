@@ -10,6 +10,16 @@ interface CreateAulaCurriculoDTO {
   jogosSugeridos?: string;
   ordem?: number;
   moduloId: number;
+  blocos?: Array<{
+    tipo: "AQUECIMENTO" | "JOGO" | "SPARRING" | "PAUSA" | "ALONGAMENTO";
+    nome: string;
+    ordem: number;
+    duracaoPrevistaSegundos: number;
+    rounds?: number | null;
+    duracaoRoundSegundos?: number | null;
+    descansoSegundos?: number | null;
+    anuncio?: string | null;
+  }>;
 }
 
 export class CreateAulaCurriculoService {
@@ -35,7 +45,9 @@ export class CreateAulaCurriculoService {
         jogosSugeridos: data.jogosSugeridos,
         ordem: data.ordem ?? 0,
         moduloId: data.moduloId,
+        blocos: data.blocos?.length ? { create: data.blocos } : undefined,
       },
+      include: { blocos: { orderBy: { ordem: "asc" } }, tecnicas: { orderBy: { ordem: "asc" } } },
     });
   }
 }

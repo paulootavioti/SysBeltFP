@@ -22,6 +22,8 @@ export class ListPedidosService {
         unidade: { select: { id: true, nome: true } },
         aluno: { select: { id: true, nome: true, apelido: true } },
         itens: { include: { variante: { include: { produto: true } } } },
+        formaPagamento: { select: { id: true, tipo: true, nomePersonalizado: true } },
+        cobrancas: { orderBy: { createdAt: "desc" }, take: 1 },
       },
       take: LIMITE_PADRAO_LISTAGEM,
       orderBy: { criadoEm: "desc" },

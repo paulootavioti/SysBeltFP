@@ -12,6 +12,7 @@ import { dashboardRoutes } from "./modules/dashboard/routes";
 import { financeiroRoutes } from "./modules/financeiro/routes";
 import { errorHandler } from "./shared/middlewares/errorHandler";
 import { contextoRequisicao } from "./shared/context/contextoRequisicao";
+import { registrarRequisicao } from "./shared/middlewares/registrarRequisicao";
 import { relatoriosRoutes } from "./modules/relatorios/routes";
 import { comportamentosRoutes } from "./modules/comportamentos/routes";
 import { turmasRoutes } from "./modules/turmas/routes";
@@ -46,38 +47,31 @@ import { portalFamiliaRoutes } from "./modules/portalFamilia/routes";
 import { mensagensFamiliaRoutes } from "./modules/mensagensFamilia/routes";
 import { publicoRoutes } from "./modules/publico/routes";
 import { leadsRoutes } from "./modules/leads/routes";
+import { suporteRoutes } from "./modules/suporte/routes";
 import { portalProfessorRoutes } from "./modules/portalProfessor/routes";
 import { concessaoPlataformaRoutes } from "./modules/concessaoPlataforma/routes";
-import { criarResolucaoTenantAtivavel } from "./shared/tenant/resolucaoTenantAtivavel";
-import { obterReadinessTenant } from "./shared/tenant/readinessTenant";
+import { captacaoPublicaRoutes } from "./modules/leads/publicRoutes";
+import { mensageriaRoutes, metaWebhookRoutes } from "./modules/mensageria/routes";
+import { comandosVozRoutes, skillVozRoutes } from "./modules/comandosVoz/routes";
 
 // 5173 = sgcl-web (admin/staff), 5175 = sgcl-portal-familia (Portal da
 // Família), 5176 = sgcl-portal-professor (Portal do Professor) — três
 // frontends separados consumindo a mesma API.
 const corsOrigin = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((origin) => origin.trim())
-  : ["http://localhost:5173", "http://localhost:5175", "http://localhost:5176"];
+  : ["http://localhost:5173", "http://localhost:5175", "http://localhost:5176", "http://localhost:5177"];
 
 export const app = express();
 
-// Atrás do proxy da hospedagem, sem isto `req.ip` seria sempre o IP do
-// proxy — e a auditoria registraria o mesmo endereço pra todo mundo.
-app.set("trust proxy", true);
-
-// Não passa pela resolução para continuar diagnosticável quando a configuração
-// multi-tenant estiver incompleta. A resposta contém somente indicadores.
-app.get("/health/tenant-resolution", (_request, response) => {
-  const readiness = obterReadinessTenant();
-  return response.status(readiness.httpStatus).json(readiness.corpo);
-});
-
-// Precisa vir antes de autenticação e de qualquer acesso operacional ao banco.
-// A flag permanece desligada até diretório, domínio e cofre estarem configurados.
-app.use(criarResolucaoTenantAtivavel());
+// A aplicação recebe a conexão por um único proxy da hospedagem. Confiar em
+// qualquer quantidade (`true`) permitiria ao cliente forjar X-Forwarded-For
+// e contornar rate limits baseados em IP quando a API fosse acessada direto.
+app.set("trust proxy", 1);
 
 // Antes de qualquer rota: guarda IP e dispositivo pra auditoria e
 // consentimentos, sem precisar passar `req` aos services.
 app.use(contextoRequisicao);
+app.use(registrarRequisicao);
 
 if (process.env.NODE_ENV !== "production") {
   app.use((req, res, next) => {
@@ -107,6 +101,8 @@ app.get("/", (req, res) => {
     versao: "1.0.0",
   });
 });
+
+app.get("/health", (_req, res) => res.json({ status: "ok", timestamp: new Date().toISOString() }));
 
 app.use("/alunos", alunosRoutes);
 app.use("/responsaveis", responsaveisRoutes);
@@ -149,7 +145,13 @@ app.use("/portal-familia", portalFamiliaRoutes);
 app.use("/portal-professor", portalProfessorRoutes);
 app.use("/mensagens-familia", mensagensFamiliaRoutes);
 app.use("/publico", publicoRoutes);
+app.use("/public/captacao", captacaoPublicaRoutes);
 app.use("/leads", leadsRoutes);
+app.use("/suporte", suporteRoutes);
+app.use("/webhooks/meta", metaWebhookRoutes);
+app.use("/mensageria", mensageriaRoutes);
+app.use("/comandos-voz", comandosVozRoutes);
+app.use("/integracoes/voz/skill", skillVozRoutes);
 app.use("/integracao/control-plane", concessaoPlataformaRoutes);
 
 app.use("/auth", authRoutes);

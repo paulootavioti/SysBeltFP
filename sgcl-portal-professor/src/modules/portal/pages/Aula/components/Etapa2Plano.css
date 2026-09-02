@@ -1,152 +1,29 @@
-.etapa-plano {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-}
-
-.etapa-plano-vazio {
-  padding: var(--space-6);
-  text-align: center;
-  color: var(--color-text-light);
-}
-
-.etapa-plano-card {
-  background: var(--color-accent-soft);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-}
-
-.etapa-plano-eyebrow {
-  margin: 0 0 6px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #7a621a;
-}
-
-.etapa-plano-objetivo {
-  margin: 0;
-  font-size: 14.5px;
-  line-height: 1.5;
-  color: #4a3d10;
-}
-
-.etapa-plano-tecnicas-cabecalho {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-3);
-}
-
-.etapa-plano-tecnicas-cabecalho h3 {
-  margin: 0;
-  font-size: var(--font-md);
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.etapa-plano-tecnicas-cabecalho span {
-  font-weight: 800;
-  color: var(--color-accent);
-  font-size: var(--font-sm);
-}
-
-.etapa-plano-lista {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.etapa-plano-linha {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: 64px;
-  width: 100%;
-  padding: var(--space-3);
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  text-align: left;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.etapa-plano-linha-marcada {
-  border-color: var(--color-success);
-  background: #f4fbf6;
-}
-
-.etapa-plano-checkbox {
-  flex-shrink: 0;
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-sm);
-  border: 2px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.etapa-plano-checkbox-marcado {
-  background: var(--color-success);
-  border-color: var(--color-success);
-}
-
-.etapa-plano-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.etapa-plano-info strong {
-  font-size: 14.5px;
-  color: var(--color-text);
-}
-
-.etapa-plano-riscado {
-  text-decoration: line-through;
-  color: var(--color-text-light);
-}
-
-.etapa-plano-info span {
-  font-size: 12px;
-  color: var(--color-text-light);
-}
-
-.etapa-plano-chip-essencial {
-  flex-shrink: 0;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: 3px 8px;
-  border-radius: var(--radius-full);
-  background: var(--color-accent-soft);
-  color: #7a621a;
-}
-
-.etapa-plano-jogos-titulo {
-  margin: 0 0 var(--space-3);
-  font-size: var(--font-md);
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.etapa-plano-chips-jogos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.etapa-plano-chip-jogo {
-  font-size: 13px;
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
-  background: var(--color-neutral-bg);
-  color: var(--color-neutral-text);
-}
+.etapa-plano-vazio { padding: 48px 20px; text-align: center; color: var(--color-text-light); }
+.ring-timer { min-height: calc(100dvh - 132px); margin: -16px; padding: 22px 16px 88px; color: #f7f5ef; background: #12110f; }
+.ring-destaque { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.ring-etiqueta { margin: 0 0 7px; color: #e6c44b; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+.ring-destaque h2 { min-height: 52px; margin: 0 0 12px; max-width: 330px; font-size: 22px; line-height: 1.18; overflow-wrap: anywhere; }
+.ring-progresso { display: grid; place-items: center; width: min(68vw, 270px); aspect-ratio: 1; border-radius: 50%; background: conic-gradient(#e6c44b var(--progresso), #35322c 0); }
+.ring-progresso::before { content: ""; grid-area: 1 / 1; width: calc(100% - 16px); aspect-ratio: 1; border-radius: 50%; background: #12110f; }
+.ring-progresso div { z-index: 1; grid-area: 1 / 1; display: flex; flex-direction: column; }
+.ring-progresso strong { font-size: clamp(48px, 16vw, 62px); line-height: 1; font-variant-numeric: tabular-nums; }
+.ring-progresso span { margin-top: 7px; color: #bbb6aa; font-size: 13px; }
+.ring-controles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: 100%; max-width: 430px; margin-top: 18px; }
+.ring-controles button, .ring-encerrar, .ring-rodape button { min-height: 48px; border-radius: 6px; border: 1px solid #625e55; background: #24211d; color: #fff; font: inherit; font-weight: 750; }
+.ring-controles button:last-child { border-color: #e6c44b; background: #e6c44b; color: #17140f; }
+.ring-controles button:focus-visible, .ring-encerrar:focus-visible, .ring-rodape button:focus-visible { outline: 3px solid #4ca5ff; outline-offset: 3px; }
+.ring-fila { max-width: 520px; margin: 26px auto 0; padding: 0; list-style: none; }
+.ring-fila li { display: grid; grid-template-columns: 14px 1fr auto; align-items: center; gap: 12px; min-height: 58px; padding: 8px; border-top: 1px solid #34312b; color: #a9a59c; }
+.ring-fila li.atual { color: #fff; background: #24211d; }
+.ring-fila li.cumprido { color: #8bbf9a; }
+.ring-fila-status { width: 10px; height: 10px; border: 2px solid currentColor; border-radius: 50%; }
+.ring-fila .atual .ring-fila-status, .ring-fila .cumprido .ring-fila-status { background: currentColor; }
+.ring-fila li > span:nth-child(2) { display: flex; flex-direction: column; min-width: 0; }
+.ring-fila strong { overflow-wrap: anywhere; }
+.ring-fila small { margin-top: 2px; text-transform: capitalize; }
+.ring-fila time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ring-rodape { position: fixed; z-index: 70; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 68px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid #3b3730; background: #17140f; color: #fff; }
+.ring-rodape button { padding: 0 16px; border-color: #bd4545; background: transparent; color: #ffb2b2; }
+.ring-concluido { display: grid; place-items: center; gap: 10px; min-height: 60dvh; padding: 24px; text-align: center; }
+.ring-concluido strong { font-size: 24px; }
+.ring-encerrar { padding: 0 22px; background: #8f2929; border-color: #8f2929; }

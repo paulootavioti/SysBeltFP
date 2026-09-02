@@ -6,7 +6,7 @@ export class ListMinhasUnidadesService {
   async execute(usuarioId: number) {
     const prisma = prismaDaRequisicao();
     const vinculos = await prisma.usuarioUnidade.findMany({
-      where: { usuarioId },
+      where: { usuarioId, unidade: { ativo: true } },
       select: { unidade: { select: { id: true, nome: true } } },
       orderBy: { unidade: { nome: "asc" } },
     });

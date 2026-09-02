@@ -1,10 +1,20 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
+import type { Prisma } from "@prisma/client";
 
 export class ListAlunosService {
-
-  async execute(unidadeId: number | null, perfil?: string) {
+  async execute(unidadeId: number | null, perfil?: string): Promise<any[]>;
+  async execute(
+    unidadeId: number | null,
+    perfil: string | undefined,
+    paginacao: { pagina: number; porPagina: number; busca?: string; status?: string; turmaId?: number },
+  ): Promise<{ itens: any[]; pagina: number; porPagina: number; total: number; totalPaginas: number }>;
+  async execute(
+    unidadeId: number | null,
+    perfil?: string,
+    paginacao?: { pagina: number; porPagina: number; busca?: string; status?: string; turmaId?: number },
+  ): Promise<any> {
     const prisma = prismaDaRequisicao();
 
     // O aluno pode estar autorizado em mais de uma unidade (AlunoUnidade),
@@ -20,9 +30,19 @@ export class ListAlunosService {
     // ativos, calcular a trilha de faixa ao registrar graduação) — nenhuma
     // tela do Professor exibe esses dois campos.
     if (perfil === "PROFESSOR") {
-      return prisma.aluno.findMany({
-        where: escopoAluno,
-        take: LIMITE_PADRAO_LISTAGEM,
+      const whereProfessor: Prisma.AlunoWhereInput = {
+        ...escopoAluno,
+        ativo: true,
+        ...(paginacao?.busca ? { OR: [
+          { nome: { contains: paginacao.busca, mode: "insensitive" as const } },
+          { apelido: { contains: paginacao.busca, mode: "insensitive" as const } },
+        ] } : {}),
+        ...(paginacao?.turmaId ? { turmaId: paginacao.turmaId } : {}),
+      };
+      const consultaProfessor: Prisma.AlunoFindManyArgs = {
+        where: whereProfessor,
+        take: paginacao?.porPagina ?? LIMITE_PADRAO_LISTAGEM,
+        ...(paginacao ? { skip: (paginacao.pagina - 1) * paginacao.porPagina } : {}),
         orderBy: { nome: "asc" },
         select: {
           id: true,
@@ -33,26 +53,64 @@ export class ListAlunosService {
           turma: { select: { id: true, nome: true } },
           responsaveis: { select: { id: true, nome: true } },
         },
-      });
+      };
+      if (paginacao) {
+        const [itens, total] = await prisma.$transaction([
+          prisma.aluno.findMany(consultaProfessor),
+          prisma.aluno.count({ where: whereProfessor }),
+        ]);
+        return { itens, pagina: paginacao.pagina, porPagina: paginacao.porPagina, total, totalPaginas: Math.max(1, Math.ceil(total / paginacao.porPagina)) };
+      }
+      return prisma.aluno.findMany(consultaProfessor);
     }
 
-    const alunos =
-      await prisma.aluno.findMany({
-        where: escopoAluno,
-        take: LIMITE_PADRAO_LISTAGEM,
+    const filtros: Prisma.AlunoWhereInput = {
+      ...escopoAluno,
+      ...(paginacao?.busca
+        ? { OR: [
+            { nome: { contains: paginacao.busca, mode: "insensitive" as const } },
+            { apelido: { contains: paginacao.busca, mode: "insensitive" as const } },
+          ] }
+        : {}),
+      ...(paginacao?.status === "ATIVO" ? { ativo: true } : {}),
+      ...(paginacao?.status === "INATIVO" ? { ativo: false } : {}),
+      ...(paginacao?.turmaId ? { turmaId: paginacao.turmaId } : {}),
+    };
+
+    const consulta: Prisma.AlunoFindManyArgs = {
+        where: filtros,
+        take: paginacao?.porPagina ?? LIMITE_PADRAO_LISTAGEM,
+        ...(paginacao ? { skip: (paginacao.pagina - 1) * paginacao.porPagina } : {}),
         orderBy: {
-          nome: "asc"
+          nome: "asc" as const,
         },
         include: {
           unidadesPermitidas: { select: { unidadeId: true } },
+          turma: { select: { id: true, nome: true } },
+          responsaveis: { select: { id: true, nome: true } },
           mensalidades: {
             orderBy: {
-              vencimento: "desc"
-            }
+              vencimento: "desc" as const,
+            },
+            take: 1,
           }
         }
-      });
+      };
 
-    return alunos;
+    if (paginacao) {
+      const [itens, total] = await prisma.$transaction([
+        prisma.aluno.findMany(consulta),
+        prisma.aluno.count({ where: filtros }),
+      ]);
+      return {
+        itens,
+        pagina: paginacao.pagina,
+        porPagina: paginacao.porPagina,
+        total,
+        totalPaginas: Math.max(1, Math.ceil(total / paginacao.porPagina)),
+      };
+    }
+
+    return prisma.aluno.findMany(consulta);
   }
 }

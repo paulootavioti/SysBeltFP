@@ -81,6 +81,14 @@ describe("quem vê o seletor", () => {
     expect(seletor()).toBeNull();
   });
 
+  it("aparece para o DONO com uma unidade, permitindo ativá-la", async () => {
+    listarMinhasUnidades.mockResolvedValue([MATRIZ]);
+    montar("DONO");
+
+    expect(await screen.findByRole("combobox")).toBeDefined();
+    expect(screen.getByRole("option", { name: "Alfa Matriz" })).toBeDefined();
+  });
+
   it("não busca unidades para perfil sem alternância", async () => {
     montar("FAXINA");
 

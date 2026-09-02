@@ -41,3 +41,29 @@ export interface DashboardFinanceiro {
 }
 
 export type ContaFinanceira = MensalidadeComAluno;
+
+export interface CobrancaPagamento {
+  id: number;
+  gateway: string;
+  gatewayId?: string | null;
+  status: string;
+  numeroTentativa: number;
+  erro?: string | null;
+  consultadoEm?: string | null;
+  reconciliadoEm?: string | null;
+  createdAt: string;
+  mensalidade: {
+    id: number;
+    valor: number;
+    valorFinal: number;
+    vencimento: string;
+    status: string;
+    aluno: { id: number; nome: string };
+  } | null;
+  pedido: {
+    id: number;
+    total: number;
+    status: string;
+    aluno: { id: number; nome: string };
+  } | null;
+}

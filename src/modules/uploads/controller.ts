@@ -7,7 +7,8 @@ import { GetFotoService } from "./services/GetFotoService";
 // "financeiro" guarda comprovantes de pagamento e "contratos" guarda o
 // contrato assinado (imagem ou PDF, em ambos) — os demais prefixos
 // continuam sendo só foto de perfil.
-const PREFIXOS_PERMITIDOS = ["alunos", "responsaveis", "usuarios", "financeiro", "contratos", "produtos", "treinos"] as const;
+const PREFIXOS_UPLOAD = ["alunos", "responsaveis", "usuarios", "financeiro", "contratos", "produtos", "treinos"] as const;
+const PREFIXOS_LEITURA = [...PREFIXOS_UPLOAD, "mensageria"] as const;
 
 export class UploadsController {
   async uploadFoto(req: Request, res: Response) {
@@ -15,11 +16,11 @@ export class UploadsController {
       throw new AppError("Nenhum arquivo enviado.");
     }
 
-    if (!PREFIXOS_PERMITIDOS.includes(req.body.prefixo)) {
+    if (!PREFIXOS_UPLOAD.includes(req.body.prefixo)) {
       throw new AppError("Prefixo de upload inválido.");
     }
 
-    const prefixo = req.body.prefixo as (typeof PREFIXOS_PERMITIDOS)[number];
+    const prefixo = req.body.prefixo as (typeof PREFIXOS_UPLOAD)[number];
 
     const service = new UploadFotoService();
 
@@ -35,7 +36,7 @@ export class UploadsController {
   async getFoto(req: Request, res: Response) {
     const prefixo = String(req.params.prefixo);
 
-    if (!PREFIXOS_PERMITIDOS.includes(prefixo as (typeof PREFIXOS_PERMITIDOS)[number])) {
+    if (!PREFIXOS_LEITURA.includes(prefixo as (typeof PREFIXOS_LEITURA)[number])) {
       throw new AppError("Imagem não encontrada.", 404);
     }
 

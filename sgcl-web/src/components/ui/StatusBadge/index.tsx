@@ -7,7 +7,9 @@ type StatusType =
   | "PENDENTE"
   | "VENCIDO"
   | "CANCELADO"
-  | "ESTORNADO";
+  | "ESTORNADO"
+  | "ABERTA"
+  | "FINALIZADA";
 
 interface StatusBadgeProps {
   status: StatusType;
@@ -20,7 +22,17 @@ export function StatusBadge({
     <span
       className={`status-badge status-${status.toLowerCase()}`}
     >
-      {status}
+      {{
+        ATIVO: "Ativo",
+        INATIVO: "Inativo",
+        PAGO: "Pago",
+        PENDENTE: "Pendente",
+        VENCIDO: "Vencido",
+        CANCELADO: "Cancelado",
+        ESTORNADO: "Estornado",
+        ABERTA: "Aberta",
+        FINALIZADA: "Finalizada",
+      }[status]}
     </span>
   );
 }

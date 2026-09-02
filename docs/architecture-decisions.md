@@ -1,5 +1,43 @@
 # Sys Belt — Architecture Decision Records
 
+> **Decisao vigente:** a ADR-014 substitui as partes das ADR-010, ADR-011,
+> ADR-012 e ADR-013 que determinavam banco exclusivo, remocao de `Conta`,
+> provisionamento por tenant ou selecao contextual de conexao.
+
+## ADR-014 — Banco operacional compartilhado com isolamento por Conta
+
+Data: 31/08/2026
+
+### Contexto
+
+O produto atende varios assinantes e precisa manter sigilo absoluto entre
+eles. O desenho anterior previa um banco por academia, embora o schema e os
+middlewares ja usem `Conta`, `Unidade` e escopo logico.
+
+### Decisao
+
+Todos os assinantes usam um unico banco PostgreSQL operacional. `Conta` e a
+fronteira de tenant e nao sera removida; `Unidade` representa suas filiais.
+Autorizacao, queries, jobs, webhooks, caches e arquivos devem preservar essa
+fronteira. O Control Plane nao provisiona nem seleciona banco por assinante.
+
+Migrations e backups sao executados sobre o banco compartilhado. Hostname e
+`tenantKey` identificam a conta, mas nunca escolhem uma connection string.
+
+### Consequencias
+
+- onboarding cria registros, nao infraestrutura de banco;
+- toda mudanca funcional exige teste negativo com pelo menos duas contas;
+- restauracao seletiva e jobs globais exigem procedimentos por conta;
+- infraestrutura multi-banco existente fica descontinuada e sera removida;
+- `ConcessaoPlataforma` deve passar a se associar explicitamente a `Conta`.
+
+Detalhamento: [arquitetura-multitenant.md](arquitetura-multitenant.md).
+
+Status: Aceito.
+
+---
+
 ## ADR-001 — Separação entre Backend e Frontend
 
 Data: 25/06/2026

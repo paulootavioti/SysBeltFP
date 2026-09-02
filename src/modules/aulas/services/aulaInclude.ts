@@ -5,9 +5,11 @@ export const aulaIncludeCompleto = {
   aulaCurriculo: {
     include: {
       tecnicas: true,
+      blocos: { orderBy: { ordem: "asc" as const } },
     },
   },
   tecnicasRealizadas: true,
+  execucoesBlocos: { orderBy: { ordem: "asc" as const } },
   alunos: {
     include: {
       aluno: {

@@ -68,7 +68,7 @@ Mínimos absolutos: 14px em conteúdo, 11px em labels/badges.
 
 ## Larguras e layout
 
-- **Sidebar** do sistema: 230px em todas as telas autenticadas de
+- **Sidebar** do sistema: 232px em todas as telas autenticadas de
   `sgcl-web`.
 - **Header** superior: 68px, fundo branco, borda inferior
   `--color-border`.

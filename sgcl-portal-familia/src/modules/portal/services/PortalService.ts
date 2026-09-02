@@ -10,6 +10,8 @@ import type {
   Produto,
   Resumo,
   ResultadoPagamento,
+  ContratoFamilia,
+  ConsentimentoFamilia,
 } from "../types";
 
 export class PortalService {
@@ -60,13 +62,36 @@ export class PortalService {
     return response.data;
   }
 
-  static async criarPedido(alunoId: number, itens: ItemCarrinho[]) {
-    const response = await api.post<Pedido>("/portal-familia/loja/pedidos", { alunoId, itens });
+  static async criarPedido(alunoId: number, itens: ItemCarrinho[], formaPagamentoId?: number) {
+    const response = await api.post<Pedido>("/portal-familia/loja/pedidos", { alunoId, itens, formaPagamentoId });
+    return response.data;
+  }
+
+  static async pagarPedido(pedidoId: number, alunoId: number) {
+    const response = await api.post<Pedido>(`/portal-familia/loja/pedidos/${pedidoId}/pagar`, { alunoId });
     return response.data;
   }
 
   static async listarPedidos(alunoId: number) {
     const response = await api.get<Pedido[]>(`/portal-familia/loja/pedidos/${alunoId}`);
     return response.data;
+  }
+
+  static async contratos(alunoId: number) {
+    const response = await api.get<ContratoFamilia[]>(`/portal-familia/contratos/${alunoId}`);
+    return response.data;
+  }
+
+  static async alterarSenha(senhaAtual: string, novaSenha: string) {
+    await api.patch("/portal-familia/conta/senha", { senhaAtual, novaSenha });
+  }
+
+  static async consentimentos(alunoId: number) {
+    const response = await api.get<ConsentimentoFamilia[]>(`/portal-familia/privacidade/${alunoId}/consentimentos`);
+    return response.data;
+  }
+
+  static async revogarConsentimento(id: number) {
+    await api.patch(`/portal-familia/privacidade/consentimentos/${id}/revogar`);
   }
 }

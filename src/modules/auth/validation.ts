@@ -20,3 +20,18 @@ export const loginSchema = z.object({
   email: z.string().min(1, "Informe o e-mail."),
   senha: z.string().min(1, "Informe a senha."),
 });
+
+export const loginDoisFatoresSchema = z.object({
+  desafio: z.string().min(1, "Desafio de verificação inválido."),
+  codigo: z.string().regex(/^\d{6}$/, "Informe o código de 6 dígitos."),
+});
+
+export const solicitarRedefinicaoSenhaSchema = z.object({
+  email: z.string().email("Informe um e-mail válido."),
+  origem: z.enum(["EQUIPE", "PROFESSOR"]).default("EQUIPE"),
+});
+
+export const redefinirSenhaSchema = z.object({
+  token: z.string().min(32, "Link de redefinição inválido."),
+  senha: z.string().min(8, "A nova senha precisa ter pelo menos 8 caracteres."),
+});

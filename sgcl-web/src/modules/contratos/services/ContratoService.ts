@@ -47,7 +47,17 @@ export class ContratoService {
     return ApiClient.post<Contrato>(`/contratos/${id}/assinar`, { tipoAssinatura, contratoAssinadoUrl });
   }
 
+  static async enviarAssinaturaEletronica(id: number) {
+    return ApiClient.post<SolicitacaoAssinatura>(`/contratos/${id}/enviar-assinatura-eletronica`, {});
+  }
+
   static async renovar(id: number, dados?: { dataInicioVigencia?: string; dataFimVigencia?: string; valor?: number }) {
     return ApiClient.post<Contrato>(`/contratos/${id}/renovar`, dados ?? {});
   }
+}
+
+interface SolicitacaoAssinatura {
+  id: number;
+  status: string;
+  linkAssinatura?: string | null;
 }

@@ -57,6 +57,10 @@ export class LojaService {
     return ApiClient.patch<Pedido>(`/loja/pedidos/${id}/entregar`);
   }
 
+  static async confirmarPagamento(id: number) {
+    return ApiClient.patch<Pedido>(`/loja/pedidos/${id}/confirmar-pagamento`);
+  }
+
   static async cancelarPedido(id: number) {
     return ApiClient.patch<Pedido>(`/loja/pedidos/${id}/cancelar`);
   }

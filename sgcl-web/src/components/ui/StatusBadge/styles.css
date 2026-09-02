@@ -29,6 +29,16 @@
   color: var(--success);
 }
 
+.status-finalizada {
+  background: var(--color-success-bg, #e7f6ec);
+  color: var(--success);
+}
+
+.status-aberta {
+  background: var(--color-warning-bg, #f6eed0);
+  color: var(--warning);
+}
+
 .status-pendente {
   background: var(--color-warning-bg, #F6EED0);
   color: var(--warning);

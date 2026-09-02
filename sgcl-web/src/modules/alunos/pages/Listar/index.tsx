@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Layout } from "../../../../components/layout/Layout";
@@ -10,10 +10,8 @@ import { Checkbox } from "../../../../components/ui/Checkbox";
 import { FilterBar, type FilterBarSelect } from "../../../../components/ui/FilterBar";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Table } from "../../../../components/ui/Table";
-import { StatusBadge } from "../../../../components/ui/StatusBadge";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
-import { Tooltip } from "../../../../components/ui/Tooltip";
 import { TrilhaFaixa } from "../../../../components/ui/TrilhaFaixa";
 import { Modal } from "../../../../components/ui/Modal";
 import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
@@ -25,11 +23,12 @@ import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage"
 import { useAlunos } from "../../hooks/useAlunos";
 import { useAuth } from "../../../../contexts/useAuth";
 import { useToast } from "../../../../contexts/toast/useToast";
-import { usePaginacaoCliente } from "../../../../hooks/usePaginacaoCliente";
 import type { Aluno, AlunoBasico } from "../../types";
 
 import { AlunoService } from "../../services/AlunoService";
 import { TurmaService } from "../../../turmas/services/TurmaService";
+import { ImportarAlunosModal } from "../../components/ImportarAlunosModal";
+import { LuEllipsis, LuFileUp, LuUserPlus } from "react-icons/lu";
 
 import "./styles.css";
 
@@ -42,32 +41,38 @@ export function Alunos() {
   // turma) pra PROFESSOR nesse mesmo endpoint — só muda como renderizamos.
   const ehProfessor = usuario?.perfil === "PROFESSOR";
 
-  const {
-    alunos,
-    loading,
-    erro,
-    setErro,
-    carregarAlunos,
-  } = useAlunos();
-
-
   const [busca, setBusca] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
   const [filtroTurma, setFiltroTurma] = useState("");
+  const [pagina, setPagina] = useState(1);
+  const [menuAlunoId, setMenuAlunoId] = useState<number | null>(null);
   const [selecionados, setSelecionados] = useState<Set<number>>(new Set());
+  const [turmasDisponiveis, setTurmasDisponiveis] = useState<Array<{ id: number; nome: string }>>([]);
+
+  const { alunos, total, totalPaginas, loading, erro, setErro, carregarAlunos } = useAlunos({
+    pagina,
+    busca,
+    status: filtroStatus,
+    turmaId: filtroTurma,
+  });
+
+  useEffect(() => {
+    TurmaService.listar()
+      .then((turmas) => setTurmasDisponiveis(turmas.filter((turma) => turma.ativo).map(({ id, nome }) => ({ id, nome }))))
+      .catch(() => setTurmasDisponiveis([]));
+  }, []);
 
   const [modalMoverAberto, setModalMoverAberto] = useState(false);
   const [turmaDestino, setTurmaDestino] = useState("");
   const [movendo, setMovendo] = useState(false);
 
   const [confirmandoInativar, setConfirmandoInativar] = useState(false);
+  const [importacaoAberta, setImportacaoAberta] = useState(false);
   const [inativando, setInativando] = useState(false);
 
   const opcoesTurma = Array.from(
     new Map(
-      alunos
-        .filter((aluno) => aluno.turma)
-        .map((aluno) => [aluno.turma!.id, aluno.turma!.nome])
+      turmasDisponiveis.map((turma) => [turma.id, turma.nome])
     ).entries()
   )
     .sort((a, b) => a[1].localeCompare(b[1]))
@@ -76,11 +81,11 @@ export function Alunos() {
   const rotuloStatus: Record<string, string> = { ATIVO: "Ativo", INATIVO: "Inativo" };
 
   const filtrosAtivos = [
-    filtroStatus && { chave: "status", rotulo: `Status: ${rotuloStatus[filtroStatus]}`, limpar: () => setFiltroStatus("") },
+    filtroStatus && { chave: "status", rotulo: `Status: ${rotuloStatus[filtroStatus]}`, limpar: () => { setFiltroStatus(""); setPagina(1); } },
     filtroTurma && {
       chave: "turma",
       rotulo: `Turma: ${opcoesTurma.find((opcao) => opcao.value === filtroTurma)?.label ?? filtroTurma}`,
-      limpar: () => setFiltroTurma(""),
+      limpar: () => { setFiltroTurma(""); setPagina(1); },
     },
   ].filter((filtro): filtro is { chave: string; rotulo: string; limpar: () => void } => !!filtro);
 
@@ -101,28 +106,10 @@ export function Alunos() {
     }
   }
 
-  const alunosFiltrados = alunos.filter((aluno) => {
-    const termo = busca.toLowerCase();
-    const bateBusca =
-      aluno.nome.toLowerCase().includes(termo) ||
-      (aluno.apelido ?? "").toLowerCase().includes(termo);
-
-    const bateStatus =
-      filtroStatus === "" || (aluno.ativo ? "ATIVO" : "INATIVO") === filtroStatus;
-
-    const bateTurma = filtroTurma === "" || String(aluno.turma?.id ?? "") === filtroTurma;
-
-    return bateBusca && bateStatus && bateTurma;
-  });
-
   // pro PROFESSOR o backend já devolve esse recorte (mesmo endpoint) —
   // o cast só ajusta o tipo do lado do cliente pra bater com o que veio.
-  const alunosBasicosFiltrados = alunosFiltrados as unknown as AlunoBasico[];
-
-  const paginacaoCompleta = usePaginacaoCliente(alunosFiltrados, 15, [busca, filtroStatus, filtroTurma]);
-  const paginacaoBasica = usePaginacaoCliente(alunosBasicosFiltrados, 15, [busca, filtroTurma]);
-
-  const idsDaPagina = paginacaoCompleta.itensDaPagina.map((aluno) => aluno.id);
+  const alunosBasicosFiltrados = alunos as unknown as AlunoBasico[];
+  const idsDaPagina = alunos.map((aluno) => aluno.id);
   const todosDaPaginaSelecionados = idsDaPagina.length > 0 && idsDaPagina.every((id) => selecionados.has(id));
 
   function alternarSelecaoTodos() {
@@ -239,29 +226,14 @@ export function Alunos() {
       ),
     },
     {
-      header: "Nome",
+      header: "Aluno",
       accessor: "nome" as const,
       render: (aluno: Aluno) => (
-        <Tooltip
-          content={
-            <>
-              <div>Apelido: {aluno.apelido || "-"}</div>
-              <div>Turma: {aluno.turma?.nome || "Não vinculada"}</div>
-            </>
-          }
-        >
-          {aluno.nome}
-        </Tooltip>
+        <span className="aluno-identidade">
+          <strong>{aluno.nome}</strong>
+          <small>{[aluno.apelido, `${calcularIdade(aluno.dataNascimento) ?? "-"} anos`, aluno.responsaveis?.[0]?.nome].filter(Boolean).join(" · ")}</small>
+        </span>
       ),
-    },
-    {
-      header: "Idade",
-      accessor: "dataNascimento" as const,
-      render: (aluno: Aluno) => {
-        const idade = calcularIdade(aluno.dataNascimento);
-
-        return idade !== null ? `${idade} anos` : "-";
-      },
     },
     {
       header: "Faixa",
@@ -269,24 +241,24 @@ export function Alunos() {
       render: (aluno: Aluno) => <TrilhaFaixa faixa={aluno.faixa} comLabel />,
     },
     {
-      header: "Telefone",
-      accessor: "telefone" as const,
-    },
-    {
-      header: "Status",
-      accessor: "ativo" as const,
-      render: (aluno: Aluno) => (
-        <StatusBadge
-          status={aluno.ativo ? "ATIVO" : "INATIVO"}
-        />
-      ),
+      header: "Turma",
+      accessor: "turma" as const,
+      render: (aluno: Aluno) => aluno.turma?.nome ?? "Não vinculada",
     },
     {
       header: "Financeiro",
       accessor: "mensalidades" as const,
       render: (aluno: Aluno) => {
         const status = calcularStatusFinanceiroAluno(aluno.mensalidades);
-        return status ? <StatusBadge status={status} /> : "-";
+        if (!aluno.ativo) return "Aluno inativo";
+        if (status === "VENCIDO") {
+          const vencimento = aluno.mensalidades?.[0]?.vencimento;
+          const dias = vencimento ? Math.max(1, Math.floor((Date.now() - new Date(vencimento).getTime()) / 86400000)) : null;
+          return dias ? `Vencida há ${dias} dias` : "Vencida";
+        }
+        if (status === "PENDENTE") return "Pagamento pendente";
+        if (status === "PAGO") return "Em dia";
+        return "Sem mensalidade";
       },
     },
     {
@@ -315,26 +287,19 @@ export function Alunos() {
               })
             }
           >
-            Detalhes
+            Abrir
           </Button>
-
-          <Button
-            variant="secondary"
-            type="button"
-            size="sm"
-            onClick={() => navigate(`/alunos/${aluno.id}/editar`)}
-          >
-            Editar
-          </Button>
-
-          <Button
-            variant={aluno.ativo ? "danger" : "primary"}
-            type="button"
-            size="sm"
-            onClick={() => alterarStatus(aluno.id)}
-          >
-            {aluno.ativo ? "Inativar" : "Ativar"}
-          </Button>
+          <div className="aluno-menu-wrap">
+            <button type="button" className="aluno-menu-trigger" aria-label={`Mais ações para ${aluno.nome}`} aria-expanded={menuAlunoId === aluno.id} onClick={() => setMenuAlunoId(menuAlunoId === aluno.id ? null : aluno.id)}>
+              <LuEllipsis />
+            </button>
+            {menuAlunoId === aluno.id && (
+              <div className="aluno-menu" role="menu">
+                <button type="button" role="menuitem" onClick={() => navigate(`/alunos/${aluno.id}/editar`)}>Editar</button>
+                <button type="button" role="menuitem" className="aluno-menu-destrutivo" onClick={() => alterarStatus(aluno.id)}>{aluno.ativo ? "Inativar" : "Ativar"}</button>
+              </div>
+            )}
+          </div>
         </div>
       ),
     },
@@ -349,22 +314,27 @@ export function Alunos() {
 
       {!ehProfessor && (
         <div className="alunos-actions">
+          <Button type="button" variant="secondary" onClick={() => setImportacaoAberta(true)}>
+            <LuFileUp /> Importar CSV
+          </Button>
           <Button
             type="button"
             onClick={() => navigate("/alunos/cadastro")}
           >
-            + Novo Aluno
+            <LuUserPlus /> Novo aluno
           </Button>
         </div>
       )}
 
       <ErrorMessage message={erro} />
 
+      <ImportarAlunosModal open={importacaoAberta} onClose={() => setImportacaoAberta(false)} onImportado={carregarAlunos} />
+
       <FilterBar
         buscaLabel="Pesquisar aluno"
         buscaPlaceholder="Digite o nome..."
         buscaValue={busca}
-        onBuscaChange={setBusca}
+        onBuscaChange={(valor) => { setBusca(valor); setPagina(1); }}
         selects={[
           !ehProfessor && {
             label: "Status",
@@ -373,19 +343,19 @@ export function Alunos() {
               { value: "INATIVO", label: "Inativo" },
             ],
             value: filtroStatus,
-            onChange: (value: string) => setFiltroStatus(value),
+            onChange: (value: string) => { setFiltroStatus(value); setPagina(1); },
           },
           {
             label: "Turma",
             options: opcoesTurma,
             value: filtroTurma,
-            onChange: (value: string) => setFiltroTurma(value),
+            onChange: (value: string) => { setFiltroTurma(value); setPagina(1); },
           },
         ].filter((select): select is FilterBarSelect => !!select)}
         filtrosAtivos={filtrosAtivos}
       />
 
-      {!ehProfessor && !loading && paginacaoCompleta.itensDaPagina.length > 0 && (
+      {!ehProfessor && !loading && alunos.length > 0 && (
         <div className="alunos-selecionar-todos">
           <Checkbox
             label={`Selecionar todos desta página (${idsDaPagina.length})`}
@@ -397,7 +367,7 @@ export function Alunos() {
 
       {loading ? (
         <Loading />
-      ) : alunosFiltrados.length === 0 ? (
+      ) : alunos.length === 0 ? (
         <EmptyState
           title="Nenhum aluno encontrado"
           description="Cadastre um novo aluno ou ajuste sua pesquisa."
@@ -405,26 +375,28 @@ export function Alunos() {
       ) : ehProfessor ? (
         <Table
           columns={columnsBasicas}
-          data={paginacaoBasica.itensDaPagina}
+          data={alunosBasicosFiltrados}
           pagination={{
-            paginaAtual: paginacaoBasica.paginaAtual,
-            totalPaginas: paginacaoBasica.totalPaginas,
-            totalItens: paginacaoBasica.totalItens,
-            itensPorPagina: paginacaoBasica.itensPorPagina,
-            onChangePagina: paginacaoBasica.irParaPagina,
+            paginaAtual: pagina,
+            totalPaginas,
+            totalItens: total,
+            itensPorPagina: 15,
+            onChangePagina: setPagina,
           }}
+          onRowClick={(aluno) => navigate(`/alunos/${aluno.id}`)}
         />
       ) : (
         <Table
           columns={columns}
-          data={paginacaoCompleta.itensDaPagina}
+          data={alunos}
           pagination={{
-            paginaAtual: paginacaoCompleta.paginaAtual,
-            totalPaginas: paginacaoCompleta.totalPaginas,
-            totalItens: paginacaoCompleta.totalItens,
-            itensPorPagina: paginacaoCompleta.itensPorPagina,
-            onChangePagina: paginacaoCompleta.irParaPagina,
+            paginaAtual: pagina,
+            totalPaginas,
+            totalItens: total,
+            itensPorPagina: 15,
+            onChangePagina: setPagina,
           }}
+          onRowClick={(aluno) => navigate(`/alunos/${aluno.id}`)}
         />
       )}
 

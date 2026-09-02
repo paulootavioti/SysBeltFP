@@ -16,7 +16,7 @@ function requisicaoFalsa(headers: Record<string, string | string[]> = {}, ip?: s
 }
 
 function rodar(req: Request, acao: () => void) {
-  contextoRequisicao(req, {} as Response, acao as unknown as NextFunction);
+  contextoRequisicao(req, { setHeader: () => undefined } as unknown as Response, acao as unknown as NextFunction);
 }
 
 describe("origem da requisição", () => {
@@ -93,6 +93,7 @@ describe("fora de uma requisição", () => {
   it("devolve campos nulos em vez de estourar", () => {
     // cron, script de manutenção, teste unitário.
     expect(obterContextoRequisicao()).toEqual({
+      requestId: null,
       ip: null,
       dispositivo: null,
       usuarioId: null,

@@ -15,7 +15,11 @@ export class UnidadesController {
 
     const contaId = await resolverContaDestino(req);
 
-    const unidade = await service.execute({ nome: req.body.nome, contaId });
+    const unidade = await service.execute({
+      nome: req.body.nome,
+      contaId,
+      usuarioCriadorId: req.user.id,
+    });
 
     return res.status(201).json(unidade);
   }
@@ -73,5 +77,14 @@ async function resolverContaDestino(req: Request): Promise<number> {
     return unidadeAtual.contaId;
   }
 
-  throw new AppError("Selecione uma unidade ativa para administrar as filiais.", 400);
+  const vinculo = await prisma.usuarioUnidade.findFirst({
+    where: { usuarioId: req.user.id },
+    select: { unidade: { select: { contaId: true } } },
+  });
+
+  if (vinculo) {
+    return vinculo.unidade.contaId;
+  }
+
+  throw new AppError("Seu usuário ainda não está vinculado a uma academia.", 400);
 }

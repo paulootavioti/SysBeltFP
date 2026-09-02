@@ -4,7 +4,7 @@
 // conexão volta (ver hooks/useSincronizarFila.ts).
 export interface AcaoPendente {
   id: string;
-  tipo: "presenca" | "tecnica" | "observacao";
+  tipo: "presenca" | "tecnica" | "observacao" | "bloco";
   aulaId: number;
   payload: Record<string, unknown>;
   criadoEm: number;

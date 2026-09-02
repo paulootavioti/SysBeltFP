@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 
 import { Login } from "../modules/portal/pages/Login";
+import { RecuperarSenha } from "../modules/portal/pages/RecuperarSenha";
 import { Home } from "../modules/portal/pages/Home";
 import { Aula } from "../modules/portal/pages/Aula";
 import { Resumo } from "../modules/portal/pages/Resumo";
@@ -15,6 +16,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
+      <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+      <Route path="/redefinir-senha" element={<RecuperarSenha />} />
 
       <Route
         path="/home"

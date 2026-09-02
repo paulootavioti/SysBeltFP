@@ -18,6 +18,28 @@ enum AulaStatus {
   FINALIZADA
 }
 
+enum TipoBlocoAulaCurriculo {
+  AQUECIMENTO
+  JOGO
+  TECNICA
+  SPARRING
+  PAUSA
+  ALONGAMENTO
+}
+
+enum StatusExecucaoBlocoAula {
+  CUMPRIDO
+  PULADO
+}
+
+enum AcaoComandoVoz {
+  INICIAR
+  PAUSAR
+  AVANCAR
+  CONSULTAR
+  BLOCO_PAUSA
+}
+
 // O frontend hoje calcula um status equivalente no cliente
 // (mensalidades/utils/status.ts) usando o rótulo "PENDENTE" pra
 // "ainda não paga, dentro do prazo" — aqui esse mesmo estado se chama
@@ -100,15 +122,18 @@ enum TipoMovimentacaoEstoque {
 model Conta {
   id Int @id @default(autoincrement())
 
+  tenantKey     String  @unique @default(uuid()) @db.Uuid
   nome          String
   documento     String? // CNPJ ou CPF do assinante
   emailCobranca String?
 
   ativo Boolean @default(true)
 
-  unidades   Unidade[]
-  assinatura AssinaturaPlataforma?
-  faturas    FaturaPlataforma[]
+  unidades    Unidade[]
+  assinatura  AssinaturaPlataforma?
+  concessao   ConcessaoPlataforma?
+  faturas     FaturaPlataforma[]
+  comandosVoz ComandoVoz[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -202,19 +227,21 @@ enum StatusAcessoPlataforma {
 
 // Projeção local assinada pelo Control Plane. Não possui relação com as
 // tabelas comerciais legadas e contém somente o necessário para autorizar
-// recursos neste banco exclusivo.
+// recursos da Conta correspondente no banco operacional compartilhado.
 model ConcessaoPlataforma {
-  id                Int                    @id @default(1)
-  tenantKey         String                 @unique @db.Uuid
-  statusAcesso      StatusAcessoPlataforma
-  recursos          String[]
-  versaoContrato    Int
-  revisao           Int
-  emitidaEm         DateTime
-  expiraEm          DateTime
-  sincronizadaEm    DateTime               @default(now())
-  payloadHash       String
-  assinaturaBase64  String
+  id               Int                    @id @default(autoincrement())
+  contaId          Int                    @unique
+  conta            Conta                  @relation(fields: [contaId], references: [id])
+  tenantKey        String                 @unique @db.Uuid
+  statusAcesso     StatusAcessoPlataforma
+  recursos         String[]
+  versaoContrato   Int
+  revisao          Int
+  emitidaEm        DateTime
+  expiraEm         DateTime
+  sincronizadaEm   DateTime               @default(now())
+  payloadHash      String
+  assinaturaBase64 String
 }
 
 // Fatura mensal da plataforma. Guarda a contagem de alunos e o preço
@@ -265,40 +292,63 @@ model Unidade {
   nome  String
   ativo Boolean @default(true)
 
-  arenas            Arena[]
-  modalidades       Modalidade[]
-  usuarios          Usuario[]
-  alunos            Aluno[]
-  alunosAutorizados AlunoUnidade[]
-  responsaveis      Responsavel[]
-  turmas            Turma[]
-  planos            Plano[]
-  curriculos        Curriculo[]
-  tecnicas          Tecnica[]
-  competicoes       Competicao[]
-  mensalidades      Mensalidade[]
-  graduacoes        Graduacao[]
-  aulasProgramadas  AulaProgramada[]
-  aulas             Aula[]
-  vinculosUsuarios  UsuarioUnidade[]
-  metas             Meta[]
-  eventos           Evento[]
-  formasPagamento   FormaPagamento[]
-  auditLogs         AuditLog[]
-  assinaturas       Assinatura[]
-  modelosContrato   ModeloContrato[]
-  contratos         Contrato[]
-  mensagensFamilia  MensagemFamilia[]
-  produtos          Produto[]
-  pedidos           Pedido[]
-  leads             Lead[]
-  consentimentos    Consentimento[]
-  mensagensWhatsapp MensagemWhatsapp[]
+  landingSlug           String?  @unique
+  landingPublicada      Boolean  @default(false)
+  landingNome           String?
+  landingDescricao      String?
+  landingEndereco       String?
+  landingCidade         String?
+  landingUf             String?
+  landingCep            String?
+  landingTelefone       String?
+  landingWhatsapp       String?
+  landingHorario        String?
+  landingFotoCapaUrl    String?
+  landingDominio        String?
+
+  arenas                 Arena[]
+  modalidades            Modalidade[]
+  usuarios               Usuario[]
+  alunos                 Aluno[]
+  alunosAutorizados      AlunoUnidade[]
+  responsaveis           Responsavel[]
+  turmas                 Turma[]
+  planos                 Plano[]
+  curriculos             Curriculo[]
+  tecnicas               Tecnica[]
+  competicoes            Competicao[]
+  mensalidades           Mensalidade[]
+  graduacoes             Graduacao[]
+  aulasProgramadas       AulaProgramada[]
+  aulas                  Aula[]
+  vinculosUsuarios       UsuarioUnidade[]
+  metas                  Meta[]
+  eventos                Evento[]
+  formasPagamento        FormaPagamento[]
+  auditLogs              AuditLog[]
+  assinaturas            Assinatura[]
+  modelosContrato        ModeloContrato[]
+  contratos              Contrato[]
+  mensagensFamilia       MensagemFamilia[]
+  produtos               Produto[]
+  pedidos                Pedido[]
+  leads                  Lead[]
+  canaisCaptacao         CanalCaptacao[]
+  eventosLead            LeadEvento[]
+  consentimentos         Consentimento[]
+  mensagensWhatsapp      MensagemWhatsapp[]
+  cobrancasPagamento     CobrancaPagamento[]
+  solicitacoesAssinatura SolicitacaoAssinatura[]
+  canaisMensageria       CanalMensageria[]
+  conversasMensageria    ConversaMensageria[]
+  templatesMensageria    TemplateMensageria[]
+  fluxosBot              BotFluxo[]
 
   createdAt DateTime @default(now())
 
   dispositivosAcesso DispositivoAcesso[]
   eventosAcesso      EventoAcesso[]
+  importacoesAlunos  ImportacaoAlunos[]
 }
 
 // qualquer sala, tatame ou área usada pra ministrar aulas — uma unidade
@@ -312,9 +362,62 @@ model Arena {
   nome  String
   ativo Boolean @default(true)
 
-  turmas Turma[]
+  turmas        Turma[]
+  pareamentoVoz PareamentoVozArena?
 
   createdAt DateTime @default(now())
+}
+
+model ComandoVoz {
+  id                    Int                @id @default(autoincrement())
+  contaId               Int
+  conta                 Conta              @relation(fields: [contaId], references: [id], onDelete: Cascade)
+  gatilho               String
+  resposta              String
+  acao                  AcaoComandoVoz
+  duracaoBlocoSegundos  Int?
+  avisoAntesFimSegundos Int?
+  doSistema             Boolean            @default(false)
+  ativo                 Boolean            @default(true)
+  eventos               EventoComandoVoz[]
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @default(now()) @updatedAt
+
+  @@unique([contaId, gatilho])
+  @@index([contaId, ativo])
+}
+
+model PareamentoVozArena {
+  id                  Int                @id @default(autoincrement())
+  arenaId             Int                @unique
+  arena               Arena              @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  tokenHash           String             @unique
+  versaoConsentimento String
+  textoConsentimento  String
+  consentidoPorId     Int
+  consentidoPor       Usuario            @relation(fields: [consentidoPorId], references: [id])
+  ip                  String?
+  dispositivo         String?
+  consentidoEm        DateTime           @default(now())
+  revogadoEm          DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @default(now()) @updatedAt
+  eventos             EventoComandoVoz[]
+}
+
+model EventoComandoVoz {
+  id                    Int                @id @default(autoincrement())
+  pareamentoId          Int
+  pareamento            PareamentoVozArena @relation(fields: [pareamentoId], references: [id], onDelete: Cascade)
+  comandoId             Int
+  comando               ComandoVoz         @relation(fields: [comandoId], references: [id], onDelete: Cascade)
+  acao                  AcaoComandoVoz
+  duracaoBlocoSegundos  Int?
+  avisoAntesFimSegundos Int?
+  consumidoEm           DateTime?
+  createdAt             DateTime           @default(now())
+
+  @@index([pareamentoId, consumidoEm, createdAt])
 }
 
 model Aluno {
@@ -400,10 +503,43 @@ model Aluno {
   //updatedAt         DateTime         @updatedAt
   updatedAt DateTime @default(now()) @updatedAt
 
-  credenciaisAcesso CredencialAcesso[]
-  eventosAcesso     EventoAcesso[]
-  consentimentos    Consentimento[]
-  mensagensWhatsapp MensagemWhatsapp[]
+  credenciaisAcesso   CredencialAcesso[]
+  eventosAcesso       EventoAcesso[]
+  consentimentos      Consentimento[]
+  mensagensWhatsapp   MensagemWhatsapp[]
+  importacaoLoteId    Int?
+  importacaoLote      ImportacaoAlunos?    @relation(fields: [importacaoLoteId], references: [id])
+  leads               Lead[]
+  conversasMensageria ConversaMensageria[]
+}
+
+enum StatusImportacaoAlunos {
+  CONFIRMADA
+  DESFEITA
+}
+
+model ImportacaoAlunos {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  nomeArquivo       String
+  hashArquivo       String
+  totalLinhas       Int
+  totalCriados      Int
+  totalAtualizados  Int                    @default(0)
+  totalIgnorados    Int                    @default(0)
+  atualizacoesAntes Json?
+  status            StatusImportacaoAlunos @default(CONFIRMADA)
+  desfazivelAte     DateTime
+  desfeitaEm        DateTime?
+
+  alunos Aluno[]
+
+  createdAt DateTime @default(now())
+
+  @@index([unidadeId, createdAt])
 }
 
 // Unidades da mesma academia em que o aluno está autorizado a frequentar.
@@ -493,6 +629,8 @@ model FormaPagamento {
   mensalidades Mensalidade[]
   assinaturas  Assinatura[]
   contratos    Contrato[]
+  cobrancas    CobrancaPagamento[]
+  pedidos      Pedido[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -580,6 +718,50 @@ model Mensalidade {
 
   alunoId Int
   aluno   Aluno @relation(fields: [alunoId], references: [id])
+
+  cobrancas CobrancaPagamento[]
+}
+
+// Cada chamada a um gateway gera uma tentativa persistida. O registro existe
+// antes da chamada externa para que timeout, recusa e retentativa também
+// apareçam na conciliação, não apenas pagamentos que chegaram por webhook.
+model CobrancaPagamento {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  mensalidadeId Int?
+  mensalidade   Mensalidade? @relation(fields: [mensalidadeId], references: [id])
+
+  pedidoId Int?
+  pedido   Pedido? @relation(fields: [pedidoId], references: [id])
+
+  formaPagamentoId Int?
+  formaPagamento   FormaPagamento? @relation(fields: [formaPagamentoId], references: [id])
+
+  gateway           String
+  gatewayId         String?
+  chaveIdempotencia String  @unique
+  status            String  @default("CRIANDO")
+
+  linkPagamento   String?
+  pixCopiaECola   String?
+  pixQrCodeBase64 String?
+  expiraEm        DateTime?
+
+  numeroTentativa Int       @default(1)
+  erro            String?
+  consultadoEm    DateTime?
+  reconciliadoEm  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([gateway, gatewayId])
+  @@index([unidadeId, status])
+  @@index([mensalidadeId, createdAt])
+  @@index([pedidoId, createdAt])
 }
 
 // Configuração de cobrança recorrente de um aluno — o motor de geração
@@ -624,6 +806,11 @@ model Assinatura {
   status StatusAssinatura @default(ATIVA)
 
   ultimaCobrancaGeradaEm DateTime?
+
+  gatewayAssinaturaId String?
+  gatewayStatus       String?
+  linkAutorizacao     String?
+  gatewayAtualizadoEm DateTime?
 
   mensalidades Mensalidade[]
 
@@ -725,6 +912,8 @@ model Contrato {
 
   encerradoEm DateTime?
 
+  solicitacoesAssinatura SolicitacaoAssinatura[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
@@ -732,6 +921,7 @@ model Contrato {
 }
 
 enum TipoConsentimento {
+  TRATAMENTO_DADOS
   USO_IMAGEM
   BIOMETRIA
   DADOS_SAUDE
@@ -760,6 +950,7 @@ model Consentimento {
   // Versão do texto aceito. Sem isso não dá pra saber A QUE a pessoa
   // consentiu quando a política mudar.
   versaoPolitica String
+  textoAceito    String?
 
   // Quem registrou no sistema (recepção, admin) — diferente de quem
   // consentiu.
@@ -963,26 +1154,71 @@ model Usuario {
 
   ativo Boolean @default(true)
 
+  doisFatoresAtivo     Boolean   @default(false)
+  doisFatoresSegredo   String?
+  doisFatoresPendente  String?
+  doisFatoresAtivadoEm DateTime?
+
   turmas                    Turma[]
-  modalidadesCoordenadas    Modalidade[]       @relation("ModalidadeCoordenador")
+  modalidadesCoordenadas    Modalidade[]         @relation("ModalidadeCoordenador")
   avisosReconhecidos        AvisoReconhecido[]
-  aulasSubstituindo         AulaProgramada[]   @relation("AulaProgramadaProfessorSubstituto")
-  graduacoesSolicitadas     Graduacao[]        @relation("GraduacaoSolicitante")
-  graduacoesRevisadas       Graduacao[]        @relation("GraduacaoRevisor")
+  aulasSubstituindo         AulaProgramada[]     @relation("AulaProgramadaProfessorSubstituto")
+  graduacoesSolicitadas     Graduacao[]          @relation("GraduacaoSolicitante")
+  graduacoesRevisadas       Graduacao[]          @relation("GraduacaoRevisor")
   // unidades que esse usuário pode acessar — ADMIN e RECEPCAO podem ter
   // mais de uma (só o SUPERADMIN monta essa lista); PROFESSOR sempre tem
   // exatamente uma.
   unidadesVinculadas        UsuarioUnidade[]
   auditLogs                 AuditLog[]
-  consentimentosRegistrados Consentimento[]    @relation("ConsentimentoRegistrador")
-  consentimentosRevogados   Consentimento[]    @relation("ConsentimentoRevogador")
+  consentimentosRegistrados Consentimento[]      @relation("ConsentimentoRegistrador")
+  consentimentosRevogados   Consentimento[]      @relation("ConsentimentoRevogador")
   fotosTreinoPublicadas     FotoTreino[]
   notasAulaCriadas          NotaAula[]
+  leadsResponsavel          Lead[]               @relation("LeadResponsavel")
+  eventosLead               LeadEvento[]
+  conversasAtendidas        ConversaMensageria[] @relation("ConversaAtendente")
+  mensagensMensageria       MensagemMensageria[]
+  pareamentosVozConsentidos PareamentoVozArena[]
 
   createdAt DateTime @default(now())
 
   credenciaisAcesso CredencialAcesso[]
   eventosAcesso     EventoAcesso[]
+}
+
+// Token de uso único para recuperação de acesso. O valor enviado por e-mail
+// nunca é persistido: somente o SHA-256 fica no banco. `alvos` guarda os ids
+// das identidades que terão a senha atualizada (um Usuario ou as identidades
+// familiares que compartilham o mesmo e-mail).
+model TokenRedefinicaoSenha {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  tipo      String
+  email     String
+  alvos     Json
+  expiraEm  DateTime
+  usadoEm   DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email, tipo, createdAt])
+  @@index([expiraEm])
+}
+
+model SolicitacaoSuporte {
+  id Int @id @default(autoincrement())
+
+  usuarioId    Int
+  usuarioNome  String
+  usuarioEmail String
+  unidadeId    Int?
+  mensagem     String
+  contexto     Json?
+  status       String    @default("ABERTA")
+  createdAt    DateTime  @default(now())
+  resolvidaEm  DateTime?
+
+  @@index([status, createdAt])
+  @@index([usuarioId, createdAt])
 }
 
 // vínculo N:N entre Usuario e Unidade — permite ADMIN/RECEPCAO trabalharem
@@ -1058,6 +1294,52 @@ model Produto {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
+model SolicitacaoAssinatura {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  contratoId Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+
+  provedor             String
+  provedorDocumentoId  String?
+  status               String    @default("ENVIANDO")
+  linkAssinatura       String?
+  documentoAssinadoUrl String?
+  erro                 String?
+  enviadoEm            DateTime?
+  concluidoEm          DateTime?
+  canceladoEm          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  eventos EventoAssinaturaEletronica[]
+
+  @@unique([provedor, provedorDocumentoId])
+  @@index([unidadeId, status])
+  @@index([contratoId, createdAt])
+}
+
+model EventoAssinaturaEletronica {
+  id Int @id @default(autoincrement())
+
+  solicitacaoId Int
+  solicitacao   SolicitacaoAssinatura @relation(fields: [solicitacaoId], references: [id])
+
+  eventoExternoId String    @unique
+  tipo            String
+  payload         Json
+  processadoEm    DateTime?
+  resultado       String?
+  erro            String?
+  createdAt       DateTime  @default(now())
+
+  @@index([solicitacaoId, createdAt])
+}
+
 model ProdutoVariante {
   id Int @id @default(autoincrement())
 
@@ -1093,6 +1375,7 @@ model MovimentacaoEstoque {
 }
 
 enum StatusPedido {
+  AGUARDANDO_PAGAMENTO
   AGUARDANDO_RETIRADA
   ENTREGUE
   CANCELADO
@@ -1111,13 +1394,19 @@ model Pedido {
   alunoId Int
   aluno   Aluno @relation(fields: [alunoId], references: [id])
 
+  formaPagamentoId Int?
+  formaPagamento   FormaPagamento? @relation(fields: [formaPagamentoId], references: [id])
+
   total  Float
   status StatusPedido @default(AGUARDANDO_RETIRADA)
 
-  itens ItemPedido[]
+  itens     ItemPedido[]
+  cobrancas CobrancaPagamento[]
 
-  criadoEm   DateTime  @default(now())
-  entregueEm DateTime?
+  criadoEm    DateTime  @default(now())
+  pagoEm      DateTime?
+  entregueEm  DateTime?
+  canceladoEm DateTime?
 }
 
 model ItemPedido {
@@ -1133,10 +1422,95 @@ model ItemPedido {
   precoUnitario Float
 }
 
-enum StatusLead {
+enum EstagioLead {
   NOVO
-  CONTACTADO
-  CONVERTIDO
+  CONTATADO
+  QUALIFICADO
+  EXPERIMENTAL_AGENDADA
+  COMPARECEU
+  NEGOCIACAO
+  MATRICULADO
+  PERDIDO
+}
+
+enum TipoContatoLead {
+  PRATICANTE
+  RESPONSAVEL
+}
+
+enum SituacaoLead {
+  NUNCA_TREINOU
+  TREINA_EM_OUTRA
+  EX_ALUNO
+  ALUNO_ATUAL
+}
+
+enum FinalidadeConsentimentoLead {
+  TRATAMENTO_DADOS
+  COMUNICACOES
+}
+
+enum TipoCanalMensageria {
+  WHATSAPP
+  INSTAGRAM
+}
+
+enum StatusConexaoMensageria {
+  PENDENTE
+  VALIDANDO
+  CONECTADO
+  ERRO
+  INATIVO
+}
+
+enum EstadoConversaMensageria {
+  ABERTA
+  BOT_EM_ANDAMENTO
+  AGUARDANDO_EQUIPE
+  EM_ATENDIMENTO
+  AGUARDANDO_CONTATO
+  ENCERRADA
+}
+
+enum DirecaoMensagemMensageria {
+  ENTRADA
+  SAIDA
+}
+
+enum AutorMensagemMensageria {
+  CONTATO
+  ATENDENTE
+  BOT
+  SISTEMA
+}
+
+enum TipoConteudoMensageria {
+  TEXTO
+  BOTAO
+  IMAGEM
+  AUDIO
+  VIDEO
+  DOCUMENTO
+  LOCALIZACAO
+  CONTATO
+  REACAO
+  DESCONHECIDO
+}
+
+enum StatusEntregaMensageria {
+  RECEBIDA
+  PENDENTE
+  ENVIADA
+  ENTREGUE
+  LIDA
+  FALHOU
+}
+
+enum StatusEventoMensageriaEntrada {
+  PENDENTE
+  PROCESSANDO
+  CONCLUIDO
+  FALHOU
 }
 
 // Lead captado pelo formulário da landing page pública (site institucional
@@ -1230,13 +1604,290 @@ model Lead {
   unidadeId Int
   unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
-  nome      String
-  contato   String
-  interesse String
+  nome         String
+  telefoneE164 String
+  email        String?
 
-  status StatusLead @default(NOVO)
+  tipoContato          TipoContatoLead @default(PRATICANTE)
+  praticanteNome       String?
+  praticanteNascimento DateTime?
+  situacao             SituacaoLead    @default(NUNCA_TREINOU)
+  turnoPreferido       String[]        @default([])
 
-  criadoEm DateTime @default(now())
+  modalidadeInteresseId Int?
+  modalidadeInteresse   Modalidade? @relation(fields: [modalidadeInteresseId], references: [id])
+
+  canalId Int
+  canal   CanalCaptacao @relation(fields: [canalId], references: [id])
+
+  campanhaId Int?
+  campanha   Evento? @relation(fields: [campanhaId], references: [id])
+
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  referrer    String?
+
+  estagio EstagioLead @default(NOVO)
+
+  responsavelUsuarioId Int?
+  responsavelUsuario   Usuario? @relation("LeadResponsavel", fields: [responsavelUsuarioId], references: [id])
+
+  proximaAcaoEm DateTime?
+  motivoPerda   String?
+
+  alunoId Int?
+  aluno   Aluno? @relation(fields: [alunoId], references: [id])
+
+  observacoes    String?
+  eventos        LeadEvento[]
+  consentimentos LeadConsentimento[]
+
+  criadoEm            DateTime             @default(now())
+  atualizadoEm        DateTime             @default(now()) @updatedAt
+  conversaMensagerias ConversaMensageria[]
+
+  @@unique([unidadeId, telefoneE164])
+  @@index([telefoneE164])
+  @@index([unidadeId, estagio, proximaAcaoEm])
+  @@index([canalId, criadoEm])
+  @@index([campanhaId, criadoEm])
+}
+
+model CanalCaptacao {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  nome  String
+  slug  String  @unique
+  ativo Boolean @default(true)
+
+  leads            Lead[]
+  canaisMensageria CanalMensageria[]
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @default(now()) @updatedAt
+
+  @@unique([unidadeId, nome])
+  @@index([unidadeId, ativo])
+}
+
+model CanalMensageria {
+  id                   Int                       @id @default(autoincrement())
+  unidadeId            Int
+  unidade              Unidade                   @relation(fields: [unidadeId], references: [id])
+  tipo                 TipoCanalMensageria
+  identificadorExterno String
+  businessAccountId    String?
+  nomeExibicao         String
+  tokenRef             String
+  verifyTokenRef       String
+  canalCaptacaoId      Int?
+  canalCaptacao        CanalCaptacao?            @relation(fields: [canalCaptacaoId], references: [id])
+  ativo                Boolean                   @default(true)
+  statusConexao        StatusConexaoMensageria   @default(PENDENTE)
+  codigoErroConexao    String?
+  validadoEm           DateTime?
+  sincronizadoEm       DateTime?
+  tokenExpiraEm        DateTime?
+  proximaRenovacaoEm   DateTime?
+  ultimoDiagnosticoEm  DateTime?
+  tokenVersao          Int                       @default(1)
+  conversas            ConversaMensageria[]
+  mensagens            MensagemMensageria[]
+  templates            TemplateMensageria[]
+  eventosEntrada       EventoMensageriaEntrada[]
+  consentimentosLead   LeadConsentimento[]
+  criadoEm             DateTime                  @default(now())
+  atualizadoEm         DateTime                  @default(now()) @updatedAt
+
+  @@unique([tipo, identificadorExterno])
+  @@index([unidadeId, ativo])
+}
+
+model ConversaMensageria {
+  id                Int                      @id @default(autoincrement())
+  unidadeId         Int
+  unidade           Unidade                  @relation(fields: [unidadeId], references: [id])
+  canalMensageriaId Int
+  canalMensageria   CanalMensageria          @relation(fields: [canalMensageriaId], references: [id])
+  leadId            Int?
+  lead              Lead?                    @relation(fields: [leadId], references: [id])
+  alunoId           Int?
+  aluno             Aluno?                   @relation(fields: [alunoId], references: [id])
+  contatoExternoId  String
+  contatoNome       String?
+  estado            EstadoConversaMensageria @default(ABERTA)
+  atendenteId       Int?
+  atendente         Usuario?                 @relation("ConversaAtendente", fields: [atendenteId], references: [id])
+  naoLidas          Int                      @default(0)
+  ultimaMensagemEm  DateTime?
+  mensagens         MensagemMensageria[]
+  sessoesBot        BotSessao[]
+  criadoEm          DateTime                 @default(now())
+  atualizadoEm      DateTime                 @default(now()) @updatedAt
+
+  @@unique([canalMensageriaId, contatoExternoId])
+  @@index([unidadeId, estado, ultimaMensagemEm])
+}
+
+model MensagemMensageria {
+  id                      Int                       @id @default(autoincrement())
+  conversaId              Int
+  conversa                ConversaMensageria        @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  canalMensageriaId       Int
+  canalMensageria         CanalMensageria           @relation(fields: [canalMensageriaId], references: [id])
+  mensagemExternaId       String
+  provedorMensagemId      String?
+  direcao                 DirecaoMensagemMensageria
+  autor                   AutorMensagemMensageria
+  usuarioId               Int?
+  usuario                 Usuario?                  @relation(fields: [usuarioId], references: [id])
+  conteudo                String?
+  tipoConteudo            TipoConteudoMensageria    @default(TEXTO)
+  payload                 Json?
+  mediaExternaId          String?
+  mediaUrlOrigem          String?
+  mediaStatus             String?
+  arquivoUrl              String?
+  arquivoMime             String?
+  arquivoNome             String?
+  arquivoTamanho          Int?
+  erroMedia               String?
+  tentativasMedia         Int                       @default(0)
+  proximaTentativaMediaEm DateTime?
+  statusEntrega           StatusEntregaMensageria   @default(RECEBIDA)
+  erroEnvio               String?
+  tentativasEnvio         Int                       @default(0)
+  proximaTentativaEm      DateTime?
+  enviadaEm               DateTime
+  criadoEm                DateTime                  @default(now())
+
+  @@unique([canalMensageriaId, mensagemExternaId])
+  @@index([conversaId, enviadaEm])
+  @@index([provedorMensagemId])
+  @@index([mediaStatus, proximaTentativaMediaEm, criadoEm])
+  @@index([statusEntrega, proximaTentativaEm, criadoEm])
+}
+
+model TemplateMensageria {
+  id                   Int             @id @default(autoincrement())
+  unidadeId            Int
+  unidade              Unidade         @relation(fields: [unidadeId], references: [id])
+  canalMensageriaId    Int
+  canalMensageria      CanalMensageria @relation(fields: [canalMensageriaId], references: [id], onDelete: Cascade)
+  nome                 String
+  idioma               String          @default("pt_BR")
+  textoExibicao        String
+  identificadorMeta    String?
+  status               String          @default("LOCAL")
+  categoria            String?
+  componentes          Json?
+  quantidadeParametros Int             @default(0)
+  suportado            Boolean         @default(true)
+  sincronizadoEm       DateTime?
+  ativo                Boolean         @default(true)
+  criadoEm             DateTime        @default(now())
+  atualizadoEm         DateTime        @default(now()) @updatedAt
+
+  @@unique([canalMensageriaId, nome, idioma])
+  @@unique([canalMensageriaId, identificadorMeta])
+  @@index([unidadeId, ativo])
+}
+
+model EventoMensageriaEntrada {
+  id                 Int                           @id @default(autoincrement())
+  canalMensageriaId  Int
+  canalMensageria    CanalMensageria               @relation(fields: [canalMensageriaId], references: [id])
+  eventoExternoId    String
+  payload            Json
+  status             StatusEventoMensageriaEntrada @default(PENDENTE)
+  tentativas         Int                           @default(0)
+  proximaTentativaEm DateTime?
+  erro               String?
+  processadoEm       DateTime?
+  criadoEm           DateTime                      @default(now())
+  atualizadoEm       DateTime                      @default(now()) @updatedAt
+
+  @@unique([canalMensageriaId, eventoExternoId])
+  @@index([status, proximaTentativaEm, criadoEm])
+}
+
+model BotFluxo {
+  id           Int         @id @default(autoincrement())
+  unidadeId    Int
+  unidade      Unidade     @relation(fields: [unidadeId], references: [id])
+  nome         String
+  versao       String
+  ativo        Boolean     @default(true)
+  passos       Json
+  sessoes      BotSessao[]
+  criadoEm     DateTime    @default(now())
+  atualizadoEm DateTime    @default(now()) @updatedAt
+
+  @@unique([unidadeId, nome, versao])
+  @@index([unidadeId, ativo])
+}
+
+model BotSessao {
+  id           Int                @id @default(autoincrement())
+  conversaId   Int
+  conversa     ConversaMensageria @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  botFluxoId   Int
+  botFluxo     BotFluxo           @relation(fields: [botFluxoId], references: [id])
+  passoAtual   String
+  respostas    Json
+  expiraEm     DateTime
+  lembreteEm   DateTime?
+  finalizadoEm DateTime?
+  criadoEm     DateTime           @default(now())
+  atualizadoEm DateTime           @default(now()) @updatedAt
+
+  @@index([conversaId, finalizadoEm])
+  @@index([expiraEm, finalizadoEm])
+}
+
+model LeadEvento {
+  id Int @id @default(autoincrement())
+
+  leadId Int
+  lead   Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id])
+
+  tipo      String
+  descricao String
+  usuarioId Int?
+  usuario   Usuario? @relation(fields: [usuarioId], references: [id])
+  payload   Json?
+  criadoEm  DateTime @default(now())
+
+  @@index([leadId, criadoEm])
+  @@index([unidadeId, criadoEm])
+}
+
+model LeadConsentimento {
+  id Int @id @default(autoincrement())
+
+  leadId Int
+  lead   Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  canalMensageriaId Int?
+  canalMensageria   CanalMensageria? @relation(fields: [canalMensageriaId], references: [id])
+
+  finalidade  FinalidadeConsentimentoLead
+  textoAceito String
+  versao      String
+  ip          String?
+  userAgent   String?
+  aceitoEm    DateTime                    @default(now())
+  revogadoEm  DateTime?
+
+  @@index([leadId, finalidade, aceitoEm])
+  @@index([canalMensageriaId, aceitoEm])
 }
 
 model Aula {
@@ -1261,8 +1912,9 @@ model Aula {
   jogosRealizados    String[]           @default([])
   tecnicasRealizadas TecnicaCurriculo[] @relation("AulaTecnicasRealizadas")
 
-  fotos FotoTreino[]
-  notas NotaAula[]
+  fotos           FotoTreino[]
+  notas           NotaAula[]
+  execucoesBlocos ExecucaoBlocoAula[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -1371,6 +2023,7 @@ model Modalidade {
 
   turmas     Turma[]
   curriculos Curriculo[]
+  leads      Lead[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -1436,6 +2089,7 @@ model AulaCurriculo {
   modulo   ModuloCurriculo @relation(fields: [moduloId], references: [id])
 
   tecnicas        TecnicaCurriculo[]
+  blocos          BlocoAulaCurriculo[]
   aulasRealizadas Aula[]
   programacoes    AulaProgramada[]
 
@@ -1450,8 +2104,9 @@ model TecnicaCurriculo {
   categoria String?
   descricao String?
 
-  obrigatoria Boolean @default(true)
-  ordem       Int     @default(0)
+  obrigatoria             Boolean @default(true)
+  ordem                   Int     @default(0)
+  duracaoPrevistaSegundos Int     @default(600)
 
   aulaCurriculoId Int
   aulaCurriculo   AulaCurriculo @relation(fields: [aulaCurriculoId], references: [id])
@@ -1460,6 +2115,51 @@ model TecnicaCurriculo {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+}
+
+model BlocoAulaCurriculo {
+  id Int @id @default(autoincrement())
+
+  aulaCurriculoId Int
+  aulaCurriculo   AulaCurriculo @relation(fields: [aulaCurriculoId], references: [id], onDelete: Cascade)
+
+  tipo                    TipoBlocoAulaCurriculo
+  nome                    String
+  ordem                   Int                    @default(0)
+  duracaoPrevistaSegundos Int
+
+  rounds               Int?
+  duracaoRoundSegundos Int?
+  descansoSegundos     Int?
+  anuncio              String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([aulaCurriculoId, ordem])
+}
+
+model ExecucaoBlocoAula {
+  id Int @id @default(autoincrement())
+
+  aulaId Int
+  aula   Aula @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+
+  chaveBloco              String
+  tipo                    TipoBlocoAulaCurriculo
+  nome                    String
+  ordem                   Int
+  duracaoPrevistaSegundos Int
+  duracaoRealSegundos     Int
+  status                  StatusExecucaoBlocoAula
+  iniciadoEm              DateTime
+  finalizadoEm            DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([aulaId, chaveBloco])
+  @@index([aulaId, ordem])
 }
 
 model AulaProgramada {
@@ -1536,6 +2236,7 @@ model Evento {
   investimento             Float?
   receitaGerada            Float?
   responsavel              String?
+  leads                    Lead[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

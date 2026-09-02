@@ -15,7 +15,7 @@ describe("concessão no envio de WhatsApp", () => {
     const temRecurso = vi.fn().mockResolvedValue(false);
     const resultado = await new EnviarMensagemWhatsappService(temRecurso).execute(entrada);
 
-    expect(temRecurso).toHaveBeenCalledWith("WHATSAPP");
+    expect(temRecurso).toHaveBeenCalledWith("WHATSAPP", expect.any(Date), undefined, entrada.unidadeId);
     expect(resultado).toEqual({ resultado: "SEM_RECURSO_NO_PLANO" });
   });
 

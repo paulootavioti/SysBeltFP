@@ -1,6 +1,7 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
+import { calcularDuracaoTurmaMinutos, compilarFilaAula } from "../utils/compilarFilaAula";
 
 export class GetCurriculoService {
   async execute(id: number, unidadeId: number | null) {
@@ -10,6 +11,7 @@ export class GetCurriculoService {
         id,
       },
       include: {
+        turmas: { where: { ativo: true }, select: { horarioInicio: true, horarioFim: true } },
         modalidade: { select: { id: true, nome: true } },
         modulos: {
           orderBy: {
@@ -21,6 +23,7 @@ export class GetCurriculoService {
                 ordem: "asc",
               },
               include: {
+                blocos: { orderBy: { ordem: "asc" } },
                 tecnicas: {
                   orderBy: {
                     ordem: "asc",
@@ -39,6 +42,16 @@ export class GetCurriculoService {
 
     garantirAcessoUnidade(unidadeId, curriculo.unidadeId, "Currículo não encontrado.");
 
-    return curriculo;
+    return {
+      ...curriculo,
+      modulos: curriculo.modulos.map((modulo) => ({
+        ...modulo,
+        aulas: modulo.aulas.map((aula) => ({
+          ...aula,
+          filaCompilada: compilarFilaAula(aula),
+          duracaoTurmaMinutos: curriculo.turmas.length ? Math.min(...curriculo.turmas.map((turma) => calcularDuracaoTurmaMinutos(turma.horarioInicio, turma.horarioFim))) : null,
+        })),
+      })),
+    };
   }
 }
