@@ -13,7 +13,7 @@ body {
   background: var(--color-background);
   color: var(--color-text);
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: var(--font-md);
   line-height: 1.5;
 }
 
@@ -23,17 +23,17 @@ body {
 }
 
 h1 {
-  font-size: 1.4rem;
-  margin: 0 0 1.25rem;
+  font-size: 1.375em;
+  margin: 0 0 var(--space-5);
 }
 
 h2 {
-  font-size: 0.95rem;
+  font-size: var(--font-sm);
   font-weight: 600;
   color: var(--color-text-light);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--space-2);
 }
 
 .selo {
@@ -41,11 +41,11 @@ h2 {
   place-items: center;
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--color-accent);
-  color: #1a1206;
+  color: var(--color-on-accent);
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: var(--font-xs);
 }
 
 /* Layout ------------------------------------------------------------- */
@@ -53,8 +53,8 @@ h2 {
 .topo {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  padding: 0.75rem 1.5rem;
+  gap: var(--space-5);
+  padding: var(--space-2) var(--space-5);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface);
   flex-wrap: wrap;
@@ -63,24 +63,24 @@ h2 {
 .marca {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--space-2);
 }
 
 .marca small {
   display: block;
   color: var(--color-text-light);
-  font-size: 0.75rem;
+  font-size: var(--font-xs);
 }
 
 .menu {
   display: flex;
-  gap: 0.35rem;
+  gap: var(--space-1);
   margin-left: auto;
   flex-wrap: wrap;
 }
 
 .menu a {
-  padding: 0.4rem 0.8rem;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-md);
   color: var(--color-text-light);
   text-decoration: none;
@@ -98,7 +98,7 @@ h2 {
 .operador {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-2);
 }
 
 .operador-dados {
@@ -109,7 +109,7 @@ h2 {
 .operador-dados small {
   display: block;
   color: var(--color-text-light);
-  font-size: 0.75rem;
+  font-size: var(--font-xs);
 }
 
 .botao-texto {
@@ -117,7 +117,7 @@ h2 {
   border: 1px solid var(--color-border);
   color: var(--color-text-light);
   border-radius: var(--radius-md);
-  padding: 0.35rem 0.7rem;
+  padding: var(--space-1) var(--space-2);
   cursor: pointer;
   font: inherit;
 }
@@ -127,9 +127,9 @@ h2 {
 }
 
 .conteudo {
-  max-width: 1100px;
+  max-width: var(--layout-content-max);
   margin: 0 auto;
-  padding: 1.75rem 1.5rem 3rem;
+  padding: var(--space-6) var(--space-5) var(--space-8);
 }
 
 /* Cartões e listas ---------------------------------------------------- */
@@ -137,14 +137,14 @@ h2 {
 .grade {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .cartao {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 1.1rem;
+  padding: var(--space-4);
 }
 
 .contagens {
@@ -152,13 +152,13 @@ h2 {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .contagens li {
   display: flex;
   align-items: baseline;
-  gap: 0.6rem;
+  gap: var(--space-2);
 }
 
 .contagens strong {
@@ -173,18 +173,18 @@ h2 {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: 0.9em;
 }
 
 th {
   text-align: left;
   color: var(--color-text-light);
   font-weight: 500;
-  padding-bottom: 0.4rem;
+  padding-bottom: var(--space-1);
 }
 
 td {
-  padding: 0.3rem 0;
+  padding: var(--space-1) 0;
   border-top: 1px solid var(--color-border);
 }
 
@@ -193,47 +193,47 @@ td {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .linha-titulo {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 .etiqueta {
-  font-size: 0.75rem;
-  padding: 0.15rem 0.55rem;
-  border-radius: 999px;
+  font-size: var(--font-xs);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
   border: 1px solid var(--color-border);
   color: var(--color-text-light);
   white-space: nowrap;
 }
 
 .etiqueta-ativo {
-  border-color: #2f5d3a;
-  color: #86d69b;
+  border-color: var(--color-success);
+  color: var(--color-success);
 }
 
 .etiqueta-suspenso,
-.etiqueta-erro_provisionamento {
-  border-color: #6b3330;
+.etiqueta-erro_provisionamiento {
+  border-color: var(--color-danger);
   color: var(--color-danger);
 }
 
 .atributos {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.6rem 1.25rem;
+  gap: var(--space-2) var(--space-5);
   margin: 0;
 }
 
 .atributos dt {
   color: var(--color-text-light);
-  font-size: 0.75rem;
+  font-size: var(--font-xs);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -257,8 +257,8 @@ td {
 
 .busca {
   width: 100%;
-  padding: 0.6rem 0.8rem;
-  margin-bottom: 1rem;
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -273,7 +273,7 @@ td {
 }
 
 .mensagem {
-  margin: 0.75rem 0;
+  margin: var(--space-3) 0;
 }
 
 .mensagem-erro {
@@ -290,7 +290,7 @@ td {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 1.5rem;
+  padding: var(--space-5);
 }
 
 .login-cartao {
@@ -298,38 +298,38 @@ td {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 1.75rem;
+  padding: var(--space-6);
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .login-marca {
   display: grid;
   justify-items: center;
-  gap: 0.4rem;
+  gap: var(--space-1);
   text-align: center;
 }
 
 .login-marca h1 {
-  margin: 0.3rem 0 0;
-  font-size: 1.2rem;
+  margin: var(--space-1) 0 0;
+  font-size: 1.2em;
 }
 
 .login-marca p {
   margin: 0;
   color: var(--color-text-light);
-  font-size: 0.85rem;
+  font-size: 0.85em;
 }
 
 label {
   display: grid;
-  gap: 0.3rem;
-  font-size: 0.85rem;
+  gap: var(--space-1);
+  font-size: 0.85em;
   color: var(--color-text-light);
 }
 
 input {
-  padding: 0.6rem 0.7rem;
+  padding: var(--space-2) var(--space-3);
   background: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -344,9 +344,9 @@ input:focus-visible,
 }
 
 button[type="submit"] {
-  padding: 0.65rem;
+  padding: var(--space-2);
   background: var(--color-accent);
-  color: #1a1206;
+  color: var(--color-on-accent);
   border: none;
   border-radius: var(--radius-md);
   font: inherit;
@@ -363,8 +363,8 @@ button[type="submit"]:disabled {
 
 .migalha {
   color: var(--color-text-light);
-  font-size: 0.85rem;
-  margin: 0 0 0.5rem;
+  font-size: 0.85em;
+  margin: 0 0 var(--space-2);
 }
 
 .migalha a,
@@ -385,7 +385,7 @@ button[type="submit"]:disabled {
 .grade-larga {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1rem;
+  gap: var(--space-4);
   align-items: start;
 }
 
@@ -404,10 +404,10 @@ button[type="submit"]:disabled {
 .negociado,
 .alerta {
   display: inline-block;
-  margin-left: 0.4rem;
-  font-size: 0.7rem;
-  padding: 0.05rem 0.4rem;
-  border-radius: 999px;
+  margin-left: var(--space-1);
+  font-size: 0.7em;
+  padding: 0.05em var(--space-1);
+  border-radius: var(--radius-full);
   border: 1px solid var(--color-border);
   color: var(--color-accent);
   white-space: nowrap;
@@ -415,7 +415,7 @@ button[type="submit"]:disabled {
 
 .alerta {
   color: var(--color-danger);
-  border-color: #6b3330;
+  border-color: var(--color-danger);
 }
 
 .lista-simples {
@@ -423,19 +423,19 @@ button[type="submit"]:disabled {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.7rem;
+  gap: var(--space-3);
 }
 
 .lista-simples li {
   display: grid;
-  gap: 0.1rem;
+  gap: var(--space-1);
 }
 
 .lista-simples span,
 .lista-simples small,
 .eventos small {
   color: var(--color-text-light);
-  font-size: 0.8rem;
+  font-size: 0.8em;
 }
 
 .eventos {
@@ -443,15 +443,15 @@ button[type="submit"]:disabled {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.8rem;
+  gap: var(--space-3);
   min-width: 0;
 }
 
 .eventos li {
-  padding-left: 0.7rem;
+  padding-left: var(--space-2);
   border-left: 2px solid var(--color-border);
   display: grid;
-  gap: 0.1rem;
+  gap: var(--space-1);
   /* Mesma armadilha do `.grade-larga`: item de grid não encolhe abaixo do
      próprio conteúdo. Aqui o efeito é a mensagem de erro do provisionamento
      empurrando a página inteira de lado no celular.
@@ -473,7 +473,7 @@ button[type="submit"]:disabled {
 .evento-linha {
   display: flex;
   align-items: baseline;
-  gap: 0.6rem;
+  gap: var(--space-2);
   flex-wrap: wrap;
   min-width: 0;
 }
@@ -482,20 +482,20 @@ button[type="submit"]:disabled {
    classe própria: reaproveitar a etiqueta aqui fazia o texto não quebrar e
    empurrar a página inteira de lado no celular. */
 .evento-aviso {
-  margin: 0.2rem 0 0;
-  font-size: 0.8rem;
+  margin: var(--space-1) 0 0;
+  font-size: 0.8em;
   color: var(--color-danger);
 }
 
 .evento-erro {
-  margin: 0.2rem 0 0;
-  font-size: 0.8rem;
+  margin: var(--space-1) 0 0;
+  font-size: 0.8em;
   color: var(--color-danger);
   overflow-wrap: anywhere;
 }
 
 code {
-  font-size: 0.8rem;
+  font-size: 0.8em;
   overflow-wrap: anywhere;
 }
 
@@ -514,7 +514,7 @@ code {
 .formulario {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.9rem 1.25rem;
+  gap: var(--space-3) var(--space-5);
   align-items: start;
 }
 
@@ -529,15 +529,15 @@ code {
 }
 
 .secao-formulario {
-  margin: 0.4rem 0 0;
+  margin: var(--space-1) 0 0;
   color: var(--color-text-light);
-  font-size: 0.85rem;
+  font-size: 0.85em;
   border-top: 2px solid var(--color-border);
-  padding-top: 0.9rem;
+  padding-top: var(--space-3);
 }
 
 select {
-  padding: 0.6rem 0.7rem;
+  padding: var(--space-2) var(--space-3);
   background: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -558,5 +558,5 @@ select:disabled {
 
 .erro-campo {
   color: var(--color-danger);
-  font-size: 0.78rem;
+  font-size: 0.78em;
 }
