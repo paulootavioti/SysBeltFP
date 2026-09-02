@@ -23,8 +23,8 @@ body {
 }
 
 h1 {
-  font-size: 1.375em;
-  margin: 0 0 var(--space-5);
+  font-size: 2em;
+  margin: 0 0 var(--space-6);
 }
 
 h2 {
@@ -170,6 +170,81 @@ h2 {
   color: var(--color-text-light);
 }
 
+/* KPI Grids — Números primários e secundários */
+.kpi-grid-principal {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  background: var(--color-border);
+  margin-bottom: var(--space-6);
+}
+
+.kpi-grid-principal > * {
+  background: var(--color-surface);
+  border: 0;
+  border-radius: 0;
+  padding: var(--space-5);
+}
+
+.kpi-grid-principal h2 {
+  font-size: 46px;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.kpi-grid-principal > * > p:first-of-type {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  color: var(--color-text-light);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.kpi-grid-secundario {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  background: var(--color-border);
+  margin-bottom: var(--space-6);
+}
+
+.kpi-grid-secundario > * {
+  background: var(--color-surface);
+  border: 0;
+  border-radius: 0;
+  padding: var(--space-3) var(--space-4);
+}
+
+.kpi-grid-secundario h2 {
+  font-size: 22px;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.kpi-grid-secundario > * > p:first-of-type {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-light);
+  margin: 0 0 var(--space-1) 0;
+}
+
+/* Falha de provisionamento em primeira posição */
+.kpi-falhas {
+  order: -1;
+}
+
+.kpi-falhas.kpi-critico {
+  background: var(--color-danger) !important;
+}
+
+.kpi-falhas.kpi-critico h2,
+.kpi-falhas.kpi-critico p {
+  color: var(--color-surface) !important;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -180,11 +255,12 @@ th {
   text-align: left;
   color: var(--color-text-light);
   font-weight: 500;
-  padding-bottom: var(--space-1);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--color-border);
 }
 
 td {
-  padding: var(--space-1) 0;
+  padding: var(--space-2) 0;
   border-top: 1px solid var(--color-border);
 }
 
@@ -559,4 +635,21 @@ select:disabled {
 .erro-campo {
   color: var(--color-danger);
   font-size: 0.78em;
+}
+
+/* Últimos provisionamentos como linha-lista */
+.ultimos-provisionamentos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--color-border);
+}
+
+.ultimos-provisionamentos li {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
 }
