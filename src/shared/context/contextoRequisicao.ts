@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { randomUUID } from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 
 // A LGPD e o próprio requisito de auditoria pedem que o registro diga de
@@ -13,6 +14,7 @@ import type { NextFunction, Request, Response } from "express";
 // um script, um teste), a leitura devolve campos nulos em vez de explodir.
 
 export interface ContextoRequisicao {
+  requestId: string | null;
   ip: string | null;
   dispositivo: string | null;
   // preenchido por ensureAuthenticated, depois que o token é validado —
@@ -60,8 +62,11 @@ function extrairDispositivo(req: Request): string | null {
 }
 
 export function contextoRequisicao(req: Request, _res: Response, next: NextFunction) {
+  const requestId = randomUUID();
+  _res.setHeader("X-Request-Id", requestId);
   armazenamento.run(
     {
+      requestId,
       ip: extrairIp(req),
       dispositivo: extrairDispositivo(req),
       usuarioId: null,
@@ -76,6 +81,7 @@ export function obterContextoRequisicao(): ContextoRequisicao {
   return (
     armazenamento.getStore() ?? {
       ip: null,
+      requestId: null,
       dispositivo: null,
       usuarioId: null,
       unidadesDoUsuario: null,
@@ -103,7 +109,7 @@ export function comContextoRequisicao<T>(
   acao: () => T
 ): T {
   return armazenamento.run(
-    { ip: null, dispositivo: null, usuarioId: null, unidadesDoUsuario: null, ...contexto },
+    { requestId: null, ip: null, dispositivo: null, usuarioId: null, unidadesDoUsuario: null, ...contexto },
     acao
   );
 }

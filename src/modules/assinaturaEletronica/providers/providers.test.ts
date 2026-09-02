@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { obterProvedorAssinatura, ProvedorAssinaturaNaoImplementadoError } from "./index";
 import { NullElectronicSignatureProvider } from "./NullElectronicSignatureProvider";
@@ -52,7 +52,6 @@ describe("Provedores ainda não implementados", () => {
   it.each([
     new ClicksignProvider(),
     new D4SignProvider(),
-    new AutentiqueProvider(),
     new DocuSignProvider(),
     new AdobeSignProvider(),
   ])("$nome lança ProvedorAssinaturaNaoImplementadoError em todos os métodos", async (provedor) => {
@@ -63,5 +62,35 @@ describe("Provedores ainda não implementados", () => {
     await expect(provedor.cancelarSolicitacao("x")).rejects.toThrow(ProvedorAssinaturaNaoImplementadoError);
     await expect(provedor.baixarDocumentoAssinado("x")).rejects.toThrow(ProvedorAssinaturaNaoImplementadoError);
     await expect(provedor.processarWebhook({})).rejects.toThrow(ProvedorAssinaturaNaoImplementadoError);
+  });
+});
+
+describe("AutentiqueProvider", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("envia o HTML e devolve o link do signatário", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
+      data: { createDocument: { id: "doc-1", signatures: [{ link: { short_link: "https://a.test/assinar" } }] } },
+    }), { status: 200, headers: { "Content-Type": "application/json" } }));
+    const provider = new AutentiqueProvider("token-teste");
+    const resultado = await provider.enviarParaAssinatura({
+      conteudo: "Contrato <seguro>",
+      signatarios: [{ nome: "Maria", email: "maria@example.com", cpf: "123" }],
+      referenciaExterna: "42",
+    });
+
+    expect(resultado).toEqual({ provedorDocumentoId: "doc-1", linkAssinatura: "https://a.test/assinar", status: "PENDENTE" });
+    expect(fetchMock).toHaveBeenCalledOnce();
+    const requisicao = fetchMock.mock.calls[0][1];
+    expect(requisicao?.headers).toMatchObject({ Authorization: "Bearer token-teste" });
+    expect(requisicao?.body).toBeInstanceOf(FormData);
+  });
+
+  it("interpreta o evento de documento concluído", async () => {
+    const evento = await new AutentiqueProvider("token").processarWebhook({
+      event: { type: "document.finished", data: { object: { id: "doc-2" } } },
+    });
+    expect(evento.tipo).toBe("document.finished");
+    expect(evento.referenciaExterna).toBe("doc-2");
   });
 });

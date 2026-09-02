@@ -44,7 +44,9 @@
     z-index: 500;
 
     gap: 0;
-    overflow-x: visible;
+    overflow-x: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
     margin-bottom: 0;
 
     background: var(--color-surface);
@@ -57,14 +59,14 @@
 
   .tabs-trigger {
     position: relative;
-    flex: 1;
+    flex: 1 1 20%;
     min-width: 0;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    min-height: var(--tap-target-min);
+    min-height: 60px;
     padding: var(--space-1);
     border-bottom: none;
     border-radius: var(--radius-md);
@@ -74,5 +76,9 @@
   .tabs-trigger.active {
     background: var(--color-accent-soft);
     border-bottom: none;
+  }
+
+  .tabs-list::-webkit-scrollbar {
+    display: none;
   }
 }

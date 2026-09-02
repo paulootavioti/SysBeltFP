@@ -11,7 +11,20 @@ export class GetLojaFamiliaService {
     const prisma = prismaDaRequisicao();
     return prisma.produto.findMany({
       where: { ativo: true },
-      include: { variantes: true, unidade: { select: { id: true, nome: true } } },
+      include: {
+        variantes: true,
+        unidade: {
+          select: {
+            id: true,
+            nome: true,
+            formasPagamento: {
+              where: { ativo: true },
+              select: { id: true, tipo: true, nomePersonalizado: true },
+              orderBy: { tipo: "asc" },
+            },
+          },
+        },
+      },
       orderBy: { nome: "asc" },
     });
   }

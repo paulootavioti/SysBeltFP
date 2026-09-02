@@ -4,11 +4,45 @@ import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticate
 import { ensureRole } from "../../shared/middlewares/ensureRole";
 import { validateBody } from "../../shared/middlewares/validateBody";
 import { alunoSchema, senhaPortalSchema } from "./validation";
+import multer from "multer";
 
 const alunosRoutes = Router();
 
 const alunosController =
   new AlunosController();
+
+const uploadCsv = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+  fileFilter: (_req, arquivo, callback) => {
+    const valido = arquivo.mimetype === "text/csv" || arquivo.originalname.toLowerCase().endsWith(".csv");
+    if (!valido) return callback(new Error("Envie um arquivo CSV."));
+    return callback(null, true);
+  },
+});
+
+alunosRoutes.post(
+  "/importacoes/previsualizar",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "RECEPCAO"]),
+  uploadCsv.single("arquivo"),
+  alunosController.previsualizarImportacao,
+);
+
+alunosRoutes.post(
+  "/importacoes/confirmar",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "RECEPCAO"]),
+  uploadCsv.single("arquivo"),
+  alunosController.importarCsv,
+);
+
+alunosRoutes.post(
+  "/importacoes/:id/desfazer",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "RECEPCAO"]),
+  alunosController.desfazerImportacao,
+);
 
 
   alunosRoutes.post(

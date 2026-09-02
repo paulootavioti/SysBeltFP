@@ -14,8 +14,54 @@ import { CriarPedidoFamiliaService } from "./services/CriarPedidoFamiliaService"
 import { ListPedidosFamiliaService } from "./services/ListPedidosFamiliaService";
 import { garantirAlunoNoEscopo } from "./utils/garantirAlunoNoEscopo";
 import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
+import { SolicitarRedefinicaoSenhaFamiliaService } from "./services/SolicitarRedefinicaoSenhaFamiliaService";
+import { RedefinirSenhaFamiliaService } from "./services/RedefinirSenhaFamiliaService";
+import { ListContratosFamiliaService } from "./services/ListContratosFamiliaService";
+import { AlterarSenhaFamiliaService } from "./services/AlterarSenhaFamiliaService";
+import { PagarPedidoFamiliaService } from "./services/PagarPedidoFamiliaService";
+import { PrivacidadeFamiliaService } from "./services/PrivacidadeFamiliaService";
 
 export class PortalFamiliaController {
+  async listarConsentimentos(req: Request, res: Response) {
+    const alunoId = Number(req.params.alunoId);
+    garantirAlunoNoEscopo(req.familia!.alunoIds, alunoId);
+    return res.json(await new PrivacidadeFamiliaService().listar(alunoId));
+  }
+
+  async revogarConsentimento(req: Request, res: Response) {
+    return res.json(
+      await new PrivacidadeFamiliaService().revogar(
+        Number(req.params.id),
+        req.familia!.alunoIds
+      )
+    );
+  }
+
+  async alterarSenha(req: Request, res: Response) {
+    await new AlterarSenhaFamiliaService().execute(
+      req.familia!.email,
+      req.body.senhaAtual,
+      req.body.novaSenha
+    );
+    return res.json({ message: "Senha alterada com sucesso." });
+  }
+
+  async contratos(req: Request, res: Response) {
+    const alunoId = Number(req.params.alunoId);
+    garantirAlunoNoEscopo(req.familia!.alunoIds, alunoId);
+    return res.json(await new ListContratosFamiliaService().execute(alunoId));
+  }
+
+  async solicitarRedefinicaoSenha(req: Request, res: Response) {
+    await new SolicitarRedefinicaoSenhaFamiliaService().execute(req.body.email);
+    return res.status(202).json({ message: "Se o e-mail estiver cadastrado, você receberá as instruções em instantes." });
+  }
+
+  async redefinirSenha(req: Request, res: Response) {
+    await new RedefinirSenhaFamiliaService().execute(req.body.token, req.body.senha);
+    return res.json({ message: "Senha redefinida com sucesso." });
+  }
+
   async login(req: Request, res: Response) {
     const { email, senha } = req.body;
 
@@ -134,9 +180,15 @@ export class PortalFamiliaController {
     garantirAlunoNoEscopo(req.familia!.alunoIds, alunoId);
 
     const service = new CriarPedidoFamiliaService();
-    const pedido = await service.execute(alunoId, req.body.itens);
+    const pedido = await service.execute(alunoId, req.body.itens, req.body.formaPagamentoId);
 
     return res.status(201).json(pedido);
+  }
+
+  async pagarPedido(req: Request, res: Response) {
+    const alunoId = Number(req.body.alunoId);
+    garantirAlunoNoEscopo(req.familia!.alunoIds, alunoId);
+    return res.json(await new PagarPedidoFamiliaService().execute(Number(req.params.id), alunoId));
   }
 
   async listarPedidos(req: Request, res: Response) {

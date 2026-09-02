@@ -62,6 +62,16 @@
   gap: var(--space-6);
 }
 
+.home-instalar {
+  min-height: 44px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font: inherit;
+  font-weight: 700;
+}
+
 /* ===== Card da próxima aula ===== */
 .home-card-proxima {
   background: var(--color-primary);

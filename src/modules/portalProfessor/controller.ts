@@ -9,6 +9,8 @@ import { CriarNotaAulaService } from "./services/CriarNotaAulaService";
 import { RegistrarObservacaoAulaService } from "./services/RegistrarObservacaoAulaService";
 import { PublicarFotoAulaProfessorService } from "./services/PublicarFotoAulaProfessorService";
 import { FinalizarAulaProfessorService } from "./services/FinalizarAulaProfessorService";
+import { RegistrarExecucaoBlocoService } from "./services/RegistrarExecucaoBlocoService";
+import { ConsumirComandosVozService } from "./services/ConsumirComandosVozService";
 
 export class PortalProfessorController {
   async hoje(req: Request, res: Response) {
@@ -71,5 +73,14 @@ export class PortalProfessorController {
     const service = new FinalizarAulaProfessorService();
     const resumo = await service.execute(Number(req.params.id), req.user, req.body?.observacoes);
     return res.json(resumo);
+  }
+
+  async registrarBloco(req: Request, res: Response) {
+    const registro = await new RegistrarExecucaoBlocoService().execute(Number(req.params.id), req.body, req.user);
+    return res.json(registro);
+  }
+
+  async comandosVoz(req: Request, res: Response) {
+    return res.json(await new ConsumirComandosVozService().execute(Number(req.params.id), req.user));
   }
 }

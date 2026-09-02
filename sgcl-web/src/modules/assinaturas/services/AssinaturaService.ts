@@ -38,6 +38,10 @@ export class AssinaturaService {
     return ApiClient.patch<Assinatura>(`/assinaturas/${id}/status`, { status });
   }
 
+  static async ativarGateway(id: number) {
+    return ApiClient.post<Assinatura>(`/assinaturas/${id}/ativar-gateway`, {});
+  }
+
   static async gerarCobrancasAgora() {
     return ApiClient.post<ResultadoGeracaoCobrancas>("/assinaturas/gerar-cobrancas", {});
   }

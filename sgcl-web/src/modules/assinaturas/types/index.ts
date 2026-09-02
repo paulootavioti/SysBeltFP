@@ -27,6 +27,10 @@ export interface Assinatura {
   descontoPontualidade: number;
   status: StatusAssinatura;
   ultimaCobrancaGeradaEm?: string | null;
+  gatewayAssinaturaId?: string | null;
+  gatewayStatus?: string | null;
+  linkAutorizacao?: string | null;
+  gatewayAtualizadoEm?: string | null;
   createdAt: string;
   updatedAt: string;
 

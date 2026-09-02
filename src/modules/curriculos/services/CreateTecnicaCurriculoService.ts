@@ -9,6 +9,7 @@ interface CreateTecnicaCurriculoDTO {
   obrigatoria?: boolean;
   ordem?: number;
   aulaCurriculoId: number;
+  duracaoPrevistaSegundos?: number;
 }
 
 export class CreateTecnicaCurriculoService {
@@ -37,6 +38,7 @@ export class CreateTecnicaCurriculoService {
         obrigatoria: data.obrigatoria ?? true,
         ordem: data.ordem ?? 0,
         aulaCurriculoId: data.aulaCurriculoId,
+        duracaoPrevistaSegundos: data.duracaoPrevistaSegundos ?? 600,
       },
     });
   }

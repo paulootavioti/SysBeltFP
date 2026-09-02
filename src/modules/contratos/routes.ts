@@ -62,6 +62,13 @@ contratosRoutes.post(
 );
 
 contratosRoutes.post(
+  "/:id/enviar-assinatura-eletronica",
+  ensureAuthenticated,
+  ensureRole(["ADMIN"]),
+  contratosController.enviarAssinaturaEletronica
+);
+
+contratosRoutes.post(
   "/:id/renovar",
   ensureAuthenticated,
   ensureRole(["ADMIN"]),

@@ -13,7 +13,7 @@ export interface UsuarioProfessor {
 export interface AuthContextData {
   usuario: UsuarioProfessor | null;
   token: string | null;
-  login: (email: string, senha: string) => Promise<void>;
+  login: (email: string, senha: string, desafio?: string, codigo?: string) => Promise<{ requerDoisFatores: true; desafio: string } | void>;
   logout: () => void;
 }
 

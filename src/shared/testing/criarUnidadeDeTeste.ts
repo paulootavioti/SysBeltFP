@@ -20,13 +20,13 @@ const NOME_PLANO_PADRAO = "TESTE_PLANO_PADRAO";
 // testar a trava em si cria uma conta sem o recurso, de propósito.
 const RECURSOS_DE_TESTE = ["WHATSAPP", "GATEWAY_AUTOMATICO", "CONTROLE_ACESSO"];
 
-async function garantirConcessaoDeTeste() {
+async function garantirConcessaoDeTeste(contaId: number, tenantKey: string) {
   await prisma.concessaoPlataforma.upsert({
-    where: { id: 1 },
+    where: { contaId },
     update: { statusAcesso: "ATIVO", recursos: RECURSOS_DE_TESTE, expiraEm: new Date("2100-01-01T00:00:00.000Z") },
     create: {
-      id: 1,
-      tenantKey: "00000000-0000-4000-8000-000000000001",
+      contaId,
+      tenantKey,
       statusAcesso: "ATIVO",
       recursos: RECURSOS_DE_TESTE,
       versaoContrato: 1,
@@ -40,7 +40,6 @@ async function garantirConcessaoDeTeste() {
 }
 
 export async function contaDeTeste(): Promise<number> {
-  await garantirConcessaoDeTeste();
   const plano = await prisma.planoPlataforma.upsert({
     where: { nome: NOME_PLANO_PADRAO },
     update: { recursos: RECURSOS_DE_TESTE },
@@ -58,6 +57,7 @@ export async function contaDeTeste(): Promise<number> {
   });
 
   if (existente) {
+    await garantirConcessaoDeTeste(existente.id, existente.tenantKey);
     // A conta pode ter sobrado de um banco criado antes de a assinatura
     // existir. Sem ela, toda trava de plano bloquearia — e o teste
     // falharia por um motivo que não é o que ele verifica.
@@ -76,6 +76,8 @@ export async function contaDeTeste(): Promise<number> {
       assinatura: { create: { planoId: plano.id, status: "ATIVA" } },
     },
   });
+
+  await garantirConcessaoDeTeste(criada.id, criada.tenantKey);
 
   return criada.id;
 }

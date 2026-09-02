@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../../../contexts/useAuth";
 
@@ -71,6 +71,8 @@ export function Login() {
             autoComplete="current-password"
             required
           />
+
+          <Link className="login-link login-link-direita" to="/recuperar-senha">Esqueci minha senha</Link>
 
           <ErrorMessage message={erro} />
 

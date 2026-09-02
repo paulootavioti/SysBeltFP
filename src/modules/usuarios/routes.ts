@@ -9,13 +9,28 @@ import { ensureRole }
 from "../../shared/middlewares/ensureRole";
 
 import { validateBody } from "../../shared/middlewares/validateBody";
-import { updatePerfilSchema, updateUsuarioSchema } from "./validation";
+import { confirmarDoisFatoresSchema, desativarDoisFatoresSchema, updatePerfilSchema, updateUsuarioSchema } from "./validation";
 
 const usuariosRoutes =
   Router();
 
 const usuariosController =
   new UsuariosController();
+
+usuariosRoutes.get("/minha-seguranca", ensureAuthenticated, usuariosController.obterMinhaSeguranca);
+usuariosRoutes.post("/minha-seguranca/2fa/iniciar", ensureAuthenticated, usuariosController.iniciarDoisFatores);
+usuariosRoutes.post(
+  "/minha-seguranca/2fa/confirmar",
+  ensureAuthenticated,
+  validateBody(confirmarDoisFatoresSchema),
+  usuariosController.confirmarDoisFatores,
+);
+usuariosRoutes.post(
+  "/minha-seguranca/2fa/desativar",
+  ensureAuthenticated,
+  validateBody(desativarDoisFatoresSchema),
+  usuariosController.desativarDoisFatores,
+);
 
 usuariosRoutes.get(
   "/",

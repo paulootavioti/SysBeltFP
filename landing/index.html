@@ -1,288 +1,348 @@
 <!doctype html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sys Belt — Sistema Faixa Preta | Gestão para academias de artes marciais</title>
-  <meta name="description" content="Cadastro de alunos, chamada, graduações, financeiro e mensagens de WhatsApp num só sistema. Feito para academias de jiu-jitsu, judô e artes marciais. Comece grátis com até 3 alunos." />
-
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2317140F'/%3E%3Cpath d='M14 34h36v6a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4v-6Z' fill='%23C9A227'/%3E%3Crect x='14' y='30' width='36' height='6' fill='%23FAF9F6'/%3E%3C/svg%3E" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
-
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sys Belt | Gestão para academias de artes marciais</title>
+  <meta name="description"
+    content="Alunos, aulas, graduações, financeiro, Pix e comunicação em um sistema feito para academias de artes marciais.">
+  <meta property="og:title" content="Sys Belt | Sua academia inteira em uma única tela">
+  <meta property="og:description"
+    content="Gestão administrativa e pedagógica para academias de artes marciais. Grátis para até 3 alunos.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="img/tela-dashboard.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
 
-  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
-
-  <header class="topbar" id="topbar">
-    <div class="wrap topbar-inner">
-      <a class="wordmark" href="#topo">
-        <span class="wordmark-mark" aria-hidden="true"></span>
-        Sys Belt
-      </a>
-
-      <nav class="nav" id="nav" aria-label="Navegação principal">
-        <a href="#funcionalidades">Funcionalidades</a>
-        <a href="#planos">Planos</a>
-        <a href="#contato">Contato</a>
-      </nav>
-
-      <div class="topbar-actions">
-        <a class="btn btn-primary btn-sm" href="#contato">Testar grátis</a>
-        <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="nav" aria-label="Abrir menu">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
+<body><a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <header class="header" id="header">
+    <div class="header-inner"><a class="logo" href="#topo" aria-label="Sys Belt, início"><img
+          src="img/logo-sysbelt-trim.png" alt="Sys Belt, Sistema Faixa Preta"></a>
+      <nav class="mainnav" aria-label="Navegação principal"><a class="navlink" data-sec="sistema" href="#sistema">O
+          sistema</a><a class="navlink" data-sec="familia" href="#familia">Portal da Família</a><a class="navlink"
+          data-sec="redes" href="#redes">Redes</a><a class="navlink" data-sec="comparativo"
+          href="#comparativo">Comparativo</a><a class="navlink" data-sec="preco" href="#preco">Preço</a></nav>
+      <div class="header-actions"><a class="btn secondary header-question" href="#duvidas">Dúvidas</a><a
+          class="btn primary" href="#contato">Falar com a gente</a><button class="menu-btn" type="button"
+          aria-label="Abrir menu" aria-expanded="false"
+          aria-controls="drawer"><span></span><span></span><span></span></button></div>
     </div>
+    <nav class="drawer" id="drawer" aria-label="Navegação móvel">
+      <div><a href="#sistema">O sistema</a><a href="#familia">Portal da Família</a><a href="#redes">Redes</a><a
+          href="#comparativo">Comparativo</a><a href="#preco">Preço</a><a class="btn secondary" href="#duvidas">Tirar
+          uma dúvida</a></div>
+    </nav>
+    <div class="progress" aria-hidden="true"><span></span></div>
   </header>
-
   <main id="conteudo">
-
-    <section class="hero" id="topo">
-      <div class="wrap hero-inner">
-        <p class="eyebrow">Sistema de gestão para academias</p>
-
-        <h1 class="hero-title">
-          Sua academia,<br />
-          organizada como uma <span class="ink-gold">faixa preta</span>.
-        </h1>
-
-        <p class="hero-dek">
-          Cadastro de alunos, chamada, graduações, financeiro e mensagens de
-          WhatsApp — tudo num só sistema, feito para academias de jiu-jitsu,
-          judô e artes marciais.
-        </p>
-
-        <div class="hero-actions">
-          <a class="btn btn-primary btn-lg" href="#contato">Testar grátis com até 3 alunos</a>
-          <a class="btn btn-ghost btn-lg" href="#funcionalidades">Ver funcionalidades</a>
-        </div>
-
-        <p class="hero-note">Sem cartão de crédito · Acesso completo às funcionalidades</p>
+    <section class="hero content" id="topo" data-reveal="out">
+      <div>
+        <p class="eyebrow">Sistema de gestão para academias de artes marciais</p>
+        <h1>Sua academia inteira <br>em uma única tela.</h1>
+        <p class="lead">Cadastro de alunos, chamada, currículo técnico, graduações, mensalidades com Pix e mensagens de
+          WhatsApp. Pare de operar em três planilhas e um caderno de chamada.</p>
+        <div class="actions"><a class="btn primary large" href="#contato">Começar grátis</a><a
+            class="btn secondary large" href="#preco">Calcular meu valor</a></div>
+        <p class="note">Grátis até 3 alunos, sem prazo · Sem cartão de crédito · Cancele quando quiser</p>
       </div>
-
-      <div class="belt-rail" role="img" aria-label="Progressão de faixas: branca, azul, roxa, marrom e preta">
-        <span class="belt-seg belt-branca"></span>
-        <span class="belt-seg belt-azul"></span>
-        <span class="belt-seg belt-roxa"></span>
-        <span class="belt-seg belt-marrom"></span>
-        <span class="belt-seg belt-preta"></span>
+      <figure>
+        <figcaption>Dashboard executivo · tela real do sistema</figcaption>
+        <div class="screen"><img src="img/tela-dashboard.png"
+            alt="Dashboard do Sys Belt com indicadores financeiros e de alunos"></div>
+      </figure>
+    </section>
+    <div class="belt" aria-hidden="true"><span></span><i></i><span></span></div>
+    <section class="metrics rules content" aria-label="Destaques" data-reveal="out">
+      <article><strong data-preco-faixa>R$ 37</strong><span>por faixa de <span data-alunos-faixa>10</span> alunos, por mês</span></article>
+      <article><strong>Sem limite</strong><span>de usuários da equipe</span></article>
+      <article><strong>3 alunos</strong><span>grátis para sempre</span></article>
+      <article><strong>Pix</strong><span>cobrado e baixado no sistema</span></article>
+    </section>
+    <section class="section content" data-reveal="out">
+      <p class="eyebrow">O desafio</p>
+      <h2>Você não abriu uma academia para virar digitador de planilha.</h2>
+      <div class="cards rules">
+        <article><b>01</b>
+          <h3>O dinheiro escapa em silêncio</h3>
+          <p>Atrasos e vencimentos ficam espalhados. Quando você percebe, a cobrança já virou constrangimento.</p>
+        </article>
+        <article><b>02</b>
+          <h3>A evolução não tem prova</h3>
+          <p>Sem histórico claro, aluno e responsável não enxergam o caminho até a próxima graduação.</p>
+        </article>
+        <article><b>03</b>
+          <h3>Tudo depende de você</h3>
+          <p>A informação fica no celular e na memória. A equipe não consulta, não resolve e não ganha autonomia.</p>
+        </article>
       </div>
     </section>
-
-    <section class="problema">
-      <div class="wrap">
-        <h2 class="section-title">Planilha, grupo de WhatsApp e caderno de chamada não escalam</h2>
-
-        <div class="problema-grid">
-          <div class="problema-item">
-            <p class="problema-num">01</p>
-            <h3>Controle disperso</h3>
-            <p>Aluno cadastrado numa planilha, chamada no caderno, cobrança na cabeça do professor. Cada informação num lugar diferente.</p>
-          </div>
-
-          <div class="problema-item">
-            <p class="problema-num">02</p>
-            <h3>Mensalidade sem aviso</h3>
-            <p>Vencimento passa, atraso acumula, e ninguém lembrou de avisar o responsável a tempo.</p>
-          </div>
-
-          <div class="problema-item">
-            <p class="problema-num">03</p>
-            <h3>Evolução sem histórico</h3>
-            <p>Quando o aluno trocou de faixa? Quantas aulas fez esse mês? Sem registro, a resposta é "não sei".</p>
-          </div>
-        </div>
+    <section class="section content" id="sistema" data-reveal="out">
+      <p class="eyebrow">O sistema</p>
+      <h2>Feito para artes marciais. Não é um sistema de musculação adaptado.</h2>
+      <p class="section-copy">A rotina administrativa conversa com o método de ensino, a evolução técnica e o
+        relacionamento com cada família.</p>
+      <div class="features rules">
+        <article><b>Alunos</b>
+          <h3>Prontuário completo</h3>
+          <p>Dados pessoais, saúde, responsáveis e histórico.</p>
+        </article>
+        <article><b>Aulas</b>
+          <h3>Chamada com plano</h3>
+          <p>Presença, comportamento, jogos e técnicas.</p>
+        </article>
+        <article><b>Pedagógico</b>
+          <h3>Currículo por faixa</h3>
+          <p>Método por idade e graduação.</p>
+        </article>
+        <article><b>Graduações</b>
+          <h3>Grau e troca de faixa</h3>
+          <p>Evolução com histórico e cobrança.</p>
+        </article>
+        <article><b>Financeiro</b>
+          <h3>Mensalidade e Pix</h3>
+          <p>Planos, contratos e inadimplência.</p>
+        </article>
+        <article><b>Equipe</b>
+          <h3>RH e acesso por perfil</h3>
+          <p>Cada pessoa vê apenas o necessário.</p>
+        </article>
       </div>
-    </section>
-
-    <div class="belt-rail belt-rail-thin" aria-hidden="true">
-      <span class="belt-seg belt-branca"></span>
-      <span class="belt-seg belt-azul"></span>
-      <span class="belt-seg belt-roxa"></span>
-      <span class="belt-seg belt-marrom"></span>
-      <span class="belt-seg belt-preta"></span>
-    </div>
-
-    <section class="funcionalidades" id="funcionalidades">
-      <div class="wrap">
-        <p class="eyebrow eyebrow-center">Funcionalidades</p>
-        <h2 class="section-title section-title-center">Tudo que a academia precisa, num só sistema</h2>
-
-        <div class="features-grid">
-          <article class="feature-card">
-            <p class="feature-tag">Alunos</p>
-            <h3>Cadastro completo</h3>
-            <p>Aluno, responsável, endereço, escola, saúde e financeiro — com apelido, foto e histórico completo num só perfil.</p>
-          </article>
-
-          <article class="feature-card">
-            <p class="feature-tag">Aulas</p>
-            <h3>Chamada e plano de aula</h3>
-            <p>Presença, comportamento, jogos e técnicas sugeridas — marque o que foi realizado direto na chamada.</p>
-          </article>
-
-          <article class="feature-card">
-            <p class="feature-tag">Graduações</p>
-            <h3>Grau ou troca de faixa</h3>
-            <p>Registre a evolução do aluno e gere a cobrança da graduação na hora, se quiser.</p>
-          </article>
-
-          <article class="feature-card">
-            <p class="feature-tag">Financeiro</p>
-            <h3>Mensalidades em dia</h3>
-            <p>Vencimento, atraso e pagamento organizados por aluno, com visão completa do financeiro da academia.</p>
-          </article>
-
-          <article class="feature-card">
-            <p class="feature-tag">Mensagens</p>
-            <h3>Prontas para o WhatsApp</h3>
-            <p>Lembrete de treino, vencimento próximo, atraso, desempenho e parabéns pela graduação — é só copiar e enviar.</p>
-          </article>
-
-          <article class="feature-card">
-            <p class="feature-tag">Equipe</p>
-            <h3>Acesso por perfil</h3>
-            <p>Admin, professor e recepção enxergam só o que precisam — cada um com o seu nível de acesso.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="vitrine">
-      <div class="wrap vitrine-inner">
-        <div class="vitrine-copy">
+      <div class="showcase">
+        <div>
           <p class="eyebrow">Na prática</p>
-          <h2 class="section-title">A chamada do dia, sem esforço</h2>
-          <p>
-            Marque presença, comportamento e o que foi trabalhado na aula —
-            jogos e técnicas do plano pedagógico, com detalhe de cada uma a
-            um clique.
-          </p>
+          <h2>O prontuário que responde qualquer pergunta do responsável.</h2>
+          <p>Da saúde ao financeiro, a equipe encontra a informação certa sem depender de mensagens antigas.</p>
         </div>
-
-        <div class="vitrine-mock" aria-hidden="true">
-          <div class="mock-card">
-            <div class="mock-row mock-row-header">
-              <span>Plano de Aula</span>
-              <span class="mock-badge">Aberta</span>
+        <div class="screen"><img src="img/tela-aluno.png" loading="lazy" alt="Prontuário de aluno no Sys Belt"></div>
+      </div>
+      <div class="showcase reverse">
+        <div class="screen"><img src="img/tela-planejamento.png" loading="lazy"
+            alt="Planejamento pedagógico no Sys Belt"></div>
+        <div>
+          <p class="eyebrow">Planejamento pedagógico</p>
+          <h2>Seu método deixa de morar na cabeça do professor.</h2>
+          <p>Currículos, módulos e aulas ficam disponíveis para toda a equipe seguir o mesmo padrão.</p>
+        </div>
+      </div>
+    </section>
+    <section class="family" id="familia" data-reveal="out">
+      <div class="content two">
+        <div>
+          <p class="eyebrow">Portal da Família</p>
+          <h2>O pai acompanha o filho sem te mandar mensagem no domingo.</h2>
+          <p>Mais transparência para a família e menos atendimento repetitivo para a academia.</p><a
+            class="btn primary large" href="#contato">Quero o portal na minha academia</a>
+        </div>
+        <div class="list">
+          <article>
+            <h3>Presenças e frequência do mês</h3>
+            <p>A família acompanha constância sem pedir relatório.</p>
+          </article>
+          <article>
+            <h3>Evolução e próxima graduação</h3>
+            <p>O caminho técnico fica visível e concreto.</p>
+          </article>
+          <article>
+            <h3>Mensalidade e Pix</h3>
+            <p>Consulta e pagamento no mesmo ambiente.</p>
+          </article>
+          <article>
+            <h3>Comunicados da academia</h3>
+            <p>Informações oficiais sem se perder em grupos.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section class="section content" id="redes" data-reveal="out">
+      <p class="eyebrow">Multiunidades e redes</p>
+      <h2>Uma academia hoje, uma rede depois. O sistema não muda.</h2>
+      <div class="cards rules">
+        <article><b>Operação</b>
+          <h3>Filiais que compartilham dados</h3>
+          <p>Gestão integrada com sigilo e acesso por unidade.</p>
+        </article>
+        <article><b>Comercial</b>
+          <h3>Cobrança por unidade</h3>
+          <p>O preço acompanha o tamanho da operação.</p>
+        </article>
+        <article><b>Gestão</b>
+          <h3>Indicadores consolidados</h3>
+          <p>Compare resultados sem juntar planilhas.</p>
+        </article>
+      </div>
+    </section>
+    <section class="section content" id="comparativo" data-reveal="out">
+      <p class="eyebrow">Comparativo</p>
+      <h2>O que muda quando a ferramenta entende sua academia.</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>O que você precisa</th>
+              <th>Planilha + caderno</th>
+              <th>Sistema genérico</th>
+              <th>Sys Belt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Currículo técnico por faixa</th>
+              <td>Manual</td>
+              <td>Não contempla</td>
+              <td>Integrado</td>
+            </tr>
+            <tr>
+              <th>Faixa, grau e graduação</th>
+              <td>Planilha separada</td>
+              <td>Cadastro básico</td>
+              <td>Histórico completo</td>
+            </tr>
+            <tr>
+              <th>Chamada e comportamento</th>
+              <td>Caderno</td>
+              <td>Só presença</td>
+              <td>Presença e evolução</td>
+            </tr>
+            <tr>
+              <th>Mensalidade e Pix</th>
+              <td>Conferência manual</td>
+              <td>Financeiro genérico</td>
+              <td>Por aluno e responsável</td>
+            </tr>
+            <tr>
+              <th>Acesso da família</th>
+              <td>Seu WhatsApp pessoal</td>
+              <td>App de treino</td>
+              <td>Portal com evolução e financeiro</td>
+            </tr>
+            <tr>
+              <th>Preço para 15 alunos</th>
+              <td>Suas horas todo mês</td>
+              <td>Plano mínimo cheio</td>
+              <td>R$ 74,00 por mês</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="pricing" id="preco" data-reveal="out">
+      <div class="content">
+        <p class="eyebrow">Preço</p>
+        <h2>Você paga pelo tamanho que tem hoje.</h2>
+        <p class="section-copy">Cada faixa cobre até <span data-alunos-faixa>10</span> alunos e custa <span data-preco-faixa>R$ 37,00</span> por mês, contada por unidade. Não existe
+          degrau que force a academia pequena a subir de plano.</p>
+        <div class="calculator">
+          <div class="controls"><label for="alunos">Alunos ativos</label><output id="alunosValor"
+              for="alunos">40</output><input id="alunos" type="range" min="1" max="400" value="40">
+            <div class="range-marks"><span>1</span><span>400+</span></div>
+            <p class="control-label">Unidades ativas</p>
+            <div class="segments" role="group" aria-label="Unidades ativas"><button type="button" data-unidades="1"
+                aria-pressed="true">1</button><button type="button" data-unidades="2"
+                aria-pressed="false">2</button><button type="button" data-unidades="3"
+                aria-pressed="false">3</button><button type="button" data-unidades="5" aria-pressed="false">5</button>
             </div>
-            <div class="mock-row"><span class="mock-check mock-check-on"></span>Jogo da onça</div>
-            <div class="mock-row"><span class="mock-check mock-check-on"></span>Jogo de empurrar</div>
-            <div class="mock-row"><span class="mock-check"></span>Queda de bloco</div>
-            <div class="mock-divider"></div>
-            <div class="mock-row"><span class="mock-check mock-check-on"></span>Raspagem de guarda fechada</div>
-            <div class="mock-row"><span class="mock-check"></span>Passagem de guarda torreando</div>
+            <p class="hint">As faixas são contadas por unidade, com no mínimo uma faixa por unidade ativa.</p>
+          </div>
+          <div class="result">
+            <p class="control-label">Sua assinatura</p><strong id="precoValor">R$ 148,00</strong>
+            <p id="precoLegenda">por mês · 4 faixas em 1 unidade</p>
+            <dl>
+              <div>
+                <dt>Faixas de 10 alunos</dt>
+                <dd id="faixasValor">4</dd>
+              </div>
+              <div>
+                <dt>Custo por aluno</dt>
+                <dd id="custoValor">R$ 3,70</dd>
+              </div>
+              <div>
+                <dt>Usuários da equipe</dt>
+                <dd>Sem limite</dd>
+              </div>
+              <div>
+                <dt>Funcionalidades</dt>
+                <dd>Todas incluídas</dd>
+              </div>
+            </dl><a class="btn primary large" href="#contato">Começar com este tamanho</a><small>Até 3 alunos, sua
+              assinatura é grátis e sem prazo.</small>
           </div>
         </div>
       </div>
     </section>
-
-    <div class="belt-rail belt-rail-thin" aria-hidden="true">
-      <span class="belt-seg belt-branca"></span>
-      <span class="belt-seg belt-azul"></span>
-      <span class="belt-seg belt-roxa"></span>
-      <span class="belt-seg belt-marrom"></span>
-      <span class="belt-seg belt-preta"></span>
-    </div>
-
-    <section class="planos" id="planos">
-      <div class="wrap">
-        <p class="eyebrow eyebrow-center">Planos</p>
-        <h2 class="section-title section-title-center">Comece de graça, cresça quando fizer sentido</h2>
-
-        <div class="plans-grid">
-          <div class="plan-card">
-            <p class="plan-name">Grátis</p>
-            <p class="plan-price">R$ 0<span>/mês</span></p>
-            <p class="plan-desc">Para testar o sistema de verdade, sem prazo de expiração.</p>
-            <ul class="plan-list">
-              <li>Até 3 alunos ativos</li>
-              <li>1 professor</li>
-              <li>Todas as funcionalidades</li>
-              <li>Sem limite de tempo</li>
-            </ul>
-            <a class="btn btn-outline" href="#contato">Começar grátis</a>
-          </div>
-
-          <div class="plan-card plan-card-featured">
-            <p class="plan-name">Assinatura</p>
-            <p class="plan-price">Mensal<span> · cobrança recorrente</span></p>
-            <p class="plan-desc">Para a academia que já passou dos 3 alunos.</p>
-            <ul class="plan-list">
-              <li>Alunos e professores sem limite prático</li>
-              <li>Todas as funcionalidades do sistema</li>
-              <li>Suporte direto com a equipe</li>
-            </ul>
-            <a class="btn btn-primary" href="#contato">Falar sobre assinatura</a>
-          </div>
-        </div>
+    <section class="section content trust" data-reveal="out">
+      <div class="cards rules">
+        <article><b>LGPD</b>
+          <h3>Dado de menor é assunto sério</h3>
+          <p>Consentimentos, autorização de imagem e acesso por perfil.</p>
+        </article>
+        <article><b>Pix</b>
+          <h3>Cobrança que se resolve sozinha</h3>
+          <p>Emissão e baixa conectadas ao financeiro.</p>
+        </article>
+        <article><b>RH</b>
+          <h3>Sua equipe organizada</h3>
+          <p>Cadastros, perfis e responsabilidades claras.</p>
+        </article>
       </div>
     </section>
-
-    <section class="cta" id="contato">
-      <div class="wrap cta-inner">
-        <div class="cta-copy">
-          <p class="eyebrow eyebrow-invert">Contato</p>
-          <h2 class="cta-title">Pronto para organizar sua academia?</h2>
-          <p class="cta-dek">
-            Deixe seus dados e a gente entra em contato para colocar sua
-            academia no ar.
-          </p>
+    <section class="contact" id="contato" data-reveal="out">
+      <div class="content two">
+        <div>
+          <p class="eyebrow">Comece agora</p>
+          <h2>Coloque sua academia no Sys Belt hoje.</h2>
+          <p>Conte o tamanho da sua operação. Nossa equipe ajuda a configurar o primeiro acesso.</p>
+          <ul>
+            <li>Ajudamos a configurar turmas, planos e currículo</li>
+            <li>Importamos sua lista de alunos</li>
+            <li>Grátis até 3 alunos para testar sem pressa</li>
+          </ul>
         </div>
-
-        <form class="cta-form" name="contato" method="POST" data-netlify="true" netlify-honeypot="bot-field">
-          <input type="hidden" name="form-name" value="contato" />
-          <p class="hp-field"><label>Não preencha isto: <input name="bot-field" /></label></p>
-
-          <label class="field">
-            <span>Seu nome</span>
-            <input type="text" name="nome" required autocomplete="name" />
-          </label>
-
-          <label class="field">
-            <span>Nome da academia</span>
-            <input type="text" name="academia" required autocomplete="organization" />
-          </label>
-
-          <label class="field">
-            <span>WhatsApp ou e-mail</span>
-            <input type="text" name="contato" required autocomplete="email" />
-          </label>
-
-          <label class="field">
-            <span>Quantos alunos, aproximadamente?</span>
-            <select name="tamanho">
-              <option>Até 3 alunos</option>
-              <option>4 a 30 alunos</option>
-              <option>31 a 100 alunos</option>
-              <option>Mais de 100 alunos</option>
-            </select>
-          </label>
-
-          <button class="btn btn-primary btn-lg" type="submit">Quero começar</button>
-          <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+        <form name="contato" method="POST" data-netlify="true" netlify-honeypot="bot-field"><input type="hidden"
+            name="form-name" value="contato">
+          <p class="hp"><label>Não preencha: <input name="bot-field"></label></p><label for="f-nome">Seu
+            nome</label><input id="f-nome" name="nome" autocomplete="name" required><label for="f-academia">Nome da
+            academia</label><input id="f-academia" name="academia" autocomplete="organization" required><label
+            for="f-contato">WhatsApp ou e-mail</label><input id="f-contato" name="contato" required>
+          <div class="form-row">
+            <div><label for="f-alunos">Alunos hoje</label><select id="f-alunos" name="faixa-alunos">
+                <option>Até 3</option>
+                <option>4 a 30</option>
+                <option>31 a 100</option>
+                <option>Mais de 100</option>
+              </select></div>
+            <div><label for="f-unidades">Unidades</label><select id="f-unidades" name="unidades">
+                <option>1</option>
+                <option>2</option>
+                <option>3 ou mais</option>
+              </select></div>
+          </div><label id="duvidas" for="f-msg">Sua dúvida (opcional)</label><textarea id="f-msg" name="mensagem"
+            placeholder="Ex.: dá para importar minha lista de alunos?"></textarea><button class="btn primary large"
+            type="submit">Enviar</button>
+          <p class="form-status" id="formStatus" role="status" aria-live="polite"></p><small>Seus dados são usados só
+            para este contato, conforme a LGPD.</small>
         </form>
       </div>
     </section>
-
   </main>
-
-  <footer class="footer">
-    <div class="wrap footer-inner">
-      <a class="wordmark wordmark-footer" href="#topo">
-        <span class="wordmark-mark" aria-hidden="true"></span>
-        Sys Belt
-      </a>
-      <p class="footer-tagline">Sistema Faixa Preta — gestão para academias de artes marciais.</p>
-      <p class="footer-copy">© <span id="anoAtual">2026</span> Sys Belt. Todos os direitos reservados.</p>
+  <footer>
+    <div class="content footer-grid">
+      <div><img src="img/logo-sysbelt-trim.png" alt="Sys Belt">
+        <p>Sistema Faixa Preta: gestão administrativa e pedagógica para academias de artes marciais.</p>
+      </div>
+      <div><b>Contato</b><a href="https://wa.me/5561991768044" target="_blank" rel="noopener">WhatsApp (61)
+          99176-8044</a><a href="mailto:suporte.toolink@gmail.com">suporte.toolink@gmail.com</a><a
+          href="https://www.instagram.com/toolslink" target="_blank" rel="noopener">@toolslink</a></div>
+      <div><b>Página</b><a href="#sistema">O sistema</a><a href="#preco">Preço</a><a href="#duvidas">Tirar uma
+          dúvida</a></div>
     </div>
+    <div class="content copyright">© <span id="anoAtual">2026</span> Sys Belt. Todos os direitos reservados.</div>
   </footer>
-
-  <script src="script.js"></script>
+  <script>window.SYSBELT_API_URL = window.SYSBELT_API_URL || "http://localhost:3333";</script>
+  <script src="script.js" defer></script>
 </body>
+
 </html>

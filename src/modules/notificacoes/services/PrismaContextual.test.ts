@@ -7,6 +7,7 @@ const { count, prismaDaRequisicao } = vi.hoisted(() => {
     prismaDaRequisicao: vi.fn(() => ({
       mensalidade: { count }, contrato: { count }, mensagemFamilia: { count },
       pedido: { count }, aluno: { findMany: vi.fn().mockResolvedValue([]) },
+      conversaMensageria: { count },
       aulaAluno: { groupBy: vi.fn().mockResolvedValue([]) },
     })),
   };
@@ -21,6 +22,6 @@ describe("notificações com tenant", () => {
   it("usa o mesmo Prisma contextual nos contadores e graduações", async () => {
     await new GetContadoresMenuService().execute(1);
     expect(prismaDaRequisicao).toHaveBeenCalledTimes(2);
-    expect(count).toHaveBeenCalledTimes(4);
+    expect(count).toHaveBeenCalledTimes(5);
   });
 });

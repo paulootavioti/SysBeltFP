@@ -50,9 +50,10 @@ export interface LojaKpis {
   valorTotalEstoque: number;
 }
 
-export type StatusPedido = "AGUARDANDO_RETIRADA" | "ENTREGUE" | "CANCELADO";
+export type StatusPedido = "AGUARDANDO_PAGAMENTO" | "AGUARDANDO_RETIRADA" | "ENTREGUE" | "CANCELADO";
 
 export const STATUS_PEDIDO_LABEL: Record<StatusPedido, string> = {
+  AGUARDANDO_PAGAMENTO: "Aguardando pagamento",
   AGUARDANDO_RETIRADA: "Aguardando retirada",
   ENTREGUE: "Entregue",
   CANCELADO: "Cancelado",
@@ -76,4 +77,7 @@ export interface Pedido {
   itens: ItemPedido[];
   criadoEm: string;
   entregueEm?: string | null;
+  pagoEm?: string | null;
+  formaPagamento?: { id: number; tipo: string; nomePersonalizado?: string | null } | null;
+  cobrancas?: { id: number; status: string; erro?: string | null }[];
 }

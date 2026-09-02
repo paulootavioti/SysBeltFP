@@ -10,6 +10,7 @@ import { ListPedidosService } from "./services/ListPedidosService";
 import { MarcarPedidoEntregueService } from "./services/MarcarPedidoEntregueService";
 import { CancelarPedidoService } from "./services/CancelarPedidoService";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
+import { ConfirmarPagamentoPedidoService } from "./services/ConfirmarPagamentoPedidoService";
 
 export class LojaController {
 
@@ -83,6 +84,13 @@ export class LojaController {
 
     const pedido = await service.execute(Number(id), req.user.unidadeId);
 
+    return res.json(pedido);
+  }
+
+  async confirmarPagamento(req: Request, res: Response) {
+    const pedido = await new ConfirmarPagamentoPedidoService().execute(
+      Number(req.params.id), "confirmacao-manual", req.user.unidadeId
+    );
     return res.json(pedido);
   }
 

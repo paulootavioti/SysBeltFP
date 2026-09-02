@@ -6,6 +6,10 @@ import { MercadoPagoGateway } from "./gateways/MercadoPagoGateway";
 import { verificarAssinaturaMercadoPago } from "./gateways/mercadoPago/assinaturaWebhook";
 import { lerCredenciaisGateway, type CredenciaisGateway } from "./gateways/credenciais";
 import { ReceberWebhookPagamentoService } from "./services/ReceberWebhookPagamentoService";
+import { ListarConciliacaoPagamentosService } from "./services/ListarConciliacaoPagamentosService";
+import { ReconciliarCobrancaService } from "./services/ReconciliarCobrancaService";
+import { PagarMensalidadeFamiliaService } from "../portalFamilia/services/PagarMensalidadeFamiliaService";
+import { PagarPedidoFamiliaService } from "../portalFamilia/services/PagarPedidoFamiliaService";
 
 function cabecalho(req: Request, nome: string): string | undefined {
   const valor = req.headers[nome];
@@ -14,6 +18,39 @@ function cabecalho(req: Request, nome: string): string | undefined {
 }
 
 export class PagamentosController {
+  async listarConciliacao(req: Request, res: Response) {
+    const service = new ListarConciliacaoPagamentosService();
+    const dados = await service.execute(
+      req.user.unidadeId,
+      typeof req.query.status === "string" ? req.query.status : undefined
+    );
+    return res.json(dados);
+  }
+
+  async reconciliar(req: Request, res: Response) {
+    const service = new ReconciliarCobrancaService();
+    return res.json(await service.execute(Number(req.params.id), req.user.unidadeId, req.user.id));
+  }
+
+  async tentarNovamente(req: Request, res: Response) {
+    const prisma = prismaDaRequisicao();
+    const cobranca = await prisma.cobrancaPagamento.findUnique({
+      where: { id: Number(req.params.id) },
+      include: {
+        mensalidade: { select: { alunoId: true, unidadeId: true } },
+        pedido: { select: { alunoId: true, unidadeId: true } },
+      },
+    });
+    const origem = cobranca?.mensalidade ?? cobranca?.pedido;
+    if (!cobranca || !origem || (req.user.unidadeId && origem.unidadeId !== req.user.unidadeId)) {
+      throw new AppError("Cobrança não encontrada.", 404);
+    }
+    if (cobranca.pedidoId && cobranca.pedido) {
+      return res.status(201).json(await new PagarPedidoFamiliaService().execute(cobranca.pedidoId, cobranca.pedido.alunoId));
+    }
+    return res.status(201).json(await new PagarMensalidadeFamiliaService().execute(cobranca.mensalidadeId!, cobranca.mensalidade!.alunoId));
+  }
+
   // Webhook não carrega o JWT da aplicação: a autenticação é a assinatura
   // do próprio gateway. Sem essa verificação, qualquer um que descubra a
   // URL daria baixa numa mensalidade sem pagar.

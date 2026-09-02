@@ -42,6 +42,9 @@ export function AulaAccordionCard({
   tecnicaEstaExcluindo,
 }: AulaAccordionCardProps) {
   const jogos = jogosDaAula(aula.jogosSugeridos);
+  const totalMinutos = Math.ceil(aula.filaCompilada.duracaoTotalSegundos / 60);
+  const limiteMinutos = aula.duracaoTurmaMinutos ?? aula.duracaoMinutos;
+  const excedeu = limiteMinutos != null && totalMinutos > limiteMinutos;
 
   return (
     <div className="aula-curriculo-card">
@@ -51,7 +54,7 @@ export function AulaAccordionCard({
         titulo={
           <span className="acordeon-titulo">
             <h4>{aula.titulo}</h4>
-            {aula.duracaoMinutos != null && <span className="acordeon-meta">⏱ {aula.duracaoMinutos} min</span>}
+            <span className="acordeon-meta">Plano: {totalMinutos} min</span>
             <span className="acordeon-contagem">
               {aula.tecnicas.length} técnica{aula.tecnicas.length === 1 ? "" : "s"}
             </span>
@@ -76,17 +79,30 @@ export function AulaAccordionCard({
         }
       >
         <div className="aula-curriculo-body">
-          {aula.objetivo && <p>🎯 {aula.objetivo}</p>}
+          {excedeu && (
+            <p className="curriculo-duracao-alerta" role="alert">
+              O plano excede em {totalMinutos - (limiteMinutos ?? 0)} min a duração da turma.
+            </p>
+          )}
+          {aula.objetivo && <p>{aula.objetivo}</p>}
           {aula.descricao && <p>{aula.descricao}</p>}
 
           {jogos.length > 0 && (
             <div className="jogos-lista">
               {jogos.map((jogo) => (
                 <span key={jogo} className="jogo-chip">
-                  🎮 {jogo}
+                  {jogo}
                 </span>
               ))}
             </div>
+          )}
+
+          {aula.blocos.length > 0 && (
+            <ol className="curriculo-fila-resumo">
+              {aula.filaCompilada.blocos.map((bloco) => (
+                <li key={bloco.chave}><span>{bloco.nome}</span><strong>{Math.ceil(bloco.duracaoPrevistaSegundos / 60)} min</strong></li>
+              ))}
+            </ol>
           )}
 
           {aula.tecnicas.length > 0 && (

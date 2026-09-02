@@ -6,8 +6,21 @@ import { AppError } from "../../shared/errors/AppError";
 import { PERFIS_MULTI_UNIDADE } from "../../shared/constants/perfis";
 import { normalizarUnidadesDoAssinante } from "../usuarios/utils/normalizarUnidadesDoAssinante";
 import { obterContextoRequisicao } from "../../shared/context/contextoRequisicao";
+import { SolicitarRedefinicaoSenhaService } from "./services/SolicitarRedefinicaoSenhaService";
+import { RedefinirSenhaService } from "./services/RedefinirSenhaService";
+import { ConcluirLoginDoisFatoresService } from "./services/ConcluirLoginDoisFatoresService";
 
 export class AuthController {
+  async solicitarRedefinicaoSenha(req: Request, res: Response) {
+    await new SolicitarRedefinicaoSenhaService().execute(req.body.email, req.body.origem);
+    return res.status(202).json({ message: "Se o e-mail estiver cadastrado, você receberá as instruções em instantes." });
+  }
+
+  async redefinirSenha(req: Request, res: Response) {
+    await new RedefinirSenhaService().execute(req.body.token, req.body.senha);
+    return res.json({ message: "Senha redefinida com sucesso." });
+  }
+
   async register(req: Request, res: Response) {
     const alcance = obterContextoRequisicao().unidadesDoUsuario ?? [];
 
@@ -56,5 +69,9 @@ export class AuthController {
     const resultado = await service.execute(req.body);
 
     return res.json(resultado);
+  }
+
+  async concluirLoginDoisFatores(req: Request, res: Response) {
+    return res.json(await new ConcluirLoginDoisFatoresService().execute(req.body.desafio, req.body.codigo));
   }
 }

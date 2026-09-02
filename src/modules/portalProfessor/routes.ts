@@ -12,6 +12,7 @@ import {
   registrarObservacaoAulaSchema,
   finalizarAulaProfessorSchema,
   publicarFotoAulaProfessorSchema,
+  registrarExecucaoBlocoSchema,
 } from "./validation";
 
 const portalProfessorRoutes = Router();
@@ -30,10 +31,12 @@ portalProfessorRoutes.use(ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]
 
 portalProfessorRoutes.get("/hoje", controller.hoje);
 portalProfessorRoutes.get("/aulas/:id", controller.aula);
+portalProfessorRoutes.get("/aulas/:id/comandos-voz", controller.comandosVoz);
 portalProfessorRoutes.post("/aulas/:id/presenca", validateBody(marcarPresencaSchema), controller.presenca);
 portalProfessorRoutes.post("/aulas/:id/tecnicas", validateBody(marcarTecnicaSchema), controller.tecnicas);
 portalProfessorRoutes.post("/aulas/:id/notas", validateBody(criarNotaAulaSchema), controller.notas);
 portalProfessorRoutes.post("/aulas/:id/observacao", validateBody(registrarObservacaoAulaSchema), controller.observacao);
+portalProfessorRoutes.post("/aulas/:id/blocos", validateBody(registrarExecucaoBlocoSchema), controller.registrarBloco);
 portalProfessorRoutes.post(
   "/aulas/:id/foto",
   upload.single("arquivo"),

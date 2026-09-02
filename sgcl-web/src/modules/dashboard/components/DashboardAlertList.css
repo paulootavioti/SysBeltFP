@@ -58,7 +58,7 @@
 
 .dashboard-alerta-acao:hover {
   border-color: var(--color-accent);
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 @media (max-width: 599px) {

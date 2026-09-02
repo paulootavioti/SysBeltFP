@@ -8,8 +8,8 @@ export function exigirRecursoTenant(
   recurso: RecursoConcessao,
   temRecurso: typeof tenantTemRecurso = tenantTemRecurso,
 ) {
-  return async (_request: Request, _response: Response, next: NextFunction) => {
-    if (!(await temRecurso(recurso))) {
+  return async (request: Request, _response: Response, next: NextFunction) => {
+    if (!(await temRecurso(recurso, new Date(), undefined, request.user?.unidadeId ?? undefined))) {
       return next(new AppError("Recurso não disponível para esta assinatura.", 403));
     }
     return next();

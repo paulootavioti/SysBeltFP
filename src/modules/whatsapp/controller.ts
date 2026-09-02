@@ -6,6 +6,8 @@ import { segredoAplicativoMeta, tokenVerificacaoWebhook } from "./providers/Meta
 import { AtualizarEntregaService } from "./services/AtualizarEntregaService";
 import { ReguaCobrancaService } from "./services/ReguaCobrancaService";
 import { LembreteAulaService } from "./services/LembreteAulaService";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
+import { executarPorConta } from "../../shared/jobs/executarPorConta";
 
 export class WhatsappController {
   // A Meta faz um GET com hub.challenge pra confirmar que a URL é nossa
@@ -57,13 +59,15 @@ export class WhatsappController {
   // inteira em homologação e conferir na tabela MensagemWhatsapp antes de
   // ligar a integração com a Meta.
   async reguaCobranca(_req: Request, res: Response) {
-    const resultado = await new ReguaCobrancaService().execute();
+    const service = new ReguaCobrancaService();
+    const resultado = await executarPorConta(prismaDaRequisicao(), (unidadeId) => service.execute(new Date(), unidadeId));
 
     return res.json(resultado);
   }
 
   async lembreteAula(_req: Request, res: Response) {
-    const resultado = await new LembreteAulaService().execute();
+    const service = new LembreteAulaService();
+    const resultado = await executarPorConta(prismaDaRequisicao(), (unidadeId) => service.execute(new Date(), unidadeId));
 
     return res.json(resultado);
   }

@@ -6,6 +6,7 @@ export interface ContadoresMenu {
   graduacoesPendentes: number;
   mensagensFamiliaNaoLidas: number;
   pedidosAguardandoRetirada: number;
+  conversasNaoLidas: number;
 }
 
 export class NotificacoesService {

@@ -90,7 +90,20 @@ export function PagamentoPix({ mensalidadeId, alunoId, cobranca, onPago }: Pagam
     if (!cobranca.pixCopiaECola) return;
 
     try {
-      await navigator.clipboard.writeText(cobranca.pixCopiaECola);
+      if (navigator.clipboard?.writeText && window.isSecureContext) {
+        await navigator.clipboard.writeText(cobranca.pixCopiaECola);
+      } else {
+        const campo = document.createElement("textarea");
+        campo.value = cobranca.pixCopiaECola;
+        campo.setAttribute("readonly", "");
+        campo.style.position = "fixed";
+        campo.style.opacity = "0";
+        document.body.appendChild(campo);
+        campo.select();
+        const copiou = document.execCommand("copy");
+        campo.remove();
+        if (!copiou) throw new Error("Cópia não suportada");
+      }
       setCopiado(true);
       setTimeout(() => setCopiado(false), 2500);
     } catch {
@@ -125,11 +138,10 @@ export function PagamentoPix({ mensalidadeId, alunoId, cobranca, onPago }: Pagam
 
           {cobranca.pixCopiaECola && (
             <>
-              <code className="pagamento-pix-codigo">{cobranca.pixCopiaECola}</code>
-
               <Button type="button" onClick={copiar}>
-                {copiado ? "Código copiado" : "Copiar código PIX"}
+                {copiado ? "Copiado" : "Copiar código Pix"}
               </Button>
+              <code className="pagamento-pix-codigo" aria-label="Código Pix copia e cola">{cobranca.pixCopiaECola}</code>
             </>
           )}
 

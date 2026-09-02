@@ -20,13 +20,13 @@ interface TecnicaCurriculoFormProps {
 export function TecnicaCurriculoForm({ loading = false, initialValues, onSubmit }: TecnicaCurriculoFormProps) {
   const methods = useForm<TecnicaCurriculoFormData>({
     resolver: zodResolver(tecnicaCurriculoSchema),
-    defaultValues: { nome: "", categoria: "", descricao: "", obrigatoria: true, ...initialValues },
+    defaultValues: { nome: "", categoria: "", descricao: "", obrigatoria: true, duracaoPrevistaMinutos: "10", ...initialValues },
   });
 
   const { register, handleSubmit, formState: { errors } } = methods;
 
   useEffect(() => {
-    methods.reset({ nome: "", categoria: "", descricao: "", obrigatoria: true, ...initialValues });
+    methods.reset({ nome: "", categoria: "", descricao: "", obrigatoria: true, duracaoPrevistaMinutos: "10", ...initialValues });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialValues]);
 
@@ -45,6 +45,11 @@ export function TecnicaCurriculoForm({ loading = false, initialValues, onSubmit 
 
           <FormGridItem>
             <Checkbox label="Obrigatória" {...register("obrigatoria")} />
+          </FormGridItem>
+
+          <FormGridItem>
+            <Input label="Duração prevista (min)" type="number" min="1" step="1" {...register("duracaoPrevistaMinutos")} />
+            <ErrorMessage message={errors.duracaoPrevistaMinutos?.message ?? ""} />
           </FormGridItem>
 
           <FormGridItem span={2}>

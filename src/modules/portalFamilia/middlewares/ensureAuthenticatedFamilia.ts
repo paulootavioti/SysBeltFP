@@ -16,6 +16,7 @@ declare global {
     interface Request {
       familia?: {
         nome: string;
+        email: string;
         alunoIds: number[];
       };
     }
@@ -74,6 +75,7 @@ export async function ensureAuthenticatedFamilia(req: Request, res: Response, ne
 
   req.familia = {
     nome: escopo.nome,
+    email: decoded.email,
     alunoIds: escopo.alunos.map((aluno) => aluno.id),
   };
 

@@ -22,6 +22,7 @@ import { STATUS_PEDIDO_LABEL, type Pedido, type StatusPedido } from "../../types
 import "../Listar/styles.css";
 
 const VARIANTE_BADGE_STATUS: Record<StatusPedido, "warning" | "success" | "danger"> = {
+  AGUARDANDO_PAGAMENTO: "warning",
   AGUARDANDO_RETIRADA: "warning",
   ENTREGUE: "success",
   CANCELADO: "danger",
@@ -79,6 +80,19 @@ export function Pedidos() {
       await carregar();
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Erro ao marcar pedido como entregue."));
+    } finally {
+      setProcessandoId(null);
+    }
+  }
+
+  async function handleConfirmarPagamento(pedido: Pedido) {
+    try {
+      setProcessandoId(pedido.id);
+      await LojaService.confirmarPagamento(pedido.id);
+      toast.success(`Pagamento do pedido #${pedido.id} confirmado.`);
+      await carregar();
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Erro ao confirmar pagamento."));
     } finally {
       setProcessandoId(null);
     }
@@ -143,16 +157,19 @@ export function Pedidos() {
       header: "Ações",
       accessor: "id" as const,
       render: (pedido: Pedido) =>
-        pedido.status === "AGUARDANDO_RETIRADA" ? (
+        ["AGUARDANDO_PAGAMENTO", "AGUARDANDO_RETIRADA"].includes(pedido.status) ? (
           <div className="loja-table-acoes">
-            <Button
+            {pedido.status === "AGUARDANDO_PAGAMENTO" ? <Button
+              type="button" size="sm" disabled={processandoId === pedido.id}
+              onClick={() => handleConfirmarPagamento(pedido)}
+            >Confirmar pagamento</Button> : <Button
               type="button"
               size="sm"
               disabled={processandoId === pedido.id}
               onClick={() => handleEntregar(pedido)}
             >
               Marcar como Entregue
-            </Button>
+            </Button>}
             <Button
               type="button"
               size="sm"

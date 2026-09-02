@@ -13,8 +13,8 @@ function arquivosTypeScript(diretorio: string): string[] {
   });
 }
 
-describe("fronteira de banco por tenant", () => {
-  it("proíbe o Prisma global no código de produção", () => {
+describe("acesso ao banco compartilhado", () => {
+  it("centraliza o Prisma global em prismaDaRequisicao", () => {
     const infracoes = arquivosTypeScript(RAIZ_SRC)
       .filter((arquivo) => !arquivo.endsWith(".test.ts"))
       .filter((arquivo) => !arquivo.includes("/shared/testing/"))

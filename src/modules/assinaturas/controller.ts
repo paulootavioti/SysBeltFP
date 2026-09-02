@@ -5,9 +5,17 @@ import { UpdateAssinaturaService } from "./services/UpdateAssinaturaService";
 import { ListAssinaturasService } from "./services/ListAssinaturasService";
 import { AlterarStatusAssinaturaService } from "./services/AlterarStatusAssinaturaService";
 import { GerarCobrancasRecorrentesService } from "./services/GerarCobrancasRecorrentesService";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
+import { executarPorConta } from "../../shared/jobs/executarPorConta";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
+import { AtivarAssinaturaGatewayService } from "./services/AtivarAssinaturaGatewayService";
 
 export class AssinaturasController {
+  async ativarGateway(req: Request, res: Response) {
+    const service = new AtivarAssinaturaGatewayService();
+    return res.json(await service.execute(Number(req.params.id), req.user.unidadeId));
+  }
+
   async create(req: Request, res: Response) {
     const service = new CreateAssinaturaService();
 
@@ -59,7 +67,7 @@ export class AssinaturasController {
   async gerarCobrancasCron(req: Request, res: Response) {
     const service = new GerarCobrancasRecorrentesService();
 
-    const resultado = await service.execute(null);
+    const resultado = await executarPorConta(prismaDaRequisicao(), (unidadeId) => service.execute(unidadeId));
 
     return res.json(resultado);
   }

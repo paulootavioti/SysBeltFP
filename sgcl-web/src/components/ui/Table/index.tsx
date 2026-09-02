@@ -16,12 +16,14 @@ interface TableProps<T> {
   // uma fatia paginada no cliente (ver usePaginacaoCliente) ou uma
   // página já paginada pelo servidor é quem chama <Table>.
   pagination?: PaginationProps;
+  onRowClick?: (item: T) => void;
 }
 
 export function Table<T extends { id: number }>({
   columns,
   data,
   pagination,
+  onRowClick,
 }: TableProps<T>) {
   return (
     <div className="table-wrapper">
@@ -38,7 +40,17 @@ export function Table<T extends { id: number }>({
 
         <tbody>
           {data.map((item) => (
-            <tr key={item.id}>
+            <tr
+              key={item.id}
+              className={onRowClick ? "table-row-clickable" : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
+              onClick={(event) => {
+                if (!(event.target as HTMLElement).closest("button, a, input, select, textarea, label")) onRowClick?.(item);
+              }}
+              onKeyDown={(event) => {
+                if (onRowClick && (event.key === "Enter" || event.key === " ")) onRowClick(item);
+              }}
+            >
               {columns.map((column) => (
                 <td
                   key={`${column.header}-${String(column.accessor)}`}

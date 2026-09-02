@@ -12,6 +12,8 @@ const PREFIXO = "TESTE_WEBHOOK_";
 async function limpar() {
   await prisma.eventoWebhookPagamento.deleteMany({ where: { gateway: "TESTE" } });
   await prisma.auditLog.deleteMany({ where: { unidade: { nome: { startsWith: PREFIXO } } } });
+  await prisma.cobrancaPagamento.deleteMany({ where: { unidade: { nome: { startsWith: PREFIXO } } } });
+  await prisma.pedido.deleteMany({ where: { unidade: { nome: { startsWith: PREFIXO } } } });
   await prisma.mensalidade.deleteMany({ where: { unidade: { nome: { startsWith: PREFIXO } } } });
   await prisma.aluno.deleteMany({ where: { nome: { startsWith: PREFIXO } } });
   await prisma.unidade.deleteMany({ where: { nome: { startsWith: PREFIXO } } });
@@ -100,6 +102,28 @@ describe("baixa de mensalidade por webhook", () => {
 
     expect(log).not.toBeNull();
     expect((log?.valoresDepois as { origem?: string })?.origem).toBe("webhook");
+  });
+});
+
+describe("liberação de pedido por webhook", () => {
+  it("libera o pedido para retirada e registra auditoria", async () => {
+    const unidade = await criarUnidadeDeTeste(`${PREFIXO}UNIDADE_PEDIDO`);
+    const aluno = await prisma.aluno.create({
+      data: { unidadeId: unidade.id, nome: `${PREFIXO}ALUNO_PEDIDO`, dataNascimento: new Date("2010-01-01") },
+    });
+    const pedido = await prisma.pedido.create({
+      data: { unidadeId: unidade.id, alunoId: aluno.id, total: 99, status: "AGUARDANDO_PAGAMENTO" },
+    });
+
+    const desfecho = await receber({
+      eventoExternoId: "evt-pedido",
+      referenciaExterna: `pedido:${pedido.id}`,
+      valorPago: 99,
+    });
+
+    expect(desfecho.resultado).toBe("PEDIDO_LIBERADO");
+    expect((await prisma.pedido.findUnique({ where: { id: pedido.id } }))?.status).toBe("AGUARDANDO_RETIRADA");
+    expect(await prisma.auditLog.count({ where: { entidade: "Pedido", entidadeId: pedido.id, operacao: "PAGAMENTO" } })).toBe(1);
   });
 });
 

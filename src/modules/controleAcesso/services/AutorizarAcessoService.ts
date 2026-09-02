@@ -46,10 +46,6 @@ export class AutorizarAcessoService {
       return { autorizado: true, motivo: "Saída liberada", alunoId: dados.alunoId, usuarioId: dados.usuarioId };
     }
 
-    if (!(await this.temRecurso("CONTROLE_ACESSO", agora))) {
-      return { autorizado: false, motivo: "Controle de acesso indisponível para esta assinatura" };
-    }
-
     let alunoId = dados.alunoId ?? null;
     let usuarioId = dados.usuarioId ?? null;
 
@@ -72,6 +68,17 @@ export class AutorizarAcessoService {
 
       alunoId = credencial.alunoId;
       usuarioId = credencial.usuarioId;
+    }
+
+    const unidadeId = alunoId
+      ? (await prisma.aluno.findUnique({ where: { id: alunoId }, select: { unidadeId: true } }))?.unidadeId
+      : usuarioId
+        ? (await prisma.usuario.findUnique({ where: { id: usuarioId }, select: { unidadeId: true } }))?.unidadeId
+        : null;
+
+    if (!unidadeId) return { autorizado: false, motivo: "Pessoa não identificada", alunoId, usuarioId };
+    if (!(await this.temRecurso("CONTROLE_ACESSO", agora, undefined, unidadeId))) {
+      return { autorizado: false, motivo: "Controle de acesso indisponível para esta assinatura", alunoId, usuarioId };
     }
 
     if (alunoId) {

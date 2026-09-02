@@ -5,6 +5,21 @@ export interface TecnicaCurriculo {
   descricao?: string | null;
   obrigatoria: boolean;
   ordem: number;
+  duracaoPrevistaSegundos: number;
+}
+
+export type TipoBlocoCurriculo = "AQUECIMENTO" | "JOGO" | "SPARRING" | "PAUSA" | "ALONGAMENTO";
+
+export interface BlocoCurriculo {
+  id: number;
+  tipo: TipoBlocoCurriculo;
+  nome: string;
+  ordem: number;
+  duracaoPrevistaSegundos: number;
+  rounds?: number | null;
+  duracaoRoundSegundos?: number | null;
+  descansoSegundos?: number | null;
+  anuncio?: string | null;
 }
 
 export interface AulaCurriculo {
@@ -16,6 +31,12 @@ export interface AulaCurriculo {
   jogosSugeridos?: string | null;
   ordem: number;
   tecnicas: TecnicaCurriculo[];
+  blocos: BlocoCurriculo[];
+  filaCompilada: {
+    duracaoTotalSegundos: number;
+    blocos: Array<{ chave: string; tipo: string; nome: string; duracaoPrevistaSegundos: number }>;
+  };
+  duracaoTurmaMinutos: number | null;
 }
 
 export interface ModuloCurriculo {

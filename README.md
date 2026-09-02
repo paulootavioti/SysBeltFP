@@ -12,7 +12,11 @@ O Sys Belt centraliza a gestão de uma ou mais unidades (filiais) de uma academi
 
 O produto é vendido por assinatura mensal, cobrada por faixa de alunos: cada faixa cobre até 10 alunos e custa R$ 37,00, somada **por unidade** — uma academia com 12 alunos numa filial e 8 em outra paga 3 faixas.
 
-**Cada academia assinante opera sobre um banco de dados exclusivo.** O isolamento entre clientes é físico, não lógico: não há tabela compartilhada e nenhuma consulta alcança dados de outro assinante. Dentro da mesma academia, as unidades compartilham dados entre si.
+**Todos os assinantes operam no mesmo banco PostgreSQL.** O isolamento e
+logico: `Conta` separa assinantes e `Unidade` separa filiais. Toda consulta,
+alteracao, exportacao e rotina deve preservar esse escopo; nenhum assinante
+pode acessar ou inferir dados de outro. Veja
+[`docs/arquitetura-multitenant.md`](docs/arquitetura-multitenant.md).
 
 ## Os dois planos
 

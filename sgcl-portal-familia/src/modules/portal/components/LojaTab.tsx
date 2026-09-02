@@ -13,6 +13,7 @@ import { CATEGORIA_PRODUTO_LABEL } from "../types";
 import type { Pedido, Produto, ProdutoVariante } from "../types";
 
 const BADGE_STATUS_PEDIDO: Record<Pedido["status"], { label: string; variant: "warning" | "success" | "danger" }> = {
+  AGUARDANDO_PAGAMENTO: { label: "Aguardando pagamento", variant: "warning" },
   AGUARDANDO_RETIRADA: { label: "Aguardando retirada", variant: "warning" },
   ENTREGUE: { label: "Entregue", variant: "success" },
   CANCELADO: { label: "Cancelado", variant: "danger" },
@@ -43,6 +44,7 @@ export function LojaTab({ alunoId }: LojaTabProps) {
   const [finalizando, setFinalizando] = useState(false);
   const [erroCheckout, setErroCheckout] = useState("");
   const [pedidoConfirmado, setPedidoConfirmado] = useState<Pedido | null>(null);
+  const [formaPagamentoId, setFormaPagamentoId] = useState<number | undefined>();
 
   const [pedidosAbertos, setPedidosAbertos] = useState(false);
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
@@ -139,7 +141,8 @@ export function LojaTab({ alunoId }: LojaTabProps) {
 
       const pedido = await PortalService.criarPedido(
         alunoId,
-        carrinho.map((item) => ({ varianteId: item.variante.id, quantidade: item.quantidade }))
+        carrinho.map((item) => ({ varianteId: item.variante.id, quantidade: item.quantidade })),
+        formaPagamentoId
       );
 
       setPedidoConfirmado(pedido);
@@ -296,9 +299,14 @@ export function LojaTab({ alunoId }: LojaTabProps) {
           <div className="loja-tab-confirmacao">
             <p>Pedido #{pedidoConfirmado.id} confirmado!</p>
             <p className="loja-tab-confirmacao-nota">
-              Ainda não temos um gateway de pagamento integrado — a confirmação é manual, como nas mensalidades.
-              Retire o produto na unidade.
+              {pedidoConfirmado.status === "AGUARDANDO_PAGAMENTO"
+                ? "O estoque está reservado. Após a confirmação do pagamento, o pedido será liberado para retirada."
+                : "Pagamento confirmado. O pedido está liberado para retirada."}
             </p>
+            {pedidoConfirmado.pagamento?.pixQrCodeBase64 && <img className="loja-tab-pix-qr" src={`data:image/png;base64,${pedidoConfirmado.pagamento.pixQrCodeBase64}`} alt="QR Code PIX" />}
+            {pedidoConfirmado.pagamento?.pixCopiaECola && <textarea className="loja-tab-pix-codigo" readOnly value={pedidoConfirmado.pagamento.pixCopiaECola} aria-label="Código PIX copia e cola" />}
+            {pedidoConfirmado.pagamento?.linkPagamento && <a className="button button-primary" href={pedidoConfirmado.pagamento.linkPagamento} target="_blank" rel="noreferrer">Abrir pagamento</a>}
+            {pedidoConfirmado.pagamento?.erro && <ErrorMessage message={pedidoConfirmado.pagamento.erro} />}
             <Button type="button" onClick={fecharCarrinho}>
               Fechar
             </Button>
@@ -348,6 +356,16 @@ export function LojaTab({ alunoId }: LojaTabProps) {
               <strong>R$ {totalCarrinho.toFixed(2)}</strong>
             </div>
 
+            <label className="loja-tab-quantidade">
+              Forma de pagamento
+              <select value={formaPagamentoId ?? ""} onChange={(e) => setFormaPagamentoId(e.target.value ? Number(e.target.value) : undefined)}>
+                <option value="">Confirmação manual na unidade</option>
+                {(unidadeCarrinho?.formasPagamento ?? []).map((forma) => (
+                  <option key={forma.id} value={forma.id}>{forma.nomePersonalizado || forma.tipo.replaceAll("_", " ")}</option>
+                ))}
+              </select>
+            </label>
+
             <ErrorMessage message={erroCheckout} />
 
             <Button type="button" disabled={finalizando} onClick={finalizarCompra}>
@@ -380,6 +398,12 @@ export function LojaTab({ alunoId }: LojaTabProps) {
                   <span>
                     R$ {pedido.total.toFixed(2)} — {new Date(pedido.criadoEm).toLocaleDateString("pt-BR")}
                   </span>
+                  {pedido.status === "AGUARDANDO_PAGAMENTO" && <Button type="button" size="sm" variant="secondary" onClick={async () => {
+                    const atualizado = await PortalService.pagarPedido(pedido.id, alunoId);
+                    setPedidos((atuais) => atuais.map((item) => item.id === pedido.id ? atualizado : item));
+                    setPedidoConfirmado(atualizado);
+                    setCarrinhoAberto(true);
+                  }}>Tentar pagamento novamente</Button>}
                 </div>
               );
             })}
