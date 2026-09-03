@@ -21,7 +21,7 @@
 }
 
 .site-footer-brand small {
-  font-size: 11px;
+  font-size: var(--font-xs);
   font-weight: 500;
   color: var(--color-text-light);
 }
@@ -67,19 +67,19 @@
 
   background: var(--color-primary);
   color: var(--color-accent);
-  font-size: 12px;
+  font-size: var(--font-xs);
   font-weight: 800;
   letter-spacing: 0.04em;
 }
 
 .site-footer-copy {
   margin: 0;
-  font-size: 11px;
+  font-size: var(--font-xs);
   color: var(--color-text-light);
 }
 
 /* mobile: empilha e centraliza, com alvo de toque de 44px nos links */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .site-footer {
     flex-direction: column;
     text-align: center;

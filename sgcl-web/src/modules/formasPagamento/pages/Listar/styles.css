@@ -12,7 +12,7 @@
 
 .forma-pagamento-ajuda {
   margin: var(--space-1) 0 0;
-  font-size: 0.8rem;
+  font-size: var(--font-xs);
   color: var(--color-text-light);
 }
 

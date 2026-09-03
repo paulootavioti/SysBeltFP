@@ -39,6 +39,10 @@
   --space-6: 32px;
   --space-7: 56px;
   --space-8: 64px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, .10);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, .15);
+  --rule-hair: 1px;
   --radius-sm: 0;
   --radius-sm-plus: 0;
   --radius-md: 0;
@@ -48,7 +52,26 @@
   --radius-thumb: 0;
   --tap-target-min: 44px;
   --layout-sidebar-width: 232px;
+  --layout-sidebar-compact-width: 64px;
+  --layout-header-height: 68px;
   --layout-content-max: 1180px;
+  --color-sidebar-text: #fff;
+  --color-sidebar-muted: rgba(255, 255, 255, .6);
+  --color-sidebar-rule: rgba(201, 162, 39, .25);
+  --color-sidebar-hover: rgba(201, 162, 39, .12);
+  --color-sidebar-pin-hover: rgba(201, 162, 39, .18);
+  --color-overlay: rgba(0, 0, 0, .45);
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --tracking-label: .08em;
+  --belt-swatch-width: 36px;
+  --belt-swatch-height: 14px;
+  --belt-swatch-compact-width: 24px;
+  --belt-swatch-compact-height: 11px;
+  --rule-strong: 2px;
+  --login-copy-max: 520px;
+  --login-form-max: 420px;
+  --login-mobile-identity-min: 220px;
   --primary: var(--color-primary);
   --secondary: var(--color-secondary);
   --accent: var(--color-accent);
@@ -78,4 +101,10 @@
   --color-success-bg: #0d3a1a;
   --color-danger: #f0736a;
   --color-focus: #57a7ff;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --font-xs: 13px;
+  }
 }

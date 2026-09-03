@@ -92,7 +92,7 @@
 .multi-series-chart-eixo-x,
 .multi-series-chart-eixo-y-secundario {
   fill: var(--color-text-light);
-  font-size: 11px;
+  font-size: var(--font-xs);
 }
 
 .multi-series-chart-hit {

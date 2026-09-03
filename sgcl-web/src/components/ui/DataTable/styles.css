@@ -109,30 +109,45 @@
   justify-content: center;
 }
 
+.data-table-cards { display: none; }
+.data-table-confortavel th, .data-table-confortavel td { padding: var(--space-4); }
+
+@media (max-width: 1179px) {
+  .data-table-prioridade-3 { display: none; }
+}
+
+@media (pointer: coarse) {
+  .data-table-wrapper th, .data-table-wrapper td { min-height: var(--tap-target-min); padding: var(--space-4); }
+}
+
 /* Mesmo tratamento do Table abaixo de ~640px: linhas viram cards
    empilhados com pares label/valor em vez de rolar na horizontal. */
-@media (max-width: 640px) {
-  .data-table-wrapper {
+@media (max-width: 767px) {
+  .data-table-com-cartoes { overflow-x: visible; border: none; background: transparent; }
+  .data-table-com-cartoes .data-table { display: none; }
+  .data-table-com-cartoes .data-table-cards { display: grid; gap: var(--space-3); }
+
+  .data-table-wrapper:not(.data-table-com-cartoes) {
     overflow-x: visible;
     border: none;
     background: transparent;
   }
 
-  .data-table {
+  .data-table-wrapper:not(.data-table-com-cartoes) .data-table {
     display: block;
   }
 
-  .data-table thead {
+  .data-table-wrapper:not(.data-table-com-cartoes) .data-table thead {
     display: none;
   }
 
-  .data-table tbody {
+  .data-table-wrapper:not(.data-table-com-cartoes) .data-table tbody {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
   }
 
-  .data-table tr {
+  .data-table-wrapper:not(.data-table-com-cartoes) .data-table tr {
     display: block;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
@@ -140,7 +155,7 @@
     overflow: hidden;
   }
 
-  .data-table td {
+  .data-table-wrapper:not(.data-table-com-cartoes) .data-table td {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -150,11 +165,11 @@
     padding: var(--space-2) var(--space-3);
   }
 
-  .data-table td:last-child {
+  .data-table-wrapper:not(.data-table-com-cartoes) .data-table td:last-child {
     border-bottom: none;
   }
 
-  .data-table td::before {
+  .data-table-wrapper:not(.data-table-com-cartoes) .data-table td::before {
     content: attr(data-label);
     flex-shrink: 0;
     text-align: left;

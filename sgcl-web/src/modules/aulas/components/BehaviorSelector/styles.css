@@ -56,7 +56,7 @@
   background: #dc2626;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .behavior-selector {
     grid-template-columns: 1fr;
   }

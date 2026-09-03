@@ -13,4 +13,4 @@
 .seguranca-formulario { display: grid; gap: var(--space-3); margin-top: var(--space-5); align-items: end; }
 .seguranca-formulario .button { display: inline-flex; justify-content: center; align-items: center; gap: var(--space-2); }
 .seguranca-sucesso { color: var(--color-success); font-weight: 600; }
-@media (min-width: 700px) { .seguranca-formulario { grid-template-columns: minmax(0, 1fr) auto; } .seguranca-configuracao .seguranca-formulario:has(.input-wrapper + .input-wrapper) { grid-template-columns: 1fr 1fr auto; } }
+@media (min-width: 768px) { .seguranca-formulario { grid-template-columns: minmax(0, 1fr) auto; } .seguranca-configuracao .seguranca-formulario:has(.input-wrapper + .input-wrapper) { grid-template-columns: 1fr 1fr auto; } }

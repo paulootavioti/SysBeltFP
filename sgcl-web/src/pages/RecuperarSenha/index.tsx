@@ -40,13 +40,21 @@ export function RecuperarSenha() {
   }
 
   return (
-    <div className="login-page">
-      <div className="login-card">
+    <main className="login-page">
+      <section className="login-identity" aria-labelledby="recuperar-brand-title">
         <div className="login-brand">
-          <span className="login-brand-selo">SB</span>
-          <h1>{token ? "Criar nova senha" : "Recuperar acesso"}</h1>
-          <p>Sys Belt — Sistema Faixa Preta</p>
+          <strong id="recuperar-brand-title">SYS BELT</strong>
+          <span>Sistema Faixa Preta</span>
         </div>
+        <div className="login-brand-rule" aria-hidden="true" />
+        <h1>Seu acesso continua protegido em cada etapa.</h1>
+      </section>
+      <section className="login-access">
+        <div className="login-card">
+          <header className="login-form-header">
+            <span>Segurança da conta</span>
+            <h2>{token ? "Criar nova senha" : "Recuperar acesso"}</h2>
+          </header>
         <form className="login-form" onSubmit={enviar}>
           {token ? (
             <>
@@ -61,7 +69,8 @@ export function RecuperarSenha() {
           {!mensagem && <Button type="submit" disabled={carregando}>{carregando ? "Enviando..." : token ? "Redefinir senha" : "Enviar instruções"}</Button>}
           <Link className="login-link" to="/">Voltar ao login</Link>
         </form>
-      </div>
-    </div>
+        </div>
+      </section>
+    </main>
   );
 }

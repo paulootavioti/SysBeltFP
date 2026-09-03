@@ -126,6 +126,7 @@ export class GetProntuarioAlunoService {
       frequenciaAno,
 
       faixa: aluno.faixa,
+      faixaCor: aluno.graduacoes.find((graduacao) => graduacao.status === "aprovada")?.cor ?? null,
       grau: aluno.grau,
       proximoGrauEm:
         proximoGrauEm === 8 ? 8 : proximoGrauEm,

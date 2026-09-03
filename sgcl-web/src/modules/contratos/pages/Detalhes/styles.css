@@ -99,7 +99,7 @@
   gap: var(--space-1);
 }
 
-@media (max-width: 700px) {
+@media (max-width: 767px) {
   .contrato-assinatura-historico li { grid-template-columns: 1fr; }
 }
 

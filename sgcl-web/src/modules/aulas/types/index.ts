@@ -46,6 +46,7 @@ export interface AulaAluno {
     nome: string;
     apelido?: string | null;
     faixa: string;
+    faixaCor?: string | null;
     grau: number;
     dataNascimento: string;
     responsaveis?: {

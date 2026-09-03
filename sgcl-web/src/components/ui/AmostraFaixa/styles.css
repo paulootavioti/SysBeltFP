@@ -1,0 +1,14 @@
+.amostra-faixa {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: var(--belt-swatch-width);
+  height: var(--belt-swatch-height);
+  border: var(--rule-hair) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-bg);
+}
+
+.amostra-faixa-compacta {
+  width: var(--belt-swatch-compact-width);
+  height: var(--belt-swatch-compact-height);
+}

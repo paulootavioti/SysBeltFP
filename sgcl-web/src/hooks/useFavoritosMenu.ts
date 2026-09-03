@@ -9,6 +9,13 @@ function chaveStorage(usuarioId: number): string {
   return `@sgcl:menuFavoritos:${usuarioId}`;
 }
 
+const SEMENTES_POR_PERFIL: Record<string, string[]> = {
+  RECEPCAO: ["/alunos", "/mensalidades", "/aulas", "/turmas"],
+  PROFESSOR: ["/aulas", "/planejamento", "/graduacoes", "/competicoes"],
+  ADMIN: ["/dashboard", "/financeiro", "/relatorios", "/unidades"],
+  DONO: ["/dashboard", "/financeiro", "/relatorios", "/unidades"],
+};
+
 export function useFavoritosMenu() {
   const { usuario } = useAuth();
   const [favoritos, setFavoritos] = useState<string[]>([]);
@@ -21,7 +28,7 @@ export function useFavoritosMenu() {
 
     try {
       const armazenado = localStorage.getItem(chaveStorage(usuario.id));
-      setFavoritos(armazenado ? JSON.parse(armazenado) : []);
+      setFavoritos(armazenado ? JSON.parse(armazenado) : (SEMENTES_POR_PERFIL[usuario.perfil] ?? []));
     } catch {
       setFavoritos([]);
     }

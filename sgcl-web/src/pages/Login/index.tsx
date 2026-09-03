@@ -7,7 +7,6 @@ import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { ErrorMessage } from "../../components/ui/ErrorMessage";
 
-import { SiteFooter } from "../../components/layout/SiteFooter";
 import { getApiErrorMessage } from "../../shared/utils/getApiErrorMessage";
 import { lerSessaoExpirada, limparSessaoExpirada } from "../../shared/utils/sessaoExpirada";
 import { ROTA_PADRAO_POR_PERFIL, type Perfil } from "../../shared/constants/acessoPorPerfil";
@@ -60,14 +59,16 @@ export function Login() {
   }
 
   return (
-    <div className="login-page">
-      <div className="login-card">
-        <div className="login-brand">
-          <span className="login-brand-selo">SB</span>
-          <h1>Sys Belt</h1>
-          <p>Sistema Faixa Preta</p>
-        </div>
-
+    <main className="login-page">
+      <section className="login-identity" aria-labelledby="login-brand-title">
+        <div className="login-brand"><strong id="login-brand-title">SYS BELT</strong><span>Sistema Faixa Preta</span></div>
+        <div className="login-brand-rule" aria-hidden="true" />
+        <h1>Gestão que acompanha cada etapa da academia.</h1>
+        <div className="login-provas"><p><strong>1</strong><span>sistema para toda a operação</span></p><p><strong>100%</strong><span>da jornada do aluno visível</span></p></div>
+      </section>
+      <section className="login-access">
+        <div className="login-card">
+        <header className="login-form-header"><span>Acesso administrativo</span><h2>{desafio ? "Confirmar identidade" : "Entrar"}</h2></header>
         <form className="login-form" onSubmit={handleSubmit}>
           {!desafio && <Input
             label="E-mail"
@@ -114,33 +115,26 @@ export function Login() {
         </form>
 
         <div className="login-portais">
-          <div className="login-portais-divisor">
-            <span>Outros acessos</span>
-          </div>
+          <div className="login-portais-divisor"><span>Outros acessos</span></div>
 
           <a className="login-portal-card" href={PORTAL_PROFESSOR_URL}
              target="_blank" rel="noopener noreferrer">
-            <span className="login-portal-icone" aria-hidden="true">🥋</span>
             <span className="login-portal-texto">
               <strong>Portal do Professor</strong>
               <span>Para ministrar aulas pelo celular</span>
             </span>
-            <span className="login-portal-seta" aria-hidden="true">›</span>
           </a>
 
           <a className="login-portal-card" href={PORTAL_FAMILIA_URL}
              target="_blank" rel="noopener noreferrer">
-            <span className="login-portal-icone" aria-hidden="true">👨‍👩‍👦</span>
             <span className="login-portal-texto">
               <strong>Portal da Família</strong>
               <span>Para responsáveis e alunos</span>
             </span>
-            <span className="login-portal-seta" aria-hidden="true">›</span>
           </a>
         </div>
-      </div>
-
-      <SiteFooter />
-    </div>
+        </div>
+      </section>
+    </main>
   );
 }

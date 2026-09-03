@@ -21,13 +21,13 @@
   gap: var(--space-3);
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1179px) {
   .evento-detalhe-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 599px) {
+@media (max-width: 767px) {
   .evento-detalhe-grid {
     grid-template-columns: 1fr;
   }

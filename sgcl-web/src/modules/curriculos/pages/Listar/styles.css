@@ -263,7 +263,7 @@
   border-top: 1px solid var(--border);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1179px) {
   .curriculo-bloco-linha { grid-template-columns: 1fr 1fr; }
   .curriculo-blocos-cabecalho { flex-direction: column; }
 }

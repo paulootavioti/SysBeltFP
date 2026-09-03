@@ -9,15 +9,18 @@ import { Select } from "../../../../components/ui/Select";
 import { Checkbox } from "../../../../components/ui/Checkbox";
 import { FilterBar, type FilterBarSelect } from "../../../../components/ui/FilterBar";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
-import { Table } from "../../../../components/ui/Table";
+import { DataTable } from "../../../../components/ui/DataTable";
+import { Situacao } from "../../../../components/ui/Situacao";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { TrilhaFaixa } from "../../../../components/ui/TrilhaFaixa";
+import { AmostraFaixa } from "../../../../components/ui/AmostraFaixa";
 import { Modal } from "../../../../components/ui/Modal";
 import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 
 import { calcularIdade } from "../../../../shared/formatters/data";
 import { calcularStatusFinanceiroAluno } from "../../utils/statusFinanceiro";
+import { resolverCorFaixa } from "../../../../shared/constants/coresFaixa";
 
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { useAlunos } from "../../hooks/useAlunos";
@@ -42,14 +45,14 @@ export function Alunos() {
   const ehProfessor = usuario?.perfil === "PROFESSOR";
 
   const [busca, setBusca] = useState("");
-  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState(() => ehProfessor ? "" : "EM_ATRASO");
   const [filtroTurma, setFiltroTurma] = useState("");
   const [pagina, setPagina] = useState(1);
   const [menuAlunoId, setMenuAlunoId] = useState<number | null>(null);
   const [selecionados, setSelecionados] = useState<Set<number>>(new Set());
   const [turmasDisponiveis, setTurmasDisponiveis] = useState<Array<{ id: number; nome: string }>>([]);
 
-  const { alunos, total, totalPaginas, loading, erro, setErro, carregarAlunos } = useAlunos({
+  const { alunos, total, loading, erro, setErro, carregarAlunos } = useAlunos({
     pagina,
     busca,
     status: filtroStatus,
@@ -78,7 +81,7 @@ export function Alunos() {
     .sort((a, b) => a[1].localeCompare(b[1]))
     .map(([id, nome]) => ({ value: String(id), label: nome }));
 
-  const rotuloStatus: Record<string, string> = { ATIVO: "Ativo", INATIVO: "Inativo" };
+  const rotuloStatus: Record<string, string> = { EM_ATRASO: "Em atraso", ATIVO: "Ativo", INATIVO: "Inativo" };
 
   const filtrosAtivos = [
     filtroStatus && { chave: "status", rotulo: `Status: ${rotuloStatus[filtroStatus]}`, limpar: () => { setFiltroStatus(""); setPagina(1); } },
@@ -185,26 +188,31 @@ export function Alunos() {
     {
       header: "Nome",
       accessor: "nome" as const,
+      prioridade: 1 as const,
     },
     {
       header: "Apelido",
       accessor: "apelido" as const,
+      prioridade: 2 as const,
       render: (aluno: AlunoBasico) => aluno.apelido || "-",
     },
     {
       header: "Turma",
       accessor: "turma" as const,
+      prioridade: 1 as const,
       render: (aluno: AlunoBasico) => aluno.turma?.nome || "Não vinculada",
     },
     {
       header: "Responsável",
       accessor: "responsaveis" as const,
+      prioridade: 2 as const,
       render: (aluno: AlunoBasico) =>
         aluno.responsaveis?.map((responsavel) => responsavel.nome).join(", ") || "-",
     },
     {
       header: "Ações",
       accessor: "id" as const,
+      prioridade: 1 as const,
       render: (aluno: AlunoBasico) => (
         <Button type="button" variant="secondary" size="sm" onClick={() => navigate(`/alunos/${aluno.id}`)}>
           Detalhes
@@ -217,6 +225,7 @@ export function Alunos() {
     {
       header: "",
       accessor: "id" as const,
+      prioridade: 1 as const,
       render: (aluno: Aluno) => (
         <Checkbox
           label=""
@@ -228,6 +237,7 @@ export function Alunos() {
     {
       header: "Aluno",
       accessor: "nome" as const,
+      prioridade: 1 as const,
       render: (aluno: Aluno) => (
         <span className="aluno-identidade">
           <strong>{aluno.nome}</strong>
@@ -238,16 +248,19 @@ export function Alunos() {
     {
       header: "Faixa",
       accessor: "faixa" as const,
-      render: (aluno: Aluno) => <TrilhaFaixa faixa={aluno.faixa} comLabel />,
+      prioridade: 1 as const,
+      render: (aluno: Aluno) => <span className="aluno-faixa"><AmostraFaixa cor={aluno.faixaCor} graduacao={`${aluno.faixa} · ${aluno.grau}º grau`} compacta /><TrilhaFaixa faixa={aluno.faixa} comLabel /></span>,
     },
     {
       header: "Turma",
       accessor: "turma" as const,
+      prioridade: 2 as const,
       render: (aluno: Aluno) => aluno.turma?.nome ?? "Não vinculada",
     },
     {
       header: "Financeiro",
       accessor: "mensalidades" as const,
+      prioridade: 1 as const,
       render: (aluno: Aluno) => {
         const status = calcularStatusFinanceiroAluno(aluno.mensalidades);
         if (!aluno.ativo) return "Aluno inativo";
@@ -264,6 +277,7 @@ export function Alunos() {
     {
       header: "Ações",
       accessor: "id" as const,
+      prioridade: 1 as const,
       render: (aluno: Aluno) => (
         <div className="alunos-table-actions">
           <Button
@@ -339,6 +353,7 @@ export function Alunos() {
           !ehProfessor && {
             label: "Status",
             options: [
+              { value: "EM_ATRASO", label: "Em atraso" },
               { value: "ATIVO", label: "Ativo" },
               { value: "INATIVO", label: "Inativo" },
             ],
@@ -373,30 +388,25 @@ export function Alunos() {
           description="Cadastre um novo aluno ou ajuste sua pesquisa."
         />
       ) : ehProfessor ? (
-        <Table
+        <DataTable
           columns={columnsBasicas}
           data={alunosBasicosFiltrados}
-          pagination={{
-            paginaAtual: pagina,
-            totalPaginas,
-            totalItens: total,
-            itensPorPagina: 15,
-            onChangePagina: setPagina,
-          }}
-          onRowClick={(aluno) => navigate(`/alunos/${aluno.id}`)}
+          pageSize={15} totalItems={total} onPageChange={setPagina}
+          renderCartao={(aluno) => <button type="button" className="aluno-mobile-card" onClick={() => navigate(`/alunos/${aluno.id}`)}><strong>{aluno.nome}</strong><small>{aluno.turma?.nome ?? "Sem turma"}</small><Situacao degrau="neutro">Ativo</Situacao></button>}
         />
       ) : (
-        <Table
+        <DataTable
           columns={columns}
           data={alunos}
-          pagination={{
-            paginaAtual: pagina,
-            totalPaginas,
-            totalItens: total,
-            itensPorPagina: 15,
-            onChangePagina: setPagina,
+          pageSize={15} totalItems={total} onPageChange={setPagina}
+          renderCartao={(aluno) => {
+            const status = calcularStatusFinanceiroAluno(aluno.mensalidades);
+            const vencimento = aluno.mensalidades?.[0]?.vencimento;
+            const dias = vencimento ? Math.max(1, Math.floor((Date.now() - new Date(vencimento).getTime()) / 86400000)) : 0;
+            const texto = !aluno.ativo ? "Matrícula inativa" : status === "VENCIDO" ? `Vencida há ${dias} dias` : status === "PENDENTE" ? "Pagamento pendente" : status === "PAGO" ? "Em dia" : "Sem mensalidade";
+            const degrau = !aluno.ativo ? "inativo" : status === "VENCIDO" ? "acao" : status === "PENDENTE" ? "atencao" : "neutro";
+            return <button type="button" className="aluno-mobile-card" style={{ borderLeftColor: resolverCorFaixa(aluno.faixaCor) }} onClick={() => navigate(`/alunos/${aluno.id}`)}><AmostraFaixa cor={aluno.faixaCor} graduacao={`${aluno.faixa} · ${aluno.grau}º grau`} compacta /><strong>{aluno.nome}</strong><small>{aluno.turma?.nome ?? "Sem turma"} · {aluno.faixa} · {aluno.grau}º grau</small><Situacao degrau={degrau}>{texto}</Situacao></button>;
           }}
-          onRowClick={(aluno) => navigate(`/alunos/${aluno.id}`)}
         />
       )}
 

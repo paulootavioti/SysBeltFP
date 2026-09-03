@@ -43,7 +43,7 @@
   color: white;
   border-radius: 999px;
 
-  font-size: 10px;
+  font-size: var(--font-xs);
   font-weight: 700;
   line-height: 1;
 }
