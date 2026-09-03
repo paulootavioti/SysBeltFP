@@ -48,13 +48,13 @@
 
 .textarea-error{
 
-  border-color:var(--danger);
+  border-color:var(--color-accent-700);
 
 }
 
 .textarea-error-message{
 
-  color:var(--danger);
+  color:var(--color-accent-700);
 
   font-size: var(--font-xs);
 

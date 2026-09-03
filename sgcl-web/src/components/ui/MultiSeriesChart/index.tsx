@@ -38,10 +38,10 @@ const LARGURA = 800;
 const ALTURA = 320;
 const MARGEM = { topo: 40, direita: 48, baixo: 32, esquerda: 56 };
 const CORES_PADRAO = [
-  "var(--color-accent)",
-  "var(--color-success)",
-  "var(--color-warning)",
-  "var(--color-danger)",
+  "var(--color-serie-1)",
+  "var(--color-serie-2)",
+  "var(--color-serie-3)",
+  "var(--color-neutral-400)",
 ];
 
 function arredondarParaCima(valor: number): number {

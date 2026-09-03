@@ -145,8 +145,8 @@ export function Financeiro() {
             dados={fluxoCaixa.dados.map((ponto) => ({ label: ponto.rotulo, recebido: ponto.recebido, previsto: ponto.previsto }))}
             formatarValor={formatarMoeda}
             barras={[
-              { chave: "recebido", rotulo: "Recebido", cor: "var(--color-success)" },
-              { chave: "previsto", rotulo: "Previsto", cor: "var(--color-accent)" },
+              { chave: "recebido", rotulo: "Recebido", cor: "var(--color-serie-1)" },
+              { chave: "previsto", rotulo: "Previsto", cor: "var(--color-serie-2)" },
             ]}
           />
         ) : null}

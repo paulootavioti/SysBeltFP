@@ -7,11 +7,11 @@
 }
 
 .dashboard-variacao-positiva {
-  color: var(--color-success);
+  color: var(--color-text);
 }
 
 .dashboard-variacao-negativa {
-  color: var(--color-danger);
+  color: var(--color-accent-700);
 }
 
 .dashboard-variacao-estavel {

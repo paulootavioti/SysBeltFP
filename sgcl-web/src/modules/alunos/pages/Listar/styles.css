@@ -84,7 +84,7 @@
 .aluno-menu { position: absolute; z-index: 30; right: 0; top: calc(100% + 4px); min-width: 150px; border: 1px solid var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-lg); }
 .aluno-menu button { display: block; width: 100%; min-height: 44px; padding: 8px 12px; border: 0; background: transparent; color: var(--color-text); text-align: left; }
 .aluno-menu button:hover { background: var(--color-background); }
-.aluno-menu .aluno-menu-destrutivo { color: var(--color-danger); }
+.aluno-menu .aluno-menu-destrutivo { color: var(--color-accent-700); }
 .aluno-mobile-card {
   width: 100%;
   min-height: var(--tap-target-min);

@@ -21,10 +21,10 @@ export function DashboardCharts({ resumo }: DashboardChartsProps) {
         dados={resumo.seriesReceita}
         formatarValor={formatarMoeda}
         barras={[
-          { chave: "recebido", rotulo: "Recebido", cor: "var(--color-success)" },
-          { chave: "previsto", rotulo: "Previsto", cor: "var(--color-accent)" },
-          { chave: "pendente", rotulo: "Pendente", cor: "var(--color-warning)" },
-          { chave: "vencido", rotulo: "Vencido", cor: "var(--color-danger)" },
+          { chave: "recebido", rotulo: "Recebido", cor: "var(--color-serie-1)" },
+          { chave: "previsto", rotulo: "Previsto", cor: "var(--color-serie-2)" },
+          { chave: "pendente", rotulo: "Pendente", cor: "var(--color-serie-3)" },
+          { chave: "vencido", rotulo: "Vencido", cor: "var(--color-neutral-400)" },
         ]}
       />
 
@@ -33,9 +33,9 @@ export function DashboardCharts({ resumo }: DashboardChartsProps) {
         subtitulo="Novas matrículas, cancelamentos e saldo líquido"
         dados={resumo.seriesMatriculas}
         barras={[
-          { chave: "novasMatriculas", rotulo: "Novas matrículas", cor: "var(--color-success)" },
-          { chave: "cancelamentos", rotulo: "Cancelamentos", cor: "var(--color-danger)" },
-          { chave: "saldo", rotulo: "Saldo líquido", cor: "var(--color-accent)" },
+          { chave: "novasMatriculas", rotulo: "Novas matrículas", cor: "var(--color-serie-1)" },
+          { chave: "cancelamentos", rotulo: "Cancelamentos", cor: "var(--color-serie-2)" },
+          { chave: "saldo", rotulo: "Saldo líquido", cor: "var(--color-serie-3)" },
         ]}
       />
 
@@ -44,8 +44,8 @@ export function DashboardCharts({ resumo }: DashboardChartsProps) {
         subtitulo="Presenças, faltas e taxa de frequência no período"
         dados={resumo.seriesFrequencia}
         barras={[
-          { chave: "presencas", rotulo: "Presenças", cor: "var(--color-accent)" },
-          { chave: "faltas", rotulo: "Faltas", cor: "var(--color-danger)" },
+          { chave: "presencas", rotulo: "Presenças", cor: "var(--color-serie-1)" },
+          { chave: "faltas", rotulo: "Faltas", cor: "var(--color-serie-2)" },
         ]}
         linha={{ chave: "taxaFrequencia", rotulo: "Taxa de frequência", formatarValor: formatarPercentual }}
       />

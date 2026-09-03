@@ -40,9 +40,9 @@
 /* especificidade (0 classes duplas) precisa superar ".card h2" do
    componente Card (classe + elemento) pra a cor realmente aparecer. */
 .evento-detalhe-saldo.evento-detalhe-saldo-positivo {
-  color: var(--color-success);
+  color: var(--color-text);
 }
 
 .evento-detalhe-saldo.evento-detalhe-saldo-negativo {
-  color: var(--color-danger);
+  color: var(--color-accent-700);
 }

@@ -88,7 +88,7 @@
 
 .image-upload-erro{
 
-  color: var(--color-danger, #B3261E);
+  color: var(--color-accent-700);
 
   font-size: 13px;
 

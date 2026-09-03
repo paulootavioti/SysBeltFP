@@ -45,7 +45,7 @@
 }
 
 .progresso-barra-grau {
-  background: var(--color-success);
+  background: var(--color-text);
 }
 
 .progresso-item-nota {
