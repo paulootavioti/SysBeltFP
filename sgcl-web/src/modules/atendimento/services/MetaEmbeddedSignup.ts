@@ -32,8 +32,10 @@ export async function iniciarEmbeddedSignupWhatsApp(): Promise<ResultadoEmbedded
       resolve({ codigo, identificadorExterno: dadosSessao.phone_number_id, businessAccountId: dadosSessao.waba_id });
     };
     const receberSessao = (evento: MessageEvent) => {
-      let hostname = "";
-      try { hostname = new URL(evento.origin).hostname; } catch { return; }
+      const hostname = (() => {
+        try { return new URL(evento.origin).hostname; } catch { return null; }
+      })();
+      if (!hostname) return;
       if (hostname !== "facebook.com" && !hostname.endsWith(".facebook.com")) return;
       let payload = evento.data;
       if (typeof payload === "string") { try { payload = JSON.parse(payload); } catch { return; } }
