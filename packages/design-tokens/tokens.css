@@ -52,7 +52,18 @@
   --radius-thumb: 0;
   --tap-target-min: 44px;
   --layout-sidebar-width: 232px;
+  --layout-sidebar-compact-width: 64px;
+  --layout-header-height: 68px;
   --layout-content-max: 1180px;
+  --color-sidebar-text: #fff;
+  --color-sidebar-muted: rgba(255, 255, 255, .6);
+  --color-sidebar-rule: rgba(201, 162, 39, .25);
+  --color-sidebar-hover: rgba(201, 162, 39, .12);
+  --color-sidebar-pin-hover: rgba(201, 162, 39, .18);
+  --color-overlay: rgba(0, 0, 0, .45);
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --tracking-label: .08em;
   --belt-swatch-width: 36px;
   --belt-swatch-height: 14px;
   --belt-swatch-compact-width: 24px;

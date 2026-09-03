@@ -8,6 +8,7 @@ import { perfilTemAcesso } from "../../../shared/constants/acessoPorPerfil";
 import { NAV_TREE, encontrarGrupoDaRota, type NavEntry } from "../../../shared/constants/navegacao";
 import { useContadoresMenu } from "../../../hooks/useContadoresMenu";
 import { useFavoritosMenu } from "../../../hooks/useFavoritosMenu";
+import { useAtalhoPaletaComandos } from "../../../hooks/useAtalhoPaletaComandos";
 import { NotificationBell } from "../../ui/NotificationBell";
 import { SeletorUnidadeAtiva } from "../SeletorUnidadeAtiva";
 import { NavItemLink } from "./NavItemLink";
@@ -27,12 +28,16 @@ export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const contadores = useContadoresMenu();
   const { favoritos, alternarFavorito } = useFavoritosMenu();
+  useAtalhoPaletaComandos();
 
   const [menuAberto, setMenuAberto] = useState(false);
   const [gruposAbertos, setGruposAbertos] = useState<Set<string>>(() => {
     try {
       const salvo = localStorage.getItem(CHAVE_GRUPOS_ABERTOS);
-      if (salvo) return new Set(JSON.parse(salvo));
+      if (salvo) {
+        const [primeiro] = JSON.parse(salvo) as string[];
+        if (primeiro) return new Set([primeiro]);
+      }
     } catch {
       // ignora storage corrompido, cai no fallback abaixo
     }
@@ -44,23 +49,16 @@ export function Layout({ children }: LayoutProps) {
     setMenuAberto(false);
   }, [location.pathname]);
 
-  // ao navegar pra dentro de um grupo fechado (ex.: via favorito ou link
-  // direto), abre esse grupo sozinho — nunca fecha os demais.
   useEffect(() => {
     const grupoDaRotaAtual = encontrarGrupoDaRota(location.pathname);
-    if (grupoDaRotaAtual) {
-      setGruposAbertos((atual) => (atual.has(grupoDaRotaAtual) ? atual : new Set(atual).add(grupoDaRotaAtual)));
-    }
+    if (!grupoDaRotaAtual) return;
+    setGruposAbertos(new Set([grupoDaRotaAtual]));
+    localStorage.setItem(CHAVE_GRUPOS_ABERTOS, JSON.stringify([grupoDaRotaAtual]));
   }, [location.pathname]);
 
   function alternarGrupo(id: string) {
     setGruposAbertos((atual) => {
-      const proximo = new Set(atual);
-      if (proximo.has(id)) {
-        proximo.delete(id);
-      } else {
-        proximo.add(id);
-      }
+      const proximo = atual.has(id) ? new Set<string>() : new Set([id]);
       localStorage.setItem(CHAVE_GRUPOS_ABERTOS, JSON.stringify(Array.from(proximo)));
       return proximo;
     });
@@ -123,7 +121,7 @@ export function Layout({ children }: LayoutProps) {
         <nav className="sidebar-nav">
           {itensFavoritos.length > 0 && (
             <div className="sidebar-grupo sidebar-grupo-favoritos">
-              <span className="sidebar-secao-titulo">Favoritos</span>
+              <span className="sidebar-secao-titulo">Seu trilho</span>
               {itensFavoritos.map((item) => (
                 <NavItemLink
                   key={item.to}
