@@ -58,7 +58,7 @@ export function AulaAlunoCard({
           <h3>{registro.aluno.apelido || registro.aluno.nome}</h3>
 
           <p>
-            <AmostraFaixa cor={registro.aluno.faixaCor} graduacao={`${registro.aluno.faixa} · ${registro.aluno.grau}º grau`} compacta /> Faixa {registro.aluno.faixa} • Grau{" "}
+            <AmostraFaixa cor={registro.aluno.faixaCor} graduacao={`${registro.aluno.faixa} · ${registro.aluno.grau}º grau`} tamanho="compacta" /> Faixa {registro.aluno.faixa} • Grau{" "}
             {registro.aluno.grau}
           </p>
         </div>

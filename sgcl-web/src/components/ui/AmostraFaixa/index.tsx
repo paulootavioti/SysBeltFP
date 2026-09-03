@@ -4,10 +4,10 @@ import "./styles.css";
 interface AmostraFaixaProps {
   cor?: string | null;
   graduacao: string;
-  compacta?: boolean;
+  tamanho?: "padrao" | "compacta";
 }
 
-export function AmostraFaixa({ cor, graduacao, compacta = false }: AmostraFaixaProps) {
+export function AmostraFaixa({ cor, graduacao, tamanho = "padrao" }: AmostraFaixaProps) {
   const corSegura = resolverCorFaixa(cor);
-  return <span className={`amostra-faixa${compacta ? " amostra-faixa-compacta" : ""}`} aria-label={`Graduação ${graduacao}`} role="img" style={corSegura ? { backgroundColor: corSegura } : undefined} />;
+  return <span className={`amostra-faixa${tamanho === "compacta" ? " amostra-faixa-compacta" : ""}`} aria-label={corSegura ? graduacao : "Sem graduação"} role="img" style={corSegura ? { backgroundColor: corSegura } : undefined} />;
 }

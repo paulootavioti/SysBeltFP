@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui/Button";
+import { AmostraFaixa } from "../../../components/ui/AmostraFaixa";
 import { DashboardEmptyState } from "./DashboardEmptyState";
 import { formatarPercentual } from "../utils/formatters";
 import type { AlunoElegivel } from "../../graduacoes/types";
@@ -30,11 +31,12 @@ export function DashboardGraduations({ alunos }: DashboardGraduationsProps) {
             return (
               <div key={aluno.alunoId} className="dashboard-graduacao-item">
                 <div className="dashboard-graduacao-cabecalho">
+                  <div className="dashboard-graduacao-faixas">
+                    <AmostraFaixa cor={aluno.faixaCor} graduacao={aluno.faixa} tamanho="compacta" />
+                    <span aria-hidden="true">→</span>
+                    <AmostraFaixa cor={aluno.proximaFaixaCor} graduacao={aluno.proximaFaixa ?? "Sem próxima graduação"} tamanho="compacta" />
+                  </div>
                   <strong>{aluno.nome}</strong>
-                  <span>
-                    {aluno.faixa}
-                    {aluno.proximaFaixa ? ` → ${aluno.proximaFaixa}` : ""}
-                  </span>
                 </div>
 
                 <div
