@@ -57,6 +57,10 @@
   --belt-swatch-height: 14px;
   --belt-swatch-compact-width: 24px;
   --belt-swatch-compact-height: 11px;
+  --rule-strong: 2px;
+  --login-copy-max: 520px;
+  --login-form-max: 420px;
+  --login-mobile-identity-min: 220px;
   --primary: var(--color-primary);
   --secondary: var(--color-secondary);
   --accent: var(--color-accent);
