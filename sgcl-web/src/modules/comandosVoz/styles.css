@@ -2,7 +2,7 @@
 .voz-header { display: flex; align-items: center; gap: var(--space-3); }
 .voz-header h1, .voz-header p, .voz-lista h2, .voz-form h2 { margin: 0; }
 .voz-header p { color: var(--color-text-light); }
-.voz-sucesso { padding: var(--space-3); border-left: 3px solid var(--color-success); color: var(--color-success); background: var(--color-success-bg); }
+.voz-sucesso { padding: var(--space-3); border-left: var(--rule-hair) solid var(--color-border); color: var(--color-neutral-text); background: var(--color-neutral-bg); }
 .voz-pareamento { display: flex; align-items: end; gap: var(--space-3); }
 .voz-pareamento .select-wrapper { min-width: 260px; }
 .voz-layout { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(300px, .8fr); gap: var(--space-4); align-items: start; }

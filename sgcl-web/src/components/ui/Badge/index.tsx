@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-
-import "./styles.css";
+import { Situacao, type DegrauSituacao } from "../Situacao";
 
 interface BadgeProps {
   children: ReactNode;
@@ -11,9 +10,8 @@ export function Badge({
   children,
   variant = "neutral",
 }: BadgeProps) {
-  return (
-    <span className={`badge badge-${variant}`}>
-      {children}
-    </span>
-  );
+  const degrau: Record<NonNullable<BadgeProps["variant"]>, DegrauSituacao> = {
+    success: "neutro", danger: "acao", warning: "atencao", info: "neutro", neutral: "neutro",
+  };
+  return <Situacao degrau={degrau[variant]}>{children}</Situacao>;
 }
