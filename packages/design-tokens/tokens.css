@@ -28,6 +28,7 @@
   --font-sm: 14px;
   --font-md: 16px;
   --font-lg: 20px;
+  --font-xl: 30px;
   --font-display-sm: 22px;
   --font-display-md: 32px;
   --font-display-lg: 46px;
@@ -42,6 +43,7 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, .08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, .10);
   --shadow-lg: 0 10px 30px rgba(0, 0, 0, .15);
+  --shadow: var(--shadow-sm);
   --rule-hair: 1px;
   --radius-sm: 0;
   --radius-sm-plus: 0;

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const raiz = process.cwd();
 const ignorados = new Set([".git", "node_modules", "dist", "coverage"]);
-const declaracaoToken = /^\s*--(?:color-|font-|space-|radius-|shadow-|tap-target-min\s*:|layout-)[\w-]*\s*:/m;
+const declaracaoToken = /^\s*--(?:color|font|space|radius|shadow|layout|tap)(?:-[\w-]+)?\s*:/m;
 
 function arquivosCss(diretorio: string): string[] {
   return readdirSync(diretorio, { withFileTypes: true }).flatMap((entrada) => {
