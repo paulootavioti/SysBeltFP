@@ -3,25 +3,24 @@
   align-items: center;
   width: fit-content;
   max-width: 100%;
-  min-height: var(--space-5);
-  padding: var(--space-1) var(--space-2);
+  padding: var(--rule-strong) var(--space-2);
   border: var(--rule-hair) solid transparent;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   font-size: var(--font-xs);
   font-weight: 600;
   line-height: 1;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .situacao-neutro {
-  background: var(--color-neutral-bg);
-  color: var(--color-neutral-text);
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-800);
 }
 
 .situacao-atencao {
   border-color: var(--color-accent);
   background: transparent;
-  color: var(--color-accent-text);
+  color: var(--color-accent-700);
 }
 
 .situacao-acao {
@@ -31,7 +30,7 @@
 }
 
 .situacao-inativo {
-  background: var(--color-neutral-bg);
-  color: var(--color-text-tertiary);
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-600);
   text-decoration: line-through;
 }
