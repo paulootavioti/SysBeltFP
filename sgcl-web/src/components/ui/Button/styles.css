@@ -66,7 +66,7 @@
    não é mobile-first (uso majoritariamente com mouse/teclado), então
    mantém o tamanho denso de sempre: útil pra telas com bastante coisa
    junta, como botões de ação empilhados em linha de tabela. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .button-md,
   .button-sm {
     min-height: var(--tap-target-min);

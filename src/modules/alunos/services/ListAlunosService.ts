@@ -76,12 +76,12 @@ export class ListAlunosService {
       ...(paginacao?.status === "INATIVO" ? { ativo: false } : {}),
       ...(paginacao?.status === "EM_ATRASO" ? {
         ativo: true,
-        mensalidades: { some: { pago: false, status: "PENDENTE", vencimento: { lt: new Date() } } },
+        mensalidades: { some: { pago: false, status: { in: ["ABERTA", "VENCIDA"] }, vencimento: { lt: new Date() } } },
       } : {}),
       ...(paginacao?.turmaId ? { turmaId: paginacao.turmaId } : {}),
     };
 
-    const consulta: Prisma.AlunoFindManyArgs = {
+    const consulta = {
         where: filtros,
         take: paginacao?.porPagina ?? LIMITE_PADRAO_LISTAGEM,
         ...(paginacao ? { skip: (paginacao.pagina - 1) * paginacao.porPagina } : {}),
@@ -105,7 +105,7 @@ export class ListAlunosService {
             select: { cor: true },
           },
         }
-      };
+      } satisfies Prisma.AlunoFindManyArgs;
 
     if (paginacao) {
       const [itens, total] = await prisma.$transaction([

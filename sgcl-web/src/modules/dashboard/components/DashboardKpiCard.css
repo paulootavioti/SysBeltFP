@@ -9,13 +9,13 @@
   margin-bottom: var(--space-4);
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1179px) {
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 599px) {
+@media (max-width: 767px) {
   .kpi-grid {
     grid-template-columns: 1fr;
   }
@@ -27,7 +27,7 @@
 .dashboard-kpi-card > p:first-child {
   text-transform: uppercase;
   letter-spacing: .05em;
-  font-size: 11px;
+  font-size: var(--font-xs);
   font-weight: 700;
   color: var(--color-text-light);
 }

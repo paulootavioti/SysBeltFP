@@ -4,6 +4,7 @@
 .sidebar-topo { justify-content: space-between; }
 .sidebar-marca { min-width: 0; }
 .sidebar h2 { margin: 0; color: var(--color-accent); white-space: nowrap; }
+.sidebar-marca-compacta { display: none; }
 .sidebar-marca span { display: block; margin-top: var(--space-1); color: var(--color-sidebar-muted); font-size: var(--font-xs); letter-spacing: var(--tracking-label); text-transform: uppercase; white-space: nowrap; }
 .sidebar-fechar, .menu-toggle { display: none; min-width: var(--tap-target-min); min-height: var(--tap-target-min); padding: var(--space-1); align-items: center; justify-content: center; border: 0; background: transparent; cursor: pointer; }
 .sidebar-fechar { color: var(--color-sidebar-text); }
@@ -33,13 +34,13 @@
 .content { display: flex; min-width: 0; flex: 1; flex-direction: column; }
 .header { height: var(--layout-header-height); flex-shrink: 0; justify-content: space-between; gap: var(--space-3); padding: 0 var(--space-5); border-bottom: var(--rule-hair) solid var(--color-border); background: var(--color-surface); }
 .header-usuario { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.page { width: 100%; max-width: var(--layout-content-max); margin: 0 auto; padding: var(--space-5); }
+.page { display: grid; width: 100%; max-width: var(--layout-content-max); margin: 0 auto; padding: var(--space-5); grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--space-4); }
+.page > * { min-width: 0; grid-column: 1 / -1; }
 
 @media (min-width: 768px) and (max-width: 1179px) {
   .sidebar { width: var(--layout-sidebar-compact-width); padding-inline: var(--space-2); overflow: visible; }
-  .sidebar-marca h2 { font-size: 0; }
-  .sidebar-marca h2::first-letter { font-size: var(--font-lg); }
-  .sidebar-marca span, .sidebar-link-label, .sidebar-grupo-label, .sidebar-grupo-chevron, .sidebar-secao-titulo, .sidebar-favorito, .sidebar-badge { display: none; }
+  .sidebar-marca-completa, .sidebar-marca > span, .sidebar-link-label, .sidebar-grupo-label, .sidebar-grupo-chevron, .sidebar-secao-titulo, .sidebar-favorito, .sidebar-badge { display: none; }
+  .sidebar-marca .sidebar-marca-compacta { display: inline; color: var(--color-accent); font-size: var(--font-lg); }
   .sidebar hr { margin-top: var(--space-3); }
   .sidebar-link, .sidebar-grupo-cabecalho { min-height: var(--tap-target-min); justify-content: center; padding: var(--space-2); }
   .sidebar-grupo-itens { margin-left: 0; border-left: 0; }

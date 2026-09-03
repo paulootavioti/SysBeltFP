@@ -20,6 +20,7 @@ import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 
 import { calcularIdade } from "../../../../shared/formatters/data";
 import { calcularStatusFinanceiroAluno } from "../../utils/statusFinanceiro";
+import { resolverCorFaixa } from "../../../../shared/constants/coresFaixa";
 
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { useAlunos } from "../../hooks/useAlunos";
@@ -404,7 +405,7 @@ export function Alunos() {
             const dias = vencimento ? Math.max(1, Math.floor((Date.now() - new Date(vencimento).getTime()) / 86400000)) : 0;
             const texto = !aluno.ativo ? "Matrícula inativa" : status === "VENCIDO" ? `Vencida há ${dias} dias` : status === "PENDENTE" ? "Pagamento pendente" : status === "PAGO" ? "Em dia" : "Sem mensalidade";
             const degrau = !aluno.ativo ? "inativo" : status === "VENCIDO" ? "acao" : status === "PENDENTE" ? "atencao" : "neutro";
-            return <button type="button" className="aluno-mobile-card" onClick={() => navigate(`/alunos/${aluno.id}`)}><AmostraFaixa cor={aluno.faixaCor} graduacao={`${aluno.faixa} · ${aluno.grau}º grau`} compacta /><strong>{aluno.nome}</strong><small>{aluno.turma?.nome ?? "Sem turma"} · {aluno.faixa} · {aluno.grau}º grau</small><Situacao degrau={degrau}>{texto}</Situacao></button>;
+            return <button type="button" className="aluno-mobile-card" style={{ borderLeftColor: resolverCorFaixa(aluno.faixaCor) }} onClick={() => navigate(`/alunos/${aluno.id}`)}><AmostraFaixa cor={aluno.faixaCor} graduacao={`${aluno.faixa} · ${aluno.grau}º grau`} compacta /><strong>{aluno.nome}</strong><small>{aluno.turma?.nome ?? "Sem turma"} · {aluno.faixa} · {aluno.grau}º grau</small><Situacao degrau={degrau}>{texto}</Situacao></button>;
           }}
         />
       )}

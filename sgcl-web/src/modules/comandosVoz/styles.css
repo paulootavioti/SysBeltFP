@@ -19,5 +19,5 @@
 .voz-form legend { margin-bottom: 7px; font-weight: 600; }
 .voz-form fieldset label { min-height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
 .voz-form-acoes { display: flex; gap: var(--space-2); }
-@media (max-width: 1000px) { .voz-layout { grid-template-columns: 1fr; } }
-@media (max-width: 600px) { .voz-pareamento { align-items: stretch; flex-direction: column; } .voz-pareamento .select-wrapper { min-width: 0; } }
+@media (max-width: 1179px) { .voz-layout { grid-template-columns: 1fr; } }
+@media (max-width: 767px) { .voz-pareamento { align-items: stretch; flex-direction: column; } .voz-pareamento .select-wrapper { min-width: 0; } }

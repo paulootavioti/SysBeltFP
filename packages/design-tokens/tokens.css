@@ -102,3 +102,9 @@
   --color-danger: #f0736a;
   --color-focus: #57a7ff;
 }
+
+@media (max-width: 767px) {
+  :root {
+    --font-xs: 13px;
+  }
+}

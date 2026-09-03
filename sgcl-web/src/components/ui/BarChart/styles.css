@@ -62,7 +62,7 @@
 .bar-chart-eixo-y,
 .bar-chart-eixo-x {
   fill: var(--color-text-light);
-  font-size: 11px;
+  font-size: var(--font-xs);
 }
 
 .bar-chart-barra {
@@ -76,7 +76,7 @@
 
 .bar-chart-rotulo-valor {
   fill: var(--color-text);
-  font-size: 12px;
+  font-size: var(--font-xs);
   font-weight: 600;
 }
 

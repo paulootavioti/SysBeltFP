@@ -61,7 +61,7 @@
   color: var(--color-accent-text);
 }
 
-@media (max-width: 599px) {
+@media (max-width: 767px) {
   .dashboard-alerta-item {
     flex-direction: column;
     align-items: flex-start;
