@@ -85,3 +85,22 @@
 .aluno-menu button { display: block; width: 100%; min-height: 44px; padding: 8px 12px; border: 0; background: transparent; color: var(--color-text); text-align: left; }
 .aluno-menu button:hover { background: var(--color-background); }
 .aluno-menu .aluno-menu-destrutivo { color: var(--color-danger); }
+.aluno-mobile-card {
+  width: 100%;
+  min-height: var(--tap-target-min);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3);
+  border: var(--rule-hair) solid var(--color-border);
+  border-left: var(--space-1) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: left;
+}
+.aluno-mobile-card > * { min-width: 0; }
+.aluno-mobile-card strong { align-self: center; font-size: var(--font-sm); font-weight: 600; }
+.aluno-mobile-card small, .aluno-mobile-card .situacao { grid-column: 1 / -1; }
+.aluno-mobile-card small { color: var(--color-text-light); font-size: var(--font-xs); }
+.aluno-faixa, .graduacao-faixa, .prontuario-faixa { display: inline-flex; align-items: center; gap: var(--space-2); }

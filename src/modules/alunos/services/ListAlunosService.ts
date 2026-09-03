@@ -74,6 +74,10 @@ export class ListAlunosService {
         : {}),
       ...(paginacao?.status === "ATIVO" ? { ativo: true } : {}),
       ...(paginacao?.status === "INATIVO" ? { ativo: false } : {}),
+      ...(paginacao?.status === "EM_ATRASO" ? {
+        ativo: true,
+        mensalidades: { some: { pago: false, status: "PENDENTE", vencimento: { lt: new Date() } } },
+      } : {}),
       ...(paginacao?.turmaId ? { turmaId: paginacao.turmaId } : {}),
     };
 
