@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Checkbox } from "../../../../components/ui/Checkbox";
 import { Button } from "../../../../components/ui/Button";
 import { Textarea } from "../../../../components/ui/Textarea";
+import { AmostraFaixa } from "../../../../components/ui/AmostraFaixa";
 import { BehaviorSelector } from "../BehaviorSelector";
 import { calcularIdade } from "../../../../shared/formatters/data";
 import { linkWhatsapp, formatarTelefoneWhatsapp } from "../../../../shared/utils/linkWhatsapp";
@@ -57,7 +58,7 @@ export function AulaAlunoCard({
           <h3>{registro.aluno.apelido || registro.aluno.nome}</h3>
 
           <p>
-            Faixa {registro.aluno.faixa} • Grau{" "}
+            <AmostraFaixa cor={registro.aluno.faixaCor} graduacao={`${registro.aluno.faixa} · ${registro.aluno.grau}º grau`} compacta /> Faixa {registro.aluno.faixa} • Grau{" "}
             {registro.aluno.grau}
           </p>
         </div>

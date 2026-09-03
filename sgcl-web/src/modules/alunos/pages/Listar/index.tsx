@@ -13,6 +13,7 @@ import { Table } from "../../../../components/ui/Table";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Loading } from "../../../../components/ui/Loading";
 import { TrilhaFaixa } from "../../../../components/ui/TrilhaFaixa";
+import { AmostraFaixa } from "../../../../components/ui/AmostraFaixa";
 import { Modal } from "../../../../components/ui/Modal";
 import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 
@@ -238,7 +239,7 @@ export function Alunos() {
     {
       header: "Faixa",
       accessor: "faixa" as const,
-      render: (aluno: Aluno) => <TrilhaFaixa faixa={aluno.faixa} comLabel />,
+      render: (aluno: Aluno) => <span className="aluno-faixa"><AmostraFaixa cor={aluno.faixaCor} graduacao={`${aluno.faixa} · ${aluno.grau}º grau`} compacta /><TrilhaFaixa faixa={aluno.faixa} comLabel /></span>,
     },
     {
       header: "Turma",

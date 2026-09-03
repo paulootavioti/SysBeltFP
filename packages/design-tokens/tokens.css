@@ -53,6 +53,10 @@
   --tap-target-min: 44px;
   --layout-sidebar-width: 232px;
   --layout-content-max: 1180px;
+  --belt-swatch-width: 36px;
+  --belt-swatch-height: 14px;
+  --belt-swatch-compact-width: 24px;
+  --belt-swatch-compact-height: 11px;
   --primary: var(--color-primary);
   --secondary: var(--color-secondary);
   --accent: var(--color-accent);

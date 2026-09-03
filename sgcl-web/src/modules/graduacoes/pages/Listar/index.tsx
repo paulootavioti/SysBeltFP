@@ -4,6 +4,7 @@ import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Button } from "../../../../components/ui/Button";
 import { Badge } from "../../../../components/ui/Badge";
+import { AmostraFaixa } from "../../../../components/ui/AmostraFaixa";
 import { FilterBar } from "../../../../components/ui/FilterBar";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Table } from "../../../../components/ui/Table";
@@ -63,6 +64,7 @@ export function ListarGraduacoes() {
     {
       header: "Faixa",
       accessor: "faixa" as const,
+      render: (grad: Graduacao) => <span className="graduacao-faixa"><AmostraFaixa cor={grad.cor} graduacao={grad.faixa} compacta />{grad.faixa}</span>,
     },
     {
       header: "Grau",

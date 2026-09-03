@@ -9,6 +9,7 @@ export interface UsuarioResumoGraduacao {
 export interface Graduacao {
   id: number;
   faixa: string;
+  cor?: string | null;
   data: string;
   alunoId: number;
   aluno?: {

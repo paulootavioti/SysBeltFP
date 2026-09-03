@@ -89,7 +89,16 @@ export class StartAulaService {
         },
         alunos: {
           include: {
-            aluno: true,
+            aluno: {
+              include: {
+                graduacoes: {
+                  where: { status: "aprovada" },
+                  orderBy: { data: "desc" },
+                  take: 1,
+                  select: { cor: true },
+                },
+              },
+            },
           },
           orderBy: {
             aluno: {
@@ -100,6 +109,12 @@ export class StartAulaService {
       },
     });
 
-    return aula;
+    return {
+      ...aula,
+      alunos: aula.alunos.map(({ aluno, ...registro }) => ({
+        ...registro,
+        aluno: { ...aluno, faixaCor: aluno.graduacoes[0]?.cor ?? null },
+      })),
+    };
   }
 }

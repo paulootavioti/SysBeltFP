@@ -93,7 +93,13 @@ export class ListAlunosService {
               vencimento: "desc" as const,
             },
             take: 1,
-          }
+          },
+          graduacoes: {
+            where: { status: "aprovada" },
+            orderBy: { data: "desc" as const },
+            take: 1,
+            select: { cor: true },
+          },
         }
       };
 
@@ -103,7 +109,7 @@ export class ListAlunosService {
         prisma.aluno.count({ where: filtros }),
       ]);
       return {
-        itens,
+        itens: itens.map(({ graduacoes, ...aluno }) => ({ ...aluno, faixaCor: graduacoes[0]?.cor ?? null })),
         pagina: paginacao.pagina,
         porPagina: paginacao.porPagina,
         total,
@@ -111,6 +117,7 @@ export class ListAlunosService {
       };
     }
 
-    return prisma.aluno.findMany(consulta);
+    const alunos = await prisma.aluno.findMany(consulta);
+    return alunos.map(({ graduacoes, ...aluno }) => ({ ...aluno, faixaCor: graduacoes[0]?.cor ?? null }));
   }
 }
