@@ -109,6 +109,7 @@ export function Dashboard() {
               titulo="Inadimplência"
               valor={formatarPercentual(kpis.taxaInadimplencia)}
               complemento={`${kpis.mensalidadesVencidas} mensalidade(s) vencida(s)`}
+              enfase="acao"
             />
 
             <DashboardKpiCard titulo="Graduações Realizadas" valor={String(kpis.graduacoes)} />
@@ -191,6 +192,7 @@ export function Dashboard() {
               <DashboardKpiCard
                 titulo="Produtos com estoque baixo"
                 valor={String(loja.dados.produtosComEstoqueBaixo)}
+                enfase="acao"
               />
               <DashboardKpiCard titulo="Valor total em estoque" valor={formatarMoeda(loja.dados.valorTotalEstoque)} />
             </div>

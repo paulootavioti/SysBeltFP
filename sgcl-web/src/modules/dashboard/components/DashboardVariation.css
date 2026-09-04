@@ -11,7 +11,7 @@
 }
 
 .dashboard-variacao-negativa {
-  color: var(--color-accent-700);
+  color: var(--color-neutral-600);
 }
 
 .dashboard-variacao-estavel {
@@ -19,5 +19,5 @@
 }
 
 .dashboard-variacao-novo {
-  color: var(--color-accent-text);
+  color: var(--color-text);
 }

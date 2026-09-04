@@ -89,6 +89,7 @@ export interface AlertaDashboard {
   prioridade: PrioridadeAlerta;
   quantidade?: number;
   rota?: string;
+  prazoDias?: number;
 }
 
 export interface UnidadeDashboard {
@@ -103,6 +104,7 @@ export interface UnidadeDashboard {
   receitaPeriodo: number;
   mensalidadesVencidas: number;
   taxaFrequencia: number;
+  ocupacaoArenas: number;
   proximoEvento?: {
     id: string;
     titulo: string;

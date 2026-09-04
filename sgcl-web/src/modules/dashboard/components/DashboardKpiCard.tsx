@@ -1,4 +1,3 @@
-import { Card } from "../../../components/ui/Card";
 import { DashboardVariation } from "./DashboardVariation";
 import "./DashboardKpiCard.css";
 
@@ -9,6 +8,7 @@ interface DashboardKpiCardProps {
   variacao?: number | null;
   variacaoInversa?: boolean;
   semDados?: boolean;
+  enfase?: "acao";
 }
 
 export function DashboardKpiCard({
@@ -18,9 +18,14 @@ export function DashboardKpiCard({
   variacao,
   variacaoInversa,
   semDados,
+  enfase,
 }: DashboardKpiCardProps) {
+  const numero = Number(valor.replace(/[^\d,-]/g, "").replace(/\./g, "").replace(",", "."));
+  const destacar = enfase === "acao" && numero > 0;
   return (
-    <Card titulo={titulo} valor={semDados ? "—" : valor} className="dashboard-kpi-card">
+    <article className={`dashboard-kpi-card${destacar ? " dashboard-kpi-card-acao" : ""}`}>
+      <p className="dashboard-kpi-rotulo">{titulo}</p>
+      <h2>{semDados ? "—" : valor}</h2>
       {semDados ? (
         <p className="dashboard-kpi-complemento dashboard-kpi-sem-dados">Sem dados no período.</p>
       ) : (
@@ -29,6 +34,6 @@ export function DashboardKpiCard({
           {variacao !== undefined && <DashboardVariation percentual={variacao} inverso={variacaoInversa} />}
         </>
       )}
-    </Card>
+    </article>
   );
 }

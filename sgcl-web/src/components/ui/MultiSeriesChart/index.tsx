@@ -188,7 +188,7 @@ export function MultiSeriesChart<T extends PontoMultiSerie>({
                   x2={LARGURA - MARGEM.direita}
                   y1={y(tick)}
                   y2={y(tick)}
-                  className="multi-series-chart-grid"
+                  className={tick === 0 ? "multi-series-chart-grid multi-series-chart-linha-base" : "multi-series-chart-grid"}
                 />
                 <text x={MARGEM.esquerda - 8} y={y(tick)} className="multi-series-chart-eixo-y" textAnchor="end" dy="0.32em">
                   {formatarValor(Math.round(tick))}
