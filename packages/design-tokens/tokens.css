@@ -89,6 +89,9 @@
   --belt-swatch-compact-height: 11px;
   --data-row-accent-width: 5px;
   --rule-strong: 2px;
+  --rule-active: 3px;
+  --font-brand: 17px;
+  --font-login-display: 27px;
   --login-copy-max: 520px;
   --login-form-max: 420px;
   --login-mobile-identity-min: 220px;
