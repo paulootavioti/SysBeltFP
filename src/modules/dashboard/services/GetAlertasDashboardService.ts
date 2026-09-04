@@ -10,6 +10,7 @@ export interface AlertaDashboard {
   prioridade: PrioridadeAlerta;
   quantidade?: number;
   rota?: string;
+  prazoDias: number;
 }
 
 const LIMIAR_INADIMPLENCIA_CRITICA = 25;
@@ -44,6 +45,7 @@ export class GetAlertasDashboardService {
         prioridade: mensalidadesVencidas >= 10 ? "ALTA" : "MEDIA",
         quantidade: mensalidadesVencidas,
         rota: "/mensalidades",
+        prazoDias: 0,
       });
     }
 
@@ -56,6 +58,7 @@ export class GetAlertasDashboardService {
         descricao: `${taxaInadimplencia.toFixed(1)}% das mensalidades geradas estão vencidas.`,
         prioridade: taxaInadimplencia >= LIMIAR_INADIMPLENCIA_CRITICA ? "CRITICA" : "ALTA",
         rota: "/financeiro",
+        prazoDias: 0,
       });
     }
 
@@ -90,6 +93,7 @@ export class GetAlertasDashboardService {
         prioridade: "MEDIA",
         quantidade: alunosBaixaFrequencia,
         rota: "/alunos",
+        prazoDias: 5,
       });
     }
 
@@ -118,6 +122,7 @@ export class GetAlertasDashboardService {
         prioridade: "BAIXA",
         quantidade: proximosDaGraduacao,
         rota: "/graduacoes/proximas",
+        prazoDias: 12,
       });
     }
 

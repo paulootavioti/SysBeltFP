@@ -40,5 +40,5 @@
 /* Credencial faltando é a diferença entre "configurei" e "vai cobrar" —
    precisa saltar aos olhos na listagem, não só dentro do formulário. */
 .forma-pagamento-gateway--incompleto {
-  color: var(--color-danger);
+  color: var(--color-accent-700);
 }

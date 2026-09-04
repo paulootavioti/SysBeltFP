@@ -45,6 +45,8 @@ export interface AlunoElegivel {
   faixa: string;
   presencas: number;
   proximaFaixa?: string | null;
+  faixaCor?: string | null;
+  proximaFaixaCor?: string | null;
   aulasRealizadas?: number;
   aulasRestantes?: number;
   percentualProgresso?: number;

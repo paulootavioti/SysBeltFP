@@ -23,7 +23,7 @@
 }
 
 .notification-bell-ativa {
-  color: var(--color-danger, #d92d20);
+  color: var(--color-accent-700);
 }
 
 .notification-bell-badge {
@@ -39,7 +39,7 @@
   align-items: center;
   justify-content: center;
 
-  background: var(--color-danger, #d92d20);
+  background: var(--color-accent-700);
   color: white;
   border-radius: 999px;
 

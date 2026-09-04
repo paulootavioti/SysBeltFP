@@ -68,7 +68,7 @@ export function Login() {
       </section>
       <section className="login-access">
         <div className="login-card">
-        <header className="login-form-header"><span>Acesso administrativo</span><h2>{desafio ? "Confirmar identidade" : "Entrar"}</h2></header>
+        <header className="login-form-header"><span>Acesso administrativo</span><h2>{desafio ? "Confirmar identidade" : "Entrar"}</h2><p>{desafio ? "Digite o código enviado para concluir o acesso." : "Acesse a operação da sua academia."}</p></header>
         <form className="login-form" onSubmit={handleSubmit}>
           {!desafio && <Input
             label="E-mail"
@@ -90,7 +90,7 @@ export function Login() {
             required
           />}
 
-          {!desafio && <Link className="login-link login-link-direita" to="/recuperar-senha">Esqueci minha senha</Link>}
+          {!desafio && <Link className="login-link" to="/recuperar-senha">Esqueci minha senha</Link>}
 
           {desafio && <Input
             label="Código de verificação"

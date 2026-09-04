@@ -1,7 +1,5 @@
 .bar-chart-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  background: var(--color-bg);
   padding: var(--space-4);
 }
 
@@ -28,7 +26,6 @@
 .bar-chart-toggle-tabela {
   border: 1px solid var(--color-border);
   background: transparent;
-  border-radius: var(--radius-md);
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-xs);
   font-weight: 600;
@@ -58,6 +55,7 @@
   stroke: var(--color-border);
   stroke-width: 1;
 }
+.bar-chart-linha-base { stroke: var(--color-divider); stroke-width: 2; }
 
 .bar-chart-eixo-y,
 .bar-chart-eixo-x {
@@ -66,13 +64,12 @@
 }
 
 .bar-chart-barra {
-  fill: var(--color-accent);
+  fill: var(--color-text);
   transition: fill 0.1s ease;
 }
 
-.bar-chart-barra.ativo {
-  fill: var(--color-accent-light);
-}
+.bar-chart-barra.atual { fill: var(--color-accent); }
+.bar-chart-barra.ativo:not(.atual) { fill: var(--color-neutral-700); }
 
 .bar-chart-rotulo-valor {
   fill: var(--color-text);
@@ -94,7 +91,6 @@
   transform: translate(-50%, -100%) translateY(-10px);
   background: var(--color-primary);
   color: var(--color-background);
-  border-radius: var(--radius-md);
   padding: var(--space-2) var(--space-3);
   font-size: var(--font-xs);
   display: flex;
@@ -102,13 +98,12 @@
   gap: 2px;
   pointer-events: none;
   white-space: nowrap;
-  box-shadow: var(--shadow-md);
   z-index: 1;
 }
 
 .bar-chart-tooltip strong {
   font-size: var(--font-sm);
-  color: var(--color-accent-light);
+  color: var(--color-neutral-100);
 }
 
 .bar-chart-vazio {

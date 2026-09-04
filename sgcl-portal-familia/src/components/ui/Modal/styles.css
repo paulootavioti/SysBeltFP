@@ -62,7 +62,7 @@
    largura toda, só os cantos de cima arredondados. Mais fácil de
    alcançar e fecha com o mesmo gesto de "puxar pra baixo" que o resto
    do sistema operacional já usa. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .modal-overlay {
     align-items: flex-end;
     padding: 0;

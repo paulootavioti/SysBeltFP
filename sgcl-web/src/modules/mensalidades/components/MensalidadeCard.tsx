@@ -1,19 +1,14 @@
 import type { MensalidadeComAluno } from "../types";
-import { StatusBadge } from "../../../components/ui/StatusBadge";
+import { Situacao, type DegrauSituacao } from "../../../components/ui/Situacao";
+import { AmostraFaixa } from "../../../components/ui/AmostraFaixa";
 import { Button } from "../../../components/ui/Button";
 import { useAuth } from "../../../contexts/useAuth";
 import { calcularStatusMensalidade } from "../utils/status";
 import { nomeFormaPagamento } from "../../formasPagamento/types";
 import "./MensalidadeCard.css";
 import { formatarData } from "../../../shared/utils/formatarData";
+import { resolverCorFaixa } from "../../../shared/constants/coresFaixa";
 
-const STATUS_BADGE = {
-  PAGA: "PAGO",
-  PENDENTE: "PENDENTE",
-  VENCIDA: "VENCIDO",
-  CANCELADA: "CANCELADO",
-  ESTORNADA: "ESTORNADO",
-} as const;
 interface MensalidadeCardProps {
   mensalidade: MensalidadeComAluno;
   onEditar?: (id: number) => void;
@@ -31,14 +26,17 @@ export function MensalidadeCard({
   const { usuario } = useAuth();
   const ehAdmin = usuario?.perfil === "ADMIN";
   const status = calcularStatusMensalidade(mensalidade);
+  const diferencaDias = Math.ceil((new Date(mensalidade.vencimento).getTime() - Date.now()) / 86_400_000);
+  const rotuloStatus = status === "VENCIDA" ? `Vencida há ${Math.max(1, Math.abs(diferencaDias))} dias` : status === "PENDENTE" ? (diferencaDias <= 5 ? `Vence em ${Math.max(0, diferencaDias)} dias` : `Vence em ${diferencaDias} dias`) : status === "PAGA" ? "Em dia" : status === "CANCELADA" ? "Cancelada" : "Estornada";
+  const degrauStatus: DegrauSituacao = status === "VENCIDA" ? "acao" : status === "PENDENTE" && diferencaDias <= 5 ? "atencao" : status === "CANCELADA" || status === "ESTORNADA" ? "inativo" : "neutro";
   return (
-    <div className="mensalidade-card">
+    <article className="mensalidade-card" role="link" tabIndex={0} style={{ borderLeftColor: resolverCorFaixa(mensalidade.aluno?.faixaCor) }} onClick={() => onEditar?.(mensalidade.id)} onKeyDown={(evento) => { if (evento.key === "Enter") onEditar?.(mensalidade.id); }}>
       <div className="mensalidade-card-header">
         <div>
-          <h3>{mensalidade.aluno?.nome}</h3>
-          <p>{mensalidade.descricao || "Mensalidade"} · Faixa: {mensalidade.aluno?.faixa}</p>
+          <h3><AmostraFaixa cor={mensalidade.aluno?.faixaCor} graduacao={mensalidade.aluno?.faixa ?? "Sem graduação"} tamanho="compacta" />{mensalidade.aluno?.nome}</h3>
+          <p>{mensalidade.aluno?.turmaNome ?? "Sem turma"} · {mensalidade.aluno?.faixa ?? "Sem graduação"}</p>
         </div>
-        <StatusBadge status={STATUS_BADGE[status]} />
+        <Situacao degrau={degrauStatus}>{rotuloStatus}</Situacao>
       </div>
       <div className="mensalidade-card-info">
         <div>
@@ -67,7 +65,7 @@ export function MensalidadeCard({
           </div>
         )}
       </div>
-      <div className="mensalidade-card-actions">
+      <div className="mensalidade-card-actions" onClick={(evento) => evento.stopPropagation()}>
         {!mensalidade.pago && status !== "PAGA" && status !== "CANCELADA" && status !== "ESTORNADA" && (
           <Button type="button" onClick={() => onMarcarComoPago?.(mensalidade.id)}>
             ✓ Marcar como Pago
@@ -87,6 +85,6 @@ export function MensalidadeCard({
           Ver Detalhes
         </Button>
       </div>
-    </div>
+    </article>
   );
 }

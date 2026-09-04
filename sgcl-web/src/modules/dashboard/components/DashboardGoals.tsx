@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui/Button";
-import { Badge } from "../../../components/ui/Badge";
+import { Situacao, type DegrauSituacao } from "../../../components/ui/Situacao";
 import { DashboardEmptyState } from "./DashboardEmptyState";
 import { formatarData, formatarMoeda, formatarNumero, formatarPercentual } from "../utils/formatters";
-import type { MetaDashboard, StatusMeta } from "../../metas/types";
+import { TIPOS_META_REDUCAO, type MetaDashboard, type StatusMeta } from "../../metas/types";
 import "./progressBar.css";
 import "./DashboardGoals.css";
 
@@ -26,11 +26,8 @@ const LABEL_STATUS: Record<StatusMeta, string> = {
   ATRASADA: "Atrasada",
 };
 
-const VARIANTE_STATUS: Record<StatusMeta, "success" | "warning" | "danger" | "neutral"> = {
-  NAO_INICIADA: "neutral",
-  EM_ANDAMENTO: "warning",
-  ATINGIDA: "success",
-  ATRASADA: "danger",
+const DEGRAU_STATUS: Record<StatusMeta, DegrauSituacao> = {
+  NAO_INICIADA: "neutro", EM_ANDAMENTO: "atencao", ATINGIDA: "neutro", ATRASADA: "acao",
 };
 
 function formatarValorMeta(valor: number, unidade: MetaDashboard["unidade"]): string {
@@ -51,12 +48,15 @@ export function DashboardGoals({ metas, mostrarBotaoGerenciar = true, renderAcoe
           {metas.map((meta) => {
             const percentualBarra = Math.min(100, Math.max(0, meta.percentualAtingido));
             const superada = meta.percentualAtingido > 100;
+            const piorQueMeta = TIPOS_META_REDUCAO.includes(meta.tipo) && meta.valorAtual > meta.valorMeta;
+            const faltam = Math.max(0, meta.valorMeta - meta.valorAtual);
+            const dias = Math.max(0, Math.ceil((new Date(meta.dataLimite).getTime() - Date.now()) / 86_400_000));
 
             return (
               <article key={meta.id} className="dashboard-meta-card">
                 <div className="dashboard-meta-cabecalho">
                   <strong>{meta.nome}</strong>
-                  <Badge variant={VARIANTE_STATUS[meta.status]}>{LABEL_STATUS[meta.status]}</Badge>
+                  <Situacao degrau={DEGRAU_STATUS[meta.status]}>{LABEL_STATUS[meta.status]}</Situacao>
                 </div>
 
                 <p className="dashboard-meta-valores">
@@ -64,7 +64,7 @@ export function DashboardGoals({ metas, mostrarBotaoGerenciar = true, renderAcoe
                 </p>
 
                 <div
-                  className="dashboard-meta-barra"
+                  className={`dashboard-meta-barra${piorQueMeta ? " dashboard-meta-barra-alerta" : ""}`}
                   role="progressbar"
                   aria-label={`Progresso da meta ${meta.nome}`}
                   aria-valuenow={Math.round(percentualBarra)}
@@ -75,9 +75,9 @@ export function DashboardGoals({ metas, mostrarBotaoGerenciar = true, renderAcoe
                 </div>
 
                 <p className="dashboard-meta-percentual">
-                  {superada
+                  {faltam > 0 ? `faltam ${formatarValorMeta(faltam, meta.unidade)} · ${dias} dias` : superada
                     ? `Meta superada em ${formatarPercentual(meta.percentualAtingido - 100)}`
-                    : `${formatarPercentual(meta.percentualAtingido)} alcançado`}
+                    : "Meta atingida"}
                 </p>
 
                 <p className="dashboard-meta-prazo">Prazo: {formatarData(meta.dataLimite)}</p>

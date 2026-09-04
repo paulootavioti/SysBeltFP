@@ -64,7 +64,7 @@ export function ListarGraduacoes() {
     {
       header: "Faixa",
       accessor: "faixa" as const,
-      render: (grad: Graduacao) => <span className="graduacao-faixa"><AmostraFaixa cor={grad.cor} graduacao={grad.faixa} compacta />{grad.faixa}</span>,
+      render: (grad: Graduacao) => <span className="graduacao-faixa"><AmostraFaixa cor={grad.cor} graduacao={grad.faixa} tamanho="compacta" />{grad.faixa}</span>,
     },
     {
       header: "Grau",

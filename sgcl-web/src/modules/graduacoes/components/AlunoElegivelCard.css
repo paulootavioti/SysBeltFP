@@ -1,6 +1,6 @@
 .aluno-elegivel-card {
   background: var(--surface);
-  border: 2px solid var(--warning);
+  border: 2px solid var(--color-accent-700);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: var(--space-3);
@@ -42,12 +42,12 @@
 }
 .aluno-elegivel-aviso p {
   margin: 0;
-  color: var(--warning);
+  color: var(--color-accent-700);
   font-weight: 600;
   font-size: var(--font-sm);
 }
 .aluno-elegivel-aviso span {
-  color: var(--warning);
+  color: var(--color-accent-700);
   font-size: var(--font-xs);
 }
 .aluno-elegivel-card .button {

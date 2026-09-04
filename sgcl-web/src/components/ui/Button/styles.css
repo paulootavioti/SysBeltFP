@@ -45,7 +45,7 @@
 }
 
 .button-danger {
-  background: var(--color-danger);
+  background: var(--color-accent-700);
   color: #fff;
 }
 

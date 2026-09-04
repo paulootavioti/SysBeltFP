@@ -5,6 +5,7 @@ import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Button } from "../../../../components/ui/Button";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Loading } from "../../../../components/ui/Loading";
+import { Situacao } from "../../../../components/ui/Situacao";
 import { useAuth } from "../../../../contexts/useAuth";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 import { resolverUrlUpload } from "../../../../shared/utils/resolverUrlUpload";
@@ -25,10 +26,10 @@ function horario(valor: string | null) {
 function iniciais(nome: string | null) { return (nome || "Contato").split(/\s+/).slice(0, 2).map((p) => p[0]).join("").toUpperCase(); }
 function IconeCanal({ tipo }: { tipo: CanalMensageria }) { return tipo === "WHATSAPP" ? <LuMessageCircle /> : <LuInstagram />; }
 function statusMensagem(mensagem: MensagemAtendimento) {
-  if (mensagem.statusEntrega === "FALHOU") return <span className="atendimento-status falhou" title={mensagem.erroEnvio || "Falha no envio"}><LuX /> Falhou</span>;
-  if (mensagem.statusEntrega === "LIDA") return <span className="atendimento-status"><LuCheckCheck /> Lida</span>;
-  if (mensagem.statusEntrega === "PENDENTE") return <span className="atendimento-status"><LuClock3 /> Pendente</span>;
-  return <span className="atendimento-status"><LuCheck /> {mensagem.statusEntrega === "RECEBIDA" ? "Recebida" : "Enviada"}</span>;
+  if (mensagem.statusEntrega === "FALHOU") return <Situacao degrau="acao" className="atendimento-status" ><LuX /> Falha no envio</Situacao>;
+  if (mensagem.statusEntrega === "LIDA") return <Situacao degrau="neutro" className="atendimento-status"><LuCheckCheck /> Lida</Situacao>;
+  if (mensagem.statusEntrega === "PENDENTE") return <Situacao degrau="atencao" className="atendimento-status"><LuClock3 /> Envio pendente</Situacao>;
+  return <Situacao degrau="neutro" className="atendimento-status"><LuCheck /> {mensagem.statusEntrega === "RECEBIDA" ? "Recebida" : "Enviada"}</Situacao>;
 }
 function MidiaMensagem({ mensagem }: { mensagem: MensagemAtendimento }) {
   if (!mensagem.mediaStatus) return null;

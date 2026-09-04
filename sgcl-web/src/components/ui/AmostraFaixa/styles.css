@@ -5,7 +5,7 @@
   height: var(--belt-swatch-height);
   border: var(--rule-hair) solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: var(--color-neutral-bg);
+  background: var(--color-neutral-300);
 }
 
 .amostra-faixa-compacta {

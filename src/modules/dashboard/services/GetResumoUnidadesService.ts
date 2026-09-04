@@ -12,6 +12,7 @@ export interface UnidadeDashboard {
   receitaPeriodo: number;
   mensalidadesVencidas: number;
   taxaFrequencia: number;
+  ocupacaoArenas: number;
   status: "ATIVA" | "INATIVA";
 }
 
@@ -36,7 +37,7 @@ export class GetResumoUnidadesService {
 
     return Promise.all(
       unidades.map(async (unidade): Promise<UnidadeDashboard> => {
-        const [alunosAtivos, turmasAtivas, professoresDistintos, receita, mensalidadesVencidas, presencas] =
+        const [alunosAtivos, turmasAtivas, professoresDistintos, receita, mensalidadesVencidas, presencas, arenasAtivas, arenasEmUso] =
           await Promise.all([
             prisma.aluno.count({ where: { unidadeId: unidade.id, ativo: true } }),
             prisma.turma.count({ where: { unidadeId: unidade.id, ativo: true } }),
@@ -60,6 +61,8 @@ export class GetResumoUnidadesService {
               where: { aula: { unidadeId: unidade.id, data: { gte: range.inicio, lt: range.fim } } },
               select: { presente: true },
             }),
+            prisma.arena.count({ where: { unidadeId: unidade.id, ativo: true } }),
+            prisma.arena.count({ where: { unidadeId: unidade.id, ativo: true, turmas: { some: { ativo: true } } } }),
           ]);
 
         const presentes = presencas.filter((p) => p.presente).length;
@@ -75,6 +78,7 @@ export class GetResumoUnidadesService {
           receitaPeriodo: receita._sum.valor ?? 0,
           mensalidadesVencidas,
           taxaFrequencia,
+          ocupacaoArenas: arenasAtivas > 0 ? (arenasEmUso / arenasAtivas) * 100 : 0,
           status: unidade.ativo ? "ATIVA" : "INATIVA",
         };
       })

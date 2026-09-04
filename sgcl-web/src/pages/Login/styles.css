@@ -2,27 +2,27 @@
 .login-identity, .login-access, .login-card, .login-form, .login-portais { min-width: 0; }
 .login-identity { display: flex; flex-direction: column; padding: var(--space-7); background: var(--color-text); color: var(--color-surface); }
 .login-brand { display: grid; gap: var(--space-1); }
-.login-brand strong { font-family: var(--font-heading); font-size: var(--font-xl); font-weight: 800; line-height: 1; }
-.login-brand span { color: var(--color-accent-light); font-size: var(--font-sm); font-weight: 600; }
-.login-brand-rule { height: var(--rule-strong); margin: var(--space-5) 0 var(--space-7); background: var(--color-accent); }
-.login-identity h1 { max-width: var(--login-copy-max); margin: 0; font-family: var(--font-heading); font-size: var(--font-display-lg); line-height: 1.05; letter-spacing: 0; }
+.login-brand strong { font-family: var(--font-heading); font-size: var(--font-brand); font-weight: 800; line-height: 1; letter-spacing: 0; }
+.login-brand span { color: var(--color-neutral-500); font-size: var(--font-xs); font-weight: 600; letter-spacing: var(--tracking-label); text-transform: uppercase; }
+.login-brand-rule { height: var(--rule-strong); margin: var(--space-5) 0 var(--space-7); background: var(--color-divider); }
+.login-identity h1 { max-width: var(--login-copy-max); margin: 0; font-family: var(--font-heading); font-size: var(--font-login-display); font-weight: 800; line-height: 1.05; letter-spacing: 0; }
 .login-provas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--rule-strong); margin-top: auto; background: var(--color-border); }
 .login-provas p { min-width: 0; display: grid; gap: var(--space-1); margin: 0; padding-top: var(--space-4); background: var(--color-text); }
-.login-provas strong { color: var(--color-accent-light); font-size: var(--font-xl); font-variant-numeric: tabular-nums; }
-.login-provas span { color: var(--color-text-light); font-size: var(--font-xs); }
+.login-provas strong { color: var(--color-accent-400); font-size: var(--font-xl); font-variant-numeric: tabular-nums; }
+.login-provas span { color: var(--color-neutral-400); font-size: var(--font-xs); }
 .login-access { display: grid; place-items: center; padding: var(--space-6); }
 .login-card { width: min(100%, var(--login-form-max)); }
 .login-form-header { margin-bottom: var(--space-5); padding-bottom: var(--space-4); border-bottom: var(--rule-strong) solid var(--color-border); }
 .login-form-header span, .login-portais-divisor span { color: var(--color-text-light); font-size: var(--font-xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .login-form-header h2 { margin: var(--space-2) 0 0; color: var(--color-text); font-family: var(--font-heading); font-size: var(--font-display-md); line-height: 1.1; }
+.login-form-header p { margin: var(--space-2) 0 0; color: var(--color-neutral-600); font-size: var(--font-sm); }
 .login-form { display: flex; flex-direction: column; gap: var(--space-4); }
 .login-form .button { width: 100%; min-height: var(--tap-target-min); justify-content: flex-start; text-align: left; }
 .login-link { border: 0; background: transparent; color: var(--color-primary); font-size: var(--font-sm); font-weight: 600; text-align: left; text-decoration: none; }
 .login-link:hover { text-decoration: underline; }
-.login-link-direita { align-self: flex-end; }
 .login-portais { display: grid; gap: var(--space-2); margin-top: var(--space-5); padding-top: var(--space-4); border-top: var(--rule-strong) solid var(--color-border); }
 .login-portais-divisor { margin-bottom: var(--space-1); }
-.login-portal-card { min-height: var(--tap-target-min); display: block; padding: var(--space-3) var(--space-4); border-left: var(--space-1) solid var(--color-accent); color: var(--color-text); text-decoration: none; }
+.login-portal-card { min-height: var(--tap-target-min); display: block; padding: var(--space-3) var(--space-4); border-left: var(--rule-active) solid var(--color-accent); color: var(--color-text); text-decoration: none; }
 .login-portal-card:hover { background: var(--color-accent-soft); }
 .login-portal-texto { display: grid; min-width: 0; gap: var(--space-1); }
 .login-portal-texto strong { font-size: var(--font-sm); font-weight: 600; }
