@@ -22,13 +22,18 @@
 
 .dashboard-graficos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
+@media (min-width: 768px) and (max-width: 1179px) {
+  .dashboard-kpis-secundarios { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dashboard-graficos { grid-template-columns: minmax(0, 1fr); }
+}
+
 @media (max-width: 767px) {
-  .dashboard-kpis-principais,
-  .dashboard-kpis-secundarios { grid-template-columns: 1fr; }
+  .dashboard-kpis-principais { grid-template-columns: minmax(0, 1fr); }
+  .dashboard-kpis-secundarios { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dashboard-graficos {
     grid-template-columns: 1fr;
   }

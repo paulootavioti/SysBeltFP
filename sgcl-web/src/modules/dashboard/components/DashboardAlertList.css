@@ -43,7 +43,7 @@
 .dashboard-alerta-quantidade {
   font-size: var(--font-xs);
   color: var(--color-text-light);
-  background: var(--color-accent-soft);
+  background: var(--color-neutral-200);
   padding: 0 6px;
 }
 
@@ -60,8 +60,8 @@
 }
 
 .dashboard-alerta-acao:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent-text);
+  border-color: var(--color-divider);
+  color: var(--color-text);
 }
 
 @media (max-width: 767px) {

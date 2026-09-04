@@ -21,7 +21,7 @@
   }
 }
 
-.dashboard-kpi-card { padding: var(--space-5); background: var(--color-bg); }
+.dashboard-kpi-card { min-width: 0; padding: var(--space-5); background: var(--color-bg); }
 .dashboard-kpi-rotulo {
   margin: 0 0 var(--space-2);
   text-transform: uppercase;
@@ -37,6 +37,7 @@
   font-size: var(--font-display-md);
   font-weight: 800;
   color: var(--color-text);
+  overflow-wrap: anywhere;
 }
 .dashboard-kpi-card-acao h2 { color: var(--color-accent-700); }
 

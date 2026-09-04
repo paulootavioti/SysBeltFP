@@ -35,7 +35,7 @@
 /* mobile: a lista de abas vira uma barra de navegação inferior fixa, no
    padrão de app nativo — mais fácil de alcançar com o polegar do que
    abas lá no topo da tela. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .tabs-list {
     position: fixed;
     left: 0;

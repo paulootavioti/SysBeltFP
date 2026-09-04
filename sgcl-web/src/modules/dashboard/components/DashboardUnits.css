@@ -12,6 +12,7 @@
 .dashboard-unidades-rodape { display: flex; justify-content: flex-end; }
 
 @media (max-width: 767px) {
+  .dashboard-unidades-tabela-wrap { overflow-x: clip; }
   .dashboard-unidades-tabela thead { display: none; }
   .dashboard-unidades-tabela,
   .dashboard-unidades-tabela tbody,

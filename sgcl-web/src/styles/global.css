@@ -39,6 +39,14 @@ table {
 }
 
 @media (pointer: coarse) {
+  button,
+  a,
+  [role="button"],
+  [role="link"] {
+    min-width: var(--tap-target-min);
+    min-height: var(--tap-target-min);
+  }
+
   input,
   select,
   textarea {

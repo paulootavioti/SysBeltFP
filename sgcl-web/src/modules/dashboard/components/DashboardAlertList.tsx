@@ -31,7 +31,7 @@ export function DashboardAlertList({ alertas }: DashboardAlertListProps) {
               )}
             </div>
             <p>{alerta.descricao}</p>
-            <Situacao degrau={hoje ? "acao" : "atencao"}>{hoje ? "Hoje" : `Em ${prazo} dias`}</Situacao>
+            <Situacao degrau={hoje ? "acao" : "neutro"}>{hoje ? "Hoje" : `Em ${prazo} dias`}</Situacao>
           </div>
 
           {alerta.rota && (

@@ -103,7 +103,7 @@
 
 .bar-chart-tooltip strong {
   font-size: var(--font-sm);
-  color: var(--color-accent-light);
+  color: var(--color-neutral-100);
 }
 
 .bar-chart-vazio {
