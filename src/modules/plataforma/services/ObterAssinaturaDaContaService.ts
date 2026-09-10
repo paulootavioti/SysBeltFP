@@ -15,7 +15,7 @@ export class ObterAssinaturaDaContaService {
       where: { contaId },
       include: {
         plano: true,
-        conta: { select: { id: true, nome: true, emailCobranca: true } },
+        conta: { select: { id: true, nome: true, emailCobranca: true, tenantKey: true } },
       },
     });
 
