@@ -70,3 +70,18 @@ export function slugDoHostname(hostname: string, dominios: string[]): string | n
   }
   return null;
 }
+
+const mapaHostsSchema = z.record(
+  z.string().min(1),
+  z.string().regex(/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/),
+);
+
+export function slugDoMapaDeHosts(hostname: string, configuracao: string): string | null {
+  if (!configuracao.trim()) return null;
+  let mapa: Record<string, string>;
+  try { mapa = mapaHostsSchema.parse(JSON.parse(configuracao)); }
+  catch { throw new Error("SYSBELT_TENANT_HOST_MAP_INVALIDO"); }
+  const host = hostname.toLowerCase().replace(/:\d+$/, "").replace(/\.$/, "");
+  const entrada = Object.entries(mapa).find(([chave]) => chave.toLowerCase().replace(/\.$/, "") === host);
+  return entrada?.[1] ?? null;
+}

@@ -10,6 +10,17 @@ autenticadas extraem o slug somente de um domínio listado em
 `/api/diretorio/v1/produtos/sysbelt/tenants/{slug}` com a credencial exclusiva
 do produto e confirmam que o `tenantKey` remoto coincide com a `Conta` local.
 
+Enquanto não houver domínio próprio, um host gratuito pode ser associado de
+forma explícita ao slug do tenant, sem aceitar slug informado pelo navegador:
+
+```env
+SYSBELT_TENANT_HOST_MAP='{"sysbeltfp.netlify.app":"academia-centro"}'
+```
+
+O mapa exige correspondência exata do hostname. Em produção comercial, prefira
+subdomínios derivados de `SYSBELT_TENANT_DOMAINS`, como
+`academia-centro.app.sysbelt.com.br`.
+
 O cache respeita 60 segundos para `ATIVO`, 15 segundos para suspensos e cinco
 segundos para `404`. Respostas `401` e `5xx` não são cacheadas. Se o diretório
 estiver indisponível, somente uma concessão local `ATIVO`, assinada e ainda

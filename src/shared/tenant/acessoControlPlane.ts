@@ -1,6 +1,6 @@
 import { prismaDaRequisicao } from "../database/prismaDaRequisicao";
 import { AppError } from "../errors/AppError";
-import { DiretorioControlPlane, DiretorioIndisponivelError, slugDoHostname } from "./DiretorioControlPlane";
+import { DiretorioControlPlane, DiretorioIndisponivelError, slugDoHostname, slugDoMapaDeHosts } from "./DiretorioControlPlane";
 
 let diretorio: DiretorioControlPlane | undefined;
 
@@ -15,7 +15,8 @@ function cliente() {
 
 export async function exigirAcessoControlPlane(hostname: string, tenantKey: string, agora = new Date()) {
   if (!habilitado()) return;
-  const slug = slugDoHostname(hostname, (process.env.SYSBELT_TENANT_DOMAINS || "").split(","));
+  const slug = slugDoMapaDeHosts(hostname, process.env.SYSBELT_TENANT_HOST_MAP || "")
+    ?? slugDoHostname(hostname, (process.env.SYSBELT_TENANT_DOMAINS || "").split(","));
   if (!slug) throw new AppError("Tenant não identificado.", 404);
   try {
     const remoto = await cliente().resolver(slug);

@@ -32,6 +32,7 @@ describe("controle de acesso pelo diretório multiproduto", () => {
     vi.stubEnv("CONTROL_PLANE_SYSBELT_CREDENTIAL", "credencial");
     vi.stubEnv("CONTROL_PLANE_CREDENTIAL_VERSION", "v1");
     vi.stubEnv("SYSBELT_TENANT_DOMAINS", "app.sysbelt.com.br");
+    vi.stubEnv("SYSBELT_TENANT_HOST_MAP", "");
     findUnique.mockReset();
     limparClienteDiretorioParaTeste();
   });
@@ -47,6 +48,12 @@ describe("controle de acesso pelo diretório multiproduto", () => {
     const erro = await exigirAcessoControlPlane("academia-centro.app.sysbelt.com.br", tenantKey).catch((item) => item);
     expect(erro).toBeInstanceOf(AppError);
     expect(erro.statusCode).toBe(404);
+  });
+
+  it("aceita host Netlify configurado explicitamente", async () => {
+    vi.stubEnv("SYSBELT_TENANT_HOST_MAP", JSON.stringify({ "sysbeltfp.netlify.app": "academia-centro" }));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(resposta(200, tenant)));
+    await expect(exigirAcessoControlPlane("sysbeltfp.netlify.app", tenantKey)).resolves.toBeUndefined();
   });
 
   it("bloqueia tenant suspenso", async () => {
