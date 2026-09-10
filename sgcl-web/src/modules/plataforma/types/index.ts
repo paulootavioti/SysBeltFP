@@ -52,7 +52,7 @@ export interface FaturaPlataforma {
 }
 
 export interface MinhaAssinatura {
-  conta: { id: number; nome: string; emailCobranca: string | null };
+  conta: { id: number; nome: string; emailCobranca: string | null; tenantKey: string };
   status: StatusAssinaturaPlataforma;
   diaVencimento: number;
   inicioEm: string;

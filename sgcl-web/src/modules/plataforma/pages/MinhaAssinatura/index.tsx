@@ -5,6 +5,7 @@ import { Loading } from "../../../../components/ui/Loading";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Table } from "../../../../components/ui/Table";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
+import { Button } from "../../../../components/ui/Button";
 import { formatarData } from "../../../../shared/utils/formatarData";
 import { useMinhaAssinatura } from "../../hooks/useMinhaAssinatura";
 import {
@@ -93,6 +94,12 @@ export function MinhaAssinatura() {
       <PageHeader title="Minha assinatura" subtitle={assinatura.conta.nome} />
 
       <div className="assinatura-cartoes">
+        <section className="assinatura-cartao">
+          <span className="assinatura-rotulo">Identidade no Control Plane</span>
+          <strong className="assinatura-plano"><code>{assinatura.conta.tenantKey}</code></strong>
+          <p className="assinatura-detalhe">Use esta tenant key para vincular esta conta no Control Plane. Ela não é uma senha.</p>
+          <Button type="button" size="sm" variant="secondary" onClick={() => navigator.clipboard.writeText(assinatura.conta.tenantKey)}>Copiar tenant key</Button>
+        </section>
         <section className="assinatura-cartao assinatura-cartao--destaque">
           <span className="assinatura-rotulo">Previsto para este mês</span>
           <strong className="assinatura-valor">
