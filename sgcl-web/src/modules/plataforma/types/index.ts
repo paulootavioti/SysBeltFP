@@ -57,6 +57,16 @@ export interface MinhaAssinatura {
   diaVencimento: number;
   inicioEm: string;
   fimTesteEm: string | null;
+  concessaoControlPlane: {
+    statusAcesso: "ATIVO" | "SUSPENSO" | "CANCELADO";
+    recursos: string[];
+    versaoContrato: number;
+    revisao: number;
+    emitidaEm: string;
+    expiraEm: string;
+    sincronizadaEm: string;
+    vigente: boolean;
+  } | null;
   plano: {
     id: number;
     nome: string;

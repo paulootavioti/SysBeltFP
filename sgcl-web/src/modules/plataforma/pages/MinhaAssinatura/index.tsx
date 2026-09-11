@@ -57,6 +57,8 @@ export function MinhaAssinatura() {
   }
 
   const { plano, previaDoMes, faturas } = assinatura;
+  const concessao = assinatura.concessaoControlPlane;
+  const concessaoValida = concessao?.vigente === true;
 
   const colunas = [
     {
@@ -94,6 +96,17 @@ export function MinhaAssinatura() {
       <PageHeader title="Minha assinatura" subtitle={assinatura.conta.nome} />
 
       <div className="assinatura-cartoes">
+        <section className="assinatura-cartao">
+          <span className="assinatura-rotulo">Control Plane</span>
+          <strong className="assinatura-plano">
+            {!concessao ? "Aguardando concessão" : concessaoValida ? "Conectado" : "Concessão expirada"}
+          </strong>
+          {concessao && <>
+            <p className="assinatura-detalhe">Acesso: {STATUS_ASSINATURA_LABEL[concessao.statusAcesso === "ATIVO" ? "ATIVA" : concessao.statusAcesso === "SUSPENSO" ? "SUSPENSA" : "CANCELADA"]}</p>
+            <p className="assinatura-detalhe">Revisão {concessao.revisao} · contrato v{concessao.versaoContrato}</p>
+            <p className={`assinatura-detalhe${concessaoValida ? " assinatura-detalhe--fraco" : " assinatura-detalhe--aviso"}`}>Válida até {formatarData(concessao.expiraEm)}</p>
+          </>}
+        </section>
         <section className="assinatura-cartao">
           <span className="assinatura-rotulo">Identidade no Control Plane</span>
           <strong className="assinatura-plano"><code>{assinatura.conta.tenantKey}</code></strong>
@@ -155,6 +168,13 @@ export function MinhaAssinatura() {
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {concessao && (
+        <section className="assinatura-recursos">
+          <span className="assinatura-rotulo">Recursos autorizados pelo Control Plane</span>
+          {concessao.recursos.length > 0 ? <ul>{concessao.recursos.map((recurso) => <li key={recurso}>{RECURSO_LABEL[recurso as RecursoPlataforma] ?? recurso}</li>)}</ul> : <p className="assinatura-detalhe">Nenhum recurso opcional liberado.</p>}
         </section>
       )}
 
