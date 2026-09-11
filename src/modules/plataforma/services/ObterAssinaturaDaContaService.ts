@@ -42,12 +42,26 @@ export class ObterAssinaturaDaContaService {
       take: 12,
     });
 
+    const concessao = await prisma.concessaoPlataforma.findUnique({
+      where: { contaId },
+      select: {
+        statusAcesso: true,
+        recursos: true,
+        versaoContrato: true,
+        revisao: true,
+        emitidaEm: true,
+        expiraEm: true,
+        sincronizadaEm: true,
+      },
+    });
+
     return {
       conta: assinatura.conta,
       status: assinatura.status,
       diaVencimento: assinatura.diaVencimento,
       inicioEm: assinatura.inicioEm,
       fimTesteEm: assinatura.fimTesteEm,
+      concessaoControlPlane: concessao ? { ...concessao, vigente: concessao.expiraEm > new Date() } : null,
       plano: {
         id: assinatura.plano.id,
         nome: assinatura.plano.nome,
