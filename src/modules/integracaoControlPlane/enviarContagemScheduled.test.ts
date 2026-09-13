@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validarResultadoAgendado } from "../../../netlify/functions/enviar-contagem-scheduled";
+import { validarResultadoAgendado } from "./validarResultadoAgendado";
 
 describe("rotina agendada de snapshots", () => {
   it("resume envios de todas as contas", () => {
