@@ -13,6 +13,6 @@ describe("rotina agendada de snapshots", () => {
     expect(() => validarResultadoAgendado([
       { tenantKey: "a", eventoId: "e1", duplicado: false },
       { tenantKey: "b", erro: "FALHA_NO_SNAPSHOT" },
-    ])).toThrow("Falha no envio de 1 de 2 snapshot(s).");
+    ])).toThrow("Falha no envio de 1 de 2 snapshot(s): FALHA_NO_SNAPSHOT.");
   });
 });
