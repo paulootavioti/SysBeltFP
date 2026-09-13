@@ -18,11 +18,23 @@ function variavelObrigatoria(nome: string): string {
   return valor.replace(/\\n/g, "\n");
 }
 
+export function chavePrivadaDeSnapshot(): string {
+  const codificada = process.env.TENANT_INTEGRATION_PRIVATE_KEY_BASE64?.trim();
+  if (codificada) {
+    const pem = Buffer.from(codificada, "base64").toString("utf8").trim();
+    if (!pem.startsWith("-----BEGIN PRIVATE KEY-----") || !pem.endsWith("-----END PRIVATE KEY-----")) {
+      throw new Error("CHAVE_PRIVADA_INVALIDA");
+    }
+    return pem;
+  }
+  return variavelObrigatoria("TENANT_INTEGRATION_PRIVATE_KEY");
+}
+
 export class EnviarSnapshotContagemService {
   constructor(private readonly gerar = new GerarSnapshotContagemService()) {}
 
   async execute(): Promise<Array<{ tenantKey: string; eventoId?: string; duplicado?: boolean; erro?: string }>> {
-    const chavePrivada = variavelObrigatoria("TENANT_INTEGRATION_PRIVATE_KEY");
+    const chavePrivada = chavePrivadaDeSnapshot();
     const controlPlaneUrl = variavelObrigatoria("CONTROL_PLANE_URL").replace(/\/$/, "");
     const contas = await prismaDaRequisicao().conta.findMany({ where: { ativo: true }, select: { tenantKey: true }, orderBy: { id: "asc" } });
     const resultados: Array<{ tenantKey: string; eventoId?: string; duplicado?: boolean; erro?: string }> = [];
