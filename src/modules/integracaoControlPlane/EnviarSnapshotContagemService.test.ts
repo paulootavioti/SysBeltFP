@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { codigoSeguroSnapshot } from "./EnviarSnapshotContagemService";
+import { afterEach, describe, expect, it } from "vitest";
+import { chavePrivadaDeSnapshot, codigoSeguroSnapshot } from "./EnviarSnapshotContagemService";
+
+afterEach(() => {
+  delete process.env.TENANT_INTEGRATION_PRIVATE_KEY;
+  delete process.env.TENANT_INTEGRATION_PRIVATE_KEY_BASE64;
+});
 
 describe("diagnóstico sanitizado do snapshot", () => {
   it.each([
@@ -14,5 +19,19 @@ describe("diagnóstico sanitizado do snapshot", () => {
 
   it("não expõe mensagens inesperadas", () => {
     expect(codigoSeguroSnapshot(new Error("postgres://segredo"))).toBe("FALHA_NO_SNAPSHOT");
+  });
+});
+
+describe("leitura da chave privada de snapshot", () => {
+  it("prioriza e decodifica a variável Base64 de linha única", () => {
+    const pem = "-----BEGIN PRIVATE KEY-----\nconteudo\n-----END PRIVATE KEY-----";
+    process.env.TENANT_INTEGRATION_PRIVATE_KEY_BASE64 = Buffer.from(pem).toString("base64");
+    process.env.TENANT_INTEGRATION_PRIVATE_KEY = "valor-antigo";
+    expect(chavePrivadaDeSnapshot()).toBe(pem);
+  });
+
+  it("recusa Base64 que não produza um PEM privado", () => {
+    process.env.TENANT_INTEGRATION_PRIVATE_KEY_BASE64 = Buffer.from("invalida").toString("base64");
+    expect(() => chavePrivadaDeSnapshot()).toThrow("CHAVE_PRIVADA_INVALIDA");
   });
 });
