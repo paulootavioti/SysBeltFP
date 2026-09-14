@@ -19,7 +19,7 @@ interface TableProps<T> {
   onRowClick?: (item: T) => void;
 }
 
-export function Table<T extends { id: number }>({
+export function Table<T extends { id: number | string }>({
   columns,
   data,
   pagination,

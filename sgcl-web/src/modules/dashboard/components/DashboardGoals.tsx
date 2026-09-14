@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui/Button";
 import { Situacao, type DegrauSituacao } from "../../../components/ui/Situacao";
@@ -38,6 +38,7 @@ function formatarValorMeta(valor: number, unidade: MetaDashboard["unidade"]): st
 
 export function DashboardGoals({ metas, mostrarBotaoGerenciar = true, renderAcoes }: DashboardGoalsProps) {
   const navigate = useNavigate();
+  const [agora] = useState(Date.now);
 
   return (
     <div>
@@ -50,7 +51,7 @@ export function DashboardGoals({ metas, mostrarBotaoGerenciar = true, renderAcoe
             const superada = meta.percentualAtingido > 100;
             const piorQueMeta = TIPOS_META_REDUCAO.includes(meta.tipo) && meta.valorAtual > meta.valorMeta;
             const faltam = Math.max(0, meta.valorMeta - meta.valorAtual);
-            const dias = Math.max(0, Math.ceil((new Date(meta.dataLimite).getTime() - Date.now()) / 86_400_000));
+            const dias = Math.max(0, Math.ceil((new Date(meta.dataLimite).getTime() - agora) / 86_400_000));
 
             return (
               <article key={meta.id} className="dashboard-meta-card">

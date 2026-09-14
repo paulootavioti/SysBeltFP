@@ -8,6 +8,7 @@ import { nomeFormaPagamento } from "../../formasPagamento/types";
 import "./MensalidadeCard.css";
 import { formatarData } from "../../../shared/utils/formatarData";
 import { resolverCorFaixa } from "../../../shared/constants/coresFaixa";
+import { useState } from "react";
 
 interface MensalidadeCardProps {
   mensalidade: MensalidadeComAluno;
@@ -26,7 +27,8 @@ export function MensalidadeCard({
   const { usuario } = useAuth();
   const ehAdmin = usuario?.perfil === "ADMIN";
   const status = calcularStatusMensalidade(mensalidade);
-  const diferencaDias = Math.ceil((new Date(mensalidade.vencimento).getTime() - Date.now()) / 86_400_000);
+  const [agora] = useState(Date.now);
+  const diferencaDias = Math.ceil((new Date(mensalidade.vencimento).getTime() - agora) / 86_400_000);
   const rotuloStatus = status === "VENCIDA" ? `Vencida há ${Math.max(1, Math.abs(diferencaDias))} dias` : status === "PENDENTE" ? (diferencaDias <= 5 ? `Vence em ${Math.max(0, diferencaDias)} dias` : `Vence em ${diferencaDias} dias`) : status === "PAGA" ? "Em dia" : status === "CANCELADA" ? "Cancelada" : "Estornada";
   const degrauStatus: DegrauSituacao = status === "VENCIDA" ? "acao" : status === "PENDENTE" && diferencaDias <= 5 ? "atencao" : status === "CANCELADA" || status === "ESTORNADA" ? "inativo" : "neutro";
   return (

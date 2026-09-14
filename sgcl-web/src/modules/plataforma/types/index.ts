@@ -13,12 +13,15 @@ export const STATUS_ASSINATURA_LABEL: Record<StatusAssinaturaPlataforma, string>
   CANCELADA: "Cancelada",
 };
 
-export type StatusFaturaPlataforma = "ABERTA" | "PAGA" | "CANCELADA";
+export type StatusFaturaPlataforma = "RASCUNHO" | "ABERTA" | "VENCIDA" | "PAGA" | "CANCELADA" | "ESTORNADA";
 
 export const STATUS_FATURA_LABEL: Record<StatusFaturaPlataforma, string> = {
   ABERTA: "Em aberto",
+  RASCUNHO: "Rascunho",
+  VENCIDA: "Vencida",
   PAGA: "Paga",
   CANCELADA: "Cancelada",
+  ESTORNADA: "Estornada",
 };
 
 export type RecursoPlataforma = "WHATSAPP" | "GATEWAY_AUTOMATICO" | "CONTROLE_ACESSO";
@@ -30,7 +33,7 @@ export const RECURSO_LABEL: Record<RecursoPlataforma, string> = {
 };
 
 export interface PrecoUnidadePlataforma {
-  unidadeId: number;
+  unidadeId: number | string;
   nomeUnidade: string;
   alunosContados: number;
   blocos: number;
@@ -38,7 +41,7 @@ export interface PrecoUnidadePlataforma {
 }
 
 export interface FaturaPlataforma {
-  id: number;
+  id: number | string;
   competencia: string;
   vencimento: string;
   alunosContados: number;

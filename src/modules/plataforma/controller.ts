@@ -94,7 +94,7 @@ export class PlataformaController {
   async minhaAssinatura(req: Request, res: Response) {
     const contaId = await resolverContaDoUsuario(req);
 
-    const assinatura = await new ObterAssinaturaDaContaService().execute(contaId);
+    const assinatura = await new ObterAssinaturaDaContaService().execute(contaId, req.hostname);
 
     return res.json(assinatura);
   }

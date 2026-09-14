@@ -3,13 +3,14 @@ import { AppError } from "../../../shared/errors/AppError";
 import { competenciaDoMes, vencimentoDaCompetencia } from "../utils/competencia";
 import { calcularPrecoPorUnidade } from "../utils/precoPlataforma";
 import { ContarAlunosPorUnidadeDaContaService } from "./ContarAlunosPorUnidadeDaContaService";
+import { listarFaturasControlPlane } from "../../../shared/tenant/FaturasControlPlane";
 
 // A visão que o dono da academia tem da própria assinatura: qual plano,
 // quantos alunos estão sendo contados agora, quanto isso dá, e o histórico
 // de faturas. A prévia é calculada na hora (não lida de fatura) justamente
 // pra responder "se eu matricular mais 3 alunos, muda meu preço?".
 export class ObterAssinaturaDaContaService {
-  async execute(contaId: number) {
+  async execute(contaId: number, hostname?: string) {
     const prisma = prismaDaRequisicao();
     const assinatura = await prisma.assinaturaPlataforma.findUnique({
       where: { contaId },
@@ -36,11 +37,12 @@ export class ObterAssinaturaDaContaService {
 
     const competencia = competenciaDoMes();
 
-    const faturas = await prisma.faturaPlataforma.findMany({
+    const faturasLocais = await prisma.faturaPlataforma.findMany({
       where: { contaId },
       orderBy: { competencia: "desc" },
       take: 12,
     });
+    const faturas = hostname ? (await listarFaturasControlPlane(hostname) ?? faturasLocais) : faturasLocais;
 
     const concessao = await prisma.concessaoPlataforma.findUnique({
       where: { contaId },

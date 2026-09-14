@@ -30,9 +30,12 @@ function formatarCompetencia(iso: string): string {
 }
 
 const STATUS_FATURA_BADGE = {
+  RASCUNHO: "PENDENTE",
   ABERTA: "PENDENTE",
+  VENCIDA: "VENCIDO",
   PAGA: "PAGO",
   CANCELADA: "CANCELADO",
+  ESTORNADA: "CANCELADO",
 } as const;
 
 export function MinhaAssinatura() {
