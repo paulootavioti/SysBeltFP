@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Button } from "../../../../components/ui/Button";
 import { Input } from "../../../../components/ui/Input";
+import { Select } from "../../../../components/ui/Select";
+import { Textarea } from "../../../../components/ui/Textarea";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Loading } from "../../../../components/ui/Loading";
 import { EmptyState } from "../../../../components/ui/EmptyState";
@@ -13,6 +15,7 @@ import { ConfirmDialog } from "../../../../components/ui/ConfirmDialog";
 import { useAuth } from "../../../../contexts/useAuth";
 import { useCurriculos } from "../../hooks/useCurriculos";
 import { CurriculoService } from "../../services/CurriculoService";
+import type { ItemCatalogoPedagogicoPayload } from "../../services/CurriculoService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
 
 import { CurriculoForm } from "../../components/CurriculoForm";
@@ -31,7 +34,7 @@ import type {
   TecnicaCurriculoFormData,
 } from "../../schema/curriculo.schema";
 
-import type { Curriculo, ModuloCurriculo, AulaCurriculo, TecnicaCurriculo } from "../../types/curriculo";
+import type { Curriculo, ModuloCurriculo, AulaCurriculo, TecnicaCurriculo, ItemCatalogoPedagogico } from "../../types/curriculo";
 
 import "./styles.css";
 
@@ -40,6 +43,7 @@ type ModalState =
   | { tipo: "modulo"; curriculoId: number; editando?: ModuloCurriculo }
   | { tipo: "aula"; moduloId: number; editando?: AulaCurriculo }
   | { tipo: "tecnica"; aulaCurriculoId: number; editando?: TecnicaCurriculo }
+  | { tipo: "catalogo" }
   | null;
 
 type ExcluindoAlvo = { tipo: "curriculo" | "modulo" | "aula" | "tecnica"; id: number } | null;
@@ -61,9 +65,17 @@ export function Curriculos() {
   const [busca, setBusca] = useState("");
   const [modulosAbertos, setModulosAbertos] = useState<Record<number, boolean>>({});
   const [aulasAbertas, setAulasAbertas] = useState<Record<number, boolean>>({});
+  const [itensCatalogo, setItensCatalogo] = useState<ItemCatalogoPedagogico[]>([]);
+  const [novoItemCatalogo, setNovoItemCatalogo] = useState({ tipo: "POSICAO", nome: "", tipoBloco: "TECNICA", descricao: "", atencoesFaixaEtaria: "", duracaoMinutos: "5" });
 
   const ehAdmin = usuario?.perfil === "ADMIN";
   const buscaAtiva = busca.trim().length > 0;
+
+  async function carregarCatalogoPedagogico() {
+    try { setItensCatalogo(await CurriculoService.listarCatalogoPedagogico()); } catch { setErro("Erro ao carregar o catálogo pedagógico."); }
+  }
+
+  useEffect(() => { void carregarCatalogoPedagogico(); }, []);
 
   function estaExcluindo(tipo: NonNullable<ExcluindoAlvo>["tipo"], id: number) {
     return excluindo?.tipo === tipo && excluindo.id === id;
@@ -187,6 +199,8 @@ export function Curriculos() {
           duracaoRoundSegundos: bloco.tipo === "SPARRING" ? Number(bloco.duracaoRoundMinutos || 4) * 60 : undefined,
           descansoSegundos: bloco.tipo === "SPARRING" ? Number(bloco.descansoSegundos || 60) : undefined,
           anuncio: bloco.tipo === "PAUSA" ? bloco.anuncio || undefined : undefined,
+          descricao: bloco.descricao || undefined,
+          atencoesFaixaEtaria: bloco.atencoesFaixaEtaria || undefined,
         })),
       };
       if (editando) {
@@ -220,6 +234,25 @@ export function Curriculos() {
     } finally {
       setSalvando(false);
     }
+  }
+
+  async function handleSalvarItemCatalogo() {
+    try {
+      setSalvando(true);
+      const payload: ItemCatalogoPedagogicoPayload = {
+        tipo: novoItemCatalogo.tipo as ItemCatalogoPedagogicoPayload["tipo"],
+        nome: novoItemCatalogo.nome,
+        tipoBloco: novoItemCatalogo.tipo === "MOMENTO" ? novoItemCatalogo.tipoBloco as ItemCatalogoPedagogicoPayload["tipoBloco"] : "TECNICA",
+        descricao: novoItemCatalogo.descricao || undefined,
+        atencoesFaixaEtaria: novoItemCatalogo.atencoesFaixaEtaria || undefined,
+        duracaoPrevistaSegundos: Math.max(1, Number(novoItemCatalogo.duracaoMinutos || 1)) * 60,
+      };
+      await CurriculoService.criarItemCatalogoPedagogico(payload);
+      await carregarCatalogoPedagogico();
+      setNovoItemCatalogo({ tipo: "POSICAO", nome: "", tipoBloco: "TECNICA", descricao: "", atencoesFaixaEtaria: "", duracaoMinutos: "5" });
+      setModal(null);
+    } catch (error) { setErro(getApiErrorMessage(error, "Erro ao cadastrar item pedagógico.")); }
+    finally { setSalvando(false); }
   }
 
   function handleExcluirCurriculo(curriculo: Curriculo) {
@@ -364,6 +397,9 @@ export function Curriculos() {
       </div>
 
       <div className="curriculos-acoes">
+        <Button type="button" variant="secondary" onClick={() => setModal({ tipo: "catalogo" })}>
+          Catálogo pedagógico
+        </Button>
         <Button type="button" onClick={() => setModal({ tipo: "curriculo" })}>
           + Novo Currículo
         </Button>
@@ -519,12 +555,27 @@ export function Curriculos() {
                     duracaoRoundMinutos: bloco.duracaoRoundSegundos ? String(Math.max(1, Math.round(bloco.duracaoRoundSegundos / 60))) : "4",
                     descansoSegundos: bloco.descansoSegundos != null ? String(bloco.descansoSegundos) : "60",
                     anuncio: bloco.anuncio ?? "",
+                    descricao: bloco.descricao ?? "",
+                    atencoesFaixaEtaria: bloco.atencoesFaixaEtaria ?? "",
                   })),
                 }
               : undefined
           }
+          itensCatalogo={itensCatalogo}
           onSubmit={(data) => modal?.tipo === "aula" && handleSalvarAula(data, modal.moduloId, modal.editando)}
         />
+      </Modal>
+
+      <Modal open={modal?.tipo === "catalogo"} title="Novo item pedagógico" onClose={() => setModal(null)}>
+        <form onSubmit={(event) => { event.preventDefault(); void handleSalvarItemCatalogo(); }}>
+          <Select label="Tipo" value={novoItemCatalogo.tipo} options={[{ value: "POSICAO", label: "Posição" }, { value: "EXERCICIO", label: "Exercício" }, { value: "MOMENTO", label: "Momento" }]} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, tipo: event.target.value, tipoBloco: event.target.value === "MOMENTO" ? "AQUECIMENTO" : "TECNICA" }))} />
+          {novoItemCatalogo.tipo === "MOMENTO" && <Select label="Etapa da aula" value={novoItemCatalogo.tipoBloco} options={[{ value: "AQUECIMENTO", label: "Aquecimento" }, { value: "JOGO", label: "Jogo" }, { value: "PAUSA", label: "Pausa" }, { value: "ALONGAMENTO", label: "Alongamento" }, { value: "SPARRING", label: "Sparring" }]} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, tipoBloco: event.target.value }))} />}
+          <Input label="Nome" required value={novoItemCatalogo.nome} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, nome: event.target.value }))} />
+          <Input label="Duração sugerida (min)" required type="number" min="1" value={novoItemCatalogo.duracaoMinutos} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, duracaoMinutos: event.target.value }))} />
+          <Textarea label="Passo a passo e cuidados" rows={4} value={novoItemCatalogo.descricao} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, descricao: event.target.value }))} />
+          <Textarea label="Atenções por faixa etária" rows={3} value={novoItemCatalogo.atencoesFaixaEtaria} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, atencoesFaixaEtaria: event.target.value }))} />
+          <Button type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Cadastrar item"}</Button>
+        </form>
       </Modal>
 
       <Modal

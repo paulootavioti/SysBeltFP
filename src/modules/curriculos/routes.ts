@@ -9,6 +9,7 @@ import {
   moduloCurriculoSchema,
   aulaCurriculoSchema,
   tecnicaCurriculoSchema,
+  itemCatalogoPedagogicoSchema,
 } from "./validation";
 
 const curriculosRoutes = Router();
@@ -29,6 +30,10 @@ curriculosRoutes.get(
   ensureRole(["ADMIN", "PROFESSOR"]),
   controller.list
 );
+
+curriculosRoutes.get("/catalogo-pedagogico", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.listCatalogo);
+curriculosRoutes.post("/catalogo-pedagogico", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), validateBody(itemCatalogoPedagogicoSchema), controller.createCatalogo);
+curriculosRoutes.delete("/catalogo-pedagogico/:id", ensureAuthenticated, ensureRole(["ADMIN"]), controller.deleteCatalogo);
 
 curriculosRoutes.get(
   "/:id",

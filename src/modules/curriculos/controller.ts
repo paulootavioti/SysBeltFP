@@ -15,8 +15,34 @@ import { DeleteModuloCurriculoService } from "./services/DeleteModuloCurriculoSe
 import { DeleteAulaCurriculoService } from "./services/DeleteAulaCurriculoService";
 import { DeleteTecnicaCurriculoService } from "./services/DeleteTecnicaCurriculoService";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
+import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
+import { AppError } from "../../shared/errors/AppError";
 
 export class CurriculosController {
+  async listCatalogo(req: Request, res: Response) {
+    const itens = await prismaDaRequisicao().itemCatalogoPedagogico.findMany({
+      where: { unidadeId: requireUnidadeId(req) },
+      orderBy: [{ tipo: "asc" }, { nome: "asc" }],
+    });
+    return res.json(itens);
+  }
+
+  async createCatalogo(req: Request, res: Response) {
+    const item = await prismaDaRequisicao().itemCatalogoPedagogico.create({
+      data: { ...req.body, unidadeId: requireUnidadeId(req) },
+    });
+    return res.status(201).json(item);
+  }
+
+  async deleteCatalogo(req: Request, res: Response) {
+    const item = await prismaDaRequisicao().itemCatalogoPedagogico.findFirst({
+      where: { id: Number(req.params.id), unidadeId: requireUnidadeId(req) },
+    });
+    if (!item) throw new AppError("Item pedagógico não encontrado.");
+    await prismaDaRequisicao().itemCatalogoPedagogico.delete({ where: { id: item.id } });
+    return res.status(204).send();
+  }
+
   async create(req: Request, res: Response) {
     const service = new CreateCurriculoService();
 

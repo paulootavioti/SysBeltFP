@@ -24,13 +24,15 @@ export const aulaCurriculoSchema = z.object({
   duracaoMinutos: z.string().optional(),
   jogosSugeridos: z.string().optional(),
   blocos: z.array(z.object({
-    tipo: z.enum(["AQUECIMENTO", "JOGO", "SPARRING", "PAUSA", "ALONGAMENTO"]),
+    tipo: z.enum(["AQUECIMENTO", "JOGO", "TECNICA", "SPARRING", "PAUSA", "ALONGAMENTO"]),
     nome: z.string().min(1, "Informe o nome do bloco."),
     duracaoMinutos: z.string().min(1, "Informe a duração."),
     rounds: z.string().optional(),
     duracaoRoundMinutos: z.string().optional(),
     descansoSegundos: z.string().optional(),
     anuncio: z.string().optional(),
+    descricao: z.string().optional(),
+    atencoesFaixaEtaria: z.string().optional(),
   })).optional(),
 });
 

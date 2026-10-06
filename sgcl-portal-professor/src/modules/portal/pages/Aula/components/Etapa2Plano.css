@@ -8,6 +8,9 @@
 .ring-progresso div { z-index: 1; grid-area: 1 / 1; display: flex; flex-direction: column; }
 .ring-progresso strong { font-size: clamp(48px, 16vw, 62px); line-height: 1; font-variant-numeric: tabular-nums; }
 .ring-progresso span { margin-top: 7px; color: #bbb6aa; font-size: 13px; }
+.ring-orientacoes { width: 100%; max-width: 430px; margin-top: 16px; padding: 10px 12px; border: 1px solid #4a463e; border-radius: 6px; background: #1d1b18; text-align: left; }
+.ring-orientacoes summary { cursor: pointer; color: #e6c44b; font-size: 14px; font-weight: 800; }
+.ring-orientacoes p { margin: 9px 0 0; color: #ece8de; font-size: 14px; line-height: 1.4; }
 .ring-controles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: 100%; max-width: 430px; margin-top: 18px; }
 .ring-controles button, .ring-encerrar, .ring-rodape button { min-height: 48px; border-radius: 6px; border: 1px solid #625e55; background: #24211d; color: #fff; font: inherit; font-weight: 750; }
 .ring-controles button:last-child { border-color: #e6c44b; background: #e6c44b; color: #17140f; }

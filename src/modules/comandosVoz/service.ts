@@ -1,5 +1,4 @@
 import { createHash, randomBytes } from "node:crypto";
-import { prisma } from "../../shared/database/prisma";
 import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../shared/errors/AppError";
 import { obterContextoRequisicao } from "../../shared/context/contextoRequisicao";
@@ -71,12 +70,13 @@ export class ComandosVozService {
   }
 
   async executarSkill(token: string, dados: { gatilho: string; turma?: string; n?: number; tempo?: string }) {
-    const pareamento = await prisma.pareamentoVozArena.findFirst({ where: { tokenHash: hash(token), revogadoEm: null }, include: { arena: { include: { unidade: true } } } });
+    const db = prismaDaRequisicao();
+    const pareamento = await db.pareamentoVozArena.findFirst({ where: { tokenHash: hash(token), revogadoEm: null }, include: { arena: { include: { unidade: true } } } });
     if (!pareamento) throw new AppError("Dispositivo não pareado.", 401);
-    const comandos = await prisma.comandoVoz.findMany({ where: { contaId: pareamento.arena.unidade.contaId, ativo: true } });
+    const comandos = await db.comandoVoz.findMany({ where: { contaId: pareamento.arena.unidade.contaId, ativo: true } });
     const comando = comandos.find((item) => normalizar(item.gatilho.replace("{turma}", dados.turma ?? "turma")) === normalizar(dados.gatilho));
     if (!comando) throw new AppError("Comando de cronômetro não reconhecido.", 404);
-    await prisma.eventoComandoVoz.create({ data: { pareamentoId: pareamento.id, comandoId: comando.id, acao: comando.acao, duracaoBlocoSegundos: comando.duracaoBlocoSegundos, avisoAntesFimSegundos: comando.avisoAntesFimSegundos } });
+    await db.eventoComandoVoz.create({ data: { pareamentoId: pareamento.id, comandoId: comando.id, acao: comando.acao, duracaoBlocoSegundos: comando.duracaoBlocoSegundos, avisoAntesFimSegundos: comando.avisoAntesFimSegundos } });
     return { arenaId: pareamento.arenaId, acao: comando.acao, duracaoBlocoSegundos: comando.duracaoBlocoSegundos, avisoAntesFimSegundos: comando.avisoAntesFimSegundos, resposta: preencher(comando.resposta, dados) };
   }
 }

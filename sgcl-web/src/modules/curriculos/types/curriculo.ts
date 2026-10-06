@@ -8,7 +8,19 @@ export interface TecnicaCurriculo {
   duracaoPrevistaSegundos: number;
 }
 
-export type TipoBlocoCurriculo = "AQUECIMENTO" | "JOGO" | "SPARRING" | "PAUSA" | "ALONGAMENTO";
+export type TipoBlocoCurriculo = "AQUECIMENTO" | "JOGO" | "TECNICA" | "SPARRING" | "PAUSA" | "ALONGAMENTO";
+
+export type TipoItemCatalogoPedagogico = "POSICAO" | "EXERCICIO" | "MOMENTO";
+
+export interface ItemCatalogoPedagogico {
+  id: number;
+  tipo: TipoItemCatalogoPedagogico;
+  nome: string;
+  tipoBloco: TipoBlocoCurriculo | null;
+  descricao: string | null;
+  atencoesFaixaEtaria: string | null;
+  duracaoPrevistaSegundos: number;
+}
 
 export interface BlocoCurriculo {
   id: number;
@@ -20,6 +32,8 @@ export interface BlocoCurriculo {
   duracaoRoundSegundos?: number | null;
   descansoSegundos?: number | null;
   anuncio?: string | null;
+  descricao?: string | null;
+  atencoesFaixaEtaria?: string | null;
 }
 
 export interface AulaCurriculo {

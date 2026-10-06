@@ -27,6 +27,12 @@ enum TipoBlocoAulaCurriculo {
   ALONGAMENTO
 }
 
+enum TipoItemCatalogoPedagogico {
+  POSICAO
+  EXERCICIO
+  MOMENTO
+}
+
 enum StatusExecucaoBlocoAula {
   CUMPRIDO
   PULADO
@@ -315,6 +321,7 @@ model Unidade {
   turmas                 Turma[]
   planos                 Plano[]
   curriculos             Curriculo[]
+  itensCatalogoPedagogico ItemCatalogoPedagogico[]
   tecnicas               Tecnica[]
   competicoes            Competicao[]
   mensalidades           Mensalidade[]
@@ -2132,11 +2139,32 @@ model BlocoAulaCurriculo {
   duracaoRoundSegundos Int?
   descansoSegundos     Int?
   anuncio              String?
+  descricao            String?
+  atencoesFaixaEtaria  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([aulaCurriculoId, ordem])
+}
+
+model ItemCatalogoPedagogico {
+  id Int @id @default(autoincrement())
+
+  unidadeId Int
+  unidade   Unidade @relation(fields: [unidadeId], references: [id], onDelete: Cascade)
+
+  tipo TipoItemCatalogoPedagogico
+  nome String
+  tipoBloco TipoBlocoAulaCurriculo?
+  descricao String?
+  atencoesFaixaEtaria String?
+  duracaoPrevistaSegundos Int @default(300)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([unidadeId, tipo, nome])
 }
 
 model ExecucaoBlocoAula {
