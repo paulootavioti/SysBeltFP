@@ -1,5 +1,5 @@
 import { ApiClient } from "../../../shared/api/ApiClient";
-import type { Curriculo, ItemCatalogoPedagogico, TipoBlocoCurriculo, TipoItemCatalogoPedagogico } from "../types/curriculo";
+import type { AulaCurriculo, ConteudoBiblioteca, Curriculo, ItemCatalogoPedagogico, TemplatePlanejamento, TipoBlocoCurriculo, TipoItemCatalogoPedagogico } from "../types/curriculo";
 import type {
   CurriculoFormData,
   ModuloFormData,
@@ -18,6 +18,7 @@ type BlocoCurriculoPayload = {
   anuncio?: string;
   descricao?: string;
   atencoesFaixaEtaria?: string;
+  conteudoTecnicoId?: number;
 };
 
 export type ItemCatalogoPedagogicoPayload = {
@@ -44,6 +45,18 @@ function corpoCurriculo(data: CurriculoFormData) {
 }
 
 export class CurriculoService {
+  static async listarConteudosBiblioteca(busca = "") {
+    const query = busca ? `?busca=${encodeURIComponent(busca)}` : "";
+    return ApiClient.get<ConteudoBiblioteca[]>(`/biblioteca-pedagogica/conteudos${query}`);
+  }
+
+  static async listarTemplatesPlanejamento() {
+    return ApiClient.get<TemplatePlanejamento[]>("/biblioteca-pedagogica/templates");
+  }
+
+  static async copiarConteudoBiblioteca(id: number) {
+    return ApiClient.post(`/biblioteca-pedagogica/conteudos/${id}/copiar`, {});
+  }
   static async listarCatalogoPedagogico() {
     return ApiClient.get<ItemCatalogoPedagogico[]>("/curriculos/catalogo-pedagogico");
   }
@@ -86,6 +99,10 @@ export class CurriculoService {
     data: AulaCurriculoPayload
   ) {
     return ApiClient.put(`/curriculos/aulas/${id}`, data);
+  }
+
+  static async duplicarAula(id: number) {
+    return ApiClient.post<AulaCurriculo>(`/curriculos/aulas/${id}/duplicar`, {});
   }
 
   static async atualizarTecnica(id: number, data: Omit<TecnicaCurriculoFormData, "duracaoPrevistaMinutos"> & { duracaoPrevistaSegundos: number }) {

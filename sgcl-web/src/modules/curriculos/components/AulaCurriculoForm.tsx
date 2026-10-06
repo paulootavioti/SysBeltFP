@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -11,13 +11,15 @@ import { FormGridItem } from "../../../components/ui/FormGridItem";
 import { Select } from "../../../components/ui/Select";
 
 import { aulaCurriculoSchema, type AulaCurriculoFormData } from "../schema/curriculo.schema";
-import type { ItemCatalogoPedagogico, TipoBlocoCurriculo } from "../types/curriculo";
+import type { ConteudoBiblioteca, ItemCatalogoPedagogico, TemplatePlanejamento, TipoBlocoCurriculo } from "../types/curriculo";
 
 interface AulaCurriculoFormProps {
   loading?: boolean;
   initialValues?: Partial<AulaCurriculoFormData>;
   onSubmit: (data: AulaCurriculoFormData) => void;
   itensCatalogo?: ItemCatalogoPedagogico[];
+  conteudosBiblioteca?: ConteudoBiblioteca[];
+  templates?: TemplatePlanejamento[];
 }
 
 const AULA_DEFAULTS: AulaCurriculoFormData = {
@@ -50,7 +52,7 @@ const PRATICAS_SUGERIDAS = [
   { tipo: "TECNICA", nome: "Exercício em dupla", duracaoMinutos: "8", descricao: "Explique a sequência, organize pares compatíveis e acompanhe a troca de papéis.", atencoesFaixaEtaria: "Controle intensidade e diferença de tamanho; interrompa diante de desconforto." },
 ] as const;
 
-export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, itensCatalogo = [] }: AulaCurriculoFormProps) {
+export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, itensCatalogo = [], conteudosBiblioteca = [], templates = [] }: AulaCurriculoFormProps) {
   const methods = useForm<AulaCurriculoFormData>({
     resolver: zodResolver(aulaCurriculoSchema),
     defaultValues: { ...AULA_DEFAULTS, ...initialValues },
@@ -59,6 +61,8 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
   const { register, handleSubmit, formState: { errors } } = methods;
   const { fields, append, remove } = useFieldArray({ control: methods.control, name: "blocos" });
   const blocos = methods.watch("blocos") ?? [];
+  const [buscaBiblioteca, setBuscaBiblioteca] = useState("");
+  const conteudosExibidos = useMemo(() => conteudosBiblioteca.filter((conteudo) => `${conteudo.nome} ${conteudo.tipo} ${conteudo.modalidade.nome}`.toLocaleLowerCase("pt-BR").includes(buscaBiblioteca.toLocaleLowerCase("pt-BR"))).slice(0, 8), [buscaBiblioteca, conteudosBiblioteca]);
 
   useEffect(() => {
     methods.reset({ ...AULA_DEFAULTS, ...initialValues });
@@ -86,6 +90,14 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
       descansoSegundos: "60",
       anuncio: "",
     });
+  }
+
+  function adicionarConteudo(conteudo: ConteudoBiblioteca) {
+    append({ tipo: "TECNICA", nome: conteudo.nome, duracaoMinutos: String(Math.max(1, Math.round(conteudo.duracaoSugeridaSegundos / 60))), descricao: conteudo.passoAPasso || conteudo.descricao || "", atencoesFaixaEtaria: conteudo.pontosAtencao || "", conteudoTecnicoId: String(conteudo.id), rounds: "4", duracaoRoundMinutos: "4", descansoSegundos: "60", anuncio: "" });
+  }
+
+  function aplicarTemplate(template: TemplatePlanejamento) {
+    template.etapas.forEach((etapa) => append({ tipo: etapa.tipo, nome: etapa.titulo, duracaoMinutos: String(Math.max(1, Math.round(etapa.duracaoSegundos / 60))), descricao: etapa.descricao ?? "", atencoesFaixaEtaria: "", rounds: "4", duracaoRoundMinutos: "4", descansoSegundos: "60", anuncio: "" }));
   }
 
   return (
@@ -136,6 +148,13 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
             {PRATICAS_SUGERIDAS.map((pratica) => <Button key={pratica.nome} type="button" variant="secondary" onClick={() => adicionarPratica(pratica)}>+ {pratica.nome}</Button>)}
           </div>
 
+          {templates.length > 0 && <div className="curriculo-catalogo-itens"><strong>Começar com um modelo</strong><div>{templates.map((template) => <Button key={template.id} type="button" variant="secondary" onClick={() => aplicarTemplate(template)}>Usar {template.nome}</Button>)}</div></div>}
+
+          <div className="curriculo-biblioteca-rapida">
+            <div><strong>Biblioteca técnica</strong><Input aria-label="Buscar conteúdo técnico" placeholder="Buscar posição, técnica ou exercício" value={buscaBiblioteca} onChange={(event) => setBuscaBiblioteca(event.target.value)} /></div>
+            {conteudosExibidos.length > 0 && <div className="curriculo-biblioteca-lista">{conteudosExibidos.map((conteudo) => <button key={conteudo.id} type="button" onClick={() => adicionarConteudo(conteudo)}><span><strong>{conteudo.nome}</strong><small>{conteudo.modalidade.nome} · {conteudo.tipo.toLocaleLowerCase("pt-BR")}</small></span><span>{Math.ceil(conteudo.duracaoSugeridaSegundos / 60)} min</span></button>)}</div>}
+          </div>
+
           {itensCatalogo.length > 0 && (
             <div className="curriculo-catalogo-itens" aria-label="Catálogo pedagógico">
               {(["POSICAO", "EXERCICIO", "MOMENTO"] as const).map((tipo) => {
@@ -156,6 +175,7 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
                 {tipo === "SPARRING" && <Input label="Rounds" type="number" min="1" {...register(`blocos.${index}.rounds`)} />}
                 {tipo === "SPARRING" && <Input label="Descanso (s)" type="number" min="0" {...register(`blocos.${index}.descansoSegundos`)} />}
                 {tipo === "PAUSA" && <Input label="Anúncio" {...register(`blocos.${index}.anuncio`)} />}
+                <input type="hidden" {...register(`blocos.${index}.conteudoTecnicoId`)} />
                 <Textarea className="curriculo-bloco-descricao" label="Como conduzir" rows={2} {...register(`blocos.${index}.descricao`)} />
                 <Textarea className="curriculo-bloco-atencoes" label="Atenções por faixa etária" rows={2} {...register(`blocos.${index}.atencoesFaixaEtaria`)} />
                 <Button type="button" variant="danger" onClick={() => remove(index)}>Remover</Button>

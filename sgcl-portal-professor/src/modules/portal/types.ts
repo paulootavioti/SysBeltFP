@@ -54,6 +54,7 @@ export interface BlocoAulaCompilado {
   duracaoPrevistaSegundos: number;
   obrigatoria: boolean;
   tecnicaId?: number;
+  conteudoTecnicoId?: number;
   rounds?: number;
   duracaoRoundSegundos?: number;
   descansoSegundos?: number;

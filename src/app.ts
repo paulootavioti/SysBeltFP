@@ -53,6 +53,7 @@ import { concessaoPlataformaRoutes } from "./modules/concessaoPlataforma/routes"
 import { captacaoPublicaRoutes } from "./modules/leads/publicRoutes";
 import { mensageriaRoutes, metaWebhookRoutes } from "./modules/mensageria/routes";
 import { comandosVozRoutes, skillVozRoutes } from "./modules/comandosVoz/routes";
+import { bibliotecaPedagogicaRoutes } from "./modules/bibliotecaPedagogica/routes";
 
 // 5173 = sgcl-web (admin/staff), 5175 = sgcl-portal-familia (Portal da
 // Família), 5176 = sgcl-portal-professor (Portal do Professor) — três
@@ -119,6 +120,7 @@ app.use("/usuarios", usuariosRoutes);
 app.use("/aulas", aulasRoutes);
 app.use("/tecnicas", tecnicasRoutes);
 app.use("/curriculos", curriculosRoutes);
+app.use("/biblioteca-pedagogica", bibliotecaPedagogicaRoutes);
 app.use("/planos", planosRoutes);
 app.use("/mensagens", mensagensRoutes);
 app.use("/uploads", uploadsRoutes);

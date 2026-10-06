@@ -36,4 +36,10 @@ describe("compilarFilaAula", () => {
     expect(calcularDuracaoTurmaMinutos("18:30", "19:30")).toBe(60);
     expect(calcularDuracaoTurmaMinutos("23:30", "00:15")).toBe(45);
   });
+
+  it("preserva a referência da biblioteca sem registrá-la como técnica legada", () => {
+    const fila = compilarFilaAula({ jogosSugeridos: null, tecnicas: [], blocos: [{ id: 3, tipo: "TECNICA", nome: "Guarda X", ordem: 0, duracaoPrevistaSegundos: 600, conteudoTecnicoId: 44 }] });
+    expect(fila.blocos[0]).toMatchObject({ conteudoTecnicoId: 44 });
+    expect(fila.blocos[0].tecnicaId).toBeUndefined();
+  });
 });

@@ -264,6 +264,18 @@
 .curriculo-catalogo-itens > div { display: grid; gap: var(--space-1); }
 .curriculo-catalogo-itens > div > div { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .curriculo-catalogo-itens .button { font-size: var(--font-xs); }
+.curriculo-biblioteca-rapida { display: grid; gap: var(--space-2); margin: 0 0 var(--space-3); padding: var(--space-3); border: 1px solid var(--border); }
+.curriculo-biblioteca-rapida > div:first-child { display: grid; grid-template-columns: minmax(160px, .7fr) 1fr; align-items: end; gap: var(--space-3); }
+.curriculo-biblioteca-lista { display: grid; max-height: 230px; overflow-y: auto; border-top: 1px solid var(--border); }
+.curriculo-biblioteca-lista button { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-height: 46px; padding: 8px 4px; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--text); text-align: left; cursor: pointer; }
+.curriculo-biblioteca-lista button:hover { background: var(--color-accent-soft); }
+.curriculo-biblioteca-lista button span:first-child { display: grid; gap: 2px; }
+.curriculo-biblioteca-lista small { color: var(--text-light); }
+.biblioteca-modal { display: grid; gap: var(--space-2); }
+.biblioteca-conteudo-card { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) 0; border-top: 1px solid var(--border); }
+.biblioteca-conteudo-card > div { display: grid; gap: 4px; }
+.biblioteca-conteudo-card small, .biblioteca-conteudo-card p { color: var(--text-light); font-size: var(--font-sm); }
+.biblioteca-conteudo-card p { margin: 0; }
 
 .curriculo-bloco-linha {
   display: grid;
@@ -279,4 +291,6 @@
 @media (max-width: 900px) {
   .curriculo-bloco-linha { grid-template-columns: 1fr 1fr; }
   .curriculo-blocos-cabecalho { flex-direction: column; }
+  .curriculo-biblioteca-rapida > div:first-child { grid-template-columns: 1fr; }
+  .biblioteca-conteudo-card { flex-direction: column; }
 }

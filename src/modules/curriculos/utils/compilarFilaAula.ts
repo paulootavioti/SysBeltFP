@@ -30,6 +30,7 @@ interface BlocoParaCompilar {
   anuncio?: string | null;
   descricao?: string | null;
   atencoesFaixaEtaria?: string | null;
+  conteudoTecnicoId?: number | null;
 }
 
 interface AulaParaCompilar {
@@ -46,6 +47,7 @@ export interface BlocoAulaCompilado {
   duracaoPrevistaSegundos: number;
   obrigatoria: boolean;
   tecnicaId?: number;
+  conteudoTecnicoId?: number;
   rounds?: number;
   duracaoRoundSegundos?: number;
   descansoSegundos?: number;
@@ -89,6 +91,7 @@ export function compilarFilaAula(aula: AulaParaCompilar): FilaAulaCompilada {
     ...(bloco.anuncio ? { anuncio: bloco.anuncio } : {}),
     ...(bloco.descricao ? { descricao: bloco.descricao } : {}),
     ...(bloco.atencoesFaixaEtaria ? { atencoesFaixaEtaria: bloco.atencoesFaixaEtaria } : {}),
+    ...(bloco.conteudoTecnicoId ? { conteudoTecnicoId: bloco.conteudoTecnicoId } : {}),
   }));
 
   const tecnicas = aula.tecnicas.map<BlocoAulaCompilado>((tecnica) => ({

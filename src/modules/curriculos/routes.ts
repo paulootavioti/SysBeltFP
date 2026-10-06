@@ -82,6 +82,8 @@ curriculosRoutes.put(
   controller.updateAula
 );
 
+curriculosRoutes.post("/aulas/:id/duplicar", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.duplicateAula);
+
 curriculosRoutes.put(
   "/tecnicas/:id",
   ensureAuthenticated,
