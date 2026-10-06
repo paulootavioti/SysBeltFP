@@ -40,6 +40,16 @@ export const aulaCurriculoSchema = z.object({
   })).max(50).optional(),
 });
 
+export const aulaAssistidaSchema = z.object({
+  moduloId: z.coerce.number().int().positive(),
+  titulo: z.string().trim().min(2).max(160),
+  objetivo: z.string().trim().max(1000).nullish(),
+  descricao: z.string().trim().max(3000).nullish(),
+  templateId: z.coerce.number().int().positive().nullish(),
+  conteudoIds: z.array(z.coerce.number().int().positive()).min(1).max(12),
+  substituirEtapasTecnicas: z.boolean().optional(),
+});
+
 export const tecnicaCurriculoSchema = z.object({
   nome: z.string().min(1, "Informe o nome da técnica."),
   categoria: z.string().nullish(),

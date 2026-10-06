@@ -7,6 +7,7 @@ const camposModalidade = {
   coordenadorId: z.coerce.number().int().positive().nullish(),
   visivelNaLanding: z.boolean().optional(),
   ordem: z.coerce.number().int().min(0).optional(),
+  bibliotecaModalidadeId: z.coerce.number().int().positive().nullish(),
 };
 
 export const criarModalidadeSchema = z.object({

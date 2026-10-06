@@ -8,9 +8,13 @@ import { conteudoTecnicoSchema, templatePlanejamentoSchema } from "./validation"
 const routes = Router(); const controller = new BibliotecaPedagogicaController();
 routes.get("/modalidades", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.modalidades);
 routes.get("/conteudos", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.listar);
+routes.get("/conteudos/pesquisa", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.pesquisar);
 routes.post("/conteudos", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), validateBody(conteudoTecnicoSchema), controller.criar);
 routes.post("/conteudos/:id/copiar", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.copiar);
 routes.put("/conteudos/:id", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), validateBody(conteudoTecnicoSchema), controller.atualizar);
+routes.delete("/conteudos/:id", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.desativar);
 routes.get("/templates", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.templates);
 routes.post("/templates", ensureAuthenticated, ensureRole(["ADMIN"]), validateBody(templatePlanejamentoSchema), controller.criarTemplate);
+routes.put("/templates/:id", ensureAuthenticated, ensureRole(["ADMIN"]), validateBody(templatePlanejamentoSchema), controller.atualizarTemplate);
+routes.delete("/templates/:id", ensureAuthenticated, ensureRole(["ADMIN"]), controller.desativarTemplate);
 export { routes as bibliotecaPedagogicaRoutes };

@@ -14,7 +14,7 @@ export class ListCurriculosService {
       },
       include: {
         turmas: { where: { ativo: true }, select: { horarioInicio: true, horarioFim: true } },
-        modalidade: { select: { id: true, nome: true } },
+        modalidade: { select: { id: true, nome: true, bibliotecaModalidadeId: true } },
         modulos: {
           orderBy: {
             ordem: "asc",
@@ -25,7 +25,8 @@ export class ListCurriculosService {
                 ordem: "asc",
               },
               include: {
-                blocos: { orderBy: { ordem: "asc" } },
+                blocos: { orderBy: { ordem: "asc" }, include: { conteudoTecnico: { select: { id: true, nome: true, passoAPasso: true, pontosAtencao: true, cuidados: true } } } },
+                templatePlanejamento: { select: { id: true, nome: true, versao: true } },
                 tecnicas: {
                   orderBy: {
                     ordem: "asc",

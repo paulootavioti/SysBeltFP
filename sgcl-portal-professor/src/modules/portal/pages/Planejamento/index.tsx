@@ -47,7 +47,7 @@ export function Planejamento() {
 
   return (
     <div className="planejamento-page">
-      <SubHeader titulo="Planejamento" subtitulo="Currículo (leitura)" />
+      <SubHeader titulo="Planejamento" subtitulo="Roteiro da aula" />
 
       <main className="planejamento-conteudo">
         {(carregando || carregandoTurmas) && <Loading message="Carregando currículo..." />}
@@ -78,7 +78,7 @@ export function Planejamento() {
               <div className="planejamento-curriculo">
                 <h2>{curriculoSelecionado.nome}</h2>
                 <p className="planejamento-curriculo-info">
-                  {curriculoSelecionado.modalidade} — {curriculoSelecionado.publico}
+                  {curriculoSelecionado.modalidade?.nome ?? "Sem modalidade"} — {curriculoSelecionado.publico}
                 </p>
 
                 {curriculoSelecionado.modulos.length === 0 ? (
@@ -99,19 +99,19 @@ export function Planejamento() {
                           .sort((a, b) => a.ordem - b.ordem)
                           .map((aula) => (
                             <details key={aula.id} className="aula-card">
-                              <summary>{aula.titulo}</summary>
+                              <summary><span>{aula.titulo}</span><small>{Math.ceil(aula.filaCompilada.duracaoTotalSegundos / 60)} min</small></summary>
 
                               {aula.objetivo && <p className="aula-card-objetivo">{aula.objetivo}</p>}
 
-                              {aula.tecnicas.length > 0 && (
-                                <ul className="aula-card-tecnicas">
-                                  {aula.tecnicas
-                                    .sort((a, b) => a.ordem - b.ordem)
-                                    .map((tecnica) => (
-                                      <li key={tecnica.id}>{tecnica.nome}</li>
-                                    ))}
-                                </ul>
-                              )}
+                              <ol className="aula-card-roteiro">
+                                {aula.filaCompilada.blocos.map((bloco, indice) => (
+                                  <li key={bloco.chave}>
+                                    <div className="aula-card-etapa"><span>{indice + 1}. {bloco.nome}</span><strong>{Math.ceil(bloco.duracaoPrevistaSegundos / 60)} min</strong></div>
+                                    {bloco.descricao && <p>{bloco.descricao}</p>}
+                                    {bloco.atencoesFaixaEtaria && <p className="aula-card-atencao">Atenção: {bloco.atencoesFaixaEtaria}</p>}
+                                  </li>
+                                ))}
+                              </ol>
                             </details>
                           ))}
                       </details>

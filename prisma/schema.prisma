@@ -2068,6 +2068,12 @@ model Modalidade {
 
   ativo Boolean @default(true)
 
+  // Liga a modalidade criada pela academia ao catálogo técnico global.
+  // É opcional para preservar modalidades internas que não têm equivalente
+  // na biblioteca da plataforma.
+  bibliotecaModalidadeId Int?
+  bibliotecaModalidade   BibliotecaModalidade? @relation("ModalidadeLocalBiblioteca", fields: [bibliotecaModalidadeId], references: [id])
+
   turmas     Turma[]
   curriculos Curriculo[]
   leads      Lead[]
@@ -2076,6 +2082,7 @@ model Modalidade {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@unique([unidadeId, nome])
+  @@index([bibliotecaModalidadeId])
 }
 
 model Curriculo {
@@ -2129,6 +2136,10 @@ model AulaCurriculo {
   descricao      String?
   duracaoMinutos Int?
   jogosSugeridos String?
+
+  templatePlanejamentoId Int?
+  templatePlanejamento   TemplatePlanejamento? @relation(fields: [templatePlanejamentoId], references: [id], onDelete: SetNull)
+  templateAplicadoEm     DateTime?
 
   ordem Int @default(0)
 
@@ -2195,15 +2206,16 @@ model BlocoAulaCurriculo {
 // conteúdo oficial. Uma unidade pode duplicar qualquer item e editar apenas
 // sua própria cópia, preservando a fonte global.
 model BibliotecaModalidade {
-  id        Int                    @id @default(autoincrement())
-  slug      String                 @unique
-  nome      String
-  descricao String?
-  ativa     Boolean                @default(true)
-  conteudos ConteudoTecnico[]
-  templates TemplatePlanejamento[]
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @default(now()) @updatedAt
+  id                Int                    @id @default(autoincrement())
+  slug              String                 @unique
+  nome              String
+  descricao         String?
+  ativa             Boolean                @default(true)
+  conteudos         ConteudoTecnico[]
+  templates         TemplatePlanejamento[]
+  modalidadesLocais Modalidade[]           @relation("ModalidadeLocalBiblioteca")
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @default(now()) @updatedAt
 }
 
 model ConteudoTecnico {
@@ -2304,8 +2316,10 @@ model TemplatePlanejamento {
   nome         String
   descricao    String?
   publico      String?
+  versao       Int                         @default(1)
   ativo        Boolean                     @default(true)
   etapas       TemplatePlanejamentoEtapa[]
+  aulas        AulaCurriculo[]
   createdAt    DateTime                    @default(now())
   updatedAt    DateTime                    @default(now()) @updatedAt
 

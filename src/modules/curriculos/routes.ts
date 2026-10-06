@@ -8,6 +8,7 @@ import {
   curriculoSchema,
   moduloCurriculoSchema,
   aulaCurriculoSchema,
+  aulaAssistidaSchema,
   tecnicaCurriculoSchema,
   itemCatalogoPedagogicoSchema,
 } from "./validation";
@@ -33,7 +34,7 @@ curriculosRoutes.get(
 
 curriculosRoutes.get("/catalogo-pedagogico", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.listCatalogo);
 curriculosRoutes.post("/catalogo-pedagogico", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), validateBody(itemCatalogoPedagogicoSchema), controller.createCatalogo);
-curriculosRoutes.delete("/catalogo-pedagogico/:id", ensureAuthenticated, ensureRole(["ADMIN"]), controller.deleteCatalogo);
+curriculosRoutes.delete("/catalogo-pedagogico/:id", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.deleteCatalogo);
 
 curriculosRoutes.get(
   "/:id",
@@ -56,6 +57,14 @@ curriculosRoutes.post(
   ensureRole(["ADMIN", "PROFESSOR"]),
   validateBody(aulaCurriculoSchema),
   controller.createAula
+);
+
+curriculosRoutes.post(
+  "/aulas/assistida",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR"]),
+  validateBody(aulaAssistidaSchema),
+  controller.createAulaAssistida
 );
 
 curriculosRoutes.post(

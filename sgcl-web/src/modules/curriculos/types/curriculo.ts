@@ -31,6 +31,7 @@ export interface ConteudoBiblioteca {
   descricao: string | null;
   passoAPasso: string | null;
   pontosAtencao: string | null;
+  cuidados?: string | null;
   nivelDificuldade: string;
   duracaoSugeridaSegundos: number;
   modalidade: { id: number; nome: string };
@@ -43,6 +44,7 @@ export interface TemplatePlanejamento {
   nome: string;
   descricao: string | null;
   publico: string | null;
+  versao?: number;
   etapas: Array<{ id: number; tipo: TipoBlocoCurriculo; titulo: string; duracaoSegundos: number; descricao: string | null }>;
 }
 
@@ -94,7 +96,7 @@ export interface Curriculo {
   nome: string;
   descricao?: string | null;
   modalidadeId: number | null;
-  modalidade?: { id: number; nome: string } | null;
+  modalidade?: { id: number; nome: string; bibliotecaModalidadeId?: number | null } | null;
   publico: string;
   modulos: ModuloCurriculo[];
 }

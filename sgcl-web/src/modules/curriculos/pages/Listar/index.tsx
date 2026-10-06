@@ -42,9 +42,11 @@ type ModalState =
   | { tipo: "curriculo"; editando?: Curriculo }
   | { tipo: "modulo"; curriculoId: number; editando?: ModuloCurriculo }
   | { tipo: "aula"; moduloId: number; editando?: AulaCurriculo }
+  | { tipo: "assistida"; moduloId: number; modalidadeLocalId?: number }
   | { tipo: "tecnica"; aulaCurriculoId: number; editando?: TecnicaCurriculo }
   | { tipo: "catalogo" }
   | { tipo: "biblioteca" }
+  | { tipo: "novoConteudo" }
   | null;
 
 type ExcluindoAlvo = { tipo: "curriculo" | "modulo" | "aula" | "tecnica"; id: number } | null;
@@ -71,6 +73,13 @@ export function Curriculos() {
   const [templatesPlanejamento, setTemplatesPlanejamento] = useState<TemplatePlanejamento[]>([]);
   const [novoItemCatalogo, setNovoItemCatalogo] = useState({ tipo: "POSICAO", nome: "", tipoBloco: "TECNICA", descricao: "", atencoesFaixaEtaria: "", duracaoMinutos: "5" });
   const [buscaBiblioteca, setBuscaBiblioteca] = useState("");
+  const [conteudosAssistidos, setConteudosAssistidos] = useState<ConteudoBiblioteca[]>([]);
+  const [buscaAssistida, setBuscaAssistida] = useState("");
+  const [tituloAssistido, setTituloAssistido] = useState("");
+  const [templateAssistidoId, setTemplateAssistidoId] = useState("");
+  const [selecionadosAssistidos, setSelecionadosAssistidos] = useState<number[]>([]);
+  const [modalidadesBiblioteca, setModalidadesBiblioteca] = useState<Array<{ id: number; nome: string }>>([]);
+  const [novoConteudo, setNovoConteudo] = useState({ modalidadeId: "", tipo: "TECNICA", nome: "", descricao: "", passoAPasso: "", pontosAtencao: "", duracaoMinutos: "5" });
 
   const ehAdmin = usuario?.perfil === "ADMIN";
   const buscaAtiva = busca.trim().length > 0;
@@ -81,10 +90,24 @@ export function Curriculos() {
 
   useEffect(() => { void carregarCatalogoPedagogico(); }, []);
   useEffect(() => {
-    void Promise.all([CurriculoService.listarConteudosBiblioteca(), CurriculoService.listarTemplatesPlanejamento()])
-      .then(([conteudos, templates]) => { setConteudosBiblioteca(conteudos); setTemplatesPlanejamento(templates); })
+    void Promise.all([CurriculoService.listarConteudosBiblioteca(), CurriculoService.listarTemplatesPlanejamento(), CurriculoService.listarModalidadesBiblioteca()])
+      .then(([conteudos, templates, modalidades]) => { setConteudosBiblioteca(conteudos); setTemplatesPlanejamento(templates); setModalidadesBiblioteca(modalidades); })
       .catch(() => setErro("Erro ao carregar a biblioteca pedagógica."));
   }, [setErro]);
+
+  useEffect(() => {
+    if (modal?.tipo !== "assistida") return;
+    void CurriculoService.pesquisarConteudosBiblioteca({ busca: buscaAssistida, modalidadeLocalId: modal.modalidadeLocalId })
+      .then((resposta) => setConteudosAssistidos(resposta.itens))
+      .catch(() => setErro("Não foi possível carregar conteúdos para esta modalidade."));
+  }, [modal, buscaAssistida, setErro]);
+
+  useEffect(() => {
+    if (modal?.tipo !== "biblioteca") return;
+    void CurriculoService.pesquisarConteudosBiblioteca({ busca: buscaBiblioteca })
+      .then((resposta) => setConteudosBiblioteca(resposta.itens))
+      .catch(() => setErro("Não foi possível pesquisar a biblioteca pedagógica."));
+  }, [modal?.tipo, buscaBiblioteca, setErro]);
 
   function estaExcluindo(tipo: NonNullable<ExcluindoAlvo>["tipo"], id: number) {
     return excluindo?.tipo === tipo && excluindo.id === id;
@@ -227,6 +250,29 @@ export function Curriculos() {
     }
   }
 
+  async function handleSalvarAulaAssistida(moduloId: number) {
+    try {
+      setSalvando(true);
+      setErro("");
+      await CurriculoService.criarAulaAssistida({
+        moduloId,
+        titulo: tituloAssistido,
+        templateId: templateAssistidoId ? Number(templateAssistidoId) : undefined,
+        conteudoIds: selecionadosAssistidos,
+        substituirEtapasTecnicas: true,
+      });
+      await carregarCurriculos();
+      setModal(null);
+      setTituloAssistido("");
+      setSelecionadosAssistidos([]);
+      setTemplateAssistidoId("");
+    } catch (error) {
+      setErro(getApiErrorMessage(error, "Erro ao criar aula assistida."));
+    } finally {
+      setSalvando(false);
+    }
+  }
+
   async function handleSalvarTecnica(data: TecnicaCurriculoFormData, aulaCurriculoId: number, editando?: TecnicaCurriculo) {
     try {
       setSalvando(true);
@@ -259,8 +305,33 @@ export function Curriculos() {
     try {
       setErro("");
       await CurriculoService.copiarConteudoBiblioteca(conteudo.id);
-      setConteudosBiblioteca(await CurriculoService.listarConteudosBiblioteca(buscaBiblioteca));
+      const resposta = await CurriculoService.pesquisarConteudosBiblioteca({ busca: buscaBiblioteca });
+      setConteudosBiblioteca(resposta.itens);
     } catch (error) { setErro(getApiErrorMessage(error, "Erro ao adicionar conteúdo à sua biblioteca.")); }
+  }
+
+  async function handleSalvarConteudo() {
+    try {
+      setSalvando(true);
+      await CurriculoService.criarConteudoBiblioteca({
+        modalidadeId: Number(novoConteudo.modalidadeId), tipo: novoConteudo.tipo, nome: novoConteudo.nome,
+        descricao: novoConteudo.descricao || null, passoAPasso: novoConteudo.passoAPasso || null,
+        pontosAtencao: novoConteudo.pontosAtencao || null, duracaoSugeridaSegundos: Number(novoConteudo.duracaoMinutos) * 60,
+        tags: [],
+      });
+      const resposta = await CurriculoService.pesquisarConteudosBiblioteca({ busca: buscaBiblioteca });
+      setConteudosBiblioteca(resposta.itens);
+      setModal(null);
+      setNovoConteudo({ modalidadeId: "", tipo: "TECNICA", nome: "", descricao: "", passoAPasso: "", pontosAtencao: "", duracaoMinutos: "5" });
+    } catch (error) { setErro(getApiErrorMessage(error, "Erro ao cadastrar conteúdo técnico.")); }
+    finally { setSalvando(false); }
+  }
+
+  async function handleExcluirConteudo(conteudo: ConteudoBiblioteca) {
+    try {
+      await CurriculoService.excluirConteudoBiblioteca(conteudo.id);
+      setConteudosBiblioteca((atual) => atual.filter((item) => item.id !== conteudo.id));
+    } catch (error) { setErro(getApiErrorMessage(error, "Erro ao remover conteúdo técnico.")); }
   }
 
   async function handleSalvarItemCatalogo() {
@@ -498,6 +569,11 @@ export function Curriculos() {
                   ehAdmin={ehAdmin}
                   onEditar={() => setModal({ tipo: "modulo", curriculoId: curriculo.id, editando: modulo })}
                   onNovaAula={() => setModal({ tipo: "aula", moduloId: modulo.id })}
+                  onNovaAulaAssistida={() => {
+                    setBuscaAssistida("");
+                    setSelecionadosAssistidos([]);
+                    setModal({ tipo: "assistida", moduloId: modulo.id, modalidadeLocalId: curriculo.modalidade?.id });
+                  }}
                   onExcluir={() => handleExcluirModulo(modulo)}
                   excluindo={estaExcluindo("modulo", modulo.id)}
                   aulaEstaExpandida={aulaEstaExpandida}
@@ -538,6 +614,23 @@ export function Curriculos() {
           }
           onSubmit={(data) => modal?.tipo === "curriculo" && handleSalvarCurriculo(data, modal.editando)}
         />
+      </Modal>
+
+      <Modal open={modal?.tipo === "assistida"} title="Criar aula assistida" onClose={() => setModal(null)}>
+        <form onSubmit={(event) => { event.preventDefault(); if (modal?.tipo === "assistida") void handleSalvarAulaAssistida(modal.moduloId); }}>
+          <Input label="Título da aula" required value={tituloAssistido} onChange={(event) => setTituloAssistido(event.target.value)} />
+          <Select label="Modelo de aula" value={templateAssistidoId} options={[{ value: "", label: "Sem modelo" }, ...templatesPlanejamento.map((template) => ({ value: String(template.id), label: `${template.nome}${template.versao ? ` (v${template.versao})` : ""}` }))]} onChange={(event) => setTemplateAssistidoId(event.target.value)} />
+          <Input label="Buscar conteúdo técnico" placeholder="Ex.: guarda, queda, defesa" value={buscaAssistida} onChange={(event) => setBuscaAssistida(event.target.value)} />
+          <div className="biblioteca-modal">
+            {conteudosAssistidos.map((conteudo) => (
+              <label key={conteudo.id} className="biblioteca-conteudo-card">
+                <input type="checkbox" checked={selecionadosAssistidos.includes(conteudo.id)} onChange={(event) => setSelecionadosAssistidos((atual) => event.target.checked ? [...atual, conteudo.id] : atual.filter((id) => id !== conteudo.id))} />
+                <span><strong>{conteudo.nome}</strong><small>{conteudo.tipo.toLocaleLowerCase("pt-BR")} · {Math.max(1, Math.round(conteudo.duracaoSugeridaSegundos / 60))} min</small>{conteudo.descricao && <p>{conteudo.descricao}</p>}</span>
+              </label>
+            ))}
+          </div>
+          <Button type="submit" disabled={salvando || !tituloAssistido.trim() || selecionadosAssistidos.length === 0}>{salvando ? "Criando..." : "Criar roteiro"}</Button>
+        </form>
       </Modal>
 
       <Modal
@@ -614,14 +707,29 @@ export function Curriculos() {
 
       <Modal open={modal?.tipo === "biblioteca"} title="Biblioteca técnica" onClose={() => setModal(null)}>
         <div className="biblioteca-modal">
+          <Button type="button" onClick={() => setModal({ tipo: "novoConteudo" })}>Novo conteúdo</Button>
           <Input label="Buscar conteúdo" placeholder="Ex.: guarda, queda, defesa" value={buscaBiblioteca} onChange={(event) => setBuscaBiblioteca(event.target.value)} />
-          {conteudosBiblioteca.filter((conteudo) => `${conteudo.nome} ${conteudo.tipo} ${conteudo.modalidade.nome}`.toLocaleLowerCase("pt-BR").includes(buscaBiblioteca.toLocaleLowerCase("pt-BR"))).map((conteudo) => (
+          {conteudosBiblioteca.map((conteudo) => (
             <article key={conteudo.id} className="biblioteca-conteudo-card">
               <div><strong>{conteudo.nome}</strong><small>{conteudo.modalidade.nome} · {conteudo.tipo.toLocaleLowerCase("pt-BR")} · {conteudo.nivelDificuldade.toLocaleLowerCase("pt-BR")}</small>{conteudo.descricao && <p>{conteudo.descricao}</p>}</div>
               {conteudo.unidadeId === null && <Button type="button" variant="secondary" onClick={() => void handleCopiarConteudo(conteudo)}>Adicionar à minha biblioteca</Button>}
+              {conteudo.unidadeId !== null && <Button type="button" variant="danger" onClick={() => void handleExcluirConteudo(conteudo)}>Remover</Button>}
             </article>
           ))}
         </div>
+      </Modal>
+
+      <Modal open={modal?.tipo === "novoConteudo"} title="Novo conteúdo técnico" onClose={() => setModal({ tipo: "biblioteca" })}>
+        <form onSubmit={(event) => { event.preventDefault(); void handleSalvarConteudo(); }}>
+          <Select label="Modalidade" value={novoConteudo.modalidadeId} options={[{ value: "", label: "Selecione" }, ...modalidadesBiblioteca.map((modalidade) => ({ value: String(modalidade.id), label: modalidade.nome }))]} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, modalidadeId: event.target.value }))} />
+          <Select label="Tipo" value={novoConteudo.tipo} options={[{ value: "TECNICA", label: "Técnica" }, { value: "POSICAO", label: "Posição" }, { value: "EXERCICIO", label: "Exercício" }, { value: "AQUECIMENTO", label: "Aquecimento" }, { value: "DRILL", label: "Drill" }]} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, tipo: event.target.value }))} />
+          <Input label="Nome" required value={novoConteudo.nome} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, nome: event.target.value }))} />
+          <Input label="Duração sugerida (min)" required type="number" min="1" value={novoConteudo.duracaoMinutos} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, duracaoMinutos: event.target.value }))} />
+          <Textarea label="Descrição" rows={3} value={novoConteudo.descricao} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, descricao: event.target.value }))} />
+          <Textarea label="Passo a passo" rows={4} value={novoConteudo.passoAPasso} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, passoAPasso: event.target.value }))} />
+          <Textarea label="Atenções por faixa etária" rows={3} value={novoConteudo.pontosAtencao} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, pontosAtencao: event.target.value }))} />
+          <Button type="submit" disabled={salvando || !novoConteudo.modalidadeId || !novoConteudo.nome.trim()}>{salvando ? "Salvando..." : "Cadastrar conteúdo"}</Button>
+        </form>
       </Modal>
 
       <Modal

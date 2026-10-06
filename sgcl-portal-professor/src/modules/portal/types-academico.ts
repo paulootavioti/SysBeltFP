@@ -55,6 +55,27 @@ export interface AulaCurriculo {
   jogosSugeridos?: string | null;
   ordem: number;
   tecnicas: TecnicaCurriculo[];
+  blocos: Array<{
+    id: number;
+    tipo: string;
+    nome: string;
+    ordem: number;
+    duracaoPrevistaSegundos: number;
+    descricao?: string | null;
+    atencoesFaixaEtaria?: string | null;
+  }>;
+  filaCompilada: {
+    duracaoTotalSegundos: number;
+    blocos: Array<{
+      chave: string;
+      tipo: string;
+      nome: string;
+      duracaoPrevistaSegundos: number;
+      descricao?: string;
+      atencoesFaixaEtaria?: string;
+    }>;
+  };
+  duracaoTurmaMinutos: number | null;
 }
 
 export interface ModuloCurriculo {
@@ -70,7 +91,7 @@ export interface Curriculo {
   id: number;
   nome: string;
   descricao?: string | null;
-  modalidade: string;
+  modalidade: { id: number; nome: string } | null;
   publico: string;
   modulos: ModuloCurriculo[];
 }

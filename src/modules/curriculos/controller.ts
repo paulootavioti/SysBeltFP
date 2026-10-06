@@ -15,6 +15,7 @@ import { DeleteModuloCurriculoService } from "./services/DeleteModuloCurriculoSe
 import { DeleteAulaCurriculoService } from "./services/DeleteAulaCurriculoService";
 import { DeleteTecnicaCurriculoService } from "./services/DeleteTecnicaCurriculoService";
 import { DuplicateAulaCurriculoService } from "./services/DuplicateAulaCurriculoService";
+import { CreateAulaAssistidaService } from "./services/CreateAulaAssistidaService";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../shared/errors/AppError";
@@ -81,6 +82,11 @@ export class CurriculosController {
 
     const aula = await service.execute(req.body, req.user.unidadeId);
 
+    return res.status(201).json(aula);
+  }
+
+  async createAulaAssistida(req: Request, res: Response) {
+    const aula = await new CreateAulaAssistidaService().execute(req.body, req.user.unidadeId);
     return res.status(201).json(aula);
   }
 

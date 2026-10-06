@@ -50,12 +50,31 @@ export class CurriculoService {
     return ApiClient.get<ConteudoBiblioteca[]>(`/biblioteca-pedagogica/conteudos${query}`);
   }
 
+  static async listarModalidadesBiblioteca() {
+    return ApiClient.get<Array<{ id: number; nome: string }>>("/biblioteca-pedagogica/modalidades");
+  }
+
+  static async pesquisarConteudosBiblioteca(params: { busca?: string; modalidadeLocalId?: number; cursor?: number; limite?: number }) {
+    const query = new URLSearchParams();
+    if (params.busca) query.set("busca", params.busca);
+    if (params.modalidadeLocalId) query.set("modalidadeLocalId", String(params.modalidadeLocalId));
+    if (params.cursor) query.set("cursor", String(params.cursor));
+    query.set("limite", String(params.limite ?? 20));
+    return ApiClient.get<{ itens: ConteudoBiblioteca[]; proximoCursor: number | null; modalidadeId: number | null }>(`/biblioteca-pedagogica/conteudos/pesquisa?${query.toString()}`);
+  }
+
   static async listarTemplatesPlanejamento() {
     return ApiClient.get<TemplatePlanejamento[]>("/biblioteca-pedagogica/templates");
   }
 
   static async copiarConteudoBiblioteca(id: number) {
     return ApiClient.post(`/biblioteca-pedagogica/conteudos/${id}/copiar`, {});
+  }
+  static async criarConteudoBiblioteca(data: Record<string, unknown>) {
+    return ApiClient.post<ConteudoBiblioteca>("/biblioteca-pedagogica/conteudos", data);
+  }
+  static async excluirConteudoBiblioteca(id: number) {
+    return ApiClient.delete(`/biblioteca-pedagogica/conteudos/${id}`);
   }
   static async listarCatalogoPedagogico() {
     return ApiClient.get<ItemCatalogoPedagogico[]>("/curriculos/catalogo-pedagogico");
@@ -80,6 +99,10 @@ export class CurriculoService {
     data: AulaCurriculoPayload & { moduloId: number }
   ) {
     return ApiClient.post("/curriculos/aulas", data);
+  }
+
+  static async criarAulaAssistida(data: { moduloId: number; titulo: string; objetivo?: string; templateId?: number; conteudoIds: number[]; substituirEtapasTecnicas?: boolean }) {
+    return ApiClient.post<AulaCurriculo>("/curriculos/aulas/assistida", data);
   }
 
   static async criarTecnica(data: Omit<TecnicaCurriculoFormData, "duracaoPrevistaMinutos"> & { aulaCurriculoId: number; duracaoPrevistaSegundos: number }) {

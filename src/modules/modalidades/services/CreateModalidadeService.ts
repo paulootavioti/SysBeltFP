@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
+import { resolverBibliotecaModalidade } from "./resolverBibliotecaModalidade";
 
 interface CreateModalidadeDTO {
   unidadeId: number;
@@ -11,12 +12,14 @@ interface CreateModalidadeDTO {
   coordenadorId?: number | null;
   visivelNaLanding?: boolean;
   ordem?: number;
+  bibliotecaModalidadeId?: number | null;
 }
 
 export class CreateModalidadeService {
   async execute(data: CreateModalidadeDTO) {
     const prisma = prismaDaRequisicao();
     await garantirCoordenadorDaUnidade(data.coordenadorId, data.unidadeId);
+    const bibliotecaModalidadeId = await resolverBibliotecaModalidade(data.nome, data.bibliotecaModalidadeId);
 
     try {
       return await prisma.modalidade.create({
@@ -28,6 +31,7 @@ export class CreateModalidadeService {
           coordenadorId: data.coordenadorId ?? null,
           visivelNaLanding: data.visivelNaLanding ?? false,
           ordem: data.ordem ?? 0,
+          bibliotecaModalidadeId,
         },
         include: {
           unidade: { select: { id: true, nome: true } },

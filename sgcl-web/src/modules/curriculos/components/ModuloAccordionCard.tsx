@@ -12,6 +12,7 @@ interface ModuloAccordionCardProps {
   ehAdmin: boolean;
   onEditar: () => void;
   onNovaAula: () => void;
+  onNovaAulaAssistida: () => void;
   onExcluir: () => void;
   excluindo: boolean;
   aulaEstaExpandida: (id: number) => boolean;
@@ -33,6 +34,7 @@ export function ModuloAccordionCard({
   ehAdmin,
   onEditar,
   onNovaAula,
+  onNovaAulaAssistida,
   onExcluir,
   excluindo,
   aulaEstaExpandida,
@@ -69,6 +71,9 @@ export function ModuloAccordionCard({
 
             <Button type="button" variant="secondary" onClick={onNovaAula}>
               + Aula
+            </Button>
+            <Button type="button" onClick={onNovaAulaAssistida}>
+              Aula assistida
             </Button>
 
             {ehAdmin && (

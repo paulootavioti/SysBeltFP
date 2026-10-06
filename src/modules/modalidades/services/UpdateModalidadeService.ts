@@ -2,6 +2,7 @@ import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao"
 import { AppError } from "../../../shared/errors/AppError";
 import { garantirAcessoUnidade } from "../../../shared/utils/escopoUnidade";
 import { garantirCoordenadorDaUnidade, traduzirNomeDuplicado } from "./CreateModalidadeService";
+import { resolverBibliotecaModalidade } from "./resolverBibliotecaModalidade";
 
 interface UpdateModalidadeDTO {
   nome: string;
@@ -10,6 +11,7 @@ interface UpdateModalidadeDTO {
   coordenadorId?: number | null;
   visivelNaLanding?: boolean;
   ordem?: number;
+  bibliotecaModalidadeId?: number | null;
 }
 
 export class UpdateModalidadeService {
@@ -24,6 +26,7 @@ export class UpdateModalidadeService {
     garantirAcessoUnidade(unidadeId, modalidade.unidadeId, "Modalidade não encontrada.");
 
     await garantirCoordenadorDaUnidade(data.coordenadorId, modalidade.unidadeId);
+    const bibliotecaModalidadeId = await resolverBibliotecaModalidade(data.nome, data.bibliotecaModalidadeId);
 
     try {
       return await prisma.modalidade.update({
@@ -35,6 +38,7 @@ export class UpdateModalidadeService {
           coordenadorId: data.coordenadorId ?? null,
           ...(data.visivelNaLanding === undefined ? {} : { visivelNaLanding: data.visivelNaLanding }),
           ...(data.ordem === undefined ? {} : { ordem: data.ordem }),
+          bibliotecaModalidadeId,
         },
         include: {
           unidade: { select: { id: true, nome: true } },

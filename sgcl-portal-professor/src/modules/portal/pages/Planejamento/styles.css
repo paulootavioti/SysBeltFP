@@ -94,12 +94,24 @@
 }
 
 .aula-card summary {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text);
   cursor: pointer;
   list-style: none;
 }
+
+.aula-card summary small { color: var(--color-text-light); white-space: nowrap; }
+
+.aula-card-roteiro { margin: var(--space-3) 0 0; padding: 0; list-style: none; display: grid; gap: var(--space-3); }
+.aula-card-roteiro li { padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.aula-card-etapa { display: flex; justify-content: space-between; gap: var(--space-2); font-size: 13px; }
+.aula-card-etapa strong { white-space: nowrap; font-size: 12px; }
+.aula-card-roteiro p { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: var(--color-text-light); white-space: pre-line; }
+.aula-card-roteiro .aula-card-atencao { color: var(--color-danger); }
 
 .aula-card summary::-webkit-details-marker {
   display: none;
