@@ -82,7 +82,7 @@
    Neste app a barra de abas vira uma barra FIXA no rodapé (ver
    Tabs/styles.css) — sem esse espaço extra embaixo, ela cobriria o
    rodapé inteiro. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .site-footer {
     flex-direction: column;
     text-align: center;

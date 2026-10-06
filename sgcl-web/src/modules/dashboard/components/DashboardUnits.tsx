@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui/Button";
-import { Badge } from "../../../components/ui/Badge";
+import { Situacao, type DegrauSituacao } from "../../../components/ui/Situacao";
 import { DashboardEmptyState } from "./DashboardEmptyState";
 import { formatarData, formatarMoeda, formatarPercentual } from "../utils/formatters";
 import type { UnidadeDashboard } from "../types";
@@ -12,10 +12,8 @@ interface DashboardUnitsProps {
   eventos: Evento[];
 }
 
-const VARIANTE_STATUS: Record<UnidadeDashboard["status"], "success" | "danger" | "warning"> = {
-  ATIVA: "success",
-  INATIVA: "danger",
-  EM_IMPLANTACAO: "warning",
+const DEGRAU_STATUS: Record<UnidadeDashboard["status"], DegrauSituacao> = {
+  ATIVA: "neutro", INATIVA: "inativo", EM_IMPLANTACAO: "atencao",
 };
 
 const LABEL_STATUS: Record<UnidadeDashboard["status"], string> = {
@@ -33,62 +31,35 @@ export function DashboardUnits({ unidades, eventos }: DashboardUnitsProps) {
 
   return (
     <div>
-      <div className="dashboard-unidades-grid">
+      <div className="dashboard-unidades-tabela-wrap">
+        <table className="dashboard-unidades-tabela">
+          <thead><tr><th>Unidade</th><th>Situação</th><th>Alunos</th><th>Turmas</th><th>Ocupação das arenas</th><th>Receita</th><th aria-label="Ação" /></tr></thead>
+          <tbody>
         {unidades.map((unidade) => {
           const proximoEvento = eventos
             .filter((evento) => evento.unidadeId === unidade.id && evento.status !== "CANCELADO" && evento.status !== "CONCLUIDO")
             .sort((a, b) => new Date(a.dataInicio).getTime() - new Date(b.dataInicio).getTime())[0];
 
           return (
-            <button
+            <tr
               key={unidade.id}
-              type="button"
-              className="dashboard-unidade-card"
-              // Não existe hoje uma tela de detalhe por unidade (só a
-              // listagem de Arenas em /arenas) — o card leva pra lá até
-              // essa tela existir.
-              onClick={() => navigate("/arenas")}
             >
-              <div className="dashboard-unidade-cabecalho">
-                <strong>{unidade.nome}</strong>
-                <Badge variant={VARIANTE_STATUS[unidade.status]}>{LABEL_STATUS[unidade.status]}</Badge>
-              </div>
-
-              <dl className="dashboard-unidade-info">
-                <div>
-                  <dt>Alunos ativos</dt>
-                  <dd>{unidade.alunosAtivos}</dd>
-                </div>
-                <div>
-                  <dt>Professores</dt>
-                  <dd>{unidade.professores}</dd>
-                </div>
-                <div>
-                  <dt>Turmas ativas</dt>
-                  <dd>{unidade.turmasAtivas}</dd>
-                </div>
-                <div>
-                  <dt>Receita do período</dt>
-                  <dd>{formatarMoeda(unidade.receitaPeriodo)}</dd>
-                </div>
-                <div>
-                  <dt>Mensalidades vencidas</dt>
-                  <dd>{unidade.mensalidadesVencidas}</dd>
-                </div>
-                <div>
-                  <dt>Frequência média</dt>
-                  <dd>{formatarPercentual(unidade.taxaFrequencia)}</dd>
-                </div>
-              </dl>
-
-              <p className="dashboard-unidade-evento">
+              <td><strong>{unidade.nome}</strong><small className="dashboard-unidade-evento">
                 {proximoEvento
                   ? `Próximo evento: ${proximoEvento.titulo} (${formatarData(proximoEvento.dataInicio)})`
                   : "Nenhum evento agendado."}
-              </p>
-            </button>
+              </small></td>
+              <td><Situacao degrau={DEGRAU_STATUS[unidade.status]}>{LABEL_STATUS[unidade.status]}</Situacao></td>
+              <td>{unidade.alunosAtivos}</td>
+              <td>{unidade.turmasAtivas}</td>
+              <td><div className="dashboard-unidade-ocupacao"><div><i style={{ width: `${Math.min(100, unidade.ocupacaoArenas)}%` }} /></div><strong>{formatarPercentual(unidade.ocupacaoArenas)}</strong></div></td>
+              <td>{formatarMoeda(unidade.receitaPeriodo)}</td>
+              <td><Button type="button" variant="secondary" size="sm" onClick={() => navigate("/arenas")}>Abrir</Button></td>
+            </tr>
           );
         })}
+          </tbody>
+        </table>
       </div>
 
       <div className="dashboard-unidades-rodape">

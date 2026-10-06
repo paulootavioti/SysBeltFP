@@ -31,13 +31,13 @@
 }
 
 .frequencia-indicador-success {
-  background: var(--color-success);
+  background: var(--color-text);
 }
 
 .frequencia-indicador-warning {
-  background: var(--color-warning);
+  background: var(--color-accent-700);
 }
 
 .frequencia-indicador-danger {
-  background: var(--color-danger);
+  background: var(--color-accent-700);
 }

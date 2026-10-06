@@ -14,6 +14,12 @@ export const aulaIncludeCompleto = {
     include: {
       aluno: {
         include: {
+          graduacoes: {
+            where: { status: "aprovada" },
+            orderBy: { data: "desc" as const },
+            take: 1,
+            select: { cor: true },
+          },
           responsaveis: {
             where: { ativo: true },
             select: {

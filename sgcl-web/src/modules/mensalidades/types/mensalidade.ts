@@ -49,6 +49,8 @@ export interface MensalidadeComAluno extends Mensalidade {
     id: number;
     nome: string;
     faixa: string;
+    faixaCor?: string | null;
+    turmaNome?: string | null;
   };
 }
 

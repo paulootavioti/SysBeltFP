@@ -16,7 +16,7 @@
   flex-wrap: wrap;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .responsaveis-actions {
     flex-direction: column;
   }

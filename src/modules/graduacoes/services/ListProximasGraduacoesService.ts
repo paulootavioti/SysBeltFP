@@ -11,6 +11,8 @@ export interface AlunoProximaGraduacao {
   nome: string;
   faixa: string;
   proximaFaixa: string | null;
+  faixaCor: string | null;
+  proximaFaixaCor: string | null;
   presencas: number;
   aulasRealizadas: number;
   aulasRestantes: number;
@@ -37,6 +39,7 @@ export class ListProximasGraduacoesService {
     const prisma = prismaDaRequisicao();
     const alunos = await prisma.aluno.findMany({
       where: { ativo: true, ...escopoUnidade(unidadeId) },
+      include: { graduacoes: { where: { status: "aprovada" }, orderBy: { data: "desc" }, take: 1, select: { cor: true } } },
     });
 
     const presencasPorAluno = await prisma.aulaAluno.groupBy({
@@ -76,6 +79,8 @@ export class ListProximasGraduacoesService {
           nome: aluno.nome,
           faixa: aluno.faixa,
           proximaFaixa,
+          faixaCor: aluno.graduacoes[0]?.cor ?? null,
+          proximaFaixaCor: null,
           presencas: totalPresencas,
           aulasRealizadas: aulasNaFaixaAtual,
           aulasRestantes,

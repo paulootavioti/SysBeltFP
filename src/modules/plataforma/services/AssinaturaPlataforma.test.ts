@@ -29,6 +29,7 @@ const alterarAssinatura = new AlterarAssinaturaPlataformaService();
 async function limpar() {
   const contas = { conta: { nome: { startsWith: PREFIXO } } };
 
+  await prisma.concessaoPlataforma.deleteMany({ where: contas });
   await prisma.faturaPlataforma.deleteMany({ where: contas });
   await prisma.assinaturaPlataforma.deleteMany({ where: contas });
   await prisma.aluno.deleteMany({ where: { unidade: contas } });
@@ -425,6 +426,19 @@ describe("MarcarFaturaPagaService", () => {
 });
 
 describe("ObterAssinaturaDaContaService", () => {
+  it("expõe somente o estado técnico da concessão do Control Plane", async () => {
+    const { conta } = await contaComAlunos(1);
+    await prisma.concessaoPlataforma.create({ data: {
+      id: 2_000_000_000, contaId: conta.id, tenantKey: conta.tenantKey, statusAcesso: "ATIVO", recursos: ["WHATSAPP"],
+      versaoContrato: 1, revisao: 3, emitidaEm: new Date("2026-09-11T10:00:00Z"),
+      expiraEm: new Date("2026-09-12T10:00:00Z"), payloadHash: "hash", assinaturaBase64: "assinatura",
+    } });
+    const visao = await obterAssinatura.execute(conta.id);
+    expect(visao.concessaoControlPlane).toMatchObject({ statusAcesso: "ATIVO", revisao: 3, recursos: ["WHATSAPP"] });
+    expect(visao.concessaoControlPlane).not.toHaveProperty("assinaturaBase64");
+    expect(visao.concessaoControlPlane).not.toHaveProperty("payloadHash");
+  });
+
   it("mostra a prévia do mês calculada na hora", async () => {
     const { conta } = await contaComAlunos(41);
 

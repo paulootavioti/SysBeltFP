@@ -4,12 +4,12 @@
   align-items: flex-start;
   gap: var(--space-2);
   background: var(--color-surface);
-  border: 1px solid var(--color-danger);
+  border: 1px solid var(--color-divider);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
 }
 
 .dashboard-secao-erro p {
-  color: var(--color-danger);
+  color: var(--color-text);
   margin: 0;
 }

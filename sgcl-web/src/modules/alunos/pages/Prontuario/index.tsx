@@ -10,6 +10,7 @@ import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Loading } from "../../../../components/ui/Loading";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { FrequenciaIndicador } from "../../../../components/ui/FrequenciaIndicador";
+import { AmostraFaixa } from "../../../../components/ui/AmostraFaixa";
 
 import { AlunoService } from "../../services/AlunoService";
 import { getApiErrorMessage } from "../../../../shared/utils/getApiErrorMessage";
@@ -41,6 +42,7 @@ interface ProntuarioAlunoData {
 
   resumo: {
     faixa: string;
+    faixaCor?: string | null;
     grau: number;
     frequencia: number;
     frequenciaMes: number;
@@ -137,7 +139,7 @@ export function ProntuarioAluno() {
       <div className="prontuario-grid">
         <InfoCard
           title="Faixa"
-          value={resumo.faixa}
+          value={<span className="prontuario-faixa"><AmostraFaixa cor={resumo.faixaCor} graduacao={`${resumo.faixa} · ${resumo.grau}º grau`} />{resumo.faixa}</span>}
           description={`Grau ${resumo.grau}`}
         />
 

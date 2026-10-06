@@ -25,6 +25,7 @@ export function alertasDeMetasAtrasadas(metas: MetaDashboard[]): AlertaDashboard
       prioridade: "ALTA",
       quantidade: atrasadas.length,
       rota: "/metas",
+      prazoDias: 0,
     },
   ];
 }
@@ -45,6 +46,7 @@ export function alertasDeEventosComInscricoesBaixas(eventos: Evento[]): AlertaDa
   });
 
   if (comInscricoesBaixas.length === 0) return [];
+  const prazoDias = Math.max(0, Math.ceil(Math.min(...comInscricoesBaixas.map((evento) => new Date(evento.dataInicio).getTime() - agora)) / 86_400_000));
 
   return [
     {
@@ -56,6 +58,7 @@ export function alertasDeEventosComInscricoesBaixas(eventos: Evento[]): AlertaDa
       prioridade: "MEDIA",
       quantidade: comInscricoesBaixas.length,
       rota: "/eventos",
+      prazoDias,
     },
   ];
 }
@@ -65,16 +68,9 @@ export function mesclarAlertas(
   metas: MetaDashboard[],
   eventos: Evento[]
 ): AlertaDashboard[] {
-  const ordemPrioridade: Record<AlertaDashboard["prioridade"], number> = {
-    CRITICA: 0,
-    ALTA: 1,
-    MEDIA: 2,
-    BAIXA: 3,
-  };
-
   return [
     ...alertasBackend,
     ...alertasDeMetasAtrasadas(metas),
     ...alertasDeEventosComInscricoesBaixas(eventos),
-  ].sort((a, b) => ordemPrioridade[a.prioridade] - ordemPrioridade[b.prioridade]);
+  ].sort((a, b) => (a.prazoDias ?? 99) - (b.prazoDias ?? 99));
 }

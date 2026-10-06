@@ -31,6 +31,12 @@ export class GetAulaService {
       throw new AppError("Você só pode acessar a chamada das suas próprias turmas.", 403);
     }
 
-    return aula;
+    return {
+      ...aula,
+      alunos: aula.alunos.map(({ aluno, ...registro }) => ({
+        ...registro,
+        aluno: { ...aluno, faixaCor: aluno.graduacoes[0]?.cor ?? null },
+      })),
+    };
   }
 }
