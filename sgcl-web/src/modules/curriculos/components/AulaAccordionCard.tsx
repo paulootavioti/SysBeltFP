@@ -12,6 +12,7 @@ interface AulaAccordionCardProps {
   onToggle: () => void;
   ehAdmin: boolean;
   onEditar: () => void;
+  onDuplicar: () => void;
   onNovaTecnica: () => void;
   onExcluir: () => void;
   excluindo: boolean;
@@ -34,6 +35,7 @@ export function AulaAccordionCard({
   onToggle,
   ehAdmin,
   onEditar,
+  onDuplicar,
   onNovaTecnica,
   onExcluir,
   excluindo,
@@ -64,6 +66,10 @@ export function AulaAccordionCard({
           <div className="curriculos-card-acoes">
             <Button type="button" variant="secondary" onClick={onEditar}>
               Editar
+            </Button>
+
+            <Button type="button" variant="secondary" onClick={onDuplicar}>
+              Duplicar
             </Button>
 
             <Button type="button" variant="secondary" onClick={onNovaTecnica}>

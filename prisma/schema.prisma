@@ -33,6 +33,42 @@ enum TipoItemCatalogoPedagogico {
   MOMENTO
 }
 
+enum NivelDificuldadePedagogica {
+  INICIANTE
+  BASICO
+  INTERMEDIARIO
+  AVANCADO
+  ESPECIALIZADO
+}
+
+enum TipoConteudoTecnico {
+  POSICAO
+  PASSAGEM
+  GOLPE
+  TECNICA
+  MOVIMENTO
+  TRANSICAO
+  QUEDA
+  RASPAGEM
+  FINALIZACAO
+  DEFESA
+  ESCAPE
+  CONTROLE
+  ENTRADA
+  COMBINACAO
+  EXERCICIO
+  DRILL
+  PRINCIPIO
+  CONCEITO_TATICO
+  PREPARACAO_FISICA
+  MOBILIDADE
+  AQUECIMENTO
+  RECUPERACAO
+  SEGURANCA
+  AVALIACAO
+  OUTRO
+}
+
 enum StatusExecucaoBlocoAula {
   CUMPRIDO
   PULADO
@@ -298,58 +334,61 @@ model Unidade {
   nome  String
   ativo Boolean @default(true)
 
-  landingSlug           String?  @unique
-  landingPublicada      Boolean  @default(false)
-  landingNome           String?
-  landingDescricao      String?
-  landingEndereco       String?
-  landingCidade         String?
-  landingUf             String?
-  landingCep            String?
-  landingTelefone       String?
-  landingWhatsapp       String?
-  landingHorario        String?
-  landingFotoCapaUrl    String?
-  landingDominio        String?
+  landingSlug        String? @unique
+  landingPublicada   Boolean @default(false)
+  landingNome        String?
+  landingDescricao   String?
+  landingEndereco    String?
+  landingCidade      String?
+  landingUf          String?
+  landingCep         String?
+  landingTelefone    String?
+  landingWhatsapp    String?
+  landingHorario     String?
+  landingFotoCapaUrl String?
+  landingDominio     String?
 
-  arenas                 Arena[]
-  modalidades            Modalidade[]
-  usuarios               Usuario[]
-  alunos                 Aluno[]
-  alunosAutorizados      AlunoUnidade[]
-  responsaveis           Responsavel[]
-  turmas                 Turma[]
-  planos                 Plano[]
-  curriculos             Curriculo[]
+  arenas                  Arena[]
+  modalidades             Modalidade[]
+  usuarios                Usuario[]
+  alunos                  Aluno[]
+  alunosAutorizados       AlunoUnidade[]
+  responsaveis            Responsavel[]
+  turmas                  Turma[]
+  planos                  Plano[]
+  curriculos              Curriculo[]
   itensCatalogoPedagogico ItemCatalogoPedagogico[]
-  tecnicas               Tecnica[]
-  competicoes            Competicao[]
-  mensalidades           Mensalidade[]
-  graduacoes             Graduacao[]
-  aulasProgramadas       AulaProgramada[]
-  aulas                  Aula[]
-  vinculosUsuarios       UsuarioUnidade[]
-  metas                  Meta[]
-  eventos                Evento[]
-  formasPagamento        FormaPagamento[]
-  auditLogs              AuditLog[]
-  assinaturas            Assinatura[]
-  modelosContrato        ModeloContrato[]
-  contratos              Contrato[]
-  mensagensFamilia       MensagemFamilia[]
-  produtos               Produto[]
-  pedidos                Pedido[]
-  leads                  Lead[]
-  canaisCaptacao         CanalCaptacao[]
-  eventosLead            LeadEvento[]
-  consentimentos         Consentimento[]
-  mensagensWhatsapp      MensagemWhatsapp[]
-  cobrancasPagamento     CobrancaPagamento[]
-  solicitacoesAssinatura SolicitacaoAssinatura[]
-  canaisMensageria       CanalMensageria[]
-  conversasMensageria    ConversaMensageria[]
-  templatesMensageria    TemplateMensageria[]
-  fluxosBot              BotFluxo[]
+  conteudosTecnicos       ConteudoTecnico[]
+  templatesPlanejamento   TemplatePlanejamento[]
+  tagsPedagogicas         TagPedagogica[]
+  tecnicas                Tecnica[]
+  competicoes             Competicao[]
+  mensalidades            Mensalidade[]
+  graduacoes              Graduacao[]
+  aulasProgramadas        AulaProgramada[]
+  aulas                   Aula[]
+  vinculosUsuarios        UsuarioUnidade[]
+  metas                   Meta[]
+  eventos                 Evento[]
+  formasPagamento         FormaPagamento[]
+  auditLogs               AuditLog[]
+  assinaturas             Assinatura[]
+  modelosContrato         ModeloContrato[]
+  contratos               Contrato[]
+  mensagensFamilia        MensagemFamilia[]
+  produtos                Produto[]
+  pedidos                 Pedido[]
+  leads                   Lead[]
+  canaisCaptacao          CanalCaptacao[]
+  eventosLead             LeadEvento[]
+  consentimentos          Consentimento[]
+  mensagensWhatsapp       MensagemWhatsapp[]
+  cobrancasPagamento      CobrancaPagamento[]
+  solicitacoesAssinatura  SolicitacaoAssinatura[]
+  canaisMensageria        CanalMensageria[]
+  conversasMensageria     ConversaMensageria[]
+  templatesMensageria     TemplateMensageria[]
+  fluxosBot               BotFluxo[]
 
   createdAt DateTime @default(now())
 
@@ -2143,10 +2182,148 @@ model BlocoAulaCurriculo {
   descricao            String?
   atencoesFaixaEtaria  String?
 
+  conteudoTecnicoId Int?
+  conteudoTecnico   ConteudoTecnico? @relation(fields: [conteudoTecnicoId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([aulaCurriculoId, ordem])
+}
+
+// Biblioteca global é gerenciada pela plataforma; unidadeId nulo identifica
+// conteúdo oficial. Uma unidade pode duplicar qualquer item e editar apenas
+// sua própria cópia, preservando a fonte global.
+model BibliotecaModalidade {
+  id        Int                    @id @default(autoincrement())
+  slug      String                 @unique
+  nome      String
+  descricao String?
+  ativa     Boolean                @default(true)
+  conteudos ConteudoTecnico[]
+  templates TemplatePlanejamento[]
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @default(now()) @updatedAt
+}
+
+model ConteudoTecnico {
+  id                      Int                        @id @default(autoincrement())
+  unidadeId               Int?
+  unidade                 Unidade?                   @relation(fields: [unidadeId], references: [id], onDelete: Cascade)
+  modalidadeId            Int
+  modalidade              BibliotecaModalidade       @relation(fields: [modalidadeId], references: [id])
+  tipo                    TipoConteudoTecnico
+  nome                    String
+  nomeAlternativo         String?
+  categoria               String?
+  descricao               String?
+  objetivo                String?
+  finalidade              String?
+  posicaoInicial          String?
+  posicaoFinal            String?
+  passoAPasso             String?
+  principios              String?
+  pontosAtencao           String?
+  errosComuns             String?
+  correcoes               String?
+  aplicacoes              String?
+  defesas                 String?
+  variacoes               String?
+  progressao              String?
+  regressao               String?
+  nivelDificuldade        NivelDificuldadePedagogica @default(INICIANTE)
+  faixaEtariaMinima       Int?
+  faixaEtariaMaxima       Int?
+  graduacaoRecomendada    String?
+  preRequisitos           String?
+  riscos                  String?
+  cuidados                String?
+  contraIndicacoes        String?
+  impactoFisico           String?
+  impactoTecnico          String?
+  impactoTatico           String?
+  impactoCognitivo        String?
+  equipamentos            String?
+  duracaoSugeridaSegundos Int                        @default(300)
+  repeticoesSugeridas     Int?
+  observacoesProfessor    String?
+  favorito                Boolean                    @default(false)
+  ativo                   Boolean                    @default(true)
+  conteudoPaiId           Int?
+  conteudoPai             ConteudoTecnico?           @relation("HierarquiaConteudoTecnico", fields: [conteudoPaiId], references: [id], onDelete: SetNull)
+  filhos                  ConteudoTecnico[]          @relation("HierarquiaConteudoTecnico")
+  tags                    ConteudoTecnicoTag[]
+  relacoesOrigem          ConteudoTecnicoRelacao[]   @relation("ConteudoTecnicoOrigem")
+  relacoesDestino         ConteudoTecnicoRelacao[]   @relation("ConteudoTecnicoDestino")
+  blocosAula              BlocoAulaCurriculo[]
+  createdAt               DateTime                   @default(now())
+  updatedAt               DateTime                   @default(now()) @updatedAt
+
+  @@index([modalidadeId, tipo, nivelDificuldade])
+  @@index([unidadeId, modalidadeId, nome])
+}
+
+model ConteudoTecnicoRelacao {
+  id        Int             @id @default(autoincrement())
+  origemId  Int
+  origem    ConteudoTecnico @relation("ConteudoTecnicoOrigem", fields: [origemId], references: [id], onDelete: Cascade)
+  destinoId Int
+  destino   ConteudoTecnico @relation("ConteudoTecnicoDestino", fields: [destinoId], references: [id], onDelete: Cascade)
+  tipo      String
+  createdAt DateTime        @default(now())
+
+  @@unique([origemId, destinoId, tipo])
+  @@index([destinoId])
+}
+
+model TagPedagogica {
+  id        Int                  @id @default(autoincrement())
+  unidadeId Int?
+  unidade   Unidade?             @relation(fields: [unidadeId], references: [id], onDelete: Cascade)
+  nome      String
+  conteudos ConteudoTecnicoTag[]
+
+  @@index([unidadeId, nome])
+}
+
+model ConteudoTecnicoTag {
+  conteudoId Int
+  conteudo   ConteudoTecnico @relation(fields: [conteudoId], references: [id], onDelete: Cascade)
+  tagId      Int
+  tag        TagPedagogica   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([conteudoId, tagId])
+}
+
+model TemplatePlanejamento {
+  id           Int                         @id @default(autoincrement())
+  unidadeId    Int?
+  unidade      Unidade?                    @relation(fields: [unidadeId], references: [id], onDelete: Cascade)
+  modalidadeId Int?
+  modalidade   BibliotecaModalidade?       @relation(fields: [modalidadeId], references: [id])
+  nome         String
+  descricao    String?
+  publico      String?
+  ativo        Boolean                     @default(true)
+  etapas       TemplatePlanejamentoEtapa[]
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @default(now()) @updatedAt
+
+  @@index([unidadeId, modalidadeId, ativo])
+}
+
+model TemplatePlanejamentoEtapa {
+  id              Int                    @id @default(autoincrement())
+  templateId      Int
+  template        TemplatePlanejamento   @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  ordem           Int
+  tipo            TipoBlocoAulaCurriculo
+  titulo          String
+  duracaoSegundos Int
+  obrigatoria     Boolean                @default(false)
+  descricao       String?
+
+  @@unique([templateId, ordem])
 }
 
 model ItemCatalogoPedagogico {
@@ -2155,12 +2332,12 @@ model ItemCatalogoPedagogico {
   unidadeId Int
   unidade   Unidade @relation(fields: [unidadeId], references: [id], onDelete: Cascade)
 
-  tipo TipoItemCatalogoPedagogico
-  nome String
-  tipoBloco TipoBlocoAulaCurriculo?
-  descricao String?
-  atencoesFaixaEtaria String?
-  duracaoPrevistaSegundos Int @default(300)
+  tipo                    TipoItemCatalogoPedagogico
+  nome                    String
+  tipoBloco               TipoBlocoAulaCurriculo?
+  descricao               String?
+  atencoesFaixaEtaria     String?
+  duracaoPrevistaSegundos Int                        @default(300)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

@@ -17,6 +17,7 @@ interface ModuloAccordionCardProps {
   aulaEstaExpandida: (id: number) => boolean;
   onToggleAula: (id: number) => void;
   onEditarAula: (aula: AulaCurriculo) => void;
+  onDuplicarAula: (aula: AulaCurriculo) => void;
   onNovaTecnica: (aula: AulaCurriculo) => void;
   onExcluirAula: (aula: AulaCurriculo) => void;
   aulaEstaExcluindo: (id: number) => boolean;
@@ -37,6 +38,7 @@ export function ModuloAccordionCard({
   aulaEstaExpandida,
   onToggleAula,
   onEditarAula,
+  onDuplicarAula,
   onNovaTecnica,
   onExcluirAula,
   aulaEstaExcluindo,
@@ -91,6 +93,7 @@ export function ModuloAccordionCard({
                 onToggle={() => onToggleAula(aula.id)}
                 ehAdmin={ehAdmin}
                 onEditar={() => onEditarAula(aula)}
+                onDuplicar={() => onDuplicarAula(aula)}
                 onNovaTecnica={() => onNovaTecnica(aula)}
                 onExcluir={() => onExcluirAula(aula)}
                 excluindo={aulaEstaExcluindo(aula.id)}

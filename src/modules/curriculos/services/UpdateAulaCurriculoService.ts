@@ -20,6 +20,7 @@ interface UpdateAulaCurriculoDTO {
     anuncio?: string | null;
     descricao?: string | null;
     atencoesFaixaEtaria?: string | null;
+    conteudoTecnicoId?: number | null;
   }>;
 }
 
@@ -40,6 +41,12 @@ export class UpdateAulaCurriculoService {
       aulaCurriculo.modulo.curriculo.unidadeId,
       "Aula do currículo não encontrada."
     );
+
+    const conteudoIds = [...new Set((data.blocos ?? []).flatMap((bloco) => bloco.conteudoTecnicoId ? [bloco.conteudoTecnicoId] : []))];
+    if (conteudoIds.length) {
+      const conteudos = await prisma.conteudoTecnico.findMany({ where: { id: { in: conteudoIds }, OR: [{ unidadeId: null }, { unidadeId: aulaCurriculo.modulo.curriculo.unidadeId }] }, select: { id: true } });
+      if (conteudos.length !== conteudoIds.length) throw new AppError("Um conteúdo selecionado não está disponível para esta unidade.");
+    }
 
     return prisma.$transaction(async (tx) => {
       if (data.blocos) {

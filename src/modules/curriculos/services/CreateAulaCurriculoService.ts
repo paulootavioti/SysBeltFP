@@ -21,6 +21,7 @@ interface CreateAulaCurriculoDTO {
     anuncio?: string | null;
     descricao?: string | null;
     atencoesFaixaEtaria?: string | null;
+    conteudoTecnicoId?: number | null;
   }>;
 }
 
@@ -37,6 +38,12 @@ export class CreateAulaCurriculoService {
     }
 
     garantirAcessoUnidade(unidadeId, modulo.curriculo.unidadeId, "Módulo não encontrado.");
+
+    const conteudoIds = [...new Set((data.blocos ?? []).flatMap((bloco) => bloco.conteudoTecnicoId ? [bloco.conteudoTecnicoId] : []))];
+    if (conteudoIds.length) {
+      const conteudos = await prisma.conteudoTecnico.findMany({ where: { id: { in: conteudoIds }, OR: [{ unidadeId: null }, { unidadeId: modulo.curriculo.unidadeId }] }, select: { id: true } });
+      if (conteudos.length !== conteudoIds.length) throw new AppError("Um conteúdo selecionado não está disponível para esta unidade.");
+    }
 
     return prisma.aulaCurriculo.create({
       data: {

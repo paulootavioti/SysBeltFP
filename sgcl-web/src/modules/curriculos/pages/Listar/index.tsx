@@ -34,7 +34,7 @@ import type {
   TecnicaCurriculoFormData,
 } from "../../schema/curriculo.schema";
 
-import type { Curriculo, ModuloCurriculo, AulaCurriculo, TecnicaCurriculo, ItemCatalogoPedagogico } from "../../types/curriculo";
+import type { ConteudoBiblioteca, Curriculo, ModuloCurriculo, AulaCurriculo, TecnicaCurriculo, ItemCatalogoPedagogico, TemplatePlanejamento } from "../../types/curriculo";
 
 import "./styles.css";
 
@@ -44,6 +44,7 @@ type ModalState =
   | { tipo: "aula"; moduloId: number; editando?: AulaCurriculo }
   | { tipo: "tecnica"; aulaCurriculoId: number; editando?: TecnicaCurriculo }
   | { tipo: "catalogo" }
+  | { tipo: "biblioteca" }
   | null;
 
 type ExcluindoAlvo = { tipo: "curriculo" | "modulo" | "aula" | "tecnica"; id: number } | null;
@@ -66,7 +67,10 @@ export function Curriculos() {
   const [modulosAbertos, setModulosAbertos] = useState<Record<number, boolean>>({});
   const [aulasAbertas, setAulasAbertas] = useState<Record<number, boolean>>({});
   const [itensCatalogo, setItensCatalogo] = useState<ItemCatalogoPedagogico[]>([]);
+  const [conteudosBiblioteca, setConteudosBiblioteca] = useState<ConteudoBiblioteca[]>([]);
+  const [templatesPlanejamento, setTemplatesPlanejamento] = useState<TemplatePlanejamento[]>([]);
   const [novoItemCatalogo, setNovoItemCatalogo] = useState({ tipo: "POSICAO", nome: "", tipoBloco: "TECNICA", descricao: "", atencoesFaixaEtaria: "", duracaoMinutos: "5" });
+  const [buscaBiblioteca, setBuscaBiblioteca] = useState("");
 
   const ehAdmin = usuario?.perfil === "ADMIN";
   const buscaAtiva = busca.trim().length > 0;
@@ -76,6 +80,11 @@ export function Curriculos() {
   }
 
   useEffect(() => { void carregarCatalogoPedagogico(); }, []);
+  useEffect(() => {
+    void Promise.all([CurriculoService.listarConteudosBiblioteca(), CurriculoService.listarTemplatesPlanejamento()])
+      .then(([conteudos, templates]) => { setConteudosBiblioteca(conteudos); setTemplatesPlanejamento(templates); })
+      .catch(() => setErro("Erro ao carregar a biblioteca pedagógica."));
+  }, [setErro]);
 
   function estaExcluindo(tipo: NonNullable<ExcluindoAlvo>["tipo"], id: number) {
     return excluindo?.tipo === tipo && excluindo.id === id;
@@ -201,6 +210,7 @@ export function Curriculos() {
           anuncio: bloco.tipo === "PAUSA" ? bloco.anuncio || undefined : undefined,
           descricao: bloco.descricao || undefined,
           atencoesFaixaEtaria: bloco.atencoesFaixaEtaria || undefined,
+          conteudoTecnicoId: bloco.conteudoTecnicoId ? Number(bloco.conteudoTecnicoId) : undefined,
         })),
       };
       if (editando) {
@@ -234,6 +244,23 @@ export function Curriculos() {
     } finally {
       setSalvando(false);
     }
+  }
+
+  async function handleDuplicarAula(aula: AulaCurriculo) {
+    try {
+      setErro("");
+      await CurriculoService.duplicarAula(aula.id);
+      await carregarCurriculos();
+      setAulasAbertas((atual) => ({ ...atual, [aula.id]: true }));
+    } catch (error) { setErro(getApiErrorMessage(error, "Erro ao duplicar planejamento.")); }
+  }
+
+  async function handleCopiarConteudo(conteudo: ConteudoBiblioteca) {
+    try {
+      setErro("");
+      await CurriculoService.copiarConteudoBiblioteca(conteudo.id);
+      setConteudosBiblioteca(await CurriculoService.listarConteudosBiblioteca(buscaBiblioteca));
+    } catch (error) { setErro(getApiErrorMessage(error, "Erro ao adicionar conteúdo à sua biblioteca.")); }
   }
 
   async function handleSalvarItemCatalogo() {
@@ -397,6 +424,9 @@ export function Curriculos() {
       </div>
 
       <div className="curriculos-acoes">
+        <Button type="button" variant="secondary" onClick={() => setModal({ tipo: "biblioteca" })}>
+          Biblioteca técnica
+        </Button>
         <Button type="button" variant="secondary" onClick={() => setModal({ tipo: "catalogo" })}>
           Catálogo pedagógico
         </Button>
@@ -473,6 +503,7 @@ export function Curriculos() {
                   aulaEstaExpandida={aulaEstaExpandida}
                   onToggleAula={alternarAula}
                   onEditarAula={(aula) => setModal({ tipo: "aula", moduloId: modulo.id, editando: aula })}
+                  onDuplicarAula={handleDuplicarAula}
                   onNovaTecnica={(aula) => setModal({ tipo: "tecnica", aulaCurriculoId: aula.id })}
                   onExcluirAula={handleExcluirAula}
                   aulaEstaExcluindo={(id) => estaExcluindo("aula", id)}
@@ -557,11 +588,14 @@ export function Curriculos() {
                     anuncio: bloco.anuncio ?? "",
                     descricao: bloco.descricao ?? "",
                     atencoesFaixaEtaria: bloco.atencoesFaixaEtaria ?? "",
+                    conteudoTecnicoId: bloco.conteudoTecnicoId ? String(bloco.conteudoTecnicoId) : "",
                   })),
                 }
               : undefined
           }
           itensCatalogo={itensCatalogo}
+          conteudosBiblioteca={conteudosBiblioteca}
+          templates={templatesPlanejamento}
           onSubmit={(data) => modal?.tipo === "aula" && handleSalvarAula(data, modal.moduloId, modal.editando)}
         />
       </Modal>
@@ -576,6 +610,18 @@ export function Curriculos() {
           <Textarea label="Atenções por faixa etária" rows={3} value={novoItemCatalogo.atencoesFaixaEtaria} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, atencoesFaixaEtaria: event.target.value }))} />
           <Button type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Cadastrar item"}</Button>
         </form>
+      </Modal>
+
+      <Modal open={modal?.tipo === "biblioteca"} title="Biblioteca técnica" onClose={() => setModal(null)}>
+        <div className="biblioteca-modal">
+          <Input label="Buscar conteúdo" placeholder="Ex.: guarda, queda, defesa" value={buscaBiblioteca} onChange={(event) => setBuscaBiblioteca(event.target.value)} />
+          {conteudosBiblioteca.filter((conteudo) => `${conteudo.nome} ${conteudo.tipo} ${conteudo.modalidade.nome}`.toLocaleLowerCase("pt-BR").includes(buscaBiblioteca.toLocaleLowerCase("pt-BR"))).map((conteudo) => (
+            <article key={conteudo.id} className="biblioteca-conteudo-card">
+              <div><strong>{conteudo.nome}</strong><small>{conteudo.modalidade.nome} · {conteudo.tipo.toLocaleLowerCase("pt-BR")} · {conteudo.nivelDificuldade.toLocaleLowerCase("pt-BR")}</small>{conteudo.descricao && <p>{conteudo.descricao}</p>}</div>
+              {conteudo.unidadeId === null && <Button type="button" variant="secondary" onClick={() => void handleCopiarConteudo(conteudo)}>Adicionar à minha biblioteca</Button>}
+            </article>
+          ))}
+        </div>
       </Modal>
 
       <Modal

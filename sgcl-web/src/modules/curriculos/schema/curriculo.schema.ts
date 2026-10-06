@@ -33,6 +33,7 @@ export const aulaCurriculoSchema = z.object({
     anuncio: z.string().optional(),
     descricao: z.string().optional(),
     atencoesFaixaEtaria: z.string().optional(),
+    conteudoTecnicoId: z.string().optional(),
   })).optional(),
 });
 

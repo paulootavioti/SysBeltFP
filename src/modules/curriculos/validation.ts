@@ -36,6 +36,7 @@ export const aulaCurriculoSchema = z.object({
     anuncio: z.string().trim().max(300).nullish(),
     descricao: z.string().trim().max(2000).nullish(),
     atencoesFaixaEtaria: z.string().trim().max(1200).nullish(),
+    conteudoTecnicoId: z.coerce.number().int().positive().nullish(),
   })).max(50).optional(),
 });
 

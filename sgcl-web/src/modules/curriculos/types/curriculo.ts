@@ -22,6 +22,30 @@ export interface ItemCatalogoPedagogico {
   duracaoPrevistaSegundos: number;
 }
 
+export interface ConteudoBiblioteca {
+  id: number;
+  unidadeId: number | null;
+  modalidadeId: number;
+  tipo: string;
+  nome: string;
+  descricao: string | null;
+  passoAPasso: string | null;
+  pontosAtencao: string | null;
+  nivelDificuldade: string;
+  duracaoSugeridaSegundos: number;
+  modalidade: { id: number; nome: string };
+  tags: Array<{ tag: { id: number; nome: string } }>;
+}
+
+export interface TemplatePlanejamento {
+  id: number;
+  unidadeId: number | null;
+  nome: string;
+  descricao: string | null;
+  publico: string | null;
+  etapas: Array<{ id: number; tipo: TipoBlocoCurriculo; titulo: string; duracaoSegundos: number; descricao: string | null }>;
+}
+
 export interface BlocoCurriculo {
   id: number;
   tipo: TipoBlocoCurriculo;
@@ -34,6 +58,7 @@ export interface BlocoCurriculo {
   anuncio?: string | null;
   descricao?: string | null;
   atencoesFaixaEtaria?: string | null;
+  conteudoTecnicoId?: number | null;
 }
 
 export interface AulaCurriculo {
