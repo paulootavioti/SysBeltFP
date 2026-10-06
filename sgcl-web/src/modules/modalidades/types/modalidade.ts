@@ -6,6 +6,7 @@ export interface Modalidade {
   coordenadorId: number | null;
   visivelNaLanding: boolean;
   ordem: number;
+  bibliotecaModalidadeId?: number | null;
   ativo: boolean;
   unidade?: { id: number; nome: string } | null;
   coordenador?: { id: number; nome: string } | null;

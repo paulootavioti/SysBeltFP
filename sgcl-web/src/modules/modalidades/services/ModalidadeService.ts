@@ -10,6 +10,7 @@ function corpo(data: ModalidadeFormData) {
     coordenadorId: data.coordenadorId ? Number(data.coordenadorId) : null,
     visivelNaLanding: data.visivelNaLanding ?? false,
     ordem: data.ordem ? Number(data.ordem) : 0,
+    bibliotecaModalidadeId: data.bibliotecaModalidadeId ? Number(data.bibliotecaModalidadeId) : null,
   };
 }
 

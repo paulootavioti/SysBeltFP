@@ -10,6 +10,7 @@ import { ErrorMessage } from "../../../components/ui/ErrorMessage";
 
 import type { Usuario } from "../../usuarios/types/usuario";
 import { UsuarioService } from "../../usuarios/services/UsuarioService";
+import { ApiClient } from "../../../shared/api/ApiClient";
 
 import { modalidadeSchema, type ModalidadeFormData } from "../schema/modalidade.schema";
 import type { Modalidade } from "../types/modalidade";
@@ -25,6 +26,7 @@ const PERFIS_COORDENADOR = ["ADMIN", "PROFESSOR"];
 
 export function ModalidadeForm({ modalidade, loading = false, onSubmit }: ModalidadeFormProps) {
   const [candidatos, setCandidatos] = useState<Usuario[]>([]);
+  const [modalidadesBiblioteca, setModalidadesBiblioteca] = useState<Array<{ id: number; nome: string }>>([]);
 
   const methods = useForm<ModalidadeFormData>({
     resolver: zodResolver(modalidadeSchema),
@@ -35,6 +37,7 @@ export function ModalidadeForm({ modalidade, loading = false, onSubmit }: Modali
       coordenadorId: modalidade?.coordenadorId ? String(modalidade.coordenadorId) : "",
       visivelNaLanding: modalidade?.visivelNaLanding ?? false,
       ordem: String(modalidade?.ordem ?? 0),
+      bibliotecaModalidadeId: modalidade?.bibliotecaModalidadeId ? String(modalidade.bibliotecaModalidadeId) : "",
       unidadeId: modalidade?.unidade ? String(modalidade.unidade.id) : "",
     },
   });
@@ -47,6 +50,12 @@ export function ModalidadeForm({ modalidade, loading = false, onSubmit }: Modali
         setCandidatos(lista.filter((u) => u.ativo && PERFIS_COORDENADOR.includes(u.perfil)))
       )
       .catch(() => setCandidatos([]));
+  }, []);
+
+  useEffect(() => {
+    ApiClient.get<Array<{ id: number; nome: string }>>("/biblioteca-pedagogica/modalidades")
+      .then(setModalidadesBiblioteca)
+      .catch(() => setModalidadesBiblioteca([]));
   }, []);
 
   return (
@@ -74,6 +83,15 @@ export function ModalidadeForm({ modalidade, loading = false, onSubmit }: Modali
             ...candidatos.map((c) => ({ label: c.nome, value: String(c.id) })),
           ]}
           {...register("coordenadorId")}
+        />
+
+        <Select
+          label="Modalidade da biblioteca técnica"
+          options={[
+            { label: "Sem vínculo", value: "" },
+            ...modalidadesBiblioteca.map((item) => ({ label: item.nome, value: String(item.id) })),
+          ]}
+          {...register("bibliotecaModalidadeId")}
         />
 
         <Input
