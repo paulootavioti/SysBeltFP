@@ -131,7 +131,7 @@ export function BarChart({ titulo, subtitulo, dados, formatarValor = formatarPad
                   x2={LARGURA - MARGEM.direita}
                   y1={y(tick)}
                   y2={y(tick)}
-                  className="bar-chart-grid"
+                  className={tick === 0 ? "bar-chart-grid bar-chart-linha-base" : "bar-chart-grid"}
                 />
                 <text x={MARGEM.esquerda - 8} y={y(tick)} className="bar-chart-eixo-y" textAnchor="end" dy="0.32em">
                   {formatarValor(Math.round(tick))}
@@ -163,7 +163,7 @@ export function BarChart({ titulo, subtitulo, dados, formatarValor = formatarPad
                   />
                   <path
                     d={caminhoBarra(xBarra, ponto.valor)}
-                    className={ativo ? "bar-chart-barra ativo" : "bar-chart-barra"}
+                    className={`bar-chart-barra${indice === dados.length - 1 ? " atual" : ""}${ativo ? " ativo" : ""}`}
                     pointerEvents="none"
                   />
                   {indice === indiceMaximo && (

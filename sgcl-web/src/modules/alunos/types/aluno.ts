@@ -54,6 +54,7 @@ export interface Aluno {
   fotoUrl?: string | null;
 
   faixa: string;
+  faixaCor?: string | null;
   grau: number;
   ativo: boolean;
   autorizaUsoImagem: boolean;

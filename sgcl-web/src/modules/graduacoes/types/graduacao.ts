@@ -9,6 +9,7 @@ export interface UsuarioResumoGraduacao {
 export interface Graduacao {
   id: number;
   faixa: string;
+  cor?: string | null;
   data: string;
   alunoId: number;
   aluno?: {
@@ -44,6 +45,8 @@ export interface AlunoElegivel {
   faixa: string;
   presencas: number;
   proximaFaixa?: string | null;
+  faixaCor?: string | null;
+  proximaFaixaCor?: string | null;
   aulasRealizadas?: number;
   aulasRestantes?: number;
   percentualProgresso?: number;

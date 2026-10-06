@@ -1026,6 +1026,7 @@ model Graduacao {
   unidade   Unidade @relation(fields: [unidadeId], references: [id])
 
   faixa String
+  cor   String?
   data  DateTime
 
   alunoId Int

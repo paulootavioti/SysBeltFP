@@ -79,7 +79,7 @@
 }
 
 /* mobile: empilha e centraliza, com alvo de toque de 44px nos links */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .site-footer {
     flex-direction: column;
     text-align: center;

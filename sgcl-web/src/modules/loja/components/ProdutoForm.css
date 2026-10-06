@@ -19,7 +19,7 @@
   align-items: end;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .produto-form-variante-linha {
     grid-template-columns: 1fr 1fr;
   }

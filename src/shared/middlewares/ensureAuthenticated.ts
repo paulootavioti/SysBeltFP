@@ -10,6 +10,7 @@ import {
 import { unidadesAlcancadas } from "../utils/contaDoUsuario";
 import { verificarTokenDaRequisicao } from "../tenant/tokenDaRequisicao";
 import { garantirAcessoSuperadminLegado } from "../security/superadminLegado";
+import { exigirAcessoControlPlane } from "../tenant/acessoControlPlane";
 
 interface TokenPayload {
   sub: string;
@@ -68,7 +69,11 @@ export async function ensureAuthenticated(
     // que pode conter mais de um assinante. Resolvido uma vez por requisição
     // e guardado no contexto: é o que permite escopar por conta sem passar a
     // lista por parâmetro em cada uma das dezenas de queries.
-    definirUnidadesDoUsuario(await unidadesAlcancadas(usuario.id, usuario.unidadeId));
+    const unidades = await unidadesAlcancadas(usuario.id, usuario.unidadeId);
+    definirUnidadesDoUsuario(unidades);
+    const unidadeDaConta = unidades[0] ? await prisma.unidade.findUnique({ where: { id: unidades[0] },
+      select: { conta: { select: { tenantKey: true } } } }) : null;
+    if (unidadeDaConta) await exigirAcessoControlPlane(req.hostname, unidadeDaConta.conta.tenantKey);
 
     // O DONO não é fixado a uma unidade (RN-164): a requisição dele começa em
     // "todas as unidades" da conta, e o X-Unidade-Id abaixo prende numa filial

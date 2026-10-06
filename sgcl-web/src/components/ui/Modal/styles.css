@@ -33,7 +33,7 @@
 }
 
 .modal-lg {
-  max-width: 600px;
+  max-width: 767px;
 }
 
 .modal-header {
@@ -67,7 +67,7 @@
 /* mobile: modal ocupa quase a largura toda da tela — com o padding do
    overlay em telas de 375-390px sobraria pouco espaço útil pro
    conteúdo, especialmente em modais com formulário. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .modal-overlay {
     padding: var(--space-2);
   }

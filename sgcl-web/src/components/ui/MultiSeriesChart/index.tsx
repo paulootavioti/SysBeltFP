@@ -38,10 +38,10 @@ const LARGURA = 800;
 const ALTURA = 320;
 const MARGEM = { topo: 40, direita: 48, baixo: 32, esquerda: 56 };
 const CORES_PADRAO = [
-  "var(--color-accent)",
-  "var(--color-success)",
-  "var(--color-warning)",
-  "var(--color-danger)",
+  "var(--color-serie-1)",
+  "var(--color-serie-2)",
+  "var(--color-serie-3)",
+  "var(--color-neutral-400)",
 ];
 
 function arredondarParaCima(valor: number): number {
@@ -188,7 +188,7 @@ export function MultiSeriesChart<T extends PontoMultiSerie>({
                   x2={LARGURA - MARGEM.direita}
                   y1={y(tick)}
                   y2={y(tick)}
-                  className="multi-series-chart-grid"
+                  className={tick === 0 ? "multi-series-chart-grid multi-series-chart-linha-base" : "multi-series-chart-grid"}
                 />
                 <text x={MARGEM.esquerda - 8} y={y(tick)} className="multi-series-chart-eixo-y" textAnchor="end" dy="0.32em">
                   {formatarValor(Math.round(tick))}

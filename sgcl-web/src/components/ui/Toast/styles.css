@@ -38,19 +38,19 @@
 }
 
 .toast-success {
-  border-left-color: var(--color-success);
+  border-left-color: var(--color-text);
 }
 
 .toast-success svg {
-  color: var(--color-success);
+  color: var(--color-text);
 }
 
 .toast-error {
-  border-left-color: var(--color-danger);
+  border-left-color: var(--color-accent-700);
 }
 
 .toast-error svg {
-  color: var(--color-danger);
+  color: var(--color-accent-700);
 }
 
 .toast-info {

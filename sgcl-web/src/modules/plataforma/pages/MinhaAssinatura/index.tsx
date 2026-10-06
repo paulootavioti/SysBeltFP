@@ -5,6 +5,7 @@ import { Loading } from "../../../../components/ui/Loading";
 import { EmptyState } from "../../../../components/ui/EmptyState";
 import { Table } from "../../../../components/ui/Table";
 import { StatusBadge } from "../../../../components/ui/StatusBadge";
+import { Button } from "../../../../components/ui/Button";
 import { formatarData } from "../../../../shared/utils/formatarData";
 import { useMinhaAssinatura } from "../../hooks/useMinhaAssinatura";
 import {
@@ -29,9 +30,12 @@ function formatarCompetencia(iso: string): string {
 }
 
 const STATUS_FATURA_BADGE = {
+  RASCUNHO: "PENDENTE",
   ABERTA: "PENDENTE",
+  VENCIDA: "VENCIDO",
   PAGA: "PAGO",
   CANCELADA: "CANCELADO",
+  ESTORNADA: "CANCELADO",
 } as const;
 
 export function MinhaAssinatura() {
@@ -56,6 +60,8 @@ export function MinhaAssinatura() {
   }
 
   const { plano, previaDoMes, faturas } = assinatura;
+  const concessao = assinatura.concessaoControlPlane;
+  const concessaoValida = concessao?.vigente === true;
 
   const colunas = [
     {
@@ -93,6 +99,23 @@ export function MinhaAssinatura() {
       <PageHeader title="Minha assinatura" subtitle={assinatura.conta.nome} />
 
       <div className="assinatura-cartoes">
+        <section className="assinatura-cartao">
+          <span className="assinatura-rotulo">Control Plane</span>
+          <strong className="assinatura-plano">
+            {!concessao ? "Aguardando concessão" : concessaoValida ? "Conectado" : "Concessão expirada"}
+          </strong>
+          {concessao && <>
+            <p className="assinatura-detalhe">Acesso: {STATUS_ASSINATURA_LABEL[concessao.statusAcesso === "ATIVO" ? "ATIVA" : concessao.statusAcesso === "SUSPENSO" ? "SUSPENSA" : "CANCELADA"]}</p>
+            <p className="assinatura-detalhe">Revisão {concessao.revisao} · contrato v{concessao.versaoContrato}</p>
+            <p className={`assinatura-detalhe${concessaoValida ? " assinatura-detalhe--fraco" : " assinatura-detalhe--aviso"}`}>Válida até {formatarData(concessao.expiraEm)}</p>
+          </>}
+        </section>
+        <section className="assinatura-cartao">
+          <span className="assinatura-rotulo">Identidade no Control Plane</span>
+          <strong className="assinatura-plano"><code>{assinatura.conta.tenantKey}</code></strong>
+          <p className="assinatura-detalhe">Use esta tenant key para vincular esta conta no Control Plane. Ela não é uma senha.</p>
+          <Button type="button" size="sm" variant="secondary" onClick={() => navigator.clipboard.writeText(assinatura.conta.tenantKey)}>Copiar tenant key</Button>
+        </section>
         <section className="assinatura-cartao assinatura-cartao--destaque">
           <span className="assinatura-rotulo">Previsto para este mês</span>
           <strong className="assinatura-valor">
@@ -148,6 +171,13 @@ export function MinhaAssinatura() {
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {concessao && (
+        <section className="assinatura-recursos">
+          <span className="assinatura-rotulo">Recursos autorizados pelo Control Plane</span>
+          {concessao.recursos.length > 0 ? <ul>{concessao.recursos.map((recurso) => <li key={recurso}>{RECURSO_LABEL[recurso as RecursoPlataforma] ?? recurso}</li>)}</ul> : <p className="assinatura-detalhe">Nenhum recurso opcional liberado.</p>}
         </section>
       )}
 

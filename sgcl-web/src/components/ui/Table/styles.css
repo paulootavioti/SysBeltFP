@@ -44,7 +44,7 @@
 .table-row-clickable { cursor: pointer; }
 .table-row-clickable:focus-visible { outline-offset: -3px; }
 
-@media (max-width: 900px) {
+@media (max-width: 1179px) {
   .table th,
   .table td {
     padding: var(--space-2) var(--space-3);
@@ -57,7 +57,7 @@
    dados, só muda a apresentação. O rótulo de cada célula vem do
    `data-label` (ver Table/index.tsx), preenchido a partir do header da
    coluna, sem duplicar nenhuma lógica de dados. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .table-wrapper {
     overflow-x: visible;
     border: none;

@@ -13,6 +13,7 @@ export interface DataTableColumn<T> {
   width?: number | string;
   align?: "left" | "center" | "right";
   render?: (item: T) => ReactNode;
+  prioridade?: 1 | 2 | 3;
 }
 
 interface DataTableProps<T> {
@@ -40,6 +41,8 @@ interface DataTableProps<T> {
   pageSize?: number;
   totalItems?: number;
   onPageChange?: (page: number) => void;
+  renderCartao?: (linha: T) => ReactNode;
+  densidade?: "compacta" | "confortavel";
 }
 
 export function DataTable<T>({
@@ -56,6 +59,8 @@ export function DataTable<T>({
   pageSize,
   totalItems,
   onPageChange,
+  renderCartao,
+  densidade = "compacta",
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -101,7 +106,7 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="data-table-wrapper">
+    <div className={`data-table-wrapper data-table-${densidade}${renderCartao ? " data-table-com-cartoes" : ""}`}>
       {(title || actions) && (
         <div className="data-table-header">
           <div>
@@ -139,11 +144,12 @@ export function DataTable<T>({
         </p>
       ) : (
         <>
+          {renderCartao && <div className="data-table-cards">{dadosDaPagina.map((item, index) => <div key={index}>{renderCartao(item)}</div>)}</div>}
           <table className="data-table">
             <thead>
               <tr>
                 {columns.map((column) => (
-                  <th
+                  <th className={`data-table-prioridade-${column.prioridade ?? 1}`}
                     key={column.id ?? column.header}
                     style={{
                       width: column.width,
@@ -160,7 +166,7 @@ export function DataTable<T>({
               {dadosDaPagina.map((item, rowIndex) => (
                 <tr key={rowIndex}>
                   {columns.map((column) => (
-                    <td
+                    <td className={`data-table-prioridade-${column.prioridade ?? 1}`}
                       key={column.id ?? column.header}
                       data-label={column.header}
                       style={{

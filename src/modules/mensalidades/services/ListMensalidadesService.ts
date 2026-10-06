@@ -13,12 +13,20 @@ export class ListMensalidadesService {
         take: LIMITE_PADRAO_LISTAGEM,
         orderBy: { vencimento: "desc" },
         include: {
-          aluno: true,
+          aluno: {
+            include: {
+              turma: { select: { nome: true } },
+              graduacoes: { where: { status: "aprovada" }, orderBy: { data: "desc" }, take: 1, select: { cor: true } },
+            },
+          },
           formaPagamento: true,
         }
       });
 
-    return mensalidades;
+    return mensalidades.map(({ aluno, ...mensalidade }) => {
+      const { graduacoes, turma, ...dadosAluno } = aluno;
+      return { ...mensalidade, aluno: { ...dadosAluno, turmaNome: turma?.nome ?? null, faixaCor: graduacoes[0]?.cor ?? null } };
+    });
   }
 
 }

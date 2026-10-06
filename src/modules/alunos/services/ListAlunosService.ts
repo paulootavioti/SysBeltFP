@@ -74,10 +74,14 @@ export class ListAlunosService {
         : {}),
       ...(paginacao?.status === "ATIVO" ? { ativo: true } : {}),
       ...(paginacao?.status === "INATIVO" ? { ativo: false } : {}),
+      ...(paginacao?.status === "EM_ATRASO" ? {
+        ativo: true,
+        mensalidades: { some: { pago: false, status: { in: ["ABERTA", "VENCIDA"] }, vencimento: { lt: new Date() } } },
+      } : {}),
       ...(paginacao?.turmaId ? { turmaId: paginacao.turmaId } : {}),
     };
 
-    const consulta: Prisma.AlunoFindManyArgs = {
+    const consulta = {
         where: filtros,
         take: paginacao?.porPagina ?? LIMITE_PADRAO_LISTAGEM,
         ...(paginacao ? { skip: (paginacao.pagina - 1) * paginacao.porPagina } : {}),
@@ -93,9 +97,15 @@ export class ListAlunosService {
               vencimento: "desc" as const,
             },
             take: 1,
-          }
+          },
+          graduacoes: {
+            where: { status: "aprovada" },
+            orderBy: { data: "desc" as const },
+            take: 1,
+            select: { cor: true },
+          },
         }
-      };
+      } satisfies Prisma.AlunoFindManyArgs;
 
     if (paginacao) {
       const [itens, total] = await prisma.$transaction([
@@ -103,7 +113,7 @@ export class ListAlunosService {
         prisma.aluno.count({ where: filtros }),
       ]);
       return {
-        itens,
+        itens: itens.map(({ graduacoes, ...aluno }) => ({ ...aluno, faixaCor: graduacoes[0]?.cor ?? null })),
         pagina: paginacao.pagina,
         porPagina: paginacao.porPagina,
         total,
@@ -111,6 +121,7 @@ export class ListAlunosService {
       };
     }
 
-    return prisma.aluno.findMany(consulta);
+    const alunos = await prisma.aluno.findMany(consulta);
+    return alunos.map(({ graduacoes, ...aluno }) => ({ ...aluno, faixaCor: graduacoes[0]?.cor ?? null }));
   }
 }

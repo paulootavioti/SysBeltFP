@@ -1,4 +1,4 @@
-import "./styles.css";
+import { Situacao, type DegrauSituacao } from "../Situacao";
 
 type StatusType =
   | "ATIVO"
@@ -18,10 +18,12 @@ interface StatusBadgeProps {
 export function StatusBadge({
   status,
 }: StatusBadgeProps) {
+  const degrau: Record<StatusType, DegrauSituacao> = {
+    ATIVO: "neutro", INATIVO: "inativo", PAGO: "neutro", PENDENTE: "atencao",
+    VENCIDO: "acao", CANCELADO: "inativo", ESTORNADO: "inativo", ABERTA: "atencao", FINALIZADA: "neutro",
+  };
   return (
-    <span
-      className={`status-badge status-${status.toLowerCase()}`}
-    >
+    <Situacao degrau={degrau[status]}>
       {{
         ATIVO: "Ativo",
         INATIVO: "Inativo",
@@ -33,6 +35,6 @@ export function StatusBadge({
         ABERTA: "Aberta",
         FINALIZADA: "Finalizada",
       }[status]}
-    </span>
+    </Situacao>
   );
 }

@@ -118,7 +118,7 @@
 
 .grade-item-ocupacao {
   display: block;
-  font-size: 10px;
+  font-size: var(--font-xs);
   font-weight: 400;
   opacity: 0.85;
 }
@@ -207,7 +207,7 @@
 }
 
 .grade-semanal-compacta {
-  max-width: 480px;
+  max-width: 767px;
 }
 
 .grade-semanal-compacta .grade-semanal-wrapper {
@@ -219,7 +219,7 @@
   min-width: 460px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .grade-semanal-table {
     min-width: 480px;
   }
@@ -323,8 +323,8 @@
   text-align: left;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1179px) {
   .grade-mensal-grid {
-    min-width: 700px;
+    min-width: 768px;
   }
 }

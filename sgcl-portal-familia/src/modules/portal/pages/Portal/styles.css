@@ -7,7 +7,7 @@
 /* mobile: a barra de abas vira uma barra fixa no rodapé (ver Tabs/styles.css)
    — precisa de espaço reservado no fim da página pra ela não tampar o
    último item do conteúdo. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .portal-page {
     padding-bottom: calc(var(--portal-bottom-nav-height) + var(--space-6) + env(safe-area-inset-bottom));
   }
@@ -35,7 +35,7 @@
 
 .portal-instalar { width: 100%; min-height: 44px; margin: 0 0 var(--space-4); border: 2px solid var(--color-primary); background: var(--color-primary); color: var(--color-surface); font-weight: 700; }
 
-@media (min-width: 641px) {
+@media (min-width: 768px) {
   .portal-header h1 {
     font-size: 22px;
   }
@@ -74,7 +74,7 @@
   display: none;
 }
 
-@media (min-width: 641px) {
+@media (min-width: 768px) {
   .portal-select-aluno {
     display: none;
   }
@@ -145,7 +145,7 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .portal-tab-label {
     flex-direction: column;
     gap: 2px;
@@ -223,7 +223,7 @@
   gap: var(--space-4);
 }
 
-@media (min-width: 641px) {
+@media (min-width: 768px) {
   .resumo-tab-grid {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
@@ -590,7 +590,7 @@
 /* mobile: o campo de mensagem gruda logo acima da barra de abas inferior,
    sempre visível — inclusive quando o teclado abre, já que "bottom" fica
    relativo à viewport visível (dvh) e não à altura total da página. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .mensagens-tab-form {
     position: sticky;
     bottom: calc(var(--portal-bottom-nav-height) + env(safe-area-inset-bottom));
@@ -1017,7 +1017,7 @@
   font-weight: 600;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .documento-item {
     grid-template-columns: auto minmax(0, 1fr);
     padding: var(--space-3);
