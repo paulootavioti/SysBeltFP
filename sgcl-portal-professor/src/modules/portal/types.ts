@@ -58,6 +58,8 @@ export interface BlocoAulaCompilado {
   duracaoRoundSegundos?: number;
   descansoSegundos?: number;
   anuncio?: string;
+  descricao?: string;
+  atencoesFaixaEtaria?: string;
 }
 
 export interface RegistroExecucaoBloco {

@@ -118,6 +118,8 @@ export function AulaAccordionCard({
                     <Badge variant={tecnica.obrigatoria ? "info" : "neutral"}>{tecnica.nome}</Badge>
                   </button>
 
+                  {tecnica.descricao && <small className="tecnica-descricao">{tecnica.descricao}</small>}
+
                   {ehAdmin && (
                     <button
                       type="button"

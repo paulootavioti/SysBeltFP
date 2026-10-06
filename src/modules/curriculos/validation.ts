@@ -26,7 +26,7 @@ export const aulaCurriculoSchema = z.object({
   ordem: z.coerce.number().int().nullish(),
   moduloId: z.coerce.number().int().positive().optional(),
   blocos: z.array(z.object({
-    tipo: z.enum(["AQUECIMENTO", "JOGO", "SPARRING", "PAUSA", "ALONGAMENTO"]),
+    tipo: z.enum(["AQUECIMENTO", "JOGO", "TECNICA", "SPARRING", "PAUSA", "ALONGAMENTO"]),
     nome: z.string().trim().min(1).max(120),
     ordem: z.coerce.number().int().min(0),
     duracaoPrevistaSegundos: z.coerce.number().int().positive().max(14400),
@@ -34,6 +34,8 @@ export const aulaCurriculoSchema = z.object({
     duracaoRoundSegundos: z.coerce.number().int().positive().max(3600).nullish(),
     descansoSegundos: z.coerce.number().int().min(0).max(1800).nullish(),
     anuncio: z.string().trim().max(300).nullish(),
+    descricao: z.string().trim().max(2000).nullish(),
+    atencoesFaixaEtaria: z.string().trim().max(1200).nullish(),
   })).max(50).optional(),
 });
 
@@ -45,4 +47,13 @@ export const tecnicaCurriculoSchema = z.object({
   ordem: z.coerce.number().int().nullish(),
   aulaCurriculoId: z.coerce.number().int().positive().optional(),
   duracaoPrevistaSegundos: z.coerce.number().int().positive().max(14400).nullish(),
+});
+
+export const itemCatalogoPedagogicoSchema = z.object({
+  tipo: z.enum(["POSICAO", "EXERCICIO", "MOMENTO"]),
+  nome: z.string().trim().min(2).max(120),
+  tipoBloco: z.enum(["AQUECIMENTO", "JOGO", "TECNICA", "SPARRING", "PAUSA", "ALONGAMENTO"]).nullish(),
+  descricao: z.string().trim().max(2000).nullish(),
+  atencoesFaixaEtaria: z.string().trim().max(1200).nullish(),
+  duracaoPrevistaSegundos: z.coerce.number().int().positive().max(14400),
 });

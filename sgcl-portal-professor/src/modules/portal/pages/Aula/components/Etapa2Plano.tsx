@@ -151,6 +151,13 @@ export function Etapa2Plano({ aulaId, aulaCurriculo, totalAlunos, totalPresentes
         <p className="ring-etiqueta">{pausaVoz ? "PAUSA · COMANDO DE VOZ" : `${atual.tipo}${roundAtual ? ` · ROUND ${roundAtual}/${atual.rounds}` : ""}${atual.obrigatoria ? " · OBRIGATÓRIA" : ""}`}</p>
         <h2>{pausaVoz ? "Pausa" : atual.nome}</h2>
         <div className="ring-progresso" style={{ "--progresso": `${percentual}%` } as CSSProperties}><div><strong>{formatarTempo(restanteExibido)}</strong><span>restantes</span></div></div>
+        {!pausaVoz && (atual.descricao || atual.atencoesFaixaEtaria) && (
+          <details className="ring-orientacoes" open>
+            <summary>Orientações</summary>
+            {atual.descricao && <p>{atual.descricao}</p>}
+            {atual.atencoesFaixaEtaria && <p><strong>Faixa etária:</strong> {atual.atencoesFaixaEtaria}</p>}
+          </details>
+        )}
         <div className="ring-controles">
           <button type="button" disabled={Boolean(pausaVoz)} onClick={() => setTimer((estado) => ({ ...estado, rodando: !estado.rodando, atualizadoEm: Date.now() }))}>{timer.rodando ? "Pausar" : "Retomar"}</button>
           <button type="button" onClick={() => setTimer((estado) => ({ ...estado, restanteSegundos: estado.restanteSegundos + 30, atualizadoEm: Date.now() }))}>+30s</button>

@@ -3,6 +3,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
+import { Textarea } from "../../../components/ui/Textarea";
 import { Checkbox } from "../../../components/ui/Checkbox";
 import { Button } from "../../../components/ui/Button";
 import { ErrorMessage } from "../../../components/ui/ErrorMessage";
@@ -35,12 +36,12 @@ export function TecnicaCurriculoForm({ loading = false, initialValues, onSubmit 
       <form onSubmit={handleSubmit(onSubmit)}>
         <FormGrid columns={2}>
           <FormGridItem span={2}>
-            <Input label="Nome da Técnica" {...register("nome")} />
+            <Input label="Posição ou exercício" placeholder="Ex.: passagem de guarda em pé" {...register("nome")} />
             <ErrorMessage message={errors.nome?.message ?? ""} />
           </FormGridItem>
 
           <FormGridItem>
-            <Input label="Categoria" {...register("categoria")} />
+            <Input label="Categoria" placeholder="Ex.: queda, defesa, jogo de solo" {...register("categoria")} />
           </FormGridItem>
 
           <FormGridItem>
@@ -53,7 +54,7 @@ export function TecnicaCurriculoForm({ loading = false, initialValues, onSubmit 
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <Input label="Descrição" {...register("descricao")} />
+            <Textarea label="Passo a passo e cuidados" rows={4} placeholder="Descreva a realização, os pontos de atenção e as adaptações necessárias." {...register("descricao")} />
           </FormGridItem>
         </FormGrid>
 

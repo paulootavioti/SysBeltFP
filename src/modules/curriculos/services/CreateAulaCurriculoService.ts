@@ -11,7 +11,7 @@ interface CreateAulaCurriculoDTO {
   ordem?: number;
   moduloId: number;
   blocos?: Array<{
-    tipo: "AQUECIMENTO" | "JOGO" | "SPARRING" | "PAUSA" | "ALONGAMENTO";
+    tipo: "AQUECIMENTO" | "JOGO" | "TECNICA" | "SPARRING" | "PAUSA" | "ALONGAMENTO";
     nome: string;
     ordem: number;
     duracaoPrevistaSegundos: number;
@@ -19,6 +19,8 @@ interface CreateAulaCurriculoDTO {
     duracaoRoundSegundos?: number | null;
     descansoSegundos?: number | null;
     anuncio?: string | null;
+    descricao?: string | null;
+    atencoesFaixaEtaria?: string | null;
   }>;
 }
 

@@ -1,5 +1,5 @@
 import { ApiClient } from "../../../shared/api/ApiClient";
-import type { Curriculo } from "../types/curriculo";
+import type { Curriculo, ItemCatalogoPedagogico, TipoBlocoCurriculo, TipoItemCatalogoPedagogico } from "../types/curriculo";
 import type {
   CurriculoFormData,
   ModuloFormData,
@@ -8,7 +8,7 @@ import type {
 } from "../schema/curriculo.schema";
 
 type BlocoCurriculoPayload = {
-  tipo: "AQUECIMENTO" | "JOGO" | "SPARRING" | "PAUSA" | "ALONGAMENTO";
+  tipo: TipoBlocoCurriculo;
   nome: string;
   ordem: number;
   duracaoPrevistaSegundos: number;
@@ -16,6 +16,17 @@ type BlocoCurriculoPayload = {
   duracaoRoundSegundos?: number;
   descansoSegundos?: number;
   anuncio?: string;
+  descricao?: string;
+  atencoesFaixaEtaria?: string;
+};
+
+export type ItemCatalogoPedagogicoPayload = {
+  tipo: TipoItemCatalogoPedagogico;
+  nome: string;
+  tipoBloco?: TipoBlocoCurriculo | null;
+  descricao?: string;
+  atencoesFaixaEtaria?: string;
+  duracaoPrevistaSegundos: number;
 };
 
 type AulaCurriculoPayload = Omit<AulaCurriculoFormData, "duracaoMinutos" | "blocos"> & {
@@ -33,6 +44,13 @@ function corpoCurriculo(data: CurriculoFormData) {
 }
 
 export class CurriculoService {
+  static async listarCatalogoPedagogico() {
+    return ApiClient.get<ItemCatalogoPedagogico[]>("/curriculos/catalogo-pedagogico");
+  }
+
+  static async criarItemCatalogoPedagogico(data: ItemCatalogoPedagogicoPayload) {
+    return ApiClient.post<ItemCatalogoPedagogico>("/curriculos/catalogo-pedagogico", data);
+  }
   static async listar() {
     return ApiClient.get<Curriculo[]>("/curriculos");
   }

@@ -15,6 +15,7 @@ interface TecnicaParaCompilar {
   ordem: number;
   obrigatoria: boolean;
   duracaoPrevistaSegundos?: number | null;
+  descricao?: string | null;
 }
 
 interface BlocoParaCompilar {
@@ -27,6 +28,8 @@ interface BlocoParaCompilar {
   duracaoRoundSegundos?: number | null;
   descansoSegundos?: number | null;
   anuncio?: string | null;
+  descricao?: string | null;
+  atencoesFaixaEtaria?: string | null;
 }
 
 interface AulaParaCompilar {
@@ -47,6 +50,8 @@ export interface BlocoAulaCompilado {
   duracaoRoundSegundos?: number;
   descansoSegundos?: number;
   anuncio?: string;
+  descricao?: string;
+  atencoesFaixaEtaria?: string;
 }
 
 export interface FilaAulaCompilada {
@@ -82,6 +87,8 @@ export function compilarFilaAula(aula: AulaParaCompilar): FilaAulaCompilada {
     ...(bloco.duracaoRoundSegundos ? { duracaoRoundSegundos: bloco.duracaoRoundSegundos } : {}),
     ...(bloco.descansoSegundos != null ? { descansoSegundos: bloco.descansoSegundos } : {}),
     ...(bloco.anuncio ? { anuncio: bloco.anuncio } : {}),
+    ...(bloco.descricao ? { descricao: bloco.descricao } : {}),
+    ...(bloco.atencoesFaixaEtaria ? { atencoesFaixaEtaria: bloco.atencoesFaixaEtaria } : {}),
   }));
 
   const tecnicas = aula.tecnicas.map<BlocoAulaCompilado>((tecnica) => ({
@@ -92,6 +99,7 @@ export function compilarFilaAula(aula: AulaParaCompilar): FilaAulaCompilada {
     duracaoPrevistaSegundos: tecnica.duracaoPrevistaSegundos ?? DURACAO_PADRAO_TECNICA_SEGUNDOS,
     obrigatoria: tecnica.obrigatoria,
     tecnicaId: tecnica.id,
+    ...(tecnica.descricao ? { descricao: tecnica.descricao } : {}),
   }));
 
   const temJogosEstruturados = blocosEstruturados.some((bloco) => bloco.tipo === "JOGO");

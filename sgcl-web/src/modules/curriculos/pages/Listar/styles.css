@@ -49,6 +49,7 @@
 .curriculos-acoes {
   display: flex;
   justify-content: flex-end;
+  gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
 
@@ -195,7 +196,10 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  flex-wrap: wrap;
 }
+
+.tecnica-descricao { flex-basis: 100%; color: var(--text-light); font-size: var(--font-xs); }
 
 .curriculos-vazio {
   color: var(--text-light);
@@ -254,6 +258,13 @@
 .curriculo-blocos-cabecalho p { margin: 0; }
 .curriculo-blocos-cabecalho p { color: var(--text-light); }
 
+.curriculo-momentos-sugeridos { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-3); }
+.curriculo-momentos-sugeridos .button { font-size: var(--font-xs); }
+.curriculo-catalogo-itens { display: grid; gap: var(--space-2); margin: 0 0 var(--space-3); padding: var(--space-3); border: 1px solid var(--border); background: var(--background); }
+.curriculo-catalogo-itens > div { display: grid; gap: var(--space-1); }
+.curriculo-catalogo-itens > div > div { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.curriculo-catalogo-itens .button { font-size: var(--font-xs); }
+
 .curriculo-bloco-linha {
   display: grid;
   grid-template-columns: minmax(150px, .8fr) minmax(180px, 1.4fr) repeat(3, minmax(110px, .7fr)) auto;
@@ -263,7 +274,9 @@
   border-top: 1px solid var(--border);
 }
 
-@media (max-width: 1179px) {
+.curriculo-bloco-descricao, .curriculo-bloco-atencoes { grid-column: span 2; }
+
+@media (max-width: 900px) {
   .curriculo-bloco-linha { grid-template-columns: 1fr 1fr; }
   .curriculo-blocos-cabecalho { flex-direction: column; }
 }
