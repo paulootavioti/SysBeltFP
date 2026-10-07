@@ -54,7 +54,7 @@ export function TecnicaCurriculoForm({ loading = false, initialValues, onSubmit 
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <Textarea label="Passo a passo e cuidados" rows={4} placeholder="Descreva a realização, os pontos de atenção e as adaptações necessárias." {...register("descricao")} />
+            <Textarea label="Como conduzir" rows={4} placeholder="Descreva a realização. Cadastre cuidados e adaptações nos blocos da aula." {...register("descricao")} />
           </FormGridItem>
         </FormGrid>
 

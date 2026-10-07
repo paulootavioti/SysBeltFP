@@ -79,7 +79,7 @@ export function Curriculos() {
   const [templateAssistidoId, setTemplateAssistidoId] = useState("");
   const [selecionadosAssistidos, setSelecionadosAssistidos] = useState<number[]>([]);
   const [modalidadesBiblioteca, setModalidadesBiblioteca] = useState<Array<{ id: number; nome: string }>>([]);
-  const [novoConteudo, setNovoConteudo] = useState({ modalidadeId: "", tipo: "TECNICA", nome: "", descricao: "", passoAPasso: "", pontosAtencao: "", duracaoMinutos: "5" });
+  const [novoConteudo, setNovoConteudo] = useState({ modalidadeId: "", tipo: "TECNICA", nome: "", descricao: "", passoAPasso: "", pontosAtencao: "", cuidados: "", faixaEtariaMinima: "", faixaEtariaMaxima: "", duracaoMinutos: "5" });
 
   const ehAdmin = usuario?.perfil === "ADMIN";
   const buscaAtiva = busca.trim().length > 0;
@@ -316,13 +316,16 @@ export function Curriculos() {
       await CurriculoService.criarConteudoBiblioteca({
         modalidadeId: Number(novoConteudo.modalidadeId), tipo: novoConteudo.tipo, nome: novoConteudo.nome,
         descricao: novoConteudo.descricao || null, passoAPasso: novoConteudo.passoAPasso || null,
-        pontosAtencao: novoConteudo.pontosAtencao || null, duracaoSugeridaSegundos: Number(novoConteudo.duracaoMinutos) * 60,
+        pontosAtencao: novoConteudo.pontosAtencao || null, cuidados: novoConteudo.cuidados || null,
+        faixaEtariaMinima: novoConteudo.faixaEtariaMinima ? Number(novoConteudo.faixaEtariaMinima) : null,
+        faixaEtariaMaxima: novoConteudo.faixaEtariaMaxima ? Number(novoConteudo.faixaEtariaMaxima) : null,
+        duracaoSugeridaSegundos: Number(novoConteudo.duracaoMinutos) * 60,
         tags: [],
       });
       const resposta = await CurriculoService.pesquisarConteudosBiblioteca({ busca: buscaBiblioteca });
       setConteudosBiblioteca(resposta.itens);
       setModal(null);
-      setNovoConteudo({ modalidadeId: "", tipo: "TECNICA", nome: "", descricao: "", passoAPasso: "", pontosAtencao: "", duracaoMinutos: "5" });
+      setNovoConteudo({ modalidadeId: "", tipo: "TECNICA", nome: "", descricao: "", passoAPasso: "", pontosAtencao: "", cuidados: "", faixaEtariaMinima: "", faixaEtariaMaxima: "", duracaoMinutos: "5" });
     } catch (error) { setErro(getApiErrorMessage(error, "Erro ao cadastrar conteúdo técnico.")); }
     finally { setSalvando(false); }
   }
@@ -699,8 +702,8 @@ export function Curriculos() {
           {novoItemCatalogo.tipo === "MOMENTO" && <Select label="Etapa da aula" value={novoItemCatalogo.tipoBloco} options={[{ value: "AQUECIMENTO", label: "Aquecimento" }, { value: "JOGO", label: "Jogo" }, { value: "PAUSA", label: "Pausa" }, { value: "ALONGAMENTO", label: "Alongamento" }, { value: "SPARRING", label: "Sparring" }]} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, tipoBloco: event.target.value }))} />}
           <Input label="Nome" required value={novoItemCatalogo.nome} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, nome: event.target.value }))} />
           <Input label="Duração sugerida (min)" required type="number" min="1" value={novoItemCatalogo.duracaoMinutos} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, duracaoMinutos: event.target.value }))} />
-          <Textarea label="Passo a passo e cuidados" rows={4} value={novoItemCatalogo.descricao} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, descricao: event.target.value }))} />
-          <Textarea label="Atenções por faixa etária" rows={3} value={novoItemCatalogo.atencoesFaixaEtaria} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, atencoesFaixaEtaria: event.target.value }))} />
+          <Textarea label="Como conduzir" placeholder="Explique a sequência, a organização dos alunos e o critério para avançar." rows={4} value={novoItemCatalogo.descricao} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, descricao: event.target.value }))} />
+          <Textarea label="Cuidados e adaptações" placeholder="Indique intensidade, pares, espaço e adaptações para idade ou maturidade." rows={3} value={novoItemCatalogo.atencoesFaixaEtaria} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, atencoesFaixaEtaria: event.target.value }))} />
           <Button type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Cadastrar item"}</Button>
         </form>
       </Modal>
@@ -725,9 +728,12 @@ export function Curriculos() {
           <Select label="Tipo" value={novoConteudo.tipo} options={[{ value: "TECNICA", label: "Técnica" }, { value: "POSICAO", label: "Posição" }, { value: "EXERCICIO", label: "Exercício" }, { value: "AQUECIMENTO", label: "Aquecimento" }, { value: "DRILL", label: "Drill" }]} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, tipo: event.target.value }))} />
           <Input label="Nome" required value={novoConteudo.nome} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, nome: event.target.value }))} />
           <Input label="Duração sugerida (min)" required type="number" min="1" value={novoConteudo.duracaoMinutos} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, duracaoMinutos: event.target.value }))} />
-          <Textarea label="Descrição" rows={3} value={novoConteudo.descricao} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, descricao: event.target.value }))} />
-          <Textarea label="Passo a passo" rows={4} value={novoConteudo.passoAPasso} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, passoAPasso: event.target.value }))} />
-          <Textarea label="Atenções por faixa etária" rows={3} value={novoConteudo.pontosAtencao} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, pontosAtencao: event.target.value }))} />
+          <Textarea label="Objetivo pedagógico" placeholder="O que o aluno deve compreender ou desenvolver com este conteúdo." rows={3} value={novoConteudo.descricao} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, descricao: event.target.value }))} />
+          <Textarea label="Como executar" placeholder="Descreva a posição inicial, a sequência e a conclusão da atividade." rows={4} value={novoConteudo.passoAPasso} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, passoAPasso: event.target.value }))} />
+          <Textarea label="Pontos de atenção do professor" placeholder="Sinais para corrigir, erros comuns e onde observar a turma." rows={3} value={novoConteudo.pontosAtencao} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, pontosAtencao: event.target.value }))} />
+          <Textarea label="Cuidados e adaptações" placeholder="Riscos, segurança e adaptações para alunos menores ou iniciantes." rows={3} value={novoConteudo.cuidados} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, cuidados: event.target.value }))} />
+          <Input label="Idade mínima recomendada" type="number" min="0" value={novoConteudo.faixaEtariaMinima} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, faixaEtariaMinima: event.target.value }))} />
+          <Input label="Idade máxima recomendada" type="number" min="0" value={novoConteudo.faixaEtariaMaxima} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, faixaEtariaMaxima: event.target.value }))} />
           <Button type="submit" disabled={salvando || !novoConteudo.modalidadeId || !novoConteudo.nome.trim()}>{salvando ? "Salvando..." : "Cadastrar conteúdo"}</Button>
         </form>
       </Modal>

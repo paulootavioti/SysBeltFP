@@ -176,8 +176,8 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
                 {tipo === "SPARRING" && <Input label="Descanso (s)" type="number" min="0" {...register(`blocos.${index}.descansoSegundos`)} />}
                 {tipo === "PAUSA" && <Input label="Anúncio" {...register(`blocos.${index}.anuncio`)} />}
                 <input type="hidden" {...register(`blocos.${index}.conteudoTecnicoId`)} />
-                <Textarea className="curriculo-bloco-descricao" label="Como conduzir" rows={2} {...register(`blocos.${index}.descricao`)} />
-                <Textarea className="curriculo-bloco-atencoes" label="Atenções por faixa etária" rows={2} {...register(`blocos.${index}.atencoesFaixaEtaria`)} />
+                <Textarea className="curriculo-bloco-descricao" label="Como conduzir" placeholder="O que demonstrar, como organizar e quando avançar." rows={2} {...register(`blocos.${index}.descricao`)} />
+                <Textarea className="curriculo-bloco-atencoes" label="Cuidados e adaptações" placeholder="Segurança, intensidade, pares e adaptações por idade." rows={2} {...register(`blocos.${index}.atencoesFaixaEtaria`)} />
                 <Button type="button" variant="danger" onClick={() => remove(index)}>Remover</Button>
               </div>
             );

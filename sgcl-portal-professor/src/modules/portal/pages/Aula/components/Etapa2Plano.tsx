@@ -155,7 +155,7 @@ export function Etapa2Plano({ aulaId, aulaCurriculo, totalAlunos, totalPresentes
           <details className="ring-orientacoes" open>
             <summary>Orientações</summary>
             {atual.descricao && <p>{atual.descricao}</p>}
-            {atual.atencoesFaixaEtaria && <p><strong>Faixa etária:</strong> {atual.atencoesFaixaEtaria}</p>}
+            {atual.atencoesFaixaEtaria && <p><strong>Cuidados e adaptações:</strong> {atual.atencoesFaixaEtaria}</p>}
           </details>
         )}
         <div className="ring-controles">

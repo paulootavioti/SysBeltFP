@@ -65,7 +65,10 @@ export class CreateAulaAssistidaService {
         ordem: etapasTemplate.length + indice,
         duracaoPrevistaSegundos: conteudo.duracaoSugeridaSegundos,
         descricao: conteudo.passoAPasso ?? conteudo.descricao,
-        atencoesFaixaEtaria: [conteudo.pontosAtencao, conteudo.cuidados].filter(Boolean).join("\n") || null,
+        atencoesFaixaEtaria: [
+          conteudo.pontosAtencao ? `Pontos de atenção: ${conteudo.pontosAtencao}` : null,
+          conteudo.cuidados ? `Cuidados e adaptações: ${conteudo.cuidados}` : null,
+        ].filter(Boolean).join("\n") || null,
         conteudoTecnicoId: conteudo.id,
       })),
     ];

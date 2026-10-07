@@ -108,7 +108,7 @@ export function Planejamento() {
                                   <li key={bloco.chave}>
                                     <div className="aula-card-etapa"><span>{indice + 1}. {bloco.nome}</span><strong>{Math.ceil(bloco.duracaoPrevistaSegundos / 60)} min</strong></div>
                                     {bloco.descricao && <p>{bloco.descricao}</p>}
-                                    {bloco.atencoesFaixaEtaria && <p className="aula-card-atencao">Atenção: {bloco.atencoesFaixaEtaria}</p>}
+                                    {bloco.atencoesFaixaEtaria && <p className="aula-card-atencao">Cuidados e adaptações: {bloco.atencoesFaixaEtaria}</p>}
                                   </li>
                                 ))}
                               </ol>
