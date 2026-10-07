@@ -38,6 +38,16 @@ Permite criar ou editar blocos diretamente. Todo conteúdo técnico associado é
 
 Duplicar insere a cópia logo depois da aula de origem. A operação é transacional e desloca as aulas posteriores para preservar a ordem.
 
+## Exportação e importação
+
+Cada currículo pode ser exportado pela ação **Exportar** como um arquivo JSON. O arquivo contém currículo, módulos, aulas, blocos cronometrados, técnicas sugeridas, descrições, cuidados e durações.
+
+A ação **Exportar matriz** reúne todos os currículos da unidade em um único JSON. **Importar matriz** valida todos os itens antes de iniciar e cria todos os currículos em uma única transação: se um item inválido impedir a importação, nenhum currículo parcial é gravado.
+
+A ação **Importar planejamento** sempre cria um novo currículo na unidade ativa; ela nunca atualiza ou remove um currículo existente. O arquivo usa o contrato `sysbelt-planejamento`, versão `1`, e é validado antes de qualquer gravação. A modalidade é reconhecida pelo nome na unidade de destino. Caso ela não exista, a importação permanece válida e informa que o currículo ficou sem modalidade para que o usuário a escolha depois.
+
+IDs internos, conteúdos da biblioteca e modelos não são transportados entre unidades. Isso evita vínculos indevidos entre organizações; os blocos exportados preservam seus nomes, tempos, roteiro e cuidados para continuar operacionais após a importação.
+
 ## Blocos cronometrados
 
 Tipos disponíveis: aquecimento, jogo, técnica, sparring, pausa e alongamento. Cada bloco possui duração e pode registrar rounds, descanso, anúncio, modo de condução e cuidados/adaptações.
@@ -76,6 +86,10 @@ O Portal consome a fila compilada, não apenas técnicas legadas. Em celular, o 
 | Método | Rota | Finalidade |
 |---|---|---|
 | GET | `/curriculos` | Lista currículos estruturados da unidade. |
+| GET | `/curriculos/:id/exportar` | Baixa um currículo no formato JSON versionado. |
+| POST | `/curriculos/importar` | Valida e cria um novo currículo a partir do JSON exportado. |
+| GET | `/curriculos/exportar-matriz` | Baixa todos os currículos da unidade em uma matriz JSON. |
+| POST | `/curriculos/importar-matriz` | Importa uma matriz completa de modo atômico. |
 | POST | `/curriculos/aulas/assistida` | Cria roteiro estruturado a partir de conteúdos e modelo. |
 | POST | `/curriculos/aulas/:id/duplicar` | Duplica aula e preserva ordem. |
 | GET | `/biblioteca-pedagogica/conteudos/pesquisa` | Busca paginada de conteúdos técnicos. |

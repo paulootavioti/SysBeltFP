@@ -1,4 +1,5 @@
 import { ApiClient } from "../../../shared/api/ApiClient";
+import { api } from "../../../services/api";
 import type { AulaCurriculo, ConteudoBiblioteca, Curriculo, ItemCatalogoPedagogico, TemplatePlanejamento, TipoBlocoCurriculo, TipoItemCatalogoPedagogico } from "../types/curriculo";
 import type {
   CurriculoFormData,
@@ -89,6 +90,24 @@ export class CurriculoService {
 
   static async criar(data: CurriculoFormData) {
     return ApiClient.post<Curriculo>("/curriculos", corpoCurriculo(data));
+  }
+
+  static async exportar(id: number) {
+    const response = await api.get(`/curriculos/${id}/exportar`, { responseType: "blob" });
+    return response.data as Blob;
+  }
+
+  static async importar(data: unknown) {
+    return ApiClient.post<{ curriculo: Curriculo; avisos: string[] }>("/curriculos/importar", data);
+  }
+
+  static async exportarMatriz() {
+    const response = await api.get("/curriculos/exportar-matriz", { responseType: "blob" });
+    return response.data as Blob;
+  }
+
+  static async importarMatriz(data: unknown) {
+    return ApiClient.post<{ matriz: string; curriculos: Array<{ id: number; nome: string }>; avisos: string[] }>("/curriculos/importar-matriz", data);
   }
 
   static async criarModulo(data: ModuloFormData & { curriculoId: number }) {
