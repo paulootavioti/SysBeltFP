@@ -29,7 +29,7 @@ export class UpdateAulaCurriculoService {
     const prisma = prismaDaRequisicao();
     const aulaCurriculo = await prisma.aulaCurriculo.findUnique({
       where: { id },
-      include: { modulo: { include: { curriculo: true } } },
+      include: { modulo: { include: { curriculo: { include: { modalidade: { select: { bibliotecaModalidadeId: true } } } } } } },
     });
 
     if (!aulaCurriculo) {
@@ -44,7 +44,16 @@ export class UpdateAulaCurriculoService {
 
     const conteudoIds = [...new Set((data.blocos ?? []).flatMap((bloco) => bloco.conteudoTecnicoId ? [bloco.conteudoTecnicoId] : []))];
     if (conteudoIds.length) {
-      const conteudos = await prisma.conteudoTecnico.findMany({ where: { id: { in: conteudoIds }, OR: [{ unidadeId: null }, { unidadeId: aulaCurriculo.modulo.curriculo.unidadeId }] }, select: { id: true } });
+      const conteudos = await prisma.conteudoTecnico.findMany({
+        where: {
+          id: { in: conteudoIds },
+          OR: [{ unidadeId: null }, { unidadeId: aulaCurriculo.modulo.curriculo.unidadeId }],
+          ...(aulaCurriculo.modulo.curriculo.modalidade?.bibliotecaModalidadeId
+            ? { modalidadeId: aulaCurriculo.modulo.curriculo.modalidade.bibliotecaModalidadeId }
+            : {}),
+        },
+        select: { id: true },
+      });
       if (conteudos.length !== conteudoIds.length) throw new AppError("Um conteúdo selecionado não está disponível para esta unidade.");
     }
 

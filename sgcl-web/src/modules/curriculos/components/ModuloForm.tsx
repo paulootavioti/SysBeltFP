@@ -48,7 +48,7 @@ export function ModuloForm({ loading = false, initialValues, onSubmit }: ModuloF
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <MemorandoPedagogico label="Foco do módulo" value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Explique o que será desenvolvido neste módulo." sugestoes={["Consolidar postura, base e deslocamento antes de novas técnicas.", "Praticar entradas com controle, cooperação e troca de parceiros.", "Avaliar compreensão, segurança e autonomia antes de avançar."]} />
+            <MemorandoPedagogico label="Foco do módulo" abrirAoIniciar={Boolean(initialValues)} value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Explique o que será desenvolvido neste módulo." sugestoes={["Consolidar postura, base e deslocamento antes de novas técnicas.", "Praticar entradas com controle, cooperação e troca de parceiros.", "Avaliar compreensão, segurança e autonomia antes de avançar."]} />
           </FormGridItem>
         </FormGrid>
 

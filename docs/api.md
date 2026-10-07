@@ -240,6 +240,10 @@ Corpo de `PATCH /aulas/programadas/:id/transferir`:
 | POST / PUT `/tecnicas`, `/tecnicas/:id` | | ADMIN, PROFESSOR |
 | DELETE | `/:id` | ADMIN |
 
+O fluxo atual usa blocos cronometrados em `AulaCurriculo`; técnicas e jogos legados permanecem apenas por compatibilidade. A criação assistida é `POST /aulas/assistida`, a duplicação é `POST /aulas/:id/duplicar` e o catálogo da unidade fica em `/catalogo-pedagogico`.
+
+Consulte [Planejamento Pedagógico](planejamento-pedagogico.md) para a referência operacional, Biblioteca Técnica, modelos e Portal do Professor.
+
 ---
 
 # Técnicas — `/tecnicas`

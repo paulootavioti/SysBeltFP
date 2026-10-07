@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import { Button } from "../../../components/ui/Button";
 import { Textarea } from "../../../components/ui/Textarea";
@@ -11,14 +11,21 @@ interface MemorandoPedagogicoProps {
   placeholder: string;
   rows?: number;
   className?: string;
+  abrirAoIniciar?: boolean;
 }
 
 /** Campo de texto livre com repertório rápido, sem forçar o professor a usar um modelo. */
-export function MemorandoPedagogico({ label, value, onChange, sugestoes, placeholder, rows = 3, className }: MemorandoPedagogicoProps) {
+export function MemorandoPedagogico({ label, value, onChange, sugestoes, placeholder, rows = 3, className, abrirAoIniciar = false }: MemorandoPedagogicoProps) {
   const area = useRef<HTMLTextAreaElement | null>(null);
+  const [editorAberto, setEditorAberto] = useState(abrirAoIniciar);
 
   function usarSugestao(sugestao: string) {
     onChange(value.trim() ? `${value.trim()}\n${sugestao}` : sugestao);
+  }
+
+  function abrirEditor() {
+    setEditorAberto(true);
+    requestAnimationFrame(() => area.current?.focus());
   }
 
   return (
@@ -27,9 +34,12 @@ export function MemorandoPedagogico({ label, value, onChange, sugestoes, placeho
         {sugestoes.map((sugestao) => (
           <button key={sugestao} type="button" onClick={() => usarSugestao(sugestao)}>{sugestao}</button>
         ))}
-        <Button type="button" variant="secondary" onClick={() => area.current?.focus()}>Escrever nova orientação</Button>
+        <Button type="button" variant="secondary" onClick={abrirEditor}>
+          {value.trim() ? "Editar orientação" : "Cadastrar nova orientação"}
+        </Button>
       </div>
-      <Textarea label={label} rows={rows} placeholder={placeholder} value={value} onChange={(event) => onChange(event.target.value)} ref={area} />
+      {!editorAberto && value.trim() && <p className="memorando-pedagogico-resumo">{value}</p>}
+      {editorAberto && <Textarea label={label} rows={rows} placeholder={placeholder} value={value} onChange={(event) => onChange(event.target.value)} ref={area} />}
     </div>
   );
 }

@@ -73,7 +73,7 @@ export function CurriculoForm({ loading = false, initialValues, onSubmit }: Curr
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <MemorandoPedagogico label="Diretriz do currículo" value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Defina o resultado pedagógico esperado ao fim deste currículo." sugestoes={["Construir fundamentos técnicos com segurança e progressão.", "Desenvolver autonomia, disciplina e respeito nas práticas.", "Organizar a evolução por faixa, maturidade e domínio técnico."]} />
+            <MemorandoPedagogico label="Diretriz do currículo" abrirAoIniciar={Boolean(initialValues)} value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Defina o resultado pedagógico esperado ao fim deste currículo." sugestoes={["Construir fundamentos técnicos com segurança e progressão.", "Desenvolver autonomia, disciplina e respeito nas práticas.", "Organizar a evolução por faixa, maturidade e domínio técnico."]} />
           </FormGridItem>
         </FormGrid>
 
