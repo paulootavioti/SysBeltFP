@@ -11,6 +11,7 @@ import {
   aulaAssistidaSchema,
   tecnicaCurriculoSchema,
   itemCatalogoPedagogicoSchema,
+  curriculoImportacaoSchema,
 } from "./validation";
 
 const curriculosRoutes = Router();
@@ -35,6 +36,16 @@ curriculosRoutes.get(
 curriculosRoutes.get("/catalogo-pedagogico", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.listCatalogo);
 curriculosRoutes.post("/catalogo-pedagogico", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), validateBody(itemCatalogoPedagogicoSchema), controller.createCatalogo);
 curriculosRoutes.delete("/catalogo-pedagogico/:id", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.deleteCatalogo);
+
+curriculosRoutes.post(
+  "/importar",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR"]),
+  validateBody(curriculoImportacaoSchema),
+  controller.import
+);
+
+curriculosRoutes.get("/:id/exportar", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.export);
 
 curriculosRoutes.get(
   "/:id",

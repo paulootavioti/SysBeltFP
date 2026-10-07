@@ -16,6 +16,8 @@ import { DeleteAulaCurriculoService } from "./services/DeleteAulaCurriculoServic
 import { DeleteTecnicaCurriculoService } from "./services/DeleteTecnicaCurriculoService";
 import { DuplicateAulaCurriculoService } from "./services/DuplicateAulaCurriculoService";
 import { CreateAulaAssistidaService } from "./services/CreateAulaAssistidaService";
+import { ExportCurriculoService } from "./services/ExportCurriculoService";
+import { ImportCurriculoService } from "./services/ImportCurriculoService";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../shared/errors/AppError";
@@ -67,6 +69,18 @@ export class CurriculosController {
     const curriculo = await service.execute(Number(req.params.id), req.user.unidadeId);
 
     return res.json(curriculo);
+  }
+
+  async export(req: Request, res: Response) {
+    const arquivo = await new ExportCurriculoService().execute(Number(req.params.id), req.user.unidadeId);
+    const nomeSeguro = arquivo.curriculo.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "") || "planejamento";
+    res.setHeader("Content-Disposition", `attachment; filename="${nomeSeguro}.json"`);
+    return res.json(arquivo);
+  }
+
+  async import(req: Request, res: Response) {
+    const resultado = await new ImportCurriculoService().execute(req.body, requireUnidadeId(req));
+    return res.status(201).json(resultado);
   }
 
   async createModulo(req: Request, res: Response) {
