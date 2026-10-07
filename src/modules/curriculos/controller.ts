@@ -18,6 +18,8 @@ import { DuplicateAulaCurriculoService } from "./services/DuplicateAulaCurriculo
 import { CreateAulaAssistidaService } from "./services/CreateAulaAssistidaService";
 import { ExportCurriculoService } from "./services/ExportCurriculoService";
 import { ImportCurriculoService } from "./services/ImportCurriculoService";
+import { ExportMatrizPlanejamentoService } from "./services/ExportMatrizPlanejamentoService";
+import { ImportMatrizPlanejamentoService } from "./services/ImportMatrizPlanejamentoService";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../shared/errors/AppError";
@@ -80,6 +82,17 @@ export class CurriculosController {
 
   async import(req: Request, res: Response) {
     const resultado = await new ImportCurriculoService().execute(req.body, requireUnidadeId(req));
+    return res.status(201).json(resultado);
+  }
+
+  async exportMatrix(req: Request, res: Response) {
+    const arquivo = await new ExportMatrizPlanejamentoService().execute(requireUnidadeId(req));
+    res.setHeader("Content-Disposition", 'attachment; filename="matriz-planejamentos.json"');
+    return res.json(arquivo);
+  }
+
+  async importMatrix(req: Request, res: Response) {
+    const resultado = await new ImportMatrizPlanejamentoService().execute(req.body, requireUnidadeId(req));
     return res.status(201).json(resultado);
   }
 

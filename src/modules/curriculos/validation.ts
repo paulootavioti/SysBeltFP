@@ -91,10 +91,7 @@ const tecnicaImportacaoSchema = z.object({
   duracaoPrevistaSegundos: z.coerce.number().int().positive().max(14400),
 });
 
-export const curriculoImportacaoSchema = z.object({
-  schema: z.literal("sysbelt-planejamento"),
-  versao: z.literal(1),
-  curriculo: z.object({
+export const curriculoArquivoSchema = z.object({
     nome: z.string().trim().min(1).max(160),
     descricao: z.string().trim().max(5000).nullish(),
     publico: z.string().trim().max(160).nullish(),
@@ -117,5 +114,19 @@ export const curriculoImportacaoSchema = z.object({
         tecnicas: z.array(tecnicaImportacaoSchema).max(100),
       })).max(200),
     })).max(100),
+});
+
+export const curriculoImportacaoSchema = z.object({
+  schema: z.literal("sysbelt-planejamento"),
+  versao: z.literal(1),
+  curriculo: curriculoArquivoSchema,
+});
+
+export const matrizPlanejamentoImportacaoSchema = z.object({
+  schema: z.literal("sysbelt-matriz-planejamento"),
+  versao: z.literal(1),
+  matriz: z.object({
+    nome: z.string().trim().min(1).max(160),
+    curriculos: z.array(curriculoArquivoSchema).min(1).max(100),
   }),
 });

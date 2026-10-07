@@ -12,6 +12,7 @@ import {
   tecnicaCurriculoSchema,
   itemCatalogoPedagogicoSchema,
   curriculoImportacaoSchema,
+  matrizPlanejamentoImportacaoSchema,
 } from "./validation";
 
 const curriculosRoutes = Router();
@@ -43,6 +44,15 @@ curriculosRoutes.post(
   ensureRole(["ADMIN", "PROFESSOR"]),
   validateBody(curriculoImportacaoSchema),
   controller.import
+);
+
+curriculosRoutes.get("/exportar-matriz", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.exportMatrix);
+curriculosRoutes.post(
+  "/importar-matriz",
+  ensureAuthenticated,
+  ensureRole(["ADMIN", "PROFESSOR"]),
+  validateBody(matrizPlanejamentoImportacaoSchema),
+  controller.importMatrix
 );
 
 curriculosRoutes.get("/:id/exportar", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.export);
