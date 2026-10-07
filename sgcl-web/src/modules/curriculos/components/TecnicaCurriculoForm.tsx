@@ -3,7 +3,6 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
-import { Textarea } from "../../../components/ui/Textarea";
 import { Checkbox } from "../../../components/ui/Checkbox";
 import { Button } from "../../../components/ui/Button";
 import { ErrorMessage } from "../../../components/ui/ErrorMessage";
@@ -11,6 +10,7 @@ import { FormGrid } from "../../../components/ui/FormGrid";
 import { FormGridItem } from "../../../components/ui/FormGridItem";
 
 import { tecnicaCurriculoSchema, type TecnicaCurriculoFormData } from "../schema/curriculo.schema";
+import { MemorandoPedagogico } from "./MemorandoPedagogico";
 
 interface TecnicaCurriculoFormProps {
   loading?: boolean;
@@ -54,7 +54,7 @@ export function TecnicaCurriculoForm({ loading = false, initialValues, onSubmit 
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <Textarea label="Como conduzir" rows={4} placeholder="Descreva a realização. Cadastre cuidados e adaptações nos blocos da aula." {...register("descricao")} />
+            <MemorandoPedagogico label="Como conduzir" value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Descreva demonstração, prática e critério para avançar." rows={4} sugestoes={["Demonstre lentamente, destaque os pontos de contato e convide perguntas.", "Organize duplas compatíveis e alterne os papéis a cada repetição.", "Interrompa para corrigir postura e retome apenas quando todos compreenderem."]} />
           </FormGridItem>
         </FormGrid>
 

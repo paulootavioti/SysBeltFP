@@ -12,6 +12,7 @@ import { FormGridItem } from "../../../components/ui/FormGridItem";
 import { useModalidades } from "../../modalidades/hooks/useModalidades";
 
 import { curriculoSchema, type CurriculoFormData } from "../schema/curriculo.schema";
+import { MemorandoPedagogico } from "./MemorandoPedagogico";
 
 interface CurriculoFormProps {
   loading?: boolean;
@@ -72,7 +73,7 @@ export function CurriculoForm({ loading = false, initialValues, onSubmit }: Curr
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <Input label="Descrição" {...register("descricao")} />
+            <MemorandoPedagogico label="Diretriz do currículo" value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Defina o resultado pedagógico esperado ao fim deste currículo." sugestoes={["Construir fundamentos técnicos com segurança e progressão.", "Desenvolver autonomia, disciplina e respeito nas práticas.", "Organizar a evolução por faixa, maturidade e domínio técnico."]} />
           </FormGridItem>
         </FormGrid>
 

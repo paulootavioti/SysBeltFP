@@ -11,6 +11,7 @@ import { FormGridItem } from "../../../components/ui/FormGridItem";
 
 import { moduloSchema, type ModuloFormData } from "../schema/curriculo.schema";
 import { FAIXAS_INFANTIL } from "../../graduacoes/types";
+import { MemorandoPedagogico } from "./MemorandoPedagogico";
 
 const OPCOES_FAIXA = FAIXAS_INFANTIL.map((faixa) => ({ label: faixa, value: faixa }));
 
@@ -47,7 +48,7 @@ export function ModuloForm({ loading = false, initialValues, onSubmit }: ModuloF
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <Input label="Descrição" {...register("descricao")} />
+            <MemorandoPedagogico label="Foco do módulo" value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Explique o que será desenvolvido neste módulo." sugestoes={["Consolidar postura, base e deslocamento antes de novas técnicas.", "Praticar entradas com controle, cooperação e troca de parceiros.", "Avaliar compreensão, segurança e autonomia antes de avançar."]} />
           </FormGridItem>
         </FormGrid>
 

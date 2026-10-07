@@ -5,7 +5,6 @@ import { PageHeader } from "../../../../components/layout/PageHeader";
 import { Button } from "../../../../components/ui/Button";
 import { Input } from "../../../../components/ui/Input";
 import { Select } from "../../../../components/ui/Select";
-import { Textarea } from "../../../../components/ui/Textarea";
 import { ErrorMessage } from "../../../../components/ui/ErrorMessage";
 import { Loading } from "../../../../components/ui/Loading";
 import { EmptyState } from "../../../../components/ui/EmptyState";
@@ -22,6 +21,7 @@ import { CurriculoForm } from "../../components/CurriculoForm";
 import { ModuloForm } from "../../components/ModuloForm";
 import { AulaCurriculoForm } from "../../components/AulaCurriculoForm";
 import { TecnicaCurriculoForm } from "../../components/TecnicaCurriculoForm";
+import { MemorandoPedagogico } from "../../components/MemorandoPedagogico";
 import { ModuloAccordionCard } from "../../components/ModuloAccordionCard";
 import { TrilhaFaixasModulos } from "../../components/TrilhaFaixasModulos";
 
@@ -702,8 +702,8 @@ export function Curriculos() {
           {novoItemCatalogo.tipo === "MOMENTO" && <Select label="Etapa da aula" value={novoItemCatalogo.tipoBloco} options={[{ value: "AQUECIMENTO", label: "Aquecimento" }, { value: "JOGO", label: "Jogo" }, { value: "PAUSA", label: "Pausa" }, { value: "ALONGAMENTO", label: "Alongamento" }, { value: "SPARRING", label: "Sparring" }]} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, tipoBloco: event.target.value }))} />}
           <Input label="Nome" required value={novoItemCatalogo.nome} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, nome: event.target.value }))} />
           <Input label="Duração sugerida (min)" required type="number" min="1" value={novoItemCatalogo.duracaoMinutos} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, duracaoMinutos: event.target.value }))} />
-          <Textarea label="Como conduzir" placeholder="Explique a sequência, a organização dos alunos e o critério para avançar." rows={4} value={novoItemCatalogo.descricao} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, descricao: event.target.value }))} />
-          <Textarea label="Cuidados e adaptações" placeholder="Indique intensidade, pares, espaço e adaptações para idade ou maturidade." rows={3} value={novoItemCatalogo.atencoesFaixaEtaria} onChange={(event) => setNovoItemCatalogo((atual) => ({ ...atual, atencoesFaixaEtaria: event.target.value }))} />
+          <MemorandoPedagogico label="Como conduzir" placeholder="Explique a sequência, a organização dos alunos e o critério para avançar." rows={4} value={novoItemCatalogo.descricao} onChange={(value) => setNovoItemCatalogo((atual) => ({ ...atual, descricao: value }))} sugestoes={["Demonstre a atividade e faça uma rodada curta de experimentação.", "Divida em duplas compatíveis e alterne os papéis.", "Retome o grupo para corrigir antes de aumentar a dificuldade."]} />
+          <MemorandoPedagogico label="Cuidados e adaptações" placeholder="Indique intensidade, pares, espaço e adaptações para idade ou maturidade." rows={3} value={novoItemCatalogo.atencoesFaixaEtaria} onChange={(value) => setNovoItemCatalogo((atual) => ({ ...atual, atencoesFaixaEtaria: value }))} sugestoes={["Mantenha espaço livre e intensidade baixa para crianças menores.", "Evite diferença grande de tamanho ou experiência entre os pares.", "Ofereça uma variação mais simples quando houver insegurança."]} />
           <Button type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Cadastrar item"}</Button>
         </form>
       </Modal>
@@ -728,10 +728,10 @@ export function Curriculos() {
           <Select label="Tipo" value={novoConteudo.tipo} options={[{ value: "TECNICA", label: "Técnica" }, { value: "POSICAO", label: "Posição" }, { value: "EXERCICIO", label: "Exercício" }, { value: "AQUECIMENTO", label: "Aquecimento" }, { value: "DRILL", label: "Drill" }]} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, tipo: event.target.value }))} />
           <Input label="Nome" required value={novoConteudo.nome} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, nome: event.target.value }))} />
           <Input label="Duração sugerida (min)" required type="number" min="1" value={novoConteudo.duracaoMinutos} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, duracaoMinutos: event.target.value }))} />
-          <Textarea label="Objetivo pedagógico" placeholder="O que o aluno deve compreender ou desenvolver com este conteúdo." rows={3} value={novoConteudo.descricao} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, descricao: event.target.value }))} />
-          <Textarea label="Como executar" placeholder="Descreva a posição inicial, a sequência e a conclusão da atividade." rows={4} value={novoConteudo.passoAPasso} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, passoAPasso: event.target.value }))} />
-          <Textarea label="Pontos de atenção do professor" placeholder="Sinais para corrigir, erros comuns e onde observar a turma." rows={3} value={novoConteudo.pontosAtencao} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, pontosAtencao: event.target.value }))} />
-          <Textarea label="Cuidados e adaptações" placeholder="Riscos, segurança e adaptações para alunos menores ou iniciantes." rows={3} value={novoConteudo.cuidados} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, cuidados: event.target.value }))} />
+          <MemorandoPedagogico label="Objetivo pedagógico" placeholder="O que o aluno deve compreender ou desenvolver com este conteúdo." value={novoConteudo.descricao} onChange={(value) => setNovoConteudo((atual) => ({ ...atual, descricao: value }))} sugestoes={["Desenvolver controle corporal e percepção de base.", "Compreender a sequência antes de aplicar em dupla.", "Reconhecer o momento seguro para iniciar e finalizar o movimento."]} />
+          <MemorandoPedagogico label="Como executar" placeholder="Descreva a posição inicial, a sequência e a conclusão da atividade." rows={4} value={novoConteudo.passoAPasso} onChange={(value) => setNovoConteudo((atual) => ({ ...atual, passoAPasso: value }))} sugestoes={["Apresente a posição inicial e os pontos de contato.", "Demonstre a sequência em velocidade lenta e depois em ritmo normal.", "Finalize mostrando a posição de segurança e a saída da atividade."]} />
+          <MemorandoPedagogico label="Pontos de atenção do professor" placeholder="Sinais para corrigir, erros comuns e onde observar a turma." value={novoConteudo.pontosAtencao} onChange={(value) => setNovoConteudo((atual) => ({ ...atual, pontosAtencao: value }))} sugestoes={["Observe alinhamento, base e distribuição de peso.", "Corrija um detalhe por vez para não sobrecarregar o aluno.", "Confirme se os dois parceiros entendem seus papéis antes de iniciar."]} />
+          <MemorandoPedagogico label="Cuidados e adaptações" placeholder="Riscos, segurança e adaptações para alunos menores ou iniciantes." value={novoConteudo.cuidados} onChange={(value) => setNovoConteudo((atual) => ({ ...atual, cuidados: value }))} sugestoes={["Reduza amplitude e velocidade para iniciantes ou crianças menores.", "Interrompa se houver dor, desconforto ou perda de controle.", "Use parceiro compatível e supervisão próxima nas primeiras repetições."]} />
           <Input label="Idade mínima recomendada" type="number" min="0" value={novoConteudo.faixaEtariaMinima} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, faixaEtariaMinima: event.target.value }))} />
           <Input label="Idade máxima recomendada" type="number" min="0" value={novoConteudo.faixaEtariaMaxima} onChange={(event) => setNovoConteudo((atual) => ({ ...atual, faixaEtariaMaxima: event.target.value }))} />
           <Button type="submit" disabled={salvando || !novoConteudo.modalidadeId || !novoConteudo.nome.trim()}>{salvando ? "Salvando..." : "Cadastrar conteúdo"}</Button>

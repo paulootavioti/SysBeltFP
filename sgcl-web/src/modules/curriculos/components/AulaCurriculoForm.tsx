@@ -3,7 +3,6 @@ import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
-import { Textarea } from "../../../components/ui/Textarea";
 import { Button } from "../../../components/ui/Button";
 import { ErrorMessage } from "../../../components/ui/ErrorMessage";
 import { FormGrid } from "../../../components/ui/FormGrid";
@@ -12,6 +11,7 @@ import { Select } from "../../../components/ui/Select";
 
 import { aulaCurriculoSchema, type AulaCurriculoFormData } from "../schema/curriculo.schema";
 import type { ConteudoBiblioteca, ItemCatalogoPedagogico, TemplatePlanejamento, TipoBlocoCurriculo } from "../types/curriculo";
+import { MemorandoPedagogico } from "./MemorandoPedagogico";
 
 interface AulaCurriculoFormProps {
   loading?: boolean;
@@ -110,7 +110,7 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <Input label="Objetivo" {...register("objetivo")} />
+            <MemorandoPedagogico label="Objetivo da aula" value={methods.watch("objetivo") ?? ""} onChange={(value) => methods.setValue("objetivo", value)} placeholder="Defina o que os alunos devem praticar ou compreender hoje." sugestoes={["Reconhecer a posição e executar a entrada com segurança.", "Praticar a sequência com cooperação e controle de intensidade.", "Aplicar o conteúdo em situação orientada, respeitando os limites da turma."]} />
           </FormGridItem>
 
           <FormGridItem>
@@ -118,11 +118,11 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <Textarea label="Jogos Sugeridos" {...register("jogosSugeridos")} />
+            <MemorandoPedagogico label="Jogos e dinâmicas" value={methods.watch("jogosSugeridos") ?? ""} onChange={(value) => methods.setValue("jogosSugeridos", value)} placeholder="Registre uma dinâmica por linha ou escreva uma nova proposta." sugestoes={["Jogo de equilíbrio e base.", "Desafio de deslocamento em dupla.", "Circuito técnico com rodízio de estações."]} />
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <Textarea label="Descrição" {...register("descricao")} />
+            <MemorandoPedagogico label="Orientação geral ao professor" value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Registre a intenção, a organização e os combinados desta aula." sugestoes={["Comece com uma demonstração breve e mantenha grupos pequenos.", "Priorize qualidade de execução antes de aumentar velocidade ou intensidade.", "Reserve um momento final para revisar aprendizados e ouvir a turma."]} />
           </FormGridItem>
         </FormGrid>
 
@@ -176,8 +176,8 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
                 {tipo === "SPARRING" && <Input label="Descanso (s)" type="number" min="0" {...register(`blocos.${index}.descansoSegundos`)} />}
                 {tipo === "PAUSA" && <Input label="Anúncio" {...register(`blocos.${index}.anuncio`)} />}
                 <input type="hidden" {...register(`blocos.${index}.conteudoTecnicoId`)} />
-                <Textarea className="curriculo-bloco-descricao" label="Como conduzir" placeholder="O que demonstrar, como organizar e quando avançar." rows={2} {...register(`blocos.${index}.descricao`)} />
-                <Textarea className="curriculo-bloco-atencoes" label="Cuidados e adaptações" placeholder="Segurança, intensidade, pares e adaptações por idade." rows={2} {...register(`blocos.${index}.atencoesFaixaEtaria`)} />
+                <MemorandoPedagogico className="curriculo-bloco-descricao" label="Como conduzir" value={blocos[index]?.descricao ?? ""} onChange={(value) => methods.setValue(`blocos.${index}.descricao`, value)} placeholder="O que demonstrar, como organizar e quando avançar." rows={2} sugestoes={["Demonstre, deixe a turma experimentar e corrija um ponto por vez.", "Organize pares compatíveis e alterne os papéis na metade do tempo.", "Faça uma pausa breve para checar compreensão antes de avançar."]} />
+                <MemorandoPedagogico className="curriculo-bloco-atencoes" label="Cuidados e adaptações" value={blocos[index]?.atencoesFaixaEtaria ?? ""} onChange={(value) => methods.setValue(`blocos.${index}.atencoesFaixaEtaria`, value)} placeholder="Segurança, intensidade, pares e adaptações por idade." rows={2} sugestoes={["Reduza a intensidade e use instruções curtas para os menores.", "Evite pares com diferença grande de tamanho ou experiência.", "Interrompa diante de desconforto e ofereça uma variação mais simples."]} />
                 <Button type="button" variant="danger" onClick={() => remove(index)}>Remover</Button>
               </div>
             );
