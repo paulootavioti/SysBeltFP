@@ -101,13 +101,20 @@ export class CurriculoService {
     return ApiClient.post<{ curriculo: Curriculo; avisos: string[] }>("/curriculos/importar", data);
   }
 
-  static async exportarMatriz() {
-    const response = await api.get("/curriculos/exportar-matriz", { responseType: "blob" });
+  static async exportarMatriz(formato: "csv" | "xls" | "pdf") {
+    const response = await api.get(`/curriculos/exportar-matriz-arquivo?formato=${formato}`, { responseType: "blob" });
     return response.data as Blob;
   }
 
   static async importarMatriz(data: unknown) {
     return ApiClient.post<{ matriz: string; curriculos: Array<{ id: number; nome: string }>; avisos: string[] }>("/curriculos/importar-matriz", data);
+  }
+
+  static async importarArquivoMatriz(arquivo: File) {
+    const dados = new FormData();
+    dados.append("arquivo", arquivo);
+    const response = await api.post<{ matriz: string; curriculos: Array<{ id: number; nome: string }>; avisos: string[] }>("/curriculos/importar-matriz-arquivo", dados);
+    return response.data;
   }
 
   static async criarModulo(data: ModuloFormData & { curriculoId: number }) {
