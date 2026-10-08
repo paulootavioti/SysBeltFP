@@ -47,7 +47,6 @@ type ModalState =
   | { tipo: "catalogo" }
   | { tipo: "biblioteca" }
   | { tipo: "novoConteudo" }
-  | { tipo: "importar" }
   | { tipo: "importarMatriz" }
   | null;
 
@@ -200,53 +199,14 @@ export function Curriculos() {
     }
   }
 
-  async function handleExportarCurriculo(curriculo: Curriculo) {
+  async function handleExportarMatriz(formato: "csv" | "xls" | "pdf") {
     try {
       setErro("");
-      const arquivo = await CurriculoService.exportar(curriculo.id);
+      const arquivo = await CurriculoService.exportarMatriz(formato);
       const url = URL.createObjectURL(arquivo);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${curriculo.nome.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "planejamento"}.json`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      setErro(getApiErrorMessage(error, "Erro ao exportar planejamento."));
-    }
-  }
-
-  async function handleImportarCurriculo() {
-    if (!arquivoImportacao) {
-      setErro("Selecione um arquivo de planejamento para importar.");
-      return;
-    }
-
-    try {
-      setSalvando(true);
-      setErro("");
-      const dados = JSON.parse(await arquivoImportacao.text()) as unknown;
-      const resultado = await CurriculoService.importar(dados);
-      await carregarCurriculos();
-      setArquivoImportacao(null);
-      setModal(null);
-      if (resultado.avisos.length) setErro(resultado.avisos.join(" "));
-    } catch (error) {
-      setErro(error instanceof SyntaxError ? "O arquivo selecionado não contém um JSON válido." : getApiErrorMessage(error, "Não foi possível importar o planejamento."));
-    } finally {
-      setSalvando(false);
-    }
-  }
-
-  async function handleExportarMatriz() {
-    try {
-      setErro("");
-      const arquivo = await CurriculoService.exportarMatriz();
-      const url = URL.createObjectURL(arquivo);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "matriz-planejamentos.json";
+      link.download = `matriz-planejamentos.${formato}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -265,7 +225,7 @@ export function Curriculos() {
     try {
       setSalvando(true);
       setErro("");
-      const resultado = await CurriculoService.importarMatriz(JSON.parse(await arquivoImportacao.text()) as unknown);
+      const resultado = await CurriculoService.importarArquivoMatriz(arquivoImportacao);
       await carregarCurriculos();
       setArquivoImportacao(null);
       setModal(null);
@@ -584,14 +544,17 @@ export function Curriculos() {
         <Button type="button" variant="secondary" onClick={() => setModal({ tipo: "catalogo" })}>
           Catálogo pedagógico
         </Button>
-        <Button type="button" variant="secondary" onClick={() => setModal({ tipo: "importar" })}>
-          Importar planejamento
-        </Button>
         <Button type="button" variant="secondary" onClick={() => setModal({ tipo: "importarMatriz" })}>
-          Importar matriz
+          Importar CSV/XLS
         </Button>
-        <Button type="button" variant="secondary" disabled={curriculos.length === 0} onClick={() => void handleExportarMatriz()}>
-          Exportar matriz
+        <Button type="button" variant="secondary" disabled={curriculos.length === 0} onClick={() => void handleExportarMatriz("csv")}>
+          Exportar CSV
+        </Button>
+        <Button type="button" variant="secondary" disabled={curriculos.length === 0} onClick={() => void handleExportarMatriz("xls")}>
+          Exportar XLS
+        </Button>
+        <Button type="button" variant="secondary" disabled={curriculos.length === 0} onClick={() => void handleExportarMatriz("pdf")}>
+          Exportar PDF
         </Button>
         <Button type="button" onClick={() => setModal({ tipo: "curriculo" })}>
           + Novo Currículo
@@ -624,10 +587,6 @@ export function Curriculos() {
                   onClick={() => setModal({ tipo: "curriculo", editando: curriculo })}
                 >
                   Editar
-                </Button>
-
-                <Button type="button" variant="secondary" onClick={() => void handleExportarCurriculo(curriculo)}>
-                  Exportar
                 </Button>
 
                 <Button
@@ -712,27 +671,12 @@ export function Curriculos() {
         />
       </Modal>
 
-      <Modal open={modal?.tipo === "importar"} title="Importar planejamento" onClose={() => setModal(null)}>
-        <form onSubmit={(event) => { event.preventDefault(); void handleImportarCurriculo(); }}>
-          <Input
-            label="Arquivo de planejamento"
-            type="file"
-            accept="application/json,.json"
-            required
-            onChange={(event) => setArquivoImportacao(event.target.files?.[0] ?? null)}
-          />
-          <Button type="submit" disabled={salvando || !arquivoImportacao}>
-            {salvando ? "Importando..." : "Importar como novo currículo"}
-          </Button>
-        </form>
-      </Modal>
-
       <Modal open={modal?.tipo === "importarMatriz"} title="Importar matriz de planejamentos" onClose={() => setModal(null)}>
         <form onSubmit={(event) => { event.preventDefault(); void handleImportarMatriz(); }}>
           <Input
-            label="Arquivo de matriz"
+            label="Arquivo CSV ou XLS"
             type="file"
-            accept="application/json,.json"
+            accept=".csv,.xls,.xlsx,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             required
             onChange={(event) => setArquivoImportacao(event.target.files?.[0] ?? null)}
           />

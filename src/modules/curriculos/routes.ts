@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 
 import { CurriculosController } from "./controller";
 import { ensureAuthenticated } from "../../shared/middlewares/ensureAuthenticated";
@@ -18,6 +19,7 @@ import {
 const curriculosRoutes = Router();
 
 const controller = new CurriculosController();
+const uploadMatriz = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024, files: 1 } });
 
 curriculosRoutes.post(
   "/",
@@ -26,6 +28,8 @@ curriculosRoutes.post(
   validateBody(curriculoSchema),
   controller.create
 );
+curriculosRoutes.get("/exportar-matriz-arquivo", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), controller.exportMatrixFile);
+curriculosRoutes.post("/importar-matriz-arquivo", ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]), uploadMatriz.single("arquivo"), controller.importMatrixFile);
 
 curriculosRoutes.get(
   "/",

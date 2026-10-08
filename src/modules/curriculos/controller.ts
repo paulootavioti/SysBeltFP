@@ -20,9 +20,10 @@ import { ExportCurriculoService } from "./services/ExportCurriculoService";
 import { ImportCurriculoService } from "./services/ImportCurriculoService";
 import { ExportMatrizPlanejamentoService } from "./services/ExportMatrizPlanejamentoService";
 import { ImportMatrizPlanejamentoService } from "./services/ImportMatrizPlanejamentoService";
+import { gerarArquivoMatriz, lerArquivoMatriz, validarFormatoMatriz } from "./services/ArquivoMatrizPlanejamentoService";
+import { AppError } from "../../shared/errors/AppError";
 import { requireUnidadeId } from "../../shared/utils/requireUnidadeId";
 import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
-import { AppError } from "../../shared/errors/AppError";
 
 export class CurriculosController {
   async listCatalogo(req: Request, res: Response) {
@@ -93,6 +94,24 @@ export class CurriculosController {
 
   async importMatrix(req: Request, res: Response) {
     const resultado = await new ImportMatrizPlanejamentoService().execute(req.body, requireUnidadeId(req));
+    return res.status(201).json(resultado);
+  }
+
+  async exportMatrixFile(req: Request, res: Response) {
+    const formato = validarFormatoMatriz(req.query.formato);
+    const matriz = await new ExportMatrizPlanejamentoService().execute(requireUnidadeId(req));
+    const arquivo = await gerarArquivoMatriz(matriz, formato);
+    const tipo = formato === "pdf" ? "application/pdf" : formato === "xls" ? "application/vnd.ms-excel" : "text/csv; charset=utf-8";
+    res.setHeader("Content-Type", tipo);
+    res.setHeader("Content-Disposition", `attachment; filename="matriz-planejamentos.${formato}"`);
+    return res.send(arquivo);
+  }
+
+  async importMatrixFile(req: Request, res: Response) {
+    if (!req.file) throw new AppError("Selecione um arquivo CSV ou XLS.");
+    let matriz: unknown;
+    try { matriz = lerArquivoMatriz(req.file.buffer); } catch { throw new AppError("Não foi possível ler a matriz. Use um CSV ou XLS exportado pelo SysBelt."); }
+    const resultado = await new ImportMatrizPlanejamentoService().execute(matriz, requireUnidadeId(req));
     return res.status(201).json(resultado);
   }
 
