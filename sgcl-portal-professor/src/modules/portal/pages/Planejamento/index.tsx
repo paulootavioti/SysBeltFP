@@ -20,7 +20,7 @@ export function Planejamento() {
   const [curriculos, setCurriculos] = useState<Curriculo[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
-  const [curriculoId, setCurriculoId] = useState("");
+  const [turmaId, setTurmaId] = useState("");
 
   useEffect(() => {
     AcademicoService.listarCurriculos()
@@ -38,12 +38,13 @@ export function Planejamento() {
       : turmas[0];
 
     if (turma?.curriculoId) {
-      setCurriculoId(String(turma.curriculoId));
+      setTurmaId(String(turma.id));
     }
   }, [turmas, searchParams]);
 
   const opcoesTurma = turmas.filter((turma) => turma.curriculoId);
-  const curriculoSelecionado = curriculos.find((curriculo) => String(curriculo.id) === curriculoId);
+  const turmaSelecionada = opcoesTurma.find((turma) => String(turma.id) === turmaId);
+  const curriculoSelecionado = curriculos.find((curriculo) => curriculo.id === turmaSelecionada?.curriculoId);
 
   return (
     <div className="planejamento-page">
@@ -59,9 +60,9 @@ export function Planejamento() {
             {opcoesTurma.length > 1 && (
               <label className="planejamento-select">
                 <span>Turma</span>
-                <select value={curriculoId} onChange={(e) => setCurriculoId(e.target.value)}>
+                <select value={turmaId} onChange={(e) => setTurmaId(e.target.value)}>
                   {opcoesTurma.map((turma) => (
-                    <option key={turma.id} value={String(turma.curriculoId)}>
+                    <option key={turma.id} value={String(turma.id)}>
                       {turma.nome}
                     </option>
                   ))}
@@ -84,7 +85,7 @@ export function Planejamento() {
                 {curriculoSelecionado.modulos.length === 0 ? (
                   <p className="planejamento-vazio">Nenhum módulo cadastrado.</p>
                 ) : (
-                  curriculoSelecionado.modulos
+                  [...curriculoSelecionado.modulos]
                     .sort((a, b) => a.ordem - b.ordem)
                     .map((modulo) => (
                       <details key={modulo.id} className="modulo-card">
@@ -95,7 +96,7 @@ export function Planejamento() {
 
                         {modulo.descricao && <p className="modulo-card-descricao">{modulo.descricao}</p>}
 
-                        {modulo.aulas
+                        {[...modulo.aulas]
                           .sort((a, b) => a.ordem - b.ordem)
                           .map((aula) => (
                             <details key={aula.id} className="aula-card">

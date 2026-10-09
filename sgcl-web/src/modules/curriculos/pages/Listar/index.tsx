@@ -26,6 +26,8 @@ import { ModuloAccordionCard } from "../../components/ModuloAccordionCard";
 import { TrilhaFaixasModulos } from "../../components/TrilhaFaixasModulos";
 
 import { filtrarCurriculosPorBusca } from "../../utils/filtrarCurriculos";
+import { duracaoDoBlocoEmSegundos } from "../../utils/duracaoBlocos";
+import { perfilTemAcesso } from "../../../../shared/constants/acessoPorPerfil";
 
 import type {
   CurriculoFormData,
@@ -83,7 +85,7 @@ export function Curriculos() {
   const [novoConteudo, setNovoConteudo] = useState({ modalidadeId: "", tipo: "TECNICA", nome: "", descricao: "", passoAPasso: "", pontosAtencao: "", cuidados: "", faixaEtariaMinima: "", faixaEtariaMaxima: "", duracaoMinutos: "5" });
   const [arquivoImportacao, setArquivoImportacao] = useState<File | null>(null);
 
-  const ehAdmin = usuario?.perfil === "ADMIN";
+  const ehAdmin = perfilTemAcesso(usuario?.perfil, "/dashboard");
   const buscaAtiva = busca.trim().length > 0;
 
   async function carregarCatalogoPedagogico() {
@@ -266,7 +268,7 @@ export function Curriculos() {
           tipo: bloco.tipo,
           nome: bloco.nome,
           ordem,
-          duracaoPrevistaSegundos: Number(bloco.duracaoMinutos || bloco.duracaoRoundMinutos || 1) * 60,
+          duracaoPrevistaSegundos: duracaoDoBlocoEmSegundos(bloco),
           rounds: bloco.tipo === "SPARRING" ? Number(bloco.rounds || 4) : undefined,
           duracaoRoundSegundos: bloco.tipo === "SPARRING" ? Number(bloco.duracaoRoundMinutos || 4) * 60 : undefined,
           descansoSegundos: bloco.tipo === "SPARRING" ? Number(bloco.descansoSegundos || 60) : undefined,
@@ -494,7 +496,7 @@ export function Curriculos() {
     <Layout>
       <PageHeader
         title="Planejamento Pedagógico"
-        subtitle="Currículo, módulos, aulas planejadas, técnicas sugeridas e jogos."
+        subtitle="Organize currículos, módulos e aulas com etapas cronometradas"
       />
 
       <ErrorMessage message={erro} />
@@ -757,8 +759,9 @@ export function Curriculos() {
               : undefined
           }
           itensCatalogo={itensCatalogo}
-          conteudosBiblioteca={conteudosBiblioteca}
           templates={templatesPlanejamento}
+          modalidadeLocalId={modal?.tipo === "aula" ? curriculos.find((curriculo) => curriculo.modulos.some((modulo) => modulo.id === modal.moduloId))?.modalidadeId ?? undefined : undefined}
+          limiteMinutos={modal?.tipo === "aula" ? modal.editando?.duracaoTurmaMinutos ?? null : null}
           onSubmit={(data) => modal?.tipo === "aula" && handleSalvarAula(data, modal.moduloId, modal.editando)}
         />
       </Modal>

@@ -5,6 +5,7 @@ import { Badge } from "../../../components/ui/Badge";
 import { Accordion } from "../../../components/ui/Accordion";
 
 import type { AulaCurriculo, TecnicaCurriculo } from "../types/curriculo";
+import { jogosDaAula } from "../utils/jogosDaAula";
 
 interface AulaAccordionCardProps {
   aula: AulaCurriculo;
@@ -19,14 +20,6 @@ interface AulaAccordionCardProps {
   onEditarTecnica: (tecnica: TecnicaCurriculo) => void;
   onExcluirTecnica: (tecnica: TecnicaCurriculo) => void;
   tecnicaEstaExcluindo: (id: number) => boolean;
-}
-
-function jogosDaAula(jogosSugeridos?: string | null): string[] {
-  if (!jogosSugeridos) return [];
-  return jogosSugeridos
-    .split(",")
-    .map((jogo) => jogo.trim())
-    .filter(Boolean);
 }
 
 export function AulaAccordionCard({
@@ -56,10 +49,7 @@ export function AulaAccordionCard({
         titulo={
           <span className="acordeon-titulo">
             <h4>{aula.titulo}</h4>
-            <span className="acordeon-meta">Plano: {totalMinutos} min</span>
-            <span className="acordeon-contagem">
-              {aula.tecnicas.length} técnica{aula.tecnicas.length === 1 ? "" : "s"}
-            </span>
+            <span className="acordeon-meta">{aula.filaCompilada.blocos.length} etapas · {totalMinutos} min</span>
           </span>
         }
         acoes={
@@ -72,9 +62,9 @@ export function AulaAccordionCard({
               Duplicar
             </Button>
 
-            <Button type="button" variant="secondary" onClick={onNovaTecnica}>
+            {aula.blocos.length === 0 && aula.tecnicas.length > 0 && <Button type="button" variant="secondary" onClick={onNovaTecnica}>
               + Técnica
-            </Button>
+            </Button>}
 
             {ehAdmin && (
               <Button type="button" variant="danger" disabled={excluindo} onClick={onExcluir}>
@@ -92,6 +82,7 @@ export function AulaAccordionCard({
           )}
           {aula.objetivo && <p>{aula.objetivo}</p>}
           {aula.descricao && <p>{aula.descricao}</p>}
+          {aula.blocos.length === 0 && aula.tecnicas.length > 0 && <p className="curriculos-vazio">Esta aula usa o formato antigo de técnicas. Para cronometrar, adicione etapas ao editar a aula.</p>}
 
           {jogos.length > 0 && (
             <div className="jogos-lista">
