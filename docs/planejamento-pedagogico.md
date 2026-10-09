@@ -83,6 +83,12 @@ As sugestões não bloqueiam customização: o texto livre é sempre a fonte fin
 
 O Portal consome a fila compilada, não apenas técnicas legadas. Em celular, o professor vê duração por etapa, como conduzir e cuidados/adaptações. A aula em execução usa a mesma fila para acompanhar a sequência.
 
+O Portal consulta uma rota própria de currículos. Para o perfil PROFESSOR, a consulta é filtrada no banco pelas turmas em que ele é titular; currículos de outras turmas da unidade não são retornados.
+
+## Próxima evolução de execução
+
+Alterações de tempo e observações feitas pelo professor durante uma aula devem ficar vinculadas à aula executada, nunca ao currículo. A estrutura prevista é uma sobreposição por `Aula` e chave de bloco, consumida somente no Modo Aula e no histórico. Ela exige uma migration aditiva e uma especificação de edição/encerramento antes de ser aplicada.
+
 ## Endpoints principais
 
 | Método | Rota | Finalidade |
