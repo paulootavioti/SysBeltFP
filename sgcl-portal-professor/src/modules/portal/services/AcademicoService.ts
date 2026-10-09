@@ -23,7 +23,7 @@ export class AcademicoService {
   }
 
   static async listarCurriculos() {
-    const response = await api.get<Curriculo[]>("/curriculos");
+    const response = await api.get<Curriculo[]>("/portal-professor/curriculos");
     return response.data;
   }
 

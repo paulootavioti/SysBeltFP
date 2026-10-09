@@ -44,6 +44,7 @@ type ModalState =
   | { tipo: "curriculo"; editando?: Curriculo }
   | { tipo: "modulo"; curriculoId: number; editando?: ModuloCurriculo }
   | { tipo: "aula"; moduloId: number; editando?: AulaCurriculo }
+  | { tipo: "novaAula"; moduloId: number; modalidadeLocalId?: number }
   | { tipo: "assistida"; moduloId: number; modalidadeLocalId?: number }
   | { tipo: "tecnica"; aulaCurriculoId: number; editando?: TecnicaCurriculo }
   | { tipo: "catalogo" }
@@ -603,12 +604,7 @@ export function Curriculos() {
                   onToggle={() => alternarModulo(modulo.id)}
                   ehAdmin={ehAdmin}
                   onEditar={() => setModal({ tipo: "modulo", curriculoId: curriculo.id, editando: modulo })}
-                  onNovaAula={() => setModal({ tipo: "aula", moduloId: modulo.id })}
-                  onNovaAulaAssistida={() => {
-                    setBuscaAssistida("");
-                    setSelecionadosAssistidos([]);
-                    setModal({ tipo: "assistida", moduloId: modulo.id, modalidadeLocalId: curriculo.modalidade?.id });
-                  }}
+                  onNovaAula={() => setModal({ tipo: "novaAula", moduloId: modulo.id, modalidadeLocalId: curriculo.modalidade?.id })}
                   onExcluir={() => handleExcluirModulo(modulo)}
                   excluindo={estaExcluindo("modulo", modulo.id)}
                   aulaEstaExpandida={aulaEstaExpandida}
@@ -681,6 +677,19 @@ export function Curriculos() {
           </div>
           <Button type="submit" disabled={salvando || !tituloAssistido.trim() || selecionadosAssistidos.length === 0}>{salvando ? "Criando..." : "Criar roteiro"}</Button>
         </form>
+      </Modal>
+
+      <Modal open={modal?.tipo === "novaAula"} title="Nova aula" onClose={() => setModal(null)}>
+        <p>Escolha um ponto de partida para montar o roteiro da aula.</p>
+        <div className="curriculos-card-acoes">
+          <Button type="button" onClick={() => modal?.tipo === "novaAula" && setModal({ tipo: "aula", moduloId: modal.moduloId })}>Montar do zero</Button>
+          <Button type="button" variant="secondary" onClick={() => {
+            if (modal?.tipo !== "novaAula") return;
+            setBuscaAssistida("");
+            setSelecionadosAssistidos([]);
+            setModal({ tipo: "assistida", moduloId: modal.moduloId, modalidadeLocalId: modal.modalidadeLocalId });
+          }}>Usar um modelo</Button>
+        </div>
       </Modal>
 
       <Modal

@@ -11,8 +11,15 @@ import { PublicarFotoAulaProfessorService } from "./services/PublicarFotoAulaPro
 import { FinalizarAulaProfessorService } from "./services/FinalizarAulaProfessorService";
 import { RegistrarExecucaoBlocoService } from "./services/RegistrarExecucaoBlocoService";
 import { ConsumirComandosVozService } from "./services/ConsumirComandosVozService";
+import { ListCurriculosService } from "../curriculos/services/ListCurriculosService";
 
 export class PortalProfessorController {
+  async curriculos(req: Request, res: Response) {
+    const professorId = req.user.perfil === "PROFESSOR" ? req.user.id : undefined;
+    const curriculos = await new ListCurriculosService().execute(req.user.unidadeId, professorId);
+    return res.json(curriculos);
+  }
+
   async hoje(req: Request, res: Response) {
     const service = new GetAulasHojeProfessorService();
     const resultado = await service.execute(req.user);

@@ -4,16 +4,18 @@ import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import { calcularDuracaoTurmaMinutos, compilarFilaAula } from "../utils/compilarFilaAula";
 
 export class ListCurriculosService {
-  async execute(unidadeId: number | null) {
+  async execute(unidadeId: number | null, professorId?: number) {
     const prisma = prismaDaRequisicao();
+    const filtroTurmas = { ativo: true, ...(professorId ? { professorId } : {}) };
     const curriculos = await prisma.curriculo.findMany({
       take: LIMITE_PADRAO_LISTAGEM,
       where: {
         ativo: true,
         ...escopoUnidade(unidadeId),
+        ...(professorId ? { turmas: { some: filtroTurmas } } : {}),
       },
       include: {
-        turmas: { where: { ativo: true }, select: { horarioInicio: true, horarioFim: true } },
+        turmas: { where: filtroTurmas, select: { horarioInicio: true, horarioFim: true } },
         modalidade: { select: { id: true, nome: true, bibliotecaModalidadeId: true } },
         modulos: {
           orderBy: {

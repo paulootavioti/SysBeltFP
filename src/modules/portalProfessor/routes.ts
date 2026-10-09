@@ -29,6 +29,7 @@ const upload = multer({
 // ADMIN também acessa, pra suporte/teste.
 portalProfessorRoutes.use(ensureAuthenticated, ensureRole(["ADMIN", "PROFESSOR"]));
 
+portalProfessorRoutes.get("/curriculos", controller.curriculos);
 portalProfessorRoutes.get("/hoje", controller.hoje);
 portalProfessorRoutes.get("/aulas/:id", controller.aula);
 portalProfessorRoutes.get("/aulas/:id/comandos-voz", controller.comandosVoz);
