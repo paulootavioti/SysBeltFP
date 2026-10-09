@@ -36,6 +36,7 @@ export const registrarExecucaoBlocoSchema = z.object({
   duracaoPrevistaSegundos: z.coerce.number().int().positive().max(28800),
   duracaoRealSegundos: z.coerce.number().int().min(0).max(28800),
   status: z.enum(["CUMPRIDO", "PULADO"]),
+  observacao: z.string().trim().max(1000).nullish(),
   iniciadoEm: z.string().datetime(),
   finalizadoEm: z.string().datetime(),
   tecnicaId: z.coerce.number().int().positive().nullish(),

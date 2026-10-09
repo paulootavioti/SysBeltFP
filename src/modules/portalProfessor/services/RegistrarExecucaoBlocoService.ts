@@ -11,6 +11,7 @@ interface RegistroBloco {
   duracaoPrevistaSegundos: number;
   duracaoRealSegundos: number;
   status: "CUMPRIDO" | "PULADO";
+  observacao?: string | null;
   iniciadoEm: string;
   finalizadoEm: string;
   tecnicaId?: number | null;
@@ -33,12 +34,14 @@ export class RegistrarExecucaoBlocoService {
           duracaoPrevistaSegundos: dados.duracaoPrevistaSegundos,
           duracaoRealSegundos: dados.duracaoRealSegundos,
           status: dados.status,
+          observacao: dados.observacao || null,
           iniciadoEm: new Date(dados.iniciadoEm),
           finalizadoEm: new Date(dados.finalizadoEm),
         },
         update: {
           duracaoRealSegundos: dados.duracaoRealSegundos,
           status: dados.status,
+          observacao: dados.observacao || null,
           finalizadoEm: new Date(dados.finalizadoEm),
         },
       });

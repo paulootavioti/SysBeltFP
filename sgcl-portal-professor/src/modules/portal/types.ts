@@ -71,6 +71,7 @@ export interface RegistroExecucaoBloco {
   duracaoPrevistaSegundos: number;
   duracaoRealSegundos: number;
   status: "CUMPRIDO" | "PULADO";
+  observacao?: string | null;
   iniciadoEm: string;
   finalizadoEm: string;
   tecnicaId?: number;

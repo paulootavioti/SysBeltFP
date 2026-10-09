@@ -2372,6 +2372,7 @@ model ExecucaoBlocoAula {
   duracaoPrevistaSegundos Int
   duracaoRealSegundos     Int
   status                  StatusExecucaoBlocoAula
+  observacao              String?
   iniciadoEm              DateTime
   finalizadoEm            DateTime
 

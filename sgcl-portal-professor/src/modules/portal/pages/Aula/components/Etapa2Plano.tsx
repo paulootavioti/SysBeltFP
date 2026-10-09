@@ -51,6 +51,7 @@ function emitirAviso(frequencia = 880) {
 export function Etapa2Plano({ aulaId, aulaCurriculo, totalAlunos, totalPresentes, registrosExistentes, onRegistrar, onEncerrar, avisoAntesFim = 10 }: Props) {
   const blocos = useMemo(() => aulaCurriculo?.filaCompilada.blocos ?? [], [aulaCurriculo]);
   const [timer, setTimer] = useState(() => criarEstadoInicial(aulaId, blocos));
+  const [observacaoBloco, setObservacaoBloco] = useState("");
   const processando = useRef(false);
   const avisoEmitido = useRef(false);
   const roundAnterior = useRef(1);
@@ -76,6 +77,7 @@ export function Etapa2Plano({ aulaId, aulaCurriculo, totalAlunos, totalPresentes
         chaveBloco: bloco.chave, tipo: bloco.tipo, nome: bloco.nome, ordem: bloco.ordem,
         duracaoPrevistaSegundos: bloco.duracaoPrevistaSegundos, duracaoRealSegundos: duracaoReal,
         status: !automatico && duracaoReal < 3 ? "PULADO" : "CUMPRIDO",
+        observacao: observacaoBloco.trim() || undefined,
         iniciadoEm: new Date(timer.iniciadoBlocoEm).toISOString(), finalizadoEm: new Date(finalizadoEm).toISOString(),
         ...(bloco.tecnicaId ? { tecnicaId: bloco.tecnicaId } : {}),
       });
@@ -86,10 +88,11 @@ export function Etapa2Plano({ aulaId, aulaCurriculo, totalAlunos, totalPresentes
     emitirAviso(1040);
     const proximoIndice = timer.indiceAtual + 1;
     const proximo = blocos[proximoIndice];
+    setObservacaoBloco("");
     setTimer({ indiceAtual: proximoIndice, restanteSegundos: proximo?.duracaoPrevistaSegundos ?? 0, rodando: Boolean(proximo), atualizadoEm: finalizadoEm, iniciadoBlocoEm: finalizadoEm, chavesConcluidas: [...new Set([...timer.chavesConcluidas, bloco.chave])] });
     avisoEmitido.current = false;
     processando.current = false;
-  }, [blocos, onRegistrar, timer]);
+  }, [blocos, observacaoBloco, onRegistrar, timer]);
 
   useEffect(() => {
     if ((!timer.rodando && !timer.pausaVoz) || !atual) return;
@@ -160,9 +163,11 @@ export function Etapa2Plano({ aulaId, aulaCurriculo, totalAlunos, totalPresentes
         )}
         <div className="ring-controles">
           <button type="button" disabled={Boolean(pausaVoz)} onClick={() => setTimer((estado) => ({ ...estado, rodando: !estado.rodando, atualizadoEm: Date.now() }))}>{timer.rodando ? "Pausar" : "Retomar"}</button>
+          <button type="button" disabled={Boolean(pausaVoz) || timer.restanteSegundos < 30} onClick={() => setTimer((estado) => ({ ...estado, restanteSegundos: Math.max(0, estado.restanteSegundos - 30), atualizadoEm: Date.now() }))}>-30s</button>
           <button type="button" onClick={() => setTimer((estado) => ({ ...estado, restanteSegundos: estado.restanteSegundos + 30, atualizadoEm: Date.now() }))}>+30s</button>
           <button type="button" onClick={() => void concluirAtual(false)}>Próx.</button>
         </div>
+        {!pausaVoz && <label className="ring-observacao"><span>Observação desta etapa</span><textarea rows={2} value={observacaoBloco} onChange={(event) => setObservacaoBloco(event.target.value)} placeholder="Registre um ajuste aplicado hoje" /></label>}
       </section>
       <ol className="ring-fila" aria-label="Fila de blocos da aula">
         {blocos.map((bloco, indice) => <li key={bloco.chave} className={indice === timer.indiceAtual ? "atual" : concluidas.has(bloco.chave) || indice < timer.indiceAtual ? "cumprido" : "pendente"}><span className="ring-fila-status" aria-hidden="true" /><span><strong>{bloco.nome}</strong><small>{bloco.tipo.toLocaleLowerCase("pt-BR")}</small></span><time>{Math.ceil(bloco.duracaoPrevistaSegundos / 60)} min</time></li>)}

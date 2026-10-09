@@ -87,7 +87,7 @@ O Portal consulta uma rota própria de currículos. Para o perfil PROFESSOR, a c
 
 ## Próxima evolução de execução
 
-Alterações de tempo e observações feitas pelo professor durante uma aula devem ficar vinculadas à aula executada, nunca ao currículo. A estrutura prevista é uma sobreposição por `Aula` e chave de bloco, consumida somente no Modo Aula e no histórico. Ela exige uma migration aditiva e uma especificação de edição/encerramento antes de ser aplicada.
+Alterações de tempo e observações feitas pelo professor durante uma aula ficam vinculadas à aula executada, nunca ao currículo. O Modo Aula permite ajustar o timer em 30 segundos e registrar uma observação por etapa; ambos são persistidos em `ExecucaoBlocoAula`, por chave de bloco, e ficam disponíveis no histórico da aula.
 
 ## Endpoints principais
 
