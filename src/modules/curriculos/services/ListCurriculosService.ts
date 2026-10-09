@@ -43,6 +43,7 @@ export class ListCurriculosService {
     });
     return curriculos.map((curriculo) => ({
       ...curriculo,
+      totalTurmas: curriculo.turmas.length,
       modulos: curriculo.modulos.map((modulo) => ({
         ...modulo,
         aulas: modulo.aulas.map((aula) => ({

@@ -98,5 +98,6 @@ export interface Curriculo {
   modalidadeId: number | null;
   modalidade?: { id: number; nome: string; bibliotecaModalidadeId?: number | null } | null;
   publico: string;
+  totalTurmas?: number;
   modulos: ModuloCurriculo[];
 }

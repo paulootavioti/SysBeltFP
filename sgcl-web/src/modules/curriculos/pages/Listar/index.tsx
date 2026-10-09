@@ -84,6 +84,7 @@ export function Curriculos() {
   const [modalidadesBiblioteca, setModalidadesBiblioteca] = useState<Array<{ id: number; nome: string }>>([]);
   const [novoConteudo, setNovoConteudo] = useState({ modalidadeId: "", tipo: "TECNICA", nome: "", descricao: "", passoAPasso: "", pontosAtencao: "", cuidados: "", faixaEtariaMinima: "", faixaEtariaMaxima: "", duracaoMinutos: "5" });
   const [arquivoImportacao, setArquivoImportacao] = useState<File | null>(null);
+  const [conteudoParaExcluir, setConteudoParaExcluir] = useState<ConteudoBiblioteca | null>(null);
 
   const ehAdmin = perfilTemAcesso(usuario?.perfil, "/dashboard");
   const buscaAtiva = busca.trim().length > 0;
@@ -154,29 +155,6 @@ export function Curriculos() {
     setModulosAbertos({});
     setAulasAbertas({});
   }
-
-  const resumo = useMemo(() => {
-    let totalModulos = 0;
-    let totalAulas = 0;
-    let totalTecnicas = 0;
-
-    for (const curriculo of curriculos) {
-      totalModulos += curriculo.modulos.length;
-      for (const modulo of curriculo.modulos) {
-        totalAulas += modulo.aulas.length;
-        for (const aula of modulo.aulas) {
-          totalTecnicas += aula.tecnicas.length;
-        }
-      }
-    }
-
-    return {
-      totalCurriculos: curriculos.length,
-      totalModulos,
-      totalAulas,
-      totalTecnicas,
-    };
-  }, [curriculos]);
 
   const curriculosExibidos = useMemo(
     () => filtrarCurriculosPorBusca(curriculos, busca),
@@ -379,6 +357,16 @@ export function Curriculos() {
     } catch (error) { setErro(getApiErrorMessage(error, "Erro ao remover conteúdo técnico.")); }
   }
 
+  const saude = useMemo(() => {
+    const aulas = curriculos.flatMap((curriculo) => curriculo.modulos.flatMap((modulo) => modulo.aulas));
+    return {
+      semEtapas: aulas.filter((aula) => aula.blocos.length === 0).length,
+      acimaDuracao: aulas.filter((aula) => aula.duracaoTurmaMinutos !== null && aula.filaCompilada.duracaoTotalSegundos > aula.duracaoTurmaMinutos * 60).length,
+      modulosSemAulas: curriculos.flatMap((curriculo) => curriculo.modulos).filter((modulo) => modulo.aulas.length === 0).length,
+      curriculosSemTurma: curriculos.filter((curriculo) => (curriculo.totalTurmas ?? 0) === 0).length,
+    };
+  }, [curriculos]);
+
   async function handleSalvarItemCatalogo() {
     try {
       setSalvando(true);
@@ -503,22 +491,12 @@ export function Curriculos() {
 
       {curriculos.length > 0 && (
         <div className="curriculos-resumo">
-          <div className="curriculos-resumo-card">
-            <span className="curriculos-resumo-valor">{resumo.totalCurriculos}</span>
-            <span className="curriculos-resumo-label">Currículo{resumo.totalCurriculos === 1 ? "" : "s"}</span>
-          </div>
-          <div className="curriculos-resumo-card">
-            <span className="curriculos-resumo-valor">{resumo.totalModulos}</span>
-            <span className="curriculos-resumo-label">Módulo{resumo.totalModulos === 1 ? "" : "s"}</span>
-          </div>
-          <div className="curriculos-resumo-card">
-            <span className="curriculos-resumo-valor">{resumo.totalAulas}</span>
-            <span className="curriculos-resumo-label">Aula{resumo.totalAulas === 1 ? "" : "s"} planejada{resumo.totalAulas === 1 ? "" : "s"}</span>
-          </div>
-          <div className="curriculos-resumo-card">
-            <span className="curriculos-resumo-valor">{resumo.totalTecnicas}</span>
-            <span className="curriculos-resumo-label">Técnica{resumo.totalTecnicas === 1 ? "" : "s"}</span>
-          </div>
+          {Object.values(saude).every((valor) => valor === 0) ? <p className="curriculos-saude-ok">Tudo em ordem</p> : <>
+            <Button type="button" variant="secondary" onClick={() => setBusca(" ")}>{saude.semEtapas} aulas sem etapas</Button>
+            <Button type="button" variant="secondary" onClick={expandirTudo}>{saude.acimaDuracao} aulas acima da duração</Button>
+            <Button type="button" variant="secondary" onClick={expandirTudo}>{saude.modulosSemAulas} módulos sem aulas</Button>
+            <Button type="button" variant="secondary" onClick={() => setBusca("")}>{saude.curriculosSemTurma} currículos sem turma</Button>
+          </>}
         </div>
       )}
 
@@ -544,7 +522,7 @@ export function Curriculos() {
           Biblioteca técnica
         </Button>
         <Button type="button" variant="secondary" onClick={() => setModal({ tipo: "catalogo" })}>
-          Catálogo pedagógico
+          Novo item do catálogo
         </Button>
         <Button type="button" variant="secondary" onClick={() => setModal({ tipo: "importarMatriz" })}>
           Importar CSV/XLS
@@ -786,7 +764,7 @@ export function Curriculos() {
             <article key={conteudo.id} className="biblioteca-conteudo-card">
               <div><strong>{conteudo.nome}</strong><small>{conteudo.modalidade.nome} · {conteudo.tipo.toLocaleLowerCase("pt-BR")} · {conteudo.nivelDificuldade.toLocaleLowerCase("pt-BR")}</small>{conteudo.descricao && <p>{conteudo.descricao}</p>}</div>
               {conteudo.unidadeId === null && <Button type="button" variant="secondary" onClick={() => void handleCopiarConteudo(conteudo)}>Adicionar à minha biblioteca</Button>}
-              {conteudo.unidadeId !== null && <Button type="button" variant="danger" onClick={() => void handleExcluirConteudo(conteudo)}>Remover</Button>}
+              {conteudo.unidadeId !== null && <Button type="button" variant="danger" onClick={() => setConteudoParaExcluir(conteudo)}>Remover</Button>}
             </article>
           ))}
         </div>
@@ -841,6 +819,7 @@ export function Curriculos() {
         onConfirm={confirmarExclusao}
         onCancel={() => setConfirmacaoExclusao(null)}
       />
+      <ConfirmDialog open={conteudoParaExcluir !== null} title="Remover conteúdo" message={`Remover o conteúdo "${conteudoParaExcluir?.nome ?? ""}"?`} confirmLabel="Remover" onConfirm={() => { if (conteudoParaExcluir) void handleExcluirConteudo(conteudoParaExcluir); setConteudoParaExcluir(null); }} onCancel={() => setConteudoParaExcluir(null)} />
     </Layout>
   );
 }
