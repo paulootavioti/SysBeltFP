@@ -6,6 +6,16 @@ O formato utilizado segue o conceito do **Keep a Changelog**, adaptado para o pr
 
 ---
 
+# Em desenvolvimento
+
+## Melhorado
+
+- Planejamento pedagógico: editor de etapas com duração ao vivo, reordenação, duplicação, foco no bloco recém-inserido e painel unificado de adição
+- Planejamento pedagógico: memorandos com escrita livre sempre visível e sugestões inseridas no próprio texto
+- Portal do Professor: seleção de turma por identificador da turma e ordenação sem mutar o estado
+
+---
+
 # Convenções
 
 Cada versão será dividida em:

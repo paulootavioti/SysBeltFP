@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -62,16 +62,23 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
     defaultValues: { ...AULA_DEFAULTS, ...initialValues },
   });
 
-  const { register, handleSubmit, formState: { errors } } = methods;
-  const { fields, append, insert, move, remove, replace } = useFieldArray({ control: methods.control, name: "blocos" });
+  const { register, handleSubmit, reset, formState: { errors } } = methods;
+  const { fields, insert, move, remove, replace } = useFieldArray({ control: methods.control, name: "blocos" });
   const blocos = methods.watch("blocos") ?? [];
   const [buscaBiblioteca, setBuscaBiblioteca] = useState("");
   const [conteudosBiblioteca, setConteudosBiblioteca] = useState<ConteudoBiblioteca[]>([]);
   const [confirmarTemplate, setConfirmarTemplate] = useState<TemplatePlanejamento | null>(null);
+  const [filtroAdicao, setFiltroAdicao] = useState<"TUDO" | "MOMENTOS" | "MINHA" | "OFICIAL">("TUDO");
+  const [mostrarMais, setMostrarMais] = useState(false);
+  const proximoBlocoParaFoco = useRef<number | null>(null);
   const totalSegundos = duracaoTotalBlocosEmSegundos(blocos);
   const totalMinutos = Math.ceil(totalSegundos / 60);
   const limite = limiteMinutos ?? (Number(methods.watch("duracaoMinutos")) || 0);
-  const conteudosExibidos = useMemo(() => conteudosBiblioteca.slice(0, 8), [conteudosBiblioteca]);
+  const conteudosExibidos = useMemo(() => conteudosBiblioteca.filter((conteudo) => {
+    if (filtroAdicao === "MINHA") return conteudo.unidadeId !== null;
+    if (filtroAdicao === "OFICIAL") return conteudo.unidadeId === null;
+    return true;
+  }), [conteudosBiblioteca, filtroAdicao]);
 
   useEffect(() => {
     let ativa = true;
@@ -84,21 +91,34 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
   }, [buscaBiblioteca, modalidadeLocalId]);
 
   useEffect(() => {
-    methods.reset({ ...AULA_DEFAULTS, ...initialValues });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialValues]);
+    reset({ ...AULA_DEFAULTS, ...initialValues });
+  }, [initialValues, reset]);
+
+  useEffect(() => {
+    if (proximoBlocoParaFoco.current === null) return;
+    const indice = proximoBlocoParaFoco.current;
+    proximoBlocoParaFoco.current = null;
+    const campo = document.querySelector<HTMLInputElement>(`input[name="blocos.${indice}.nome"]`);
+    campo?.focus();
+    campo?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [fields.length]);
+
+  function inserirBloco(bloco: NonNullable<AulaCurriculoFormData["blocos"]>[number], indice = fields.length) {
+    proximoBlocoParaFoco.current = indice;
+    insert(indice, bloco);
+  }
 
   function adicionarMomento(modelo: (typeof MOMENTOS_SUGERIDOS)[number] = MOMENTOS_SUGERIDOS[0]) {
-    append({ ...modelo, rounds: "4", duracaoRoundMinutos: "4", descansoSegundos: "60", anuncio: "" });
+    inserirBloco({ ...modelo, rounds: "4", duracaoRoundMinutos: "4", descansoSegundos: "60", anuncio: "" });
   }
 
   function adicionarPratica(modelo: (typeof PRATICAS_SUGERIDAS)[number]) {
-    append({ ...modelo, rounds: "4", duracaoRoundMinutos: "4", descansoSegundos: "60", anuncio: "" });
+    inserirBloco({ ...modelo, rounds: "4", duracaoRoundMinutos: "4", descansoSegundos: "60", anuncio: "" });
   }
 
   function adicionarDoCatalogo(item: ItemCatalogoPedagogico) {
     const tipo: TipoBlocoCurriculo = item.tipo === "MOMENTO" ? item.tipoBloco ?? "AQUECIMENTO" : "TECNICA";
-    append({
+    inserirBloco({
       tipo,
       nome: item.nome,
       duracaoMinutos: String(Math.max(1, Math.round(item.duracaoPrevistaSegundos / 60))),
@@ -112,7 +132,7 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
   }
 
   function adicionarConteudo(conteudo: ConteudoBiblioteca) {
-    append({ tipo: "TECNICA", nome: conteudo.nome, duracaoMinutos: String(Math.max(1, Math.round(conteudo.duracaoSugeridaSegundos / 60))), descricao: conteudo.passoAPasso || conteudo.descricao || "", atencoesFaixaEtaria: conteudo.pontosAtencao || "", conteudoTecnicoId: String(conteudo.id), rounds: "4", duracaoRoundMinutos: "4", descansoSegundos: "60", anuncio: "" });
+    inserirBloco({ tipo: "TECNICA", nome: conteudo.nome, duracaoMinutos: String(Math.max(1, Math.round(conteudo.duracaoSugeridaSegundos / 60))), descricao: conteudo.passoAPasso || conteudo.descricao || "", atencoesFaixaEtaria: conteudo.pontosAtencao || "", conteudoTecnicoId: String(conteudo.id), rounds: "4", duracaoRoundMinutos: "4", descansoSegundos: "60", anuncio: "" });
   }
 
   function aplicarTemplate(template: TemplatePlanejamento) {
@@ -152,7 +172,7 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
               <h3 id="titulo-blocos-aula">Blocos cronometrados</h3>
               <p>Tempo planejado: {totalMinutos} de {limite || "—"} min</p>
             </div>
-            <Button type="button" variant="secondary" onClick={() => append({ tipo: "AQUECIMENTO", nome: "", duracaoMinutos: "5", rounds: "4", duracaoRoundMinutos: "4", descansoSegundos: "60", anuncio: "" })}>
+            <Button type="button" variant="secondary" onClick={() => inserirBloco({ tipo: "AQUECIMENTO", nome: "", duracaoMinutos: "5", rounds: "4", duracaoRoundMinutos: "4", descansoSegundos: "60", anuncio: "" })}>
               Novo momento
             </Button>
           </div>
@@ -164,34 +184,6 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
             {totalMinutos > limite ? `Excede em ${totalMinutos - limite} min` : `Cabe na turma. Sobram ${limite - totalMinutos} min.`}
           </p>}
 
-          <div className="curriculo-momentos-sugeridos" aria-label="Momentos pré-cadastrados">
-            {MOMENTOS_SUGERIDOS.map((momento) => (
-              <Button key={momento.nome} type="button" variant="secondary" onClick={() => adicionarMomento(momento)}>
-                + {momento.nome}
-              </Button>
-            ))}
-          </div>
-          <div className="curriculo-momentos-sugeridos" aria-label="Posições e exercícios pré-cadastrados">
-            {PRATICAS_SUGERIDAS.map((pratica) => <Button key={pratica.nome} type="button" variant="secondary" onClick={() => adicionarPratica(pratica)}>+ {pratica.nome}</Button>)}
-          </div>
-
-          {templates.length > 0 && <div className="curriculo-catalogo-itens"><strong>Começar de um modelo</strong><div>{templates.map((template) => <Button key={template.id} type="button" variant="secondary" onClick={() => fields.length ? setConfirmarTemplate(template) : aplicarTemplate(template)}>Usar {template.nome}</Button>)}</div></div>}
-
-          <div className="curriculo-biblioteca-rapida">
-            <div><strong>Biblioteca técnica</strong><Input aria-label="Buscar conteúdo técnico" placeholder="Buscar posição, técnica ou exercício" value={buscaBiblioteca} onChange={(event) => setBuscaBiblioteca(event.target.value)} /></div>
-            {conteudosExibidos.length > 0 && <div className="curriculo-biblioteca-lista">{conteudosExibidos.map((conteudo) => <button key={conteudo.id} type="button" onClick={() => adicionarConteudo(conteudo)}><span><strong>{conteudo.nome}</strong><small>{conteudo.modalidade.nome} · {conteudo.tipo.toLocaleLowerCase("pt-BR")}</small></span><span>{Math.ceil(conteudo.duracaoSugeridaSegundos / 60)} min</span></button>)}</div>}
-          </div>
-
-          {itensCatalogo.length > 0 && (
-            <div className="curriculo-catalogo-itens" aria-label="Catálogo pedagógico">
-              {(["POSICAO", "EXERCICIO", "MOMENTO"] as const).map((tipo) => {
-                const itens = itensCatalogo.filter((item) => item.tipo === tipo);
-                if (!itens.length) return null;
-                const rotulo = tipo === "POSICAO" ? "Posições" : tipo === "EXERCICIO" ? "Exercícios" : "Momentos";
-                return <div key={tipo}><strong>{rotulo}</strong><div>{itens.map((item) => <Button key={item.id} type="button" variant="secondary" onClick={() => adicionarDoCatalogo(item)}>+ {item.nome} · {Math.ceil(item.duracaoPrevistaSegundos / 60)} min</Button>)}</div></div>;
-              })}
-            </div>
-          )}
           {fields.map((field, index) => {
             const tipo = blocos[index]?.tipo;
             return (
@@ -213,6 +205,18 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
               </div>
             );
           })}
+          <div className="curriculo-biblioteca-rapida" aria-label="Adicionar à aula">
+            <strong>Adicionar à aula</strong>
+            <Input aria-label="Buscar item para adicionar" placeholder="Buscar posição, técnica ou exercício" value={buscaBiblioteca} onChange={(event) => setBuscaBiblioteca(event.target.value)} />
+            <div className="curriculo-momentos-sugeridos" aria-label="Filtros de itens">
+              {(["TUDO", "MOMENTOS", "MINHA", "OFICIAL"] as const).map((filtro) => <Button key={filtro} type="button" variant={filtroAdicao === filtro ? "primary" : "secondary"} onClick={() => setFiltroAdicao(filtro)}>{({ TUDO: "Tudo", MOMENTOS: "Momentos", MINHA: "Minha biblioteca", OFICIAL: "Oficial" })[filtro]}</Button>)}
+            </div>
+            {(filtroAdicao === "TUDO" || filtroAdicao === "MOMENTOS") && <div className="curriculo-momentos-sugeridos">{[...MOMENTOS_SUGERIDOS, ...PRATICAS_SUGERIDAS].map((item) => <Button key={item.nome} type="button" variant="secondary" onClick={() => "tipo" in item && item.tipo === "TECNICA" ? adicionarPratica(item as (typeof PRATICAS_SUGERIDAS)[number]) : adicionarMomento(item as (typeof MOMENTOS_SUGERIDOS)[number])}>+ {item.nome}</Button>)}</div>}
+            {templates.length > 0 && <div className="curriculo-catalogo-itens"><strong>Começar de um modelo</strong><div>{templates.map((template) => <Button key={template.id} type="button" variant="secondary" onClick={() => fields.length ? setConfirmarTemplate(template) : aplicarTemplate(template)}>Usar {template.nome}</Button>)}</div></div>}
+            {conteudosExibidos.length > 0 && <div className="curriculo-biblioteca-lista">{conteudosExibidos.slice(0, mostrarMais ? undefined : 8).map((conteudo) => <button key={conteudo.id} type="button" onClick={() => adicionarConteudo(conteudo)}><span><strong>{conteudo.nome}</strong><small>{conteudo.modalidade.nome} · {conteudo.tipo.toLocaleLowerCase("pt-BR")}</small></span><span>{Math.ceil(conteudo.duracaoSugeridaSegundos / 60)} min</span></button>)}</div>}
+            {conteudosExibidos.length > 8 && <Button type="button" variant="secondary" onClick={() => setMostrarMais((atual) => !atual)}>{mostrarMais ? "Ver menos" : "Ver mais"}</Button>}
+            {filtroAdicao !== "MINHA" && filtroAdicao !== "OFICIAL" && itensCatalogo.slice(0, mostrarMais ? undefined : 8).map((item) => <Button key={item.id} type="button" variant="secondary" onClick={() => adicionarDoCatalogo(item)}>+ {item.nome} · {Math.ceil(item.duracaoPrevistaSegundos / 60)} min</Button>)}
+          </div>
         </section>
 
         <Button type="submit" disabled={loading}>

@@ -52,7 +52,9 @@ IDs internos, conteúdos da biblioteca e modelos não são transportados entre u
 
 Tipos disponíveis: aquecimento, jogo, técnica, sparring, pausa e alongamento. Cada bloco possui duração e pode registrar rounds, descanso, anúncio, modo de condução e cuidados/adaptações.
 
-O tempo total é compilado pela API. A interface alerta quando o roteiro excede a duração da turma ou a duração planejada.
+O tempo total é calculado ao vivo no editor, inclusive para sparring (rounds e descansos), e a barra de etapas acompanha cada alteração. A interface alerta quando o roteiro excede a duração da turma ou a duração planejada. As etapas podem ser movidas, duplicadas e removidas antes de salvar; a ordem é preservada na fila compilada.
+
+O editor mostra primeiro a linha do tempo e depois um painel único **Adicionar à aula**. Ele reúne busca, momentos sugeridos, modelos, itens da biblioteca e catálogo, com filtros de origem e lista inicial limitada.
 
 ## Biblioteca técnica e catálogo
 
@@ -71,9 +73,9 @@ Reúne posições, exercícios e momentos recorrentes da unidade. Ele acelera a 
 Currículo, módulo, aula, técnica, blocos, catálogo e biblioteca usam o mesmo padrão de memorando:
 
 - sugestões rápidas adequadas ao contexto;
-- visual compacto no cadastro novo, sem caixa de texto aberta;
-- **Cadastrar nova orientação** abre a escrita livre;
-- itens em edição mostram o texto existente e permitem **Editar orientação**.
+- caixa de texto sempre disponível;
+- sugestões que são acrescentadas em uma nova linha;
+- nos blocos, sugestões inicialmente reduzidas para evitar alongar a linha do tempo.
 
 As sugestões não bloqueiam customização: o texto livre é sempre a fonte final salva.
 
