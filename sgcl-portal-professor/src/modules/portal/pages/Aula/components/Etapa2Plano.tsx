@@ -105,7 +105,7 @@ export function Etapa2Plano({ aulaId, aulaCurriculo, totalAlunos, totalPresentes
   useEffect(() => {
     if (avisoAntesFim > 0 && timer.restanteSegundos === avisoAntesFim && !avisoEmitido.current) { avisoEmitido.current = true; emitirAviso(); }
     if (timer.restanteSegundos === 0 && timer.rodando && atual) void concluirAtual(true);
-  }, [atual, concluirAtual, timer.restanteSegundos, timer.rodando]);
+  }, [atual, avisoAntesFim, concluirAtual, timer.restanteSegundos, timer.rodando]);
 
   useEffect(() => {
     if (roundAtual && roundAtual !== roundAnterior.current) emitirAviso(1040);
@@ -123,7 +123,7 @@ export function Etapa2Plano({ aulaId, aulaCurriculo, totalAlunos, totalPresentes
       processando.current = false;
       emitirAviso(1040);
     }).catch(() => { processando.current = false; });
-  }, [onRegistrar, pausaVoz, timer.indiceAtual]);
+  }, [avisoAntesFim, onRegistrar, pausaVoz, timer.indiceAtual]);
 
   useEffect(() => {
     const consultar = async () => {
