@@ -23,7 +23,7 @@ pode acessar ou inferir dados de outro. Veja
 | | Control Plane ([repositório independente](https://github.com/paulootavioti/control-plane)) | Tenant Plane (`src/`) |
 |---|---|---|
 | Quem usa | Operador do SaaS | A academia assinante |
-| Banco | Um, exclusivo do SysBelt | Um por academia |
+| Banco | Um, exclusivo do SysBelt | Um PostgreSQL operacional compartilhado, isolado por `Conta` e `Unidade` |
 | Guarda | Assinantes, planos, faturas, licenças, provisionamento | Alunos, turmas, aulas, financeiro da academia |
 
 O Tenant Plane não conhece preço nem qualquer outro assinante. O que ele sabe sobre a própria assinatura chega por uma **concessão assinada** (Ed25519), verificada localmente — sem consulta cruzada entre bancos a cada requisição.

@@ -20,6 +20,29 @@ Não é pertinente reintroduzir o domínio comercial no Tenant Plane nem criar b
 - [ ] Executar backup e restauração em ambiente isolado, registrando RPO e RTO
 - [ ] Resolver todos os avisos de lint e manter CI verde em pull request
 
+## Matriz RBAC proposta
+
+| Papel | Alcance | Pode administrar usuários | Pode operar financeiro | Pode conduzir aula |
+|---|---|---|---|---|
+| Dono | Todas as unidades da própria conta | Sim | Sim | Sim |
+| Administrador | Unidades vinculadas | Sim, dentro do próprio alcance | Sim | Sim |
+| Gerente (proposto) | Unidades vinculadas | Não | Sim, sem configurar gateway | Não por padrão |
+| Recepção | Unidade ativa | Não | Operação diária, sem estorno/configuração | Não |
+| Professor | Turmas/unidades vinculadas | Não | Não | Sim |
+| Usuário comum (proposto) | Somente leitura definida por módulo | Não | Não | Não |
+
+`GERENTE` e `USUARIO` ainda não existem como perfis no código. A tabela é uma proposta de produto; a criação desses papéis exige aprovação, migration do enum e testes de autorização antes de ser ativada.
+
+## Teste de carga
+
+O cenário versionado em `tests/load/smoke.js` exercita saúde, login e uma rota autenticada. Ele nunca contém credenciais: a execução requer URL e token de ambiente.
+
+```bash
+BASE_URL=https://sua-api.example/api TOKEN_DE_TESTE=... k6 run tests/load/smoke.js
+```
+
+Critério inicial de piloto: 50 VUs, 5 minutos, menos de 1% de falhas HTTP e p95 abaixo de 800 ms nas rotas consultadas. Aumentos de carga devem ser graduais e feitos fora do horário da academia.
+
 ## Sequência recomendada
 
 1. Publicação e smoke tests dos sites
