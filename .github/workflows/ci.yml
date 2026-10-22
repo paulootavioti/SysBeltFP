@@ -48,11 +48,24 @@ jobs:
 
       - run: npx prisma migrate deploy
 
+      - name: lint API
+        run: npm run lint -- --max-warnings=0
+
       - run: npm run typecheck
 
       - run: npm run build
 
       - run: npm run test
+
+  landings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: lint landings
+        run: npm run lint:landings
 
   frontends:
     runs-on: ubuntu-latest
@@ -81,7 +94,7 @@ jobs:
         run: npm run test
 
       - working-directory: ${{ matrix.app }}
-        run: npm run lint
+        run: npm run lint -- --max-warnings=0
 
       - working-directory: ${{ matrix.app }}
         run: npm run build
