@@ -22,10 +22,10 @@ export class ConectarCanalMetaService {
     const prefixo = process.env.META_TENANT_SECRETS_PREFIX?.trim();
     if (!redirectUri || !verifyTokenRef || !prefixo || !this.tenantKey) throw new AppError("Onboarding Meta não configurado neste ambiente.", 503);
 
-    let token = "";
-    let appSecretRef = "";
-    let nomeExibicao = "";
-    let expiraEm: Date | null = null;
+    let token: string;
+    let appSecretRef: string;
+    let nomeExibicao: string;
+    let expiraEm: Date | null;
     try {
       const troca = await this.oauth.trocarCodigo(codigo, redirectUri, dados.tipo);
       token = troca.token; appSecretRef = troca.appSecretRef;
@@ -36,7 +36,6 @@ export class ConectarCanalMetaService {
       if (dados.tipo === "WHATSAPP") await this.oauth.assinarWebhooksWhatsApp(dados.businessAccountId?.trim() || "", identificador, token);
       else await this.oauth.assinarWebhooksInstagram(identificador, token);
     } catch (erro) {
-      const codigoErro = erro instanceof Error && /^META_[A-Z0-9_]+$/.test(erro.message) ? erro.message : "META_INDISPONIVEL";
       throw new AppError("Não foi possível validar a conta na Meta.", 422);
     }
 

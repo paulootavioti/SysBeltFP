@@ -28,6 +28,10 @@ export default tseslint.config(
     languageOptions: { globals: globals.node },
   },
   {
+    files: ["tests/load/**"],
+    languageOptions: { globals: { __ENV: "readonly", __VU: "readonly", __ITER: "readonly", open: "readonly" } },
+  },
+  {
     files: ["scripts/**", "prisma/seeds/**", "src/shared/observability/logger.ts"],
     rules: { "no-console": "off" },
   },
