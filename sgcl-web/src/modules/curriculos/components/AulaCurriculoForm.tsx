@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm, FormProvider, useFieldArray } from "react-hook-form";
+import { useForm, FormProvider, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
@@ -64,7 +64,11 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
 
   const { register, handleSubmit, reset, formState: { errors } } = methods;
   const { fields, insert, move, remove, replace } = useFieldArray({ control: methods.control, name: "blocos" });
-  const blocos = methods.watch("blocos") ?? [];
+  const blocos = useWatch({ control: methods.control, name: "blocos" }) ?? [];
+  const duracaoMinutos = useWatch({ control: methods.control, name: "duracaoMinutos" });
+  const objetivo = useWatch({ control: methods.control, name: "objetivo" });
+  const jogosSugeridos = useWatch({ control: methods.control, name: "jogosSugeridos" });
+  const descricao = useWatch({ control: methods.control, name: "descricao" });
   const [buscaBiblioteca, setBuscaBiblioteca] = useState("");
   const [conteudosBiblioteca, setConteudosBiblioteca] = useState<ConteudoBiblioteca[]>([]);
   const [confirmarTemplate, setConfirmarTemplate] = useState<TemplatePlanejamento | null>(null);
@@ -73,7 +77,7 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
   const proximoBlocoParaFoco = useRef<number | null>(null);
   const totalSegundos = duracaoTotalBlocosEmSegundos(blocos);
   const totalMinutos = Math.ceil(totalSegundos / 60);
-  const limite = limiteMinutos ?? (Number(methods.watch("duracaoMinutos")) || 0);
+  const limite = limiteMinutos ?? (Number(duracaoMinutos) || 0);
   const conteudosExibidos = useMemo(() => conteudosBiblioteca.filter((conteudo) => {
     if (filtroAdicao === "MINHA") return conteudo.unidadeId !== null;
     if (filtroAdicao === "OFICIAL") return conteudo.unidadeId === null;
@@ -150,7 +154,7 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <MemorandoPedagogico label="Objetivo da aula" abrirAoIniciar={Boolean(initialValues)} value={methods.watch("objetivo") ?? ""} onChange={(value) => methods.setValue("objetivo", value)} placeholder="Defina o que os alunos devem praticar ou compreender hoje." sugestoes={["Reconhecer a posição e executar a entrada com segurança.", "Praticar a sequência com cooperação e controle de intensidade.", "Aplicar o conteúdo em situação orientada, respeitando os limites da turma."]} />
+            <MemorandoPedagogico label="Objetivo da aula" value={objetivo ?? ""} onChange={(value) => methods.setValue("objetivo", value)} placeholder="Defina o que os alunos devem praticar ou compreender hoje." sugestoes={["Reconhecer a posição e executar a entrada com segurança.", "Praticar a sequência com cooperação e controle de intensidade.", "Aplicar o conteúdo em situação orientada, respeitando os limites da turma."]} />
           </FormGridItem>
 
           <FormGridItem>
@@ -158,11 +162,11 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <MemorandoPedagogico label="Jogos e dinâmicas" abrirAoIniciar={Boolean(initialValues)} value={methods.watch("jogosSugeridos") ?? ""} onChange={(value) => methods.setValue("jogosSugeridos", value)} placeholder="Registre uma dinâmica por linha ou escreva uma nova proposta." sugestoes={["Jogo de equilíbrio e base.", "Desafio de deslocamento em dupla.", "Circuito técnico com rodízio de estações."]} />
+            <MemorandoPedagogico label="Jogos e dinâmicas" value={jogosSugeridos ?? ""} onChange={(value) => methods.setValue("jogosSugeridos", value)} placeholder="Registre uma dinâmica por linha ou escreva uma nova proposta." sugestoes={["Jogo de equilíbrio e base.", "Desafio de deslocamento em dupla.", "Circuito técnico com rodízio de estações."]} />
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <MemorandoPedagogico label="Orientação geral ao professor" abrirAoIniciar={Boolean(initialValues)} value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Registre a intenção, a organização e os combinados desta aula." sugestoes={["Comece com uma demonstração breve e mantenha grupos pequenos.", "Priorize qualidade de execução antes de aumentar velocidade ou intensidade.", "Reserve um momento final para revisar aprendizados e ouvir a turma."]} />
+            <MemorandoPedagogico label="Orientação geral ao professor" value={descricao ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Registre a intenção, a organização e os combinados desta aula." sugestoes={["Comece com uma demonstração breve e mantenha grupos pequenos.", "Priorize qualidade de execução antes de aumentar velocidade ou intensidade.", "Reserve um momento final para revisar aprendizados e ouvir a turma."]} />
           </FormGridItem>
         </FormGrid>
 
@@ -199,8 +203,8 @@ export function AulaCurriculoForm({ loading = false, initialValues, onSubmit, it
                 {tipo === "SPARRING" && <Input label="Descanso (s)" type="number" min="0" {...register(`blocos.${index}.descansoSegundos`)} />}
                 {tipo === "PAUSA" && <Input label="Anúncio" {...register(`blocos.${index}.anuncio`)} />}
                 <input type="hidden" {...register(`blocos.${index}.conteudoTecnicoId`)} />
-                <MemorandoPedagogico className="curriculo-bloco-descricao" label="Como conduzir" abrirAoIniciar={Boolean(initialValues)} value={blocos[index]?.descricao ?? ""} onChange={(value) => methods.setValue(`blocos.${index}.descricao`, value)} placeholder="O que demonstrar, como organizar e quando avançar." rows={2} sugestoes={["Demonstre, deixe a turma experimentar e corrija um ponto por vez.", "Organize pares compatíveis e alterne os papéis na metade do tempo.", "Faça uma pausa breve para checar compreensão antes de avançar."]} />
-                <MemorandoPedagogico className="curriculo-bloco-atencoes" label="Cuidados e adaptações" abrirAoIniciar={Boolean(initialValues)} value={blocos[index]?.atencoesFaixaEtaria ?? ""} onChange={(value) => methods.setValue(`blocos.${index}.atencoesFaixaEtaria`, value)} placeholder="Segurança, intensidade, pares e adaptações por idade." rows={2} sugestoes={["Reduza a intensidade e use instruções curtas para os menores.", "Evite pares com diferença grande de tamanho ou experiência.", "Interrompa diante de desconforto e ofereça uma variação mais simples."]} />
+                <MemorandoPedagogico className="curriculo-bloco-descricao" label="Como conduzir" value={blocos[index]?.descricao ?? ""} onChange={(value) => methods.setValue(`blocos.${index}.descricao`, value)} placeholder="O que demonstrar, como organizar e quando avançar." rows={2} sugestoes={["Demonstre, deixe a turma experimentar e corrija um ponto por vez.", "Organize pares compatíveis e alterne os papéis na metade do tempo.", "Faça uma pausa breve para checar compreensão antes de avançar."]} />
+                <MemorandoPedagogico className="curriculo-bloco-atencoes" label="Cuidados e adaptações" value={blocos[index]?.atencoesFaixaEtaria ?? ""} onChange={(value) => methods.setValue(`blocos.${index}.atencoesFaixaEtaria`, value)} placeholder="Segurança, intensidade, pares e adaptações por idade." rows={2} sugestoes={["Reduza a intensidade e use instruções curtas para os menores.", "Evite pares com diferença grande de tamanho ou experiência.", "Interrompa diante de desconforto e ofereça uma variação mais simples."]} />
                 <div className="curriculo-bloco-acoes"><Button type="button" variant="secondary" onClick={() => insert(index + 1, blocos[index])}>Duplicar bloco</Button><Button type="button" variant="danger" onClick={() => remove(index)}>Remover</Button></div>
               </div>
             );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LuMic, LuPencil, LuPlus, LuRadio } from "react-icons/lu";
 import { Layout } from "../../components/layout/Layout";
 import { Button } from "../../components/ui/Button";
@@ -21,8 +21,8 @@ export function ComandosVoz() {
   const [erro, setErro] = useState("");
   const [mensagem, setMensagem] = useState("");
 
-  async function carregar() { try { const dados = await ComandosVozService.listar(); setComandos(dados.comandos); setArenas(dados.arenas); if (!arenaId && dados.arenas[0]) setArenaId(String(dados.arenas[0].id)); } catch (e) { setErro(getApiErrorMessage(e, "Não foi possível carregar os comandos.")); } }
-  useEffect(() => { void carregar(); }, []);
+  const carregar = useCallback(async () => { try { const dados = await ComandosVozService.listar(); setComandos(dados.comandos); setArenas(dados.arenas); if (!arenaId && dados.arenas[0]) setArenaId(String(dados.arenas[0].id)); } catch (e) { setErro(getApiErrorMessage(e, "Não foi possível carregar os comandos.")); } }, [arenaId]);
+  useEffect(() => { void carregar(); }, [carregar]);
 
   function editar(comando: ComandoVoz) { setEditando(comando); setForm({ gatilho: comando.gatilho, resposta: comando.resposta, acao: comando.acao, duracaoBlocoSegundos: comando.duracaoBlocoSegundos, avisoAntesFimSegundos: comando.avisoAntesFimSegundos as 10 | 30 | null }); }
   async function salvar(e: React.FormEvent) { e.preventDefault(); setErro(""); try { if (editando) await ComandosVozService.atualizar(editando.id, form); else await ComandosVozService.criar(form); setForm(VAZIO); setEditando(null); setMensagem("Comando salvo."); await carregar(); } catch (error) { setErro(getApiErrorMessage(error, "Não foi possível salvar o comando.")); } }

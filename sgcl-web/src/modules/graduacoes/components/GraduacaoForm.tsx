@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Select } from "../../../components/ui/Select";
@@ -37,7 +37,7 @@ export function GraduacaoForm({ loading = false, onSubmit }: GraduacaoFormProps)
     },
   });
 
-  const { register, handleSubmit, watch, formState: { errors } } = methods;
+  const { register, handleSubmit, formState: { errors } } = methods;
 
   useEffect(() => {
     async function carregarAlunos() {
@@ -51,11 +51,11 @@ export function GraduacaoForm({ loading = false, onSubmit }: GraduacaoFormProps)
     carregarAlunos();
   }, []);
 
-  const alunoIdSelecionado = watch("alunoId");
+  const alunoIdSelecionado = useWatch({ control: methods.control, name: "alunoId" });
   const alunoSelecionado = alunos.find((a) => String(a.id) === alunoIdSelecionado);
 
-  const tipoSelecionado = watch("tipo");
-  const gerarCobranca = watch("gerarCobranca");
+  const tipoSelecionado = useWatch({ control: methods.control, name: "tipo" });
+  const gerarCobranca = useWatch({ control: methods.control, name: "gerarCobranca" });
 
   const faixasDisponiveis = alunoSelecionado
     ? getFaixasDaTrilha(calcularIdade(alunoSelecionado.dataNascimento))

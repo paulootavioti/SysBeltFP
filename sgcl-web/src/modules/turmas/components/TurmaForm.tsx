@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
@@ -54,9 +54,9 @@ export function TurmaForm({ turma, loading = false, onSubmit }: TurmaFormProps) 
     },
   });
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = methods;
+  const { register, handleSubmit, setValue, formState: { errors } } = methods;
 
-  const diasSelecionados = watch("diasSemana");
+  const diasSelecionados = useWatch({ control: methods.control, name: "diasSemana" });
 
   useEffect(() => {
     CurriculoService.listar().then(setCurriculos);

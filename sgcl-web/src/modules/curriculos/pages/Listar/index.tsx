@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Layout } from "../../../../components/layout/Layout";
 import { PageHeader } from "../../../../components/layout/PageHeader";
@@ -90,11 +90,11 @@ export function Curriculos() {
   const ehAdmin = perfilTemAcesso(usuario?.perfil, "/dashboard");
   const buscaAtiva = busca.trim().length > 0;
 
-  async function carregarCatalogoPedagogico() {
+  const carregarCatalogoPedagogico = useCallback(async () => {
     try { setItensCatalogo(await CurriculoService.listarCatalogoPedagogico()); } catch { setErro("Erro ao carregar o catálogo pedagógico."); }
-  }
+  }, [setErro]);
 
-  useEffect(() => { void carregarCatalogoPedagogico(); }, []);
+  useEffect(() => { void carregarCatalogoPedagogico(); }, [carregarCatalogoPedagogico]);
   useEffect(() => {
     void Promise.all([CurriculoService.listarConteudosBiblioteca(), CurriculoService.listarTemplatesPlanejamento(), CurriculoService.listarModalidadesBiblioteca()])
       .then(([conteudos, templates, modalidades]) => { setConteudosBiblioteca(conteudos); setTemplatesPlanejamento(templates); setModalidadesBiblioteca(modalidades); })

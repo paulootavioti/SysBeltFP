@@ -1,4 +1,4 @@
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
@@ -46,12 +46,11 @@ export function FormaPagamentoForm({ formaPagamento, loading = false, onSubmit }
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = methods;
 
-  const tipoSelecionado = watch("tipo");
-  const gatewaySelecionado = watch("gateway");
+  const tipoSelecionado = useWatch({ control: methods.control, name: "tipo" });
+  const gatewaySelecionado = useWatch({ control: methods.control, name: "gateway" });
 
   const camposCredencial = gatewaySelecionado
     ? (CREDENCIAIS_DO_GATEWAY[gatewaySelecionado] ?? [])

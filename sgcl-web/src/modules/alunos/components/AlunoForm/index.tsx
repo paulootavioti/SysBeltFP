@@ -1,4 +1,4 @@
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "../../../../components/ui/Button";
@@ -46,6 +46,8 @@ export function AlunoForm({ aluno, loading, onSubmit }: AlunoFormProps) {
   });
 
   const { errors } = methods.formState;
+  const fotoUrl = useWatch({ control: methods.control, name: "fotoUrl" });
+  const autorizaUsoImagem = useWatch({ control: methods.control, name: "autorizaUsoImagem" });
 
   const temErroDados = Boolean(
     errors.nome || errors.apelido || errors.dataNascimento || errors.sexo || errors.cpf || errors.rg ||
@@ -85,12 +87,12 @@ export function AlunoForm({ aluno, loading, onSubmit }: AlunoFormProps) {
                     <ImageUpload
                       label="Foto"
                       prefixo="alunos"
-                      valorAtual={methods.watch("fotoUrl")}
+                      valorAtual={fotoUrl}
                       onChange={(url) => methods.setValue("fotoUrl", url)}
                     />
                     <Checkbox
                       label="Autoriza uso de imagem em fotos de treino publicadas (galeria pública do site)"
-                      checked={methods.watch("autorizaUsoImagem") ?? true}
+                      checked={autorizaUsoImagem ?? true}
                       onChange={(e) => methods.setValue("autorizaUsoImagem", e.target.checked)}
                     />
                   </FormSection>

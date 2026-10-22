@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Layout } from "../../../../components/layout/Layout";
@@ -49,7 +49,7 @@ export function DetalheTurma() {
           .filter((aluno) => aluno.nome.toLowerCase().includes(buscaAluno.toLowerCase()))
           .slice(0, 8);
 
-  async function carregarTurma() {
+  const carregarTurma = useCallback(async () => {
     try {
       if (!id) return;
       setLoading(true);
@@ -61,11 +61,11 @@ export function DetalheTurma() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
 
   useEffect(() => {
-    carregarTurma();
-  }, [id]);
+    void carregarTurma();
+  }, [carregarTurma]);
 
   // fecha a lista de sugestões ao clicar fora do combobox.
   useEffect(() => {

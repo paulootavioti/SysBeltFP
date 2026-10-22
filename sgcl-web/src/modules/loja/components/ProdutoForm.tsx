@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
@@ -39,10 +39,10 @@ export function ProdutoForm({ produto, loading = false, onSubmit }: ProdutoFormP
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
     formState: { errors },
   } = methods;
+  const imagemUrl = useWatch({ control: methods.control, name: "imagemUrl" });
 
   const [variantes, setVariantes] = useState<VarianteFormData[]>(
     produto?.variantes.map((v) => ({ id: v.id, tamanho: v.tamanho, cor: v.cor ?? "", estoque: v.estoque })) ?? [
@@ -102,7 +102,7 @@ export function ProdutoForm({ produto, loading = false, onSubmit }: ProdutoFormP
             <ImageUpload
               label="Foto do produto"
               prefixo="produtos"
-              valorAtual={watch("imagemUrl")}
+              valorAtual={imagemUrl}
               onChange={(url) => setValue("imagemUrl", url ?? "")}
             />
           </FormGridItem>

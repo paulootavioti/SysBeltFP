@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
@@ -34,6 +34,7 @@ export function CurriculoForm({ loading = false, initialValues, onSubmit }: Curr
       ...initialValues,
     },
   });
+  const descricao = useWatch({ control: methods.control, name: "descricao" });
 
   const { register, handleSubmit, formState: { errors } } = methods;
 
@@ -73,7 +74,7 @@ export function CurriculoForm({ loading = false, initialValues, onSubmit }: Curr
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <MemorandoPedagogico label="Diretriz do currículo" abrirAoIniciar={Boolean(initialValues)} value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Defina o resultado pedagógico esperado ao fim deste currículo." sugestoes={["Construir fundamentos técnicos com segurança e progressão.", "Desenvolver autonomia, disciplina e respeito nas práticas.", "Organizar a evolução por faixa, maturidade e domínio técnico."]} />
+            <MemorandoPedagogico label="Diretriz do currículo" value={descricao ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Defina o resultado pedagógico esperado ao fim deste currículo." sugestoes={["Construir fundamentos técnicos com segurança e progressão.", "Desenvolver autonomia, disciplina e respeito nas práticas.", "Organizar a evolução por faixa, maturidade e domínio técnico."]} />
           </FormGridItem>
         </FormGrid>
 
