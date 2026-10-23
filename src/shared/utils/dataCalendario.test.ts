@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   comHorarioUTC,
   diaDaSemanaUTC,
+  diaNaAcademia,
   fimDoDiaUTC,
   formatarDataBR,
   inicioDoDiaUTC,
@@ -111,3 +112,11 @@ describe("parsearDataAcademia", () => {
     );
   });
 });
+
+describe("diaNaAcademia", () => {
+  it("usa o dia de Brasília, mesmo quando o UTC já virou", () => {
+    expect(diaNaAcademia(new Date("2027-02-14T22:30:00-03:00")).toISOString()).toBe("2027-02-14T00:00:00.000Z");
+    expect(diaNaAcademia(new Date("2027-02-15T00:10:00-03:00")).toISOString()).toBe("2027-02-15T00:00:00.000Z");
+  });
+});
+
