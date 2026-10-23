@@ -1,6 +1,11 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import type { SentidoAcesso } from "../providers";
 import { tenantTemRecurso } from "../../concessaoPlataforma/recursos";
+import { diaNaAcademia, somarDiasUTC } from "../../../shared/utils/dataCalendario";
+
+/// Dias corridos após o vencimento em que o aluno ainda entra com a
+/// mensalidade em aberto. Do 36º dia em diante, a catraca nega.
+export const DIAS_TOLERANCIA_INADIMPLENCIA = 35;
 
 export interface DecisaoAcesso {
   autorizado: boolean;
@@ -29,8 +34,8 @@ interface AutorizarAcessoDTO {
 //   2. a concessão precisa liberar o recurso de controle de acesso;
 //   3. a credencial precisa existir, estar ativa e dentro da validade;
 //   4. aluno precisa estar ativo;
-//   5. aluno com mensalidade vencida não passa (a academia pode desligar
-//      essa regra por unidade — ver bloqueiaInadimplente);
+//   5. aluno com mensalidade em aberto há mais de
+//      DIAS_TOLERANCIA_INADIMPLENCIA dias corridos do vencimento não passa;
 //   6. usuário (professor/equipe) precisa estar ativo.
 export class AutorizarAcessoService {
   constructor(
@@ -98,11 +103,7 @@ export class AutorizarAcessoService {
     return { autorizado: false, motivo: "Pessoa não identificada" };
   }
 
-  // TODO(produto): nenhum fluxo grava status VENCIDA hoje (o restante do
-  // sistema identifica atraso por `pago: false` + `vencimento < agora`), então
-  // o bloqueio por inadimplência abaixo não dispara em produção. Decidir se a
-  // regra passa a usar o vencimento, com tolerância por academia.
-  private async avaliarAluno(alunoId: number, _agora: Date): Promise<DecisaoAcesso> {
+  private async avaliarAluno(alunoId: number, agora: Date): Promise<DecisaoAcesso> {
     const prisma = prismaDaRequisicao();
     const aluno = await prisma.aluno.findUnique({
       where: { id: alunoId },
@@ -117,8 +118,18 @@ export class AutorizarAcessoService {
       return { autorizado: false, motivo: "Matrícula inativa", alunoId };
     }
 
+    // Atraso é medido pelo vencimento, não pelo status: nenhum fluxo grava
+    // VENCIDA, e depender de um job para isso deixaria a catraca liberando
+    // sempre que ele atrasasse. Vencimento é data de calendário, então a
+    // conta é feita em dias do relógio da academia.
+    const limiteVencimento = somarDiasUTC(diaNaAcademia(agora), -DIAS_TOLERANCIA_INADIMPLENCIA);
     const vencidas = await prisma.mensalidade.count({
-      where: { alunoId, status: "VENCIDA" },
+      where: {
+        alunoId,
+        pago: false,
+        status: { in: ["ABERTA", "VENCIDA"] },
+        vencimento: { lt: limiteVencimento },
+      },
     });
 
     if (vencidas > 0) {
@@ -127,7 +138,7 @@ export class AutorizarAcessoService {
       // recepção poder liberar manualmente quando fizer sentido.
       return {
         autorizado: false,
-        motivo: `Mensalidade em aberto (${vencidas})`,
+        motivo: `Mensalidade em aberto há mais de ${DIAS_TOLERANCIA_INADIMPLENCIA} dias (${vencidas})`,
         alunoId,
       };
     }
