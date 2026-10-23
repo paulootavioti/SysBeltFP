@@ -16,8 +16,8 @@ export class SecretValueProviderAws implements SecretValueProvider {
       const resposta = await this.cliente.send(new GetSecretValueCommand({ SecretId: ref }));
       if (!resposta.SecretString) throw new Error("vazio");
       return resposta.SecretString;
-    } catch {
-      throw new Error("SEGREDO_INDISPONIVEL");
+    } catch (erro) {
+      throw new Error("SEGREDO_INDISPONIVEL", { cause: erro });
     }
   }
 }
@@ -33,11 +33,11 @@ export class SecretWriteProviderAws implements SecretWriteProvider {
       await this.cliente.send(new PutSecretValueCommand({ SecretId: ref, SecretString: valor }));
     } catch (erro) {
       const nome = erro && typeof erro === "object" && "name" in erro ? String(erro.name) : "";
-      if (nome !== "ResourceNotFoundException") throw new Error("COFRE_INDISPONIVEL");
+      if (nome !== "ResourceNotFoundException") throw new Error("COFRE_INDISPONIVEL", { cause: erro });
       try {
         await this.cliente.send(new CreateSecretCommand({ Name: ref, SecretString: valor, Description: "Token de canal Meta gerenciado pelo SysBelt" }));
-      } catch {
-        throw new Error("COFRE_INDISPONIVEL");
+      } catch (erroCriacao) {
+        throw new Error("COFRE_INDISPONIVEL", { cause: erroCriacao });
       }
     }
   }

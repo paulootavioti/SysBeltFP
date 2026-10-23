@@ -24,9 +24,9 @@ export class MensageriaDirectoryHttp {
       if (!resposta.ok) throw new Error("diretório indisponível");
       return contaSchema.parse(await resposta.json());
     } catch (erro) {
-      if (erro instanceof z.ZodError) throw new Error("DIRETORIO_MENSAGERIA_INDISPONIVEL");
-      if (erro instanceof Error && erro.message === "diretório indisponível") throw new Error("DIRETORIO_MENSAGERIA_INDISPONIVEL");
-      throw new Error("DIRETORIO_MENSAGERIA_INDISPONIVEL");
+      if (erro instanceof z.ZodError) throw new Error("DIRETORIO_MENSAGERIA_INDISPONIVEL", { cause: erro });
+      if (erro instanceof Error && erro.message === "diretório indisponível") throw new Error("DIRETORIO_MENSAGERIA_INDISPONIVEL", { cause: erro });
+      throw new Error("DIRETORIO_MENSAGERIA_INDISPONIVEL", { cause: erro });
     }
   }
 }
