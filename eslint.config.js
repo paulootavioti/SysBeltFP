@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     ignores: [
-      "dist/**", "node_modules/**", "prisma/migrations/**",
+      "dist/**", "node_modules/**", "prisma/migrations/**", "archive/**",
       "sgcl-web/**", "sgcl-portal-professor/**", "sgcl-portal-familia/**",
       "landing/**", "landing-academia/**",
     ],
@@ -18,7 +18,7 @@ export default tseslint.config(
     rules: {
       "no-undef": "off",
       "no-console": "warn",
-      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_", ignoreRestSiblings: true }],
       eqeqeq: ["error", "always", { null: "ignore" }],
       "@typescript-eslint/no-namespace": ["error", { allowDeclarations: true }],
     },
@@ -33,6 +33,10 @@ export default tseslint.config(
   },
   {
     files: ["scripts/**", "prisma/seeds/**", "src/shared/observability/logger.ts"],
+    rules: { "no-console": "off" },
+  },
+  {
+    files: ["src/shared/testing/**"],
     rules: { "no-console": "off" },
   },
 );
