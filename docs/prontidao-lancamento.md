@@ -19,11 +19,30 @@ Não é pertinente reintroduzir o domínio comercial no Tenant Plane nem criar b
 - [ ] Homologar em sandbox o Mercado Pago das mensalidades e pedidos (Tenant Plane): roteiro em `docs/homologacao-mercadopago.md`
   - Parte automatizada concluída: assinatura, cada status do Mercado Pago, idempotência, entregas simultâneas, isolamento entre contas e pagamento recorrente (`WebhookMercadoPagoRota.test.ts`). Falta executar o roteiro manual com credenciais de teste.
 - [ ] Validar a emissão, expiração, suspensão e renovação de concessões assinadas entre Control Plane e Tenant Plane
+  - Lado do Tenant Plane coberto por `CicloConcessao.test.ts`: emissão, reenvio, renovação sem janela sem acesso, suspensão, expiração, recusas (adulterada, outra chave, outro tenant, emitida no futuro) e conflitos de revisão. A migration `20261023170000_concessao_plataforma_id_sequencial` corrige o banco, que só comportava uma concessão.
+  - Pendente: decidir o comportamento ao expirar/suspender (seção abaixo) e validar a emissão pelo Control Plane.
 - [ ] Executar teste de carga documentado para login, dashboard, listagem, criação de aula e webhook
 - [ ] Configurar métricas e alertas para 5xx, latência p95, erros de webhook, falhas de job e expiração de concessão
 - [ ] Executar backup e restauração em ambiente isolado, registrando RPO e RTO
 - [ ] Configurar `RESEND_API_KEY` e `EMAIL_FROM` em produção e testar a redefinição de senha ponta a ponta (sem provedor, o e-mail não é entregue e o erro `email_provedor_ausente` aparece no log)
 - [x] Resolver todos os avisos de lint e manter CI verde em pull request — concluído em 23/10/2026: API, três frontends e landings com `--max-warnings=0`/`html-validate` no CI (PRs #272, #273 e a validação das landings)
+
+## Comportamento quando a concessão expira ou é suspensa
+
+Decisão de produto pendente. Hoje o sistema faz o seguinte:
+
+| Situação | Recursos do plano (WhatsApp, gateway automático, controle de acesso) | Uso geral (login e operação da academia) |
+|---|---|---|
+| Diretório do Control Plane desligado (`CONTROL_PLANE_DIRECTORY_MULTIPRODUCT_ENABLED` ≠ `true`) | Bloqueados assim que a concessão expira ou é suspensa | **Continua liberado**: a concessão não é consultada |
+| Diretório ligado e respondendo | Bloqueados | Bloqueado (403) quando o Control Plane diz que a conta não está ativa |
+| Diretório ligado e fora do ar | Bloqueados | Usa a concessão local; expirada ou suspensa → 503 |
+
+Opções para o lançamento:
+
+1. **Somente leitura**: com concessão expirada ou suspensa, a academia consulta os dados (alunos, financeiro, relatórios), mas não cadastra nem altera nada. É menos agressivo com quem atrasou um pagamento e preserva o acesso aos próprios dados.
+2. **Bloqueio total**: o comportamento do diretório ligado, aplicado sempre.
+
+Enquanto o diretório estiver desligado em produção, uma academia suspensa continua operando normalmente, só sem os recursos do plano.
 
 ## Matriz RBAC proposta
 
