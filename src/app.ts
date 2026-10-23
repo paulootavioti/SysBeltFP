@@ -54,6 +54,7 @@ import { captacaoPublicaRoutes } from "./modules/leads/publicRoutes";
 import { mensageriaRoutes, metaWebhookRoutes } from "./modules/mensageria/routes";
 import { comandosVozRoutes, skillVozRoutes } from "./modules/comandosVoz/routes";
 import { bibliotecaPedagogicaRoutes } from "./modules/bibliotecaPedagogica/routes";
+import { versaoDaApi } from "./shared/versao/versaoDaApi";
 
 // 5173 = sgcl-web (admin/staff), 5175 = sgcl-portal-familia (Portal da
 // Família), 5176 = sgcl-portal-professor (Portal do Professor) — três
@@ -97,6 +98,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/health", (_req, res) => res.json({ status: "ok", timestamp: new Date().toISOString() }));
+app.get("/version", (_req, res) => res.json(versaoDaApi()));
 
 app.use("/alunos", alunosRoutes);
 app.use("/responsaveis", responsaveisRoutes);

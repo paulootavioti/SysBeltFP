@@ -11,6 +11,7 @@ Não é pertinente reintroduzir o domínio comercial no Tenant Plane nem criar b
 ## Gates de lançamento
 
 - [ ] Corrigir a publicação independente dos três frontends e comprovar que todos consomem o commit de `main`
+  - Comprovação: após o deploy, `npm run deploy:verificar` precisa sair todo ✅ (versão dos quatro sites e CORS dos portais; ver "Verificação pós-deploy" em `docs/deploy.md`)
 - [ ] Homologar duas contas reais de teste: leitura, escrita, busca por ID, upload, exportação, jobs e webhooks sem acesso cruzado
 - [ ] Definir e aprovar matriz RBAC, incluindo a decisão sobre os papéis Gerente e Usuário comum
 - [ ] Homologar o gateway de cobrança SaaS em sandbox: aprovação, recusa, atraso, tolerância, cancelamento, reenvio e idempotência do webhook
