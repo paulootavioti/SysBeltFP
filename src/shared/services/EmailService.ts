@@ -5,8 +5,13 @@ export interface EmailService {
 // Implementação padrão até que um provedor real seja configurado — apenas
 // registra o envio, sem SMTP/API key nenhuma.
 export class NullEmailService implements EmailService {
-  async enviar(destinatario: string, assunto: string, corpo: string): Promise<void> {
-    console.log(`[EmailService] (stub) e-mail para ${destinatario} — "${assunto}"\n${corpo}`);
+  async enviar(destinatario: string, assunto: string, _corpo: string): Promise<void> {
+    const emailMascarado = destinatario.replace(/(^.).*(@.*$)/, "$1***$2");
+    if (process.env.NODE_ENV === "production") {
+      logger.error("e-mail não enviado: provedor não configurado", new Error("EMAIL_PROVIDER_NOT_CONFIGURED"), { destinatario: emailMascarado, assunto });
+      return;
+    }
+    logger.info("email_simulado", { destinatario: emailMascarado, assunto });
   }
 }
 
@@ -37,5 +42,10 @@ export function obterEmailService(env: NodeJS.ProcessEnv = process.env): EmailSe
     return new ResendEmailService(env.RESEND_API_KEY, env.EMAIL_FROM);
   }
 
+  if (env.NODE_ENV === "production") {
+    logger.error("RESEND_API_KEY/EMAIL_FROM ausentes: e-mails de redefinição de senha NÃO serão entregues", new Error("EMAIL_PROVIDER_NOT_CONFIGURED"));
+  }
+
   return new NullEmailService();
 }
+import { logger } from "../observability/logger";
