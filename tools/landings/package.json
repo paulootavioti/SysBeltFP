@@ -1,0 +1,8 @@
+{
+  "name": "sysbelt-landings-lint",
+  "private": true,
+  "description": "Validação de HTML das landings, isolada das dependências da API (ver scripts lint:landings).",
+  "devDependencies": {
+    "html-validate": "11.17.0"
+  }
+}
