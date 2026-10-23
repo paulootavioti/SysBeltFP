@@ -3,6 +3,7 @@ import { AppError } from "../../../shared/errors/AppError";
 import { obterProvedorAcesso } from "../providers";
 import { AutorizarAcessoService } from "./AutorizarAcessoService";
 import { AvisarAcessoService } from "../../whatsapp/services/AvisarAcessoService";
+import { logger } from "../../../shared/observability/logger";
 
 interface RegistrarEventoAcessoDTO {
   dispositivoId: number;
@@ -88,7 +89,7 @@ export class RegistrarEventoAcessoService {
     // de WhatsApp não pode impedir o registro do acesso — que é o dado que
     // realmente importa e já está gravado neste ponto.
     await new AvisarAcessoService().execute(registrado.id).catch((erro) => {
-      console.warn("[controleAcesso] falha ao avisar acesso por WhatsApp:", erro);
+      logger.error("aviso_acesso_whatsapp_falhou", erro, { eventoAcessoId: registrado.id });
     });
 
     return registrado;

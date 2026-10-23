@@ -8,6 +8,7 @@ import { ReguaCobrancaService } from "./services/ReguaCobrancaService";
 import { LembreteAulaService } from "./services/LembreteAulaService";
 import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { executarPorConta } from "../../shared/jobs/executarPorConta";
+import { logger } from "../../shared/observability/logger";
 
 export class WhatsappController {
   // A Meta faz um GET com hub.challenge pra confirmar que a URL é nossa
@@ -35,7 +36,7 @@ export class WhatsappController {
     );
 
     if (!verificacao.valida) {
-      console.warn("Webhook WhatsApp recusado:", verificacao.motivo);
+      logger.warn("webhook_whatsapp_recusado", { motivo: verificacao.motivo });
 
       return res.sendStatus(401);
     }

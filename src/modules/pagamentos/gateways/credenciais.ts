@@ -1,4 +1,5 @@
 import { cifrarSeNecessario, decifrar, estaCifrado } from "../../../shared/security/segredos";
+import { logger } from "../../../shared/observability/logger";
 
 // Credenciais de gateway, guardadas POR FORMA DE PAGAMENTO — ou seja, por
 // unidade, ou seja, por assinante.
@@ -87,10 +88,11 @@ function credenciaisDoAmbiente(env: NodeJS.ProcessEnv): CredenciaisGateway {
 
   if ((accessToken || webhookSecret) && !avisouUsoDoAmbiente && env.NODE_ENV !== "test") {
     avisouUsoDoAmbiente = true;
-    console.warn(
-      "[pagamentos] Usando credenciais do Mercado Pago das variáveis de ambiente. " +
-        "Isso vale pra UMA academia por servidor — cadastre as credenciais na forma de pagamento da unidade."
-    );
+    logger.warn("pagamentos_credenciais_do_ambiente", {
+      mensagem:
+        "Usando credenciais do Mercado Pago das variáveis de ambiente. " +
+        "Isso vale pra UMA academia por servidor — cadastre as credenciais na forma de pagamento da unidade.",
+    });
   }
 
   return { accessToken, webhookSecret };
