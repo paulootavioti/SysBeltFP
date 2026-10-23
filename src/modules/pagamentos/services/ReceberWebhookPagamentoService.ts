@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
+import { logger } from "../../../shared/observability/logger";
 import { AuditLogService } from "../../../shared/services/AuditLogService";
 import type { PaymentGateway, WebhookEvento } from "../gateways/PaymentGateway";
 
@@ -18,17 +19,23 @@ interface ReceberWebhookDTO {
   gateway: PaymentGateway;
   nomeGateway: string;
   payload: unknown;
+  // Conta (assinante) dona das credenciais que autenticaram a notificação.
+  // Ausente só na instalação legada de uma academia, com credenciais em
+  // variável de ambiente.
+  contaId?: number | null;
 }
 
 export class ReceberWebhookPagamentoService {
   private nomeGateway = "";
+  private contaId: number | null = null;
 
-  async execute({ gateway, nomeGateway, payload }: ReceberWebhookDTO): Promise<{
+  async execute({ gateway, nomeGateway, payload, contaId }: ReceberWebhookDTO): Promise<{
     resultado: ResultadoWebhook;
     detalhe?: string;
   }> {
     const prisma = prismaDaRequisicao();
     this.nomeGateway = nomeGateway;
+    this.contaId = contaId ?? null;
 
     // O gateway relê o pagamento na API dele antes de responder — o
     // payload da notificação nunca é fonte de verdade do status.
@@ -102,11 +109,20 @@ export class ReceberWebhookPagamentoService {
       return { resultado: "IGNORADO", detalhe: `Situação ${evento.situacao ?? "desconhecida"}.` };
     }
 
+    if (evento.recorrente || evento.referenciaExterna?.startsWith("assinatura:")) {
+      // A referência de uma assinatura é o id DELA: lida como mensalidade,
+      // daria baixa na mensalidade de mesmo número — de outro aluno.
+      return { resultado: "IGNORADO", detalhe: "Pagamento recorrente de assinatura; baixa não é automática." };
+    }
+
     if (evento.referenciaExterna?.startsWith("pedido:")) {
       const pedidoId = Number(evento.referenciaExterna.slice("pedido:".length));
       if (!Number.isInteger(pedidoId) || pedidoId <= 0) return { resultado: "IGNORADO", detalhe: "Referência de pedido inválida." };
-      const pedido = await prisma.pedido.findUnique({ where: { id: pedidoId } });
+      const pedido = await prisma.pedido.findUnique({ where: { id: pedidoId }, include: { unidade: { select: { contaId: true } } } });
       if (!pedido) return { resultado: "PEDIDO_NAO_ENCONTRADO" };
+      if (this.deOutraConta(pedido.unidade.contaId, "Pedido", pedido.id)) {
+        return { resultado: "IGNORADO", detalhe: "Referência de outra conta." };
+      }
       if (["AGUARDANDO_RETIRADA", "ENTREGUE"].includes(pedido.status)) return { resultado: "JA_PROCESSADO" };
       if (pedido.status === "CANCELADO") return { resultado: "IGNORADO", detalhe: "Pedido cancelado; pagamento precisa de tratamento manual." };
       await prisma.pedido.update({ where: { id: pedido.id }, data: { status: "AGUARDANDO_RETIRADA", pagoEm: new Date() } });
@@ -123,10 +139,17 @@ export class ReceberWebhookPagamentoService {
       return { resultado: "IGNORADO", detalhe: "Notificação sem referência a uma mensalidade." };
     }
 
-    const mensalidade = await prisma.mensalidade.findUnique({ where: { id: mensalidadeId } });
+    const mensalidade = await prisma.mensalidade.findUnique({
+      where: { id: mensalidadeId },
+      include: { unidade: { select: { contaId: true } } },
+    });
 
     if (!mensalidade) {
       return { resultado: "MENSALIDADE_NAO_ENCONTRADA" };
+    }
+
+    if (this.deOutraConta(mensalidade.unidade.contaId, "Mensalidade", mensalidade.id)) {
+      return { resultado: "IGNORADO", detalhe: "Referência de outra conta." };
     }
 
     if (mensalidade.status === "PAGA") {
@@ -166,5 +189,22 @@ export class ReceberWebhookPagamentoService {
     });
 
     return { resultado: "PAGAMENTO_REGISTRADO" };
+  }
+
+  // A assinatura prova só que a notificação veio da conta do Mercado Pago
+  // de uma academia; a referência dentro do pagamento é texto que essa
+  // academia escolheu. Sem esta trava, um assinante daria baixa na
+  // mensalidade de outro criando, na própria conta, um pagamento com o
+  // id dela como referência.
+  private deOutraConta(contaDoRecurso: number, entidade: string, id: number): boolean {
+    if (this.contaId === null || contaDoRecurso === this.contaId) return false;
+    logger.warn("webhook_pagamento_conta_divergente", {
+      gateway: this.nomeGateway,
+      entidade,
+      entidadeId: id,
+      contaDaCredencial: this.contaId,
+      contaDoRecurso,
+    });
+    return true;
   }
 }

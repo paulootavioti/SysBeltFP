@@ -38,7 +38,8 @@ export class AtivarAssinaturaGatewayService {
     const resultado = await gateway.criarAssinatura({
       valor: assinatura.valor,
       diaVencimento: assinatura.diaVencimento,
-      referenciaExterna: String(assinatura.id),
+      // Prefixada para nunca ser lida como id de mensalidade no webhook.
+      referenciaExterna: `assinatura:${assinatura.id}`,
       pagador: { nome: pagador.nome, email: pagador.email },
       descricao: assinatura.plano?.nome ?? "Mensalidade recorrente",
       dataFim: assinatura.dataFim,

@@ -1,0 +1,14 @@
+{
+  "id": 1324567890,
+  "status": "approved",
+  "status_detail": "accredited",
+  "transaction_amount": 150,
+  "currency_id": "BRL",
+  "payment_method_id": "master",
+  "payment_type_id": "credit_card",
+  "operation_type": "recurring_payment",
+  "external_reference": "__MENSALIDADE__",
+  "date_created": "2026-10-23T11:59:00.000-03:00",
+  "date_approved": "2026-10-23T12:00:00.000-03:00",
+  "live_mode": false
+}

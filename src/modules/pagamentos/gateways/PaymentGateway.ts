@@ -54,6 +54,9 @@ export interface WebhookEvento {
   // status já normalizado pelo gateway: o que a aplicação deve fazer.
   situacao?: "PAGO" | "PENDENTE" | "RECUSADO" | "ESTORNADO" | "DESCONHECIDO";
   valorPago?: number;
+  // Cobrança recorrente (assinatura) — a referência dela não é id de
+  // mensalidade, e a baixa não pode ir pelo fluxo de pagamento avulso.
+  recorrente?: boolean;
 }
 
 export interface PaymentGateway {
