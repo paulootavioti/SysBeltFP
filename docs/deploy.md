@@ -53,7 +53,7 @@ a ele.
 `netlify.toml` da raiz:
 
 ```toml
-command = "npm ci --include=dev && npx prisma generate && DATABASE_URL=${DIRECT_DATABASE_URL:-$DATABASE_URL} npx prisma migrate deploy && cd sgcl-web && npm ci --include=dev && npm run build"
+command = "node scripts/versaoBuild.mjs api src/shared/versao/versaoBuild.json && npm ci --include=dev && npx prisma generate && DATABASE_URL=${DIRECT_DATABASE_URL:-$DATABASE_URL} npx prisma migrate deploy && cd sgcl-web && npm ci --include=dev && npm run build"
 publish = "sgcl-web/dist"
 ```
 
@@ -95,6 +95,29 @@ comportamento.
 > `new URL("/api/diretorio/v1/tenants/<slug>", base)` — um caminho absoluto
 > descarta qualquer caminho presente na base. Escrever `.../api` não quebra
 > nada, mas fica no painel parecendo que significa algo.
+
+---
+
+# Portais (`sysbeltportalfamilia` e `portalprofessorsysbelt`)
+
+Cada portal é um site separado, com o `netlify.toml` do próprio diretório e
+sem function: as chamadas vão para a API do `sysbeltfp`, em outro domínio.
+Por isso as duas pontas precisam estar configuradas:
+
+| Site | Variável | Valor |
+|---|---|---|
+| `sysbeltportalfamilia` | `VITE_API_URL` | `https://sysbeltfp.netlify.app/api` |
+| `portalprofessorsysbelt` | `VITE_API_URL` | `https://sysbeltfp.netlify.app/api` |
+| `sysbeltfp` (API) | `CORS_ORIGIN` | `https://sysbeltportalfamilia.netlify.app,https://portalprofessorsysbelt.netlify.app` |
+
+> **`VITE_API_URL` entra no build, não em tempo de execução.** Alterar a
+> variável no painel não muda nada até um novo deploy do portal. Sem ela, o
+> portal chama `/api` no próprio domínio e toda requisição volta 404.
+
+> **`CORS_ORIGIN` é a lista exata de origens**, separadas por vírgula, sem
+> barra no final. Ao adotar um domínio próprio para um portal, a nova origem
+> entra aqui; sem isso, o navegador bloqueia as chamadas do portal. O
+> `sgcl-web` não precisa estar na lista: ele chama a API no mesmo domínio.
 
 ---
 
@@ -169,6 +192,33 @@ applied.`
 ---
 
 # Verificação pós-deploy
+
+## Todos os sites no mesmo commit
+
+Cada build publica de qual commit saiu: `/version.json` nos três frontends
+(gerado pelo plugin em `scripts/versaoBuild.mjs`) e `/api/version` na API.
+Como os sites são publicados separadamente, um deploy que falha em um deles
+deixa aquele site na versão anterior, sem aviso. O script confere os quatro
+contra a `main` e testa o CORS dos dois portais:
+
+```bash
+git fetch origin main
+npm run deploy:verificar
+```
+
+```text
+✅ API: d845087
+✅ sgcl-web: d845087
+✅ Portal da Família: d845087
+✅ Portal do Professor: d845087
+✅ CORS https://sysbeltportalfamilia.netlify.app: liberado
+✅ CORS https://portalprofessorsysbelt.netlify.app: liberado
+```
+
+Qualquer ❌ encerra com código 1. Para conferir um commit específico, use
+`npm run deploy:verificar -- --sha <commit>`. Para outro domínio, use as
+variáveis `URL_SITE_PRINCIPAL`, `URL_API`, `URL_PORTAL_FAMILIA` e
+`URL_PORTAL_PROFESSOR`.
 
 ## Control Plane
 

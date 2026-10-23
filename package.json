@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "deploy:verificar": "node scripts/verificarDeploy.mjs",
     "lint:landings": "npm ci --prefix tools/landings --no-audit --no-fund --loglevel=error && tools/landings/node_modules/.bin/html-validate landing/index.html landing-academia/index.html landing-academia/captacao.html && node scripts/verificarAssetsLandings.mjs && node --check landing/script.js && node --check landing-academia/captacao.js && node --check landing-academia/script.js",
     "test": "vitest run",
     "test:unit": "vitest run src/shared",
