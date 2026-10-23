@@ -7,7 +7,6 @@ import type {
   PaymentGateway,
   WebhookEvento,
 } from "./PaymentGateway";
-import { GatewayNaoImplementadoError } from "./PaymentGateway";
 import {
   consultarPagamento,
   criarPagamentoPix,

@@ -1,8 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { NullEmailService, ResendEmailService, obterEmailService } from "./EmailService";
+import { logger } from "../observability/logger";
+import { NullEmailService, ResendEmailService, mascararEmail, obterEmailService } from "./EmailService";
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+  vi.restoreAllMocks();
+});
 
 describe("serviço de e-mail", () => {
   it("usa o modo local sem credenciais", () => {
@@ -23,5 +28,31 @@ describe("serviço de e-mail", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 422 }));
     await expect(new ResendEmailService("chave", "origem").enviar("destino", "assunto", "corpo"))
       .rejects.toThrow("EMAIL_PROVIDER_ERROR:422");
+  });
+
+  it("modo local nunca registra o corpo nem o e-mail completo", async () => {
+    const info = vi.spyOn(logger, "info").mockImplementation(() => undefined);
+    const error = vi.spyOn(logger, "error").mockImplementation(() => undefined);
+
+    for (const ambiente of ["development", "production"]) {
+      vi.stubEnv("NODE_ENV", ambiente);
+      await new NullEmailService().enviar("pessoa@exemplo.com", "Redefinir senha", "https://app/redefinir-senha?token=ABC123");
+    }
+
+    const registrado = JSON.stringify([...info.mock.calls, ...error.mock.calls]);
+    expect(info).toHaveBeenCalledOnce();
+    expect(error).toHaveBeenCalledOnce();
+    expect(registrado).not.toContain("ABC123");
+    expect(registrado).not.toContain("pessoa@exemplo.com");
+  });
+
+  it("avisa em produção quando o provedor não está configurado", () => {
+    const error = vi.spyOn(logger, "error").mockImplementation(() => undefined);
+    expect(obterEmailService({ NODE_ENV: "production" } as NodeJS.ProcessEnv)).toBeInstanceOf(NullEmailService);
+    expect(error).toHaveBeenCalledWith("email_provedor_ausente", expect.any(Error));
+  });
+
+  it("mascara o destinatário", () => {
+    expect(mascararEmail("pessoa@exemplo.com")).toBe("p***@exemplo.com");
   });
 });

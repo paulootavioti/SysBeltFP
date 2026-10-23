@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
@@ -55,11 +55,10 @@ export function AssinaturaForm({ assinatura, loading = false, onSubmit }: Assina
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = methods;
 
-  const indeterminado = watch("indeterminado");
+  const indeterminado = useWatch({ control: methods.control, name: "indeterminado" });
 
   useEffect(() => {
     AlunoService.listar()

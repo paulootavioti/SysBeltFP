@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 
 import { prismaDaRequisicao } from "../database/prismaDaRequisicao";
 import { obterContextoRequisicao } from "../context/contextoRequisicao";
+import { logger } from "../observability/logger";
 
 export type OperacaoAuditoria =
   | "CRIACAO"
@@ -76,7 +77,7 @@ export class AuditLogService {
         },
       });
     } catch (error) {
-      console.error("Falha ao registrar auditoria:", error);
+      logger.error("auditoria_falhou", error, { entidade, operacao });
       return null;
     }
   }

@@ -8,10 +8,9 @@ interface MemorandoPedagogicoProps {
   placeholder: string;
   rows?: number;
   className?: string;
-  abrirAoIniciar?: boolean;
 }
 
-export function MemorandoPedagogico({ label, value, onChange, sugestoes, placeholder, rows = 3, className, abrirAoIniciar: _abrirAoIniciar }: MemorandoPedagogicoProps) {
+export function MemorandoPedagogico({ label, value, onChange, sugestoes, placeholder, rows = 3, className }: MemorandoPedagogicoProps) {
   function usarSugestao(sugestao: string) {
     onChange(value.trim() ? `${value.trim()}\n${sugestao}` : sugestao);
   }

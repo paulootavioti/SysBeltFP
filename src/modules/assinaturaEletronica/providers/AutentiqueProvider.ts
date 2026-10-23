@@ -93,7 +93,7 @@ export class AutentiqueProvider implements ElectronicSignatureProvider {
     return this.chamar<T>(JSON.stringify({ query, variables }), "application/json");
   }
 
-  private async chamar<T>(corpo: BodyInit, contentType?: string): Promise<T> {
+  private async chamar<T>(corpo: string | FormData, contentType?: string): Promise<T> {
     if (!this.token) throw new AppError("Autentique não configurado: informe AUTENTIQUE_API_TOKEN.", 503);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);

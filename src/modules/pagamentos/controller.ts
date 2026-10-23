@@ -10,6 +10,7 @@ import { ListarConciliacaoPagamentosService } from "./services/ListarConciliacao
 import { ReconciliarCobrancaService } from "./services/ReconciliarCobrancaService";
 import { PagarMensalidadeFamiliaService } from "../portalFamilia/services/PagarMensalidadeFamiliaService";
 import { PagarPedidoFamiliaService } from "../portalFamilia/services/PagarPedidoFamiliaService";
+import { logger } from "../../shared/observability/logger";
 
 function cabecalho(req: Request, nome: string): string | undefined {
   const valor = req.headers[nome];
@@ -93,7 +94,7 @@ export class PagamentosController {
     if (!verificacao.valida) {
       // 401 sem detalhe: dizer exatamente o que falhou ajudaria quem está
       // tentando forjar. O motivo fica no log do servidor.
-      console.warn("Webhook Mercado Pago recusado:", verificacao.motivo);
+      logger.warn("webhook_mercadopago_recusado", { motivo: verificacao.motivo });
 
       return res.status(401).json({ erro: "Assinatura inválida." });
     }

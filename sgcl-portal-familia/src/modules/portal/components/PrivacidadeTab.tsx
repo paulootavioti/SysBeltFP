@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "../../../components/ui/Button";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { ErrorMessage } from "../../../components/ui/ErrorMessage";
@@ -20,12 +20,12 @@ export function PrivacidadeTab({ alunoId }: { alunoId: number }) {
   const [itens, setItens] = useState<ConsentimentoFamilia[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
-  async function carregar() {
+  const carregar = useCallback(async () => {
     try { setErro(""); setItens(await PortalService.consentimentos(alunoId)); }
     catch (error) { setErro(getApiErrorMessage(error, "Não foi possível carregar os consentimentos.")); }
     finally { setLoading(false); }
-  }
-  useEffect(() => { void carregar(); }, [alunoId]);
+  }, [alunoId]);
+  useEffect(() => { void carregar(); }, [carregar]);
   async function revogar(item: ConsentimentoFamilia) {
     if (!window.confirm(`Revogar o consentimento de ${ROTULOS[item.tipo]}?`)) return;
     try { await PortalService.revogarConsentimento(item.id); await carregar(); }

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
@@ -26,6 +26,7 @@ export function ModuloForm({ loading = false, initialValues, onSubmit }: ModuloF
     resolver: zodResolver(moduloSchema),
     defaultValues: { nome: "", descricao: "", faixa: "", ...initialValues },
   });
+  const descricao = useWatch({ control: methods.control, name: "descricao" });
 
   const { register, handleSubmit, formState: { errors } } = methods;
 
@@ -48,7 +49,7 @@ export function ModuloForm({ loading = false, initialValues, onSubmit }: ModuloF
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <MemorandoPedagogico label="Foco do módulo" abrirAoIniciar={Boolean(initialValues)} value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Explique o que será desenvolvido neste módulo." sugestoes={["Consolidar postura, base e deslocamento antes de novas técnicas.", "Praticar entradas com controle, cooperação e troca de parceiros.", "Avaliar compreensão, segurança e autonomia antes de avançar."]} />
+            <MemorandoPedagogico label="Foco do módulo" value={descricao ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Explique o que será desenvolvido neste módulo." sugestoes={["Consolidar postura, base e deslocamento antes de novas técnicas.", "Praticar entradas com controle, cooperação e troca de parceiros.", "Avaliar compreensão, segurança e autonomia antes de avançar."]} />
           </FormGridItem>
         </FormGrid>
 

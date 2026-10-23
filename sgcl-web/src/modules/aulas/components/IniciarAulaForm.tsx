@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -43,14 +43,14 @@ export function IniciarAulaForm({ loading = false, onSubmit }: IniciarAulaFormPr
     },
   });
 
-  const { register, handleSubmit, watch, formState: { errors } } = methods;
+  const { register, handleSubmit, formState: { errors } } = methods;
 
   useEffect(() => {
     TurmaService.listar().then((data) => setTurmas(data.filter((t) => t.ativo)));
     CurriculoService.listar().then(setCurriculos);
   }, []);
 
-  const turmaIdSelecionada = watch("turmaId");
+  const turmaIdSelecionada = useWatch({ control: methods.control, name: "turmaId" });
   const turmaSelecionada = turmas.find((t) => String(t.id) === turmaIdSelecionada);
 
   const curriculoDaTurma = turmaSelecionada?.curriculoId

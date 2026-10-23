@@ -5,6 +5,11 @@ const PADROES_SENSIVEIS: Array<[RegExp, string]> = [
     /(x-sysbelt-directory-secret["']?\s*[:=]\s*["']?)[^\s"',}]+/gi,
     "$1[SECRET_REDACTED]",
   ],
+  // Credenciais em query string (ex.: chamadas OAuth da Meta).
+  [
+    /\b(access_token|client_secret|input_token|refresh_token|code)=[^&\s"']+/gi,
+    "$1=[REDACTED]",
+  ],
 ];
 
 export function sanitizarTextoParaLog(texto: string): string {

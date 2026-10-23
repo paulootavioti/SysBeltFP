@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
@@ -84,17 +84,17 @@ export function ProgramarAulaForm({
     },
   });
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = methods;
+  const { register, handleSubmit, setValue, formState: { errors } } = methods;
 
   useEffect(() => {
     TurmaService.listar().then((data) => setTurmas(data.filter((t) => t.ativo)));
     CurriculoService.listar().then(setCurriculos);
   }, []);
 
-  const modo = watch("modo");
-  const turmaIdSelecionada = watch("turmaId");
+  const modo = useWatch({ control: methods.control, name: "modo" });
+  const turmaIdSelecionada = useWatch({ control: methods.control, name: "turmaId" });
   const turmaSelecionada = turmas.find((t) => String(t.id) === turmaIdSelecionada);
-  const diasSelecionados = watch("diasSemana");
+  const diasSelecionados = useWatch({ control: methods.control, name: "diasSemana" });
 
   const curriculoDaTurma = turmaSelecionada?.curriculoId
     ? curriculos.find((c) => c.id === turmaSelecionada.curriculoId)
@@ -117,8 +117,7 @@ export function ProgramarAulaForm({
     if (modo === "recorrente" && turmaSelecionada) {
       setValue("diasSemana", turmaSelecionada.diasSemana, { shouldValidate: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [turmaSelecionada?.id, modo]);
+  }, [modo, setValue, turmaSelecionada]);
 
   return (
     <FormProvider {...methods}>

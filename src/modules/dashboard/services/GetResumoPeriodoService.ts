@@ -5,7 +5,6 @@ import {
   calcularRangePeriodoAnterior,
   calcularVariacaoPercentual,
   divisoesDoPeriodo,
-  montarSerie,
   type Periodo,
   type RangePeriodo,
 } from "../utils/periodo";

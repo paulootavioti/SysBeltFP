@@ -2,6 +2,11 @@ import { createHash, randomBytes } from "node:crypto";
 import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../shared/errors/AppError";
 import { obterContextoRequisicao } from "../../shared/context/contextoRequisicao";
+import type { z } from "zod";
+import type { comandoVozSchema } from "./validation";
+
+// Já validado (e sem campos extras) pelo validateBody da rota.
+type DadosComandoVoz = z.infer<typeof comandoVozSchema>;
 
 const PADROES = [
   ["Alexa, pausa para água", "Equipe, 1 minuto para água.", "BLOCO_PAUSA", 60, 10],
@@ -38,11 +43,11 @@ export class ComandosVozService {
     return { comandos, arenas };
   }
 
-  async criar(dados: any, unidadeId: number | null) {
+  async criar(dados: DadosComandoVoz, unidadeId: number | null) {
     return prismaDaRequisicao().comandoVoz.create({ data: { ...dados, contaId: await contaDaUnidade(unidadeId), doSistema: false } });
   }
 
-  async atualizar(id: number, dados: any, unidadeId: number | null) {
+  async atualizar(id: number, dados: DadosComandoVoz, unidadeId: number | null) {
     const db = prismaDaRequisicao();
     const contaId = await contaDaUnidade(unidadeId);
     const atual = await db.comandoVoz.findFirst({ where: { id, contaId } });

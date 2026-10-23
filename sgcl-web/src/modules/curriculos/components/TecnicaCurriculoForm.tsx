@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "../../../components/ui/Input";
@@ -23,6 +23,7 @@ export function TecnicaCurriculoForm({ loading = false, initialValues, onSubmit 
     resolver: zodResolver(tecnicaCurriculoSchema),
     defaultValues: { nome: "", categoria: "", descricao: "", obrigatoria: true, duracaoPrevistaMinutos: "10", ...initialValues },
   });
+  const descricao = useWatch({ control: methods.control, name: "descricao" });
 
   const { register, handleSubmit, formState: { errors } } = methods;
 
@@ -54,7 +55,7 @@ export function TecnicaCurriculoForm({ loading = false, initialValues, onSubmit 
           </FormGridItem>
 
           <FormGridItem span={2}>
-            <MemorandoPedagogico label="Como conduzir" abrirAoIniciar={Boolean(initialValues)} value={methods.watch("descricao") ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Descreva demonstração, prática e critério para avançar." rows={4} sugestoes={["Demonstre lentamente, destaque os pontos de contato e convide perguntas.", "Organize duplas compatíveis e alterne os papéis a cada repetição.", "Interrompa para corrigir postura e retome apenas quando todos compreenderem."]} />
+            <MemorandoPedagogico label="Como conduzir" value={descricao ?? ""} onChange={(value) => methods.setValue("descricao", value)} placeholder="Descreva demonstração, prática e critério para avançar." rows={4} sugestoes={["Demonstre lentamente, destaque os pontos de contato e convide perguntas.", "Organize duplas compatíveis e alterne os papéis a cada repetição.", "Interrompa para corrigir postura e retome apenas quando todos compreenderem."]} />
           </FormGridItem>
         </FormGrid>
 

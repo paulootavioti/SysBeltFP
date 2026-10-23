@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../../../components/ui/Input";
 import { Select } from "../../../components/ui/Select";
@@ -61,8 +61,9 @@ export function UsuarioForm({ usuario, loading = false, onSubmit }: UsuarioFormP
       fotoUrl: usuario?.fotoUrl ?? null,
     },
   });
-  const { register, handleSubmit, watch, formState: { errors } } = methods;
-  const perfil = watch("perfil");
+  const { register, handleSubmit, formState: { errors } } = methods;
+  const perfil = useWatch({ control: methods.control, name: "perfil" });
+  const fotoUrl = useWatch({ control: methods.control, name: "fotoUrl" });
   const ehProfessor = perfil === "PROFESSOR";
   const mostrarChecklistUnidades = podeGerenciarUnidades && PERFIS_COM_VINCULO_ESCOLHIDO.includes(perfil);
   const opcoesPerfil = PERFIS_BASE;
@@ -137,7 +138,7 @@ export function UsuarioForm({ usuario, loading = false, onSubmit }: UsuarioFormP
               <ImageUpload
                 label="Foto"
                 prefixo="usuarios"
-                valorAtual={methods.watch("fotoUrl")}
+                valorAtual={fotoUrl}
                 onChange={(url) => methods.setValue("fotoUrl", url)}
               />
             </FormSection>

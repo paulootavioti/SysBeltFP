@@ -1,5 +1,6 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { obterEmailService, type EmailService } from "../../../shared/services/EmailService";
+import { logger } from "../../../shared/observability/logger";
 
 interface Entrada {
   usuario: { id: number; nome: string; email: string; unidadeId: number | null };
@@ -31,7 +32,7 @@ export class CriarSolicitacaoSuporteService {
           `Usuário: ${entrada.usuario.nome} <${entrada.usuario.email}>\nUnidade: ${entrada.usuario.unidadeId ?? "todas"}\nRota: ${entrada.contexto?.rota ?? "não informada"}\n\n${entrada.mensagem}`,
         );
       } catch (erro) {
-        console.error("Falha ao notificar chamado de suporte", { solicitacaoId: solicitacao.id, erro: String(erro) });
+        logger.error("suporte_notificacao_falhou", erro, { solicitacaoId: solicitacao.id });
       }
     }
 

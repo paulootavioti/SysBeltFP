@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Layout } from "../../../../components/layout/Layout";
@@ -36,7 +36,7 @@ export function DetalheCompeticao() {
   const [inscrevendo, setInscrevendo] = useState(false);
   const [resultados, setResultados] = useState<Record<number, string>>({});
 
-  async function carregarDados() {
+  const carregarDados = useCallback(async () => {
     try {
       if (!id) return;
       setLoading(true);
@@ -57,11 +57,11 @@ export function DetalheCompeticao() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
 
   useEffect(() => {
-    carregarDados();
-  }, [id]);
+    void carregarDados();
+  }, [carregarDados]);
 
   async function handleInscrever(data: InscricaoFormData) {
     try {

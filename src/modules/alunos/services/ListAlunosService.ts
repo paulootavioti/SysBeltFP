@@ -3,18 +3,30 @@ import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
 import { escopoUnidade } from "../../../shared/utils/escopoUnidade";
 import type { Prisma } from "@prisma/client";
 
+// A forma de cada item depende do perfil (o PROFESSOR recebe um recorte sem
+// dados sensíveis), então a listagem é exposta como registro genérico.
+type AlunoListado = Record<string, unknown>;
+
+interface ListagemPaginada {
+  itens: AlunoListado[];
+  pagina: number;
+  porPagina: number;
+  total: number;
+  totalPaginas: number;
+}
+
 export class ListAlunosService {
-  async execute(unidadeId: number | null, perfil?: string): Promise<any[]>;
+  async execute(unidadeId: number | null, perfil?: string): Promise<AlunoListado[]>;
   async execute(
     unidadeId: number | null,
     perfil: string | undefined,
     paginacao: { pagina: number; porPagina: number; busca?: string; status?: string; turmaId?: number },
-  ): Promise<{ itens: any[]; pagina: number; porPagina: number; total: number; totalPaginas: number }>;
+  ): Promise<ListagemPaginada>;
   async execute(
     unidadeId: number | null,
     perfil?: string,
     paginacao?: { pagina: number; porPagina: number; busca?: string; status?: string; turmaId?: number },
-  ): Promise<any> {
+  ): Promise<AlunoListado[] | ListagemPaginada> {
     const prisma = prismaDaRequisicao();
 
     // O aluno pode estar autorizado em mais de uma unidade (AlunoUnidade),

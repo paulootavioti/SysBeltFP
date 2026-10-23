@@ -38,4 +38,17 @@ describe("payload dos webhooks Meta", () => {
     const corpo = { entry: [{ id: "ig", messaging: [{ sender: { id: "user" }, timestamp: 1787616000000, message: { mid: "mid.img", attachments: [{ type: "image", payload: { url: "https://scontent.cdninstagram.com/img.jpg" } }] } }] }] };
     expect(normalizarMensagensMeta("INSTAGRAM", corpo)[0]).toMatchObject({ tipoConteudo: "IMAGEM", mediaUrlOrigem: "https://scontent.cdninstagram.com/img.jpg" });
   });
+
+  it("descarta campos com tipo inesperado em vez de gravá-los como conteúdo", () => {
+    const corpo = { entry: { nao: "é lista" } };
+    expect(normalizarMensagensMeta("WHATSAPP", corpo)).toEqual([]);
+    expect(extrairIdentificadorConta("WHATSAPP", corpo)).toBeNull();
+
+    const forjado = { entry: [{ changes: [{ value: {
+      metadata: { phone_number_id: { $ne: null } },
+      messages: [{ id: "wamid.2", from: "5511999990000", type: "text", text: { body: { html: "<script>" } } }],
+    } }] }] };
+    expect(extrairIdentificadorConta("WHATSAPP", forjado)).toBeNull();
+    expect(normalizarMensagensMeta("WHATSAPP", forjado)[0].conteudo).toBeUndefined();
+  });
 });
