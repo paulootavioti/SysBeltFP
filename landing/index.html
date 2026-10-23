@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -182,45 +182,45 @@
         <table>
           <thead>
             <tr>
-              <th>O que você precisa</th>
-              <th>Planilha + caderno</th>
-              <th>Sistema genérico</th>
-              <th>Sys Belt</th>
+              <th scope="col">O que você precisa</th>
+              <th scope="col">Planilha + caderno</th>
+              <th scope="col">Sistema genérico</th>
+              <th scope="col">Sys Belt</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <th>Currículo técnico por faixa</th>
+              <th scope="row">Currículo técnico por faixa</th>
               <td>Manual</td>
               <td>Não contempla</td>
               <td>Integrado</td>
             </tr>
             <tr>
-              <th>Faixa, grau e graduação</th>
+              <th scope="row">Faixa, grau e graduação</th>
               <td>Planilha separada</td>
               <td>Cadastro básico</td>
               <td>Histórico completo</td>
             </tr>
             <tr>
-              <th>Chamada e comportamento</th>
+              <th scope="row">Chamada e comportamento</th>
               <td>Caderno</td>
               <td>Só presença</td>
               <td>Presença e evolução</td>
             </tr>
             <tr>
-              <th>Mensalidade e Pix</th>
+              <th scope="row">Mensalidade e Pix</th>
               <td>Conferência manual</td>
               <td>Financeiro genérico</td>
               <td>Por aluno e responsável</td>
             </tr>
             <tr>
-              <th>Acesso da família</th>
+              <th scope="row">Acesso da família</th>
               <td>Seu WhatsApp pessoal</td>
               <td>App de treino</td>
               <td>Portal com evolução e financeiro</td>
             </tr>
             <tr>
-              <th>Preço para 15 alunos</th>
+              <th scope="row">Preço para 15 alunos</th>
               <td>Suas horas todo mês</td>
               <td>Plano mínimo cheio</td>
               <td>R$ 74,00 por mês</td>
@@ -303,10 +303,10 @@
         </div>
         <form name="contato" method="POST" data-netlify="true" netlify-honeypot="bot-field"><input type="hidden"
             name="form-name" value="contato">
-          <p class="hp"><label>Não preencha: <input name="bot-field"></label></p><label for="f-nome">Seu
-            nome</label><input id="f-nome" name="nome" autocomplete="name" required><label for="f-academia">Nome da
-            academia</label><input id="f-academia" name="academia" autocomplete="organization" required><label
-            for="f-contato">WhatsApp ou e-mail</label><input id="f-contato" name="contato" required>
+          <p class="hp"><label>Não preencha: <input type="text" name="bot-field"></label></p><label for="f-nome">Seu
+            nome</label><input id="f-nome" type="text" name="nome" autocomplete="name" required><label for="f-academia">Nome da
+            academia</label><input id="f-academia" type="text" name="academia" autocomplete="organization" required><label
+            for="f-contato">WhatsApp ou e-mail</label><input id="f-contato" type="text" name="contato" required>
           <div class="form-row">
             <div><label for="f-alunos">Alunos hoje</label><select id="f-alunos" name="faixa-alunos">
                 <option>Até 3</option>
