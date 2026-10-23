@@ -1,3 +1,5 @@
+import { logger } from "../observability/logger";
+
 export interface EmailService {
   enviar(destinatario: string, assunto: string, corpo: string): Promise<void>;
 }
@@ -6,12 +8,14 @@ export interface EmailService {
 // registra o envio, sem SMTP/API key nenhuma.
 export class NullEmailService implements EmailService {
   async enviar(destinatario: string, assunto: string, _corpo: string): Promise<void> {
-    const emailMascarado = destinatario.replace(/(^.).*(@.*$)/, "$1***$2");
+    // O corpo nunca vai para o log: e-mails de redefinição carregam um
+    // token de uso único, e o log da hospedagem não é lugar de credencial.
+    const destinatarioMascarado = mascararEmail(destinatario);
     if (process.env.NODE_ENV === "production") {
-      logger.error("e-mail não enviado: provedor não configurado", new Error("EMAIL_PROVIDER_NOT_CONFIGURED"), { destinatario: emailMascarado, assunto });
+      logger.error("email_nao_enviado", new Error("EMAIL_PROVIDER_NOT_CONFIGURED"), { destinatario: destinatarioMascarado, assunto });
       return;
     }
-    logger.info("email_simulado", { destinatario: emailMascarado, assunto });
+    logger.info("email_simulado", { destinatario: destinatarioMascarado, assunto });
   }
 }
 
@@ -37,15 +41,21 @@ export class ResendEmailService implements EmailService {
   }
 }
 
+export function mascararEmail(email: string): string {
+  return email.replace(/^(.)[^@]*(@.*)$/, "$1***$2");
+}
+
 export function obterEmailService(env: NodeJS.ProcessEnv = process.env): EmailService {
   if (env.RESEND_API_KEY && env.EMAIL_FROM) {
     return new ResendEmailService(env.RESEND_API_KEY, env.EMAIL_FROM);
   }
 
   if (env.NODE_ENV === "production") {
-    logger.error("RESEND_API_KEY/EMAIL_FROM ausentes: e-mails de redefinição de senha NÃO serão entregues", new Error("EMAIL_PROVIDER_NOT_CONFIGURED"));
+    logger.error(
+      "email_provedor_ausente",
+      new Error("RESEND_API_KEY/EMAIL_FROM ausentes: e-mails de redefinição de senha NÃO serão entregues"),
+    );
   }
 
   return new NullEmailService();
 }
-import { logger } from "../observability/logger";
