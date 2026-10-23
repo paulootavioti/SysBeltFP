@@ -17,7 +17,7 @@ import type {
 export class NullPaymentGateway implements PaymentGateway {
   readonly nome = "Manual";
 
-  async criarCobranca(dados: CriarCobrancaDTO): Promise<CriarCobrancaResultado> {
+  async criarCobranca(_dados: CriarCobrancaDTO): Promise<CriarCobrancaResultado> {
     return {
       gatewayId: `manual-${randomUUID()}`,
       status: "AGUARDANDO_CONFIRMACAO_MANUAL",
@@ -25,7 +25,7 @@ export class NullPaymentGateway implements PaymentGateway {
     };
   }
 
-  async criarAssinatura(dados: CriarAssinaturaDTO): Promise<CriarAssinaturaResultado> {
+  async criarAssinatura(_dados: CriarAssinaturaDTO): Promise<CriarAssinaturaResultado> {
     return {
       gatewayAssinaturaId: `manual-${randomUUID()}`,
       status: "ATIVA",

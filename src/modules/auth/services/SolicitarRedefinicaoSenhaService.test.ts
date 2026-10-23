@@ -35,6 +35,12 @@ describe("solicitação de redefinição da equipe", () => {
     await new SolicitarRedefinicaoSenhaService(emailService).execute("Pessoa@Exemplo.com", "EQUIPE");
 
     expect(transaction).toHaveBeenCalledOnce();
+    // invalida antes de criar: na ordem inversa, o token novo nasceria já usado
+    expect(transaction).toHaveBeenCalledWith([{ operacao: "invalidar" }, { operacao: "criar" }]);
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { email: "pessoa@exemplo.com", tipo: "EQUIPE", usadoEm: null },
+      data: { usadoEm: expect.any(Date) },
+    });
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ tipo: "EQUIPE", email: "pessoa@exemplo.com" }) }));
     expect(emailService.enviar).toHaveBeenCalledWith("pessoa@exemplo.com", expect.any(String), expect.stringContaining("/redefinir-senha?token="));
   });

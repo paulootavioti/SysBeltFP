@@ -37,6 +37,14 @@ describe("credenciais nascem cifradas", () => {
     expect(credenciais.accessToken).toBe(TOKEN_ALFA);
     expect(credenciais.webhookSecret).toBe("segredo-webhook");
   });
+
+  it("credencial cifrada com outra chave falha fechado, sem cair no ambiente", () => {
+    const deOutraChave = cifrar(TOKEN_ALFA, { CHAVE_SEGREDOS: "d".repeat(64) } as NodeJS.ProcessEnv);
+    const bruta = { gateway: "MERCADO_PAGO", credenciais: { accessToken: deOutraChave } };
+    const env = { ...ENV, MERCADO_PAGO_ACCESS_TOKEN: "APP_USR-token-do-ambiente" } as NodeJS.ProcessEnv;
+
+    expect(() => lerCredenciaisGateway(bruta, env)).toThrow();
+  });
 });
 
 describe("cada assinante usa a própria conta", () => {

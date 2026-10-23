@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { normalizarTelefoneBR } from "../../whatsapp/utils/telefone";
-import { estadoInicialBot, processarMensagemBot, type EstadoBot, type ResultadoBot } from "./MotorBot";
+import { processarMensagemBot, type EstadoBot, type ResultadoBot } from "./MotorBot";
 import { normalizarPassosBot, PASSOS_PADRAO } from "./fluxoBot";
 
 type Tx = Prisma.TransactionClient;

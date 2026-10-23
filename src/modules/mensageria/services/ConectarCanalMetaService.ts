@@ -1,5 +1,6 @@
 import { PrismaClient, TipoCanalMensageria } from "@prisma/client";
 import { AppError } from "../../../shared/errors/AppError";
+import { logger } from "../../../shared/observability/logger";
 import type { SecretWriteProvider } from "../../../shared/tenant/SecretValueProvider";
 import type { ControlPlaneMensageriaClient } from "./ControlPlaneMensageriaClient";
 import type { MetaOAuthProvider } from "./MetaOAuthProvider";
@@ -36,6 +37,9 @@ export class ConectarCanalMetaService {
       if (dados.tipo === "WHATSAPP") await this.oauth.assinarWebhooksWhatsApp(dados.businessAccountId?.trim() || "", identificador, token);
       else await this.oauth.assinarWebhooksInstagram(identificador, token);
     } catch (erro) {
+      // A resposta ao usuário continua genérica; o motivo real fica no log
+      // (já sanitizado pelo logger) para o suporte conseguir diagnosticar.
+      logger.error("meta_validacao_conta_falhou", erro, { tipo: dados.tipo, unidadeId: dados.unidadeId });
       throw new AppError("Não foi possível validar a conta na Meta.", 422);
     }
 
