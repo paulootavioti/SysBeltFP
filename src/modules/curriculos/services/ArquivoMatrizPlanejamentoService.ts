@@ -30,13 +30,18 @@ export function lerArquivoMatriz(buffer: Buffer) {
   };
 }
 
-function gerarPdf(arquivo: Record<string, any>): Buffer {
-  const linhas = [arquivo.matriz?.nome ?? "Matriz de planejamentos", `Exportado em ${new Date().toLocaleString("pt-BR")}`];
-  for (const curriculo of arquivo.matriz?.curriculos ?? []) {
-    linhas.push("", curriculo.nome, `${curriculo.modalidadeNome ?? "Sem modalidade"} | ${curriculo.publico ?? ""}`);
-    for (const modulo of curriculo.modulos ?? []) {
+type Registro = Record<string, unknown>;
+const registro = (valor: unknown): Registro => valor !== null && typeof valor === "object" ? valor as Registro : {};
+const itens = (valor: unknown): Registro[] => Array.isArray(valor) ? valor.map(registro) : [];
+
+function gerarPdf(arquivo: Registro): Buffer {
+  const matriz = registro(arquivo.matriz);
+  const linhas = [String(matriz.nome ?? "Matriz de planejamentos"), `Exportado em ${new Date().toLocaleString("pt-BR")}`];
+  for (const curriculo of itens(matriz.curriculos)) {
+    linhas.push("", String(curriculo.nome ?? ""), `${curriculo.modalidadeNome ?? "Sem modalidade"} | ${curriculo.publico ?? ""}`);
+    for (const modulo of itens(curriculo.modulos)) {
       linhas.push(`Modulo: ${modulo.nome}`);
-      for (const aula of modulo.aulas ?? []) linhas.push(`- ${aula.titulo}${aula.duracaoMinutos ? ` (${aula.duracaoMinutos} min)` : ""}`);
+      for (const aula of itens(modulo.aulas)) linhas.push(`- ${aula.titulo}${aula.duracaoMinutos ? ` (${aula.duracaoMinutos} min)` : ""}`);
     }
   }
 
