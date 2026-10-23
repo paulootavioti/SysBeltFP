@@ -70,11 +70,11 @@ export class PagamentosController {
     //
     // O id na URL não é segredo, e não precisa ser: quem não tiver o
     // segredo daquela unidade não consegue forjar a assinatura.
-    const credenciais = await resolverCredenciais(
+    const origem = await resolverCredenciais(
       req.params.formaPagamentoId as string | undefined
     );
 
-    if (!credenciais) {
+    if (!origem) {
       return res.status(404).json({ erro: "Forma de pagamento não encontrada." });
     }
 
@@ -88,7 +88,7 @@ export class PagamentosController {
       assinatura: cabecalho(req, "x-signature"),
       requestId: cabecalho(req, "x-request-id"),
       recursoId,
-      segredo: credenciais.webhookSecret,
+      segredo: origem.credenciais.webhookSecret,
     });
 
     if (!verificacao.valida) {
@@ -105,9 +105,11 @@ export class PagamentosController {
       // O mesmo par de credenciais que autenticou a notificação é o que
       // relê o pagamento na API — a consulta tem que ser feita na conta
       // de quem recebeu o dinheiro.
-      gateway: new MercadoPagoGateway(credenciais),
+      gateway: new MercadoPagoGateway(origem.credenciais),
       nomeGateway,
       payload: req.body,
+      // Só dá baixa em cobrança da mesma conta dona das credenciais.
+      contaId: origem.contaId,
     });
 
     // Sempre 200 quando a assinatura confere, mesmo se o evento não se
@@ -119,12 +121,12 @@ export class PagamentosController {
 
 async function resolverCredenciais(
   formaPagamentoId: string | undefined
-): Promise<CredenciaisGateway | null> {
+): Promise<{ credenciais: CredenciaisGateway; contaId: number | null } | null> {
   const prisma = prismaDaRequisicao();
   // Sem id na URL: instalação de uma academia só, ainda usando as
   // variáveis de ambiente. `lerCredenciaisGateway` cai nelas e avisa.
   if (!formaPagamentoId) {
-    return lerCredenciaisGateway(null);
+    return { credenciais: lerCredenciaisGateway(null), contaId: null };
   }
 
   const id = Number(formaPagamentoId);
@@ -133,10 +135,10 @@ async function resolverCredenciais(
 
   const forma = await prisma.formaPagamento.findUnique({
     where: { id },
-    select: { configuracao: true },
+    select: { configuracao: true, unidade: { select: { contaId: true } } },
   });
 
   if (!forma) return null;
 
-  return lerCredenciaisGateway(forma.configuracao);
+  return { credenciais: lerCredenciaisGateway(forma.configuracao), contaId: forma.unidade.contaId };
 }

@@ -15,6 +15,9 @@ Não é pertinente reintroduzir o domínio comercial no Tenant Plane nem criar b
 - [ ] Homologar duas contas reais de teste: leitura, escrita, busca por ID, upload, exportação, jobs e webhooks sem acesso cruzado
 - [ ] Definir e aprovar matriz RBAC, incluindo a decisão sobre os papéis Gerente e Usuário comum
 - [ ] Homologar o gateway de cobrança SaaS em sandbox: aprovação, recusa, atraso, tolerância, cancelamento, reenvio e idempotência do webhook
+  - Escopo do Control Plane (repositório `control-plane`): é a cobrança que a academia paga ao SysBelt.
+- [ ] Homologar em sandbox o Mercado Pago das mensalidades e pedidos (Tenant Plane): roteiro em `docs/homologacao-mercadopago.md`
+  - Parte automatizada concluída: assinatura, cada status do Mercado Pago, idempotência, entregas simultâneas, isolamento entre contas e pagamento recorrente (`WebhookMercadoPagoRota.test.ts`). Falta executar o roteiro manual com credenciais de teste.
 - [ ] Validar a emissão, expiração, suspensão e renovação de concessões assinadas entre Control Plane e Tenant Plane
 - [ ] Executar teste de carga documentado para login, dashboard, listagem, criação de aula e webhook
 - [ ] Configurar métricas e alertas para 5xx, latência p95, erros de webhook, falhas de job e expiração de concessão
