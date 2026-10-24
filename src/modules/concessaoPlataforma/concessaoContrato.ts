@@ -19,6 +19,12 @@ export const concessaoV1Schema = z.object({
 
 export type ConcessaoV1 = z.infer<typeof concessaoV1Schema>;
 
+/** Concessão que não prova ser do Control Plane para este tenant: 401. */
+export class ConcessaoRecusadaError extends Error {}
+
+/** Concessão autêntica, mas incompatível com a revisão gravada: 409. */
+export class ConcessaoConflitoError extends Error {}
+
 function jsonCanonico(valor: unknown): string {
   if (valor === null || typeof valor !== "object") return JSON.stringify(valor);
   if (Array.isArray(valor)) return `[${valor.map(jsonCanonico).join(",")}]`;
@@ -40,12 +46,13 @@ export function validarConcessao(
   const concessao = concessaoV1Schema.parse(entrada);
   const emitidaEm = new Date(concessao.emitidaEm);
   const expiraEm = new Date(concessao.expiraEm);
-  if (concessao.tenantKey !== tenantKeyEsperado) throw new Error("Concessão pertence a outro tenant.");
-  if (emitidaEm.getTime() > agora.getTime() + 5 * 60_000) throw new Error("Concessão emitida no futuro.");
-  if (expiraEm <= agora || expiraEm <= emitidaEm) throw new Error("Concessão expirada ou inválida.");
+  if (concessao.tenantKey !== tenantKeyEsperado) throw new ConcessaoRecusadaError("Concessão pertence a outro tenant.");
+  // tolera o relógio do Control Plane até 5 minutos adiantado
+  if (emitidaEm.getTime() > agora.getTime() + 5 * 60_000) throw new ConcessaoRecusadaError("Concessão emitida no futuro.");
+  if (expiraEm <= agora || expiraEm <= emitidaEm) throw new ConcessaoRecusadaError("Concessão expirada ou inválida.");
   const payload = payloadConcessao(concessao);
   if (!verify(null, Buffer.from(payload), chavePublicaPem, Buffer.from(concessao.assinatura, "base64"))) {
-    throw new Error("Assinatura da concessão inválida.");
+    throw new ConcessaoRecusadaError("Assinatura da concessão inválida.");
   }
   return { concessao, payloadHash: createHash("sha256").update(payload).digest("hex") };
 }
