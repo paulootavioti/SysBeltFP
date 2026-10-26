@@ -22,6 +22,7 @@ Não é pertinente reintroduzir o domínio comercial no Tenant Plane nem criar b
   - Lado do Tenant Plane coberto por `CicloConcessao.test.ts`: emissão, reenvio, renovação sem janela sem acesso, suspensão, expiração, recusas (adulterada, outra chave, outro tenant, emitida no futuro) e conflitos de revisão. A migration `20261023170000_concessao_plataforma_id_sequencial` corrige o banco, que só comportava uma concessão.
   - Comportamento ao expirar/suspender decidido e implementado: somente leitura (seção abaixo). Pendente: validar a emissão pelo Control Plane.
 - [ ] Executar teste de carga documentado para login, dashboard, listagem, criação de aula e webhook
+  - Cenários prontos (`npm run carga`; `docs/teste-carga.md`), com as requisições conferidas contra a API local. Falta montar a homologação e executar com o k6.
 - [ ] Configurar métricas e alertas para 5xx, latência p95, erros de webhook, falhas de job e expiração de concessão
   - Código pronto (envio ao Sentry, `/api/health/ready`, verificação diária de concessões). Falta criar os projetos no Sentry, definir `SENTRY_DSN`/`VITE_SENTRY_DSN` no Netlify, cadastrar o monitor externo e os alertas de `docs/observabilidade.md`.
 - [ ] Executar backup e restauração em ambiente isolado, registrando RPO e RTO
@@ -62,13 +63,13 @@ regra.
 
 ## Teste de carga
 
-O cenário versionado em `tests/load/smoke.js` exercita saúde, login e uma rota autenticada. Ele nunca contém credenciais: a execução requer URL e token de ambiente.
+Roteiro completo em `docs/teste-carga.md`: onde rodar (nunca em produção), preparação, cenários (leitura, login, escrita e webhook) e registro.
 
 ```bash
-BASE_URL=https://sua-api.example/api TOKEN_DE_TESTE=... k6 run tests/load/smoke.js
+BASE_URL=<homologação>/api LOGIN_EMAIL=... LOGIN_SENHA=... TURMA_ID=... FORMA_PAGAMENTO_ID=... npm run carga
 ```
 
-Critério inicial de piloto: 50 VUs, 5 minutos, menos de 1% de falhas HTTP e p95 abaixo de 800 ms nas rotas consultadas. Aumentos de carga devem ser graduais e feitos fora do horário da academia.
+Critério inicial de piloto: 50 VUs, 5 minutos, menos de 1% de falhas HTTP e p95 abaixo de 800 ms em cada rota. Aumentos de carga devem ser graduais e feitos fora do horário da academia.
 
 ## Sequência recomendada
 

@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "carga": "node scripts/carga.mjs",
     "db:backup": "node scripts/backup.mjs",
     "db:restaurar-isolado": "node scripts/restaurarIsolado.mjs",
     "deploy:verificar": "node scripts/verificarDeploy.mjs",
