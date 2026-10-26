@@ -19,11 +19,31 @@ Não é pertinente reintroduzir o domínio comercial no Tenant Plane nem criar b
 - [ ] Homologar em sandbox o Mercado Pago das mensalidades e pedidos (Tenant Plane): roteiro em `docs/homologacao-mercadopago.md`
   - Parte automatizada concluída: assinatura, cada status do Mercado Pago, idempotência, entregas simultâneas, isolamento entre contas e pagamento recorrente (`WebhookMercadoPagoRota.test.ts`). Falta executar o roteiro manual com credenciais de teste.
 - [ ] Validar a emissão, expiração, suspensão e renovação de concessões assinadas entre Control Plane e Tenant Plane
+  - Lado do Tenant Plane coberto por `CicloConcessao.test.ts`: emissão, reenvio, renovação sem janela sem acesso, suspensão, expiração, recusas (adulterada, outra chave, outro tenant, emitida no futuro) e conflitos de revisão. A migration `20261023170000_concessao_plataforma_id_sequencial` corrige o banco, que só comportava uma concessão.
+  - Comportamento ao expirar/suspender decidido e implementado: somente leitura (seção abaixo). Pendente: validar a emissão pelo Control Plane.
 - [ ] Executar teste de carga documentado para login, dashboard, listagem, criação de aula e webhook
 - [ ] Configurar métricas e alertas para 5xx, latência p95, erros de webhook, falhas de job e expiração de concessão
 - [ ] Executar backup e restauração em ambiente isolado, registrando RPO e RTO
 - [ ] Configurar `RESEND_API_KEY` e `EMAIL_FROM` em produção e testar a redefinição de senha ponta a ponta (sem provedor, o e-mail não é entregue e o erro `email_provedor_ausente` aparece no log)
 - [x] Resolver todos os avisos de lint e manter CI verde em pull request — concluído em 23/10/2026: API, três frontends e landings com `--max-warnings=0`/`html-validate` no CI (PRs #272, #273 e a validação das landings)
+
+## Comportamento quando a concessão expira ou é suspensa
+
+Decisão (24/10/2026): **somente leitura.** Com a concessão suspensa, cancelada
+ou vencida, a academia continua consultando os próprios dados (alunos,
+financeiro, relatórios), mas não cadastra nem altera nada até regularizar.
+Implementado em `src/shared/tenant/somenteLeitura.ts`:
+
+| Situação | Painel da academia e Portal do Professor | Portal da Família | Recursos do plano |
+|---|---|---|---|
+| Concessão ativa e válida | Normal | Normal | Os da concessão |
+| Suspensa, cancelada ou vencida | Leitura liberada; escrita responde 403 com a orientação de regularizar. Abrir chamado de suporte continua liberado | Normal: a família continua pagando mensalidades | Bloqueados |
+| Conta ainda sem concessão (não provisionada pelo Control Plane) | Normal | Normal | Bloqueados |
+
+Webhooks de pagamento não passam pela trava: pagamento que entra continua
+sendo registrado. Com o diretório do Control Plane ligado, o bloqueio total
+dele (403 em tudo para conta não ativa) continua valendo e vem antes desta
+regra.
 
 ## Matriz RBAC proposta
 
