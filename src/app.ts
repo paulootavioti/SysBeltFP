@@ -55,6 +55,8 @@ import { mensageriaRoutes, metaWebhookRoutes } from "./modules/mensageria/routes
 import { comandosVozRoutes, skillVozRoutes } from "./modules/comandosVoz/routes";
 import { bibliotecaPedagogicaRoutes } from "./modules/bibliotecaPedagogica/routes";
 import { versaoDaApi } from "./shared/versao/versaoDaApi";
+import { verificarProntidao } from "./shared/observability/prontidao";
+import { logger } from "./shared/observability/logger";
 
 // 5173 = sgcl-web (admin/staff), 5175 = sgcl-portal-familia (Portal da
 // Família), 5176 = sgcl-portal-professor (Portal do Professor) — três
@@ -98,6 +100,11 @@ app.get("/", (req, res) => {
 });
 
 app.get("/health", (_req, res) => res.json({ status: "ok", timestamp: new Date().toISOString() }));
+app.get("/health/ready", async (_req, res) => {
+  const prontidao = await verificarProntidao();
+  if (!prontidao.pronto) logger.error("api_sem_banco", new Error("Banco indisponível na verificação de prontidão."), prontidao);
+  return res.status(prontidao.pronto ? 200 : 503).json(prontidao);
+});
 app.get("/version", (_req, res) => res.json(versaoDaApi()));
 
 app.use("/alunos", alunosRoutes);

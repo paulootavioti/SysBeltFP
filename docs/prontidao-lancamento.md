@@ -23,6 +23,7 @@ Não é pertinente reintroduzir o domínio comercial no Tenant Plane nem criar b
   - Comportamento ao expirar/suspender decidido e implementado: somente leitura (seção abaixo). Pendente: validar a emissão pelo Control Plane.
 - [ ] Executar teste de carga documentado para login, dashboard, listagem, criação de aula e webhook
 - [ ] Configurar métricas e alertas para 5xx, latência p95, erros de webhook, falhas de job e expiração de concessão
+  - Código pronto (envio ao Sentry, `/api/health/ready`, verificação diária de concessões). Falta criar os projetos no Sentry, definir `SENTRY_DSN`/`VITE_SENTRY_DSN` no Netlify, cadastrar o monitor externo e os alertas de `docs/observabilidade.md`.
 - [ ] Executar backup e restauração em ambiente isolado, registrando RPO e RTO
 - [ ] Configurar `RESEND_API_KEY` e `EMAIL_FROM` em produção e testar a redefinição de senha ponta a ponta (sem provedor, o e-mail não é entregue e o erro `email_provedor_ausente` aparece no log)
 - [x] Resolver todos os avisos de lint e manter CI verde em pull request — concluído em 23/10/2026: API, três frontends e landings com `--max-warnings=0`/`html-validate` no CI (PRs #272, #273 e a validação das landings)

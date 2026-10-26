@@ -10,6 +10,11 @@ export function errorHandler(
 ) {
 
   if (error instanceof AppError) {
+    // 5xx de AppError é configuração faltando ou dependência fora do ar
+    // (ex.: provedor não configurado): merece alerta, não só a resposta.
+    if (error.statusCode >= 500) {
+      logger.error("erro_servico", error, { metodo: req.method, rota: req.originalUrl.split("?")[0], status: error.statusCode });
+    }
 
     return res.status(error.statusCode).json({
       message: error.message

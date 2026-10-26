@@ -26,16 +26,23 @@ export function dadosDaVersao(app, env = process.env) {
   };
 }
 
-/** Plugin do Vite que publica /version.json junto com o build. */
+/**
+ * Plugin do Vite que publica /version.json junto com o build e expõe o
+ * commit ao app como import.meta.env.VITE_COMMIT_SHA (release no Sentry).
+ */
 export function versaoPlugin(app) {
+  const versao = dadosDaVersao(app);
   return {
     name: "sysbelt-versao",
     apply: "build",
+    config() {
+      return { define: { "import.meta.env.VITE_COMMIT_SHA": JSON.stringify(versao.sha) } };
+    },
     generateBundle() {
       this.emitFile({
         type: "asset",
         fileName: "version.json",
-        source: `${JSON.stringify(dadosDaVersao(app), null, 2)}\n`,
+        source: `${JSON.stringify(versao, null, 2)}\n`,
       });
     },
   };
