@@ -11,3 +11,6 @@ prisma/dev.db
 *.patch
 *.patch
 *.tar.gz
+
+# Backups do banco (scripts/backup.mjs): nunca vão para o Git.
+/backups
