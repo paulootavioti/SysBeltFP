@@ -87,6 +87,8 @@ comportamento.
 | `TENANT_APP_BASE_DOMAIN` | Legado; futuro dominio identifica Conta, nao banco |
 | `TENANT_SCHEMA_COMPATIBLE_VERSIONS` | Legado da resolucao multi-banco |
 | `AWS_REGION` | Regiao para integracoes AWS que permanecerem necessarias |
+| `SENTRY_DSN` | Envio de erros e alertas da API ao Sentry (opcional; ver `docs/observabilidade.md`) |
+| `VITE_SENTRY_DSN` | Erros do navegador do `sgcl-web` no Sentry (entra no build) |
 
 > **`CHAVE_SEGREDOS` nunca vai para o Git.** Rotacioná-la torna ilegíveis todas
 > as credenciais já cifradas.

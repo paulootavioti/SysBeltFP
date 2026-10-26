@@ -67,3 +67,15 @@ describe("GET /version", () => {
     expect(corpo).toEqual({ sha: expect.any(String), builtAt: null });
   });
 });
+
+describe("GET /health/ready", () => {
+  it("com o banco no ar responde 200 e a latência do banco", async () => {
+    const subido = await subirApp();
+    servidor = subido.servidor;
+
+    const resposta = await fetch(`${subido.base}/health/ready`);
+
+    expect(resposta.status).toBe(200);
+    expect(await resposta.json()).toMatchObject({ pronto: true, banco: "ok", latenciaBancoMs: expect.any(Number) });
+  });
+});
