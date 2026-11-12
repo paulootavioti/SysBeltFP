@@ -140,6 +140,7 @@ export class MercadoPagoGateway implements PaymentGateway {
       referenciaExterna: pagamento.external_reference ?? undefined,
       situacao: traduzirStatus(pagamento.status),
       valorPago: pagamento.transaction_amount,
+      recorrente: pagamento.operation_type === "recurring_payment",
     };
   }
 }

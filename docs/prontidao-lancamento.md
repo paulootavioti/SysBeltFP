@@ -11,15 +11,42 @@ Não é pertinente reintroduzir o domínio comercial no Tenant Plane nem criar b
 ## Gates de lançamento
 
 - [ ] Corrigir a publicação independente dos três frontends e comprovar que todos consomem o commit de `main`
+  - Comprovação: após o deploy, `npm run deploy:verificar` precisa sair todo ✅ (versão dos quatro sites e CORS dos portais; ver "Verificação pós-deploy" em `docs/deploy.md`)
 - [ ] Homologar duas contas reais de teste: leitura, escrita, busca por ID, upload, exportação, jobs e webhooks sem acesso cruzado
 - [ ] Definir e aprovar matriz RBAC, incluindo a decisão sobre os papéis Gerente e Usuário comum
 - [ ] Homologar o gateway de cobrança SaaS em sandbox: aprovação, recusa, atraso, tolerância, cancelamento, reenvio e idempotência do webhook
+  - Escopo do Control Plane (repositório `control-plane`): é a cobrança que a academia paga ao SysBelt.
+- [ ] Homologar em sandbox o Mercado Pago das mensalidades e pedidos (Tenant Plane): roteiro em `docs/homologacao-mercadopago.md`
+  - Parte automatizada concluída: assinatura, cada status do Mercado Pago, idempotência, entregas simultâneas, isolamento entre contas e pagamento recorrente (`WebhookMercadoPagoRota.test.ts`). Falta executar o roteiro manual com credenciais de teste.
 - [ ] Validar a emissão, expiração, suspensão e renovação de concessões assinadas entre Control Plane e Tenant Plane
+  - Lado do Tenant Plane coberto por `CicloConcessao.test.ts`: emissão, reenvio, renovação sem janela sem acesso, suspensão, expiração, recusas (adulterada, outra chave, outro tenant, emitida no futuro) e conflitos de revisão. A migration `20261023170000_concessao_plataforma_id_sequencial` corrige o banco, que só comportava uma concessão.
+  - Comportamento ao expirar/suspender decidido e implementado: somente leitura (seção abaixo). Pendente: validar a emissão pelo Control Plane.
 - [ ] Executar teste de carga documentado para login, dashboard, listagem, criação de aula e webhook
+  - Cenários prontos (`npm run carga`; `docs/teste-carga.md`), com as requisições conferidas contra a API local. Falta montar a homologação e executar com o k6.
 - [ ] Configurar métricas e alertas para 5xx, latência p95, erros de webhook, falhas de job e expiração de concessão
+  - Código pronto (envio ao Sentry, `/api/health/ready`, verificação diária de concessões). Falta criar os projetos no Sentry, definir `SENTRY_DSN`/`VITE_SENTRY_DSN` no Netlify, cadastrar o monitor externo e os alertas de `docs/observabilidade.md`.
 - [ ] Executar backup e restauração em ambiente isolado, registrando RPO e RTO
+  - Scripts prontos e testados localmente (`npm run db:backup` e `npm run db:restaurar-isolado`; ver `docs/backup-restauracao.md`). Falta executar com a produção e registrar a janela de histórico do Neon e o RTO medido.
 - [ ] Configurar `RESEND_API_KEY` e `EMAIL_FROM` em produção e testar a redefinição de senha ponta a ponta (sem provedor, o e-mail não é entregue e o erro `email_provedor_ausente` aparece no log)
-- [ ] Resolver todos os avisos de lint e manter CI verde em pull request
+- [x] Resolver todos os avisos de lint e manter CI verde em pull request — concluído em 23/10/2026: API, três frontends e landings com `--max-warnings=0`/`html-validate` no CI (PRs #272, #273 e a validação das landings)
+
+## Comportamento quando a concessão expira ou é suspensa
+
+Decisão (24/10/2026): **somente leitura.** Com a concessão suspensa, cancelada
+ou vencida, a academia continua consultando os próprios dados (alunos,
+financeiro, relatórios), mas não cadastra nem altera nada até regularizar.
+Implementado em `src/shared/tenant/somenteLeitura.ts`:
+
+| Situação | Painel da academia e Portal do Professor | Portal da Família | Recursos do plano |
+|---|---|---|---|
+| Concessão ativa e válida | Normal | Normal | Os da concessão |
+| Suspensa, cancelada ou vencida | Leitura liberada; escrita responde 403 com a orientação de regularizar. Abrir chamado de suporte continua liberado | Normal: a família continua pagando mensalidades | Bloqueados |
+| Conta ainda sem concessão (não provisionada pelo Control Plane) | Normal | Normal | Bloqueados |
+
+Webhooks de pagamento não passam pela trava: pagamento que entra continua
+sendo registrado. Com o diretório do Control Plane ligado, o bloqueio total
+dele (403 em tudo para conta não ativa) continua valendo e vem antes desta
+regra.
 
 ## Matriz RBAC proposta
 
@@ -36,13 +63,13 @@ Não é pertinente reintroduzir o domínio comercial no Tenant Plane nem criar b
 
 ## Teste de carga
 
-O cenário versionado em `tests/load/smoke.js` exercita saúde, login e uma rota autenticada. Ele nunca contém credenciais: a execução requer URL e token de ambiente.
+Roteiro completo em `docs/teste-carga.md`: onde rodar (nunca em produção), preparação, cenários (leitura, login, escrita e webhook) e registro.
 
 ```bash
-BASE_URL=https://sua-api.example/api TOKEN_DE_TESTE=... k6 run tests/load/smoke.js
+BASE_URL=<homologação>/api LOGIN_EMAIL=... LOGIN_SENHA=... TURMA_ID=... FORMA_PAGAMENTO_ID=... npm run carga
 ```
 
-Critério inicial de piloto: 50 VUs, 5 minutos, menos de 1% de falhas HTTP e p95 abaixo de 800 ms nas rotas consultadas. Aumentos de carga devem ser graduais e feitos fora do horário da academia.
+Critério inicial de piloto: 50 VUs, 5 minutos, menos de 1% de falhas HTTP e p95 abaixo de 800 ms em cada rota. Aumentos de carga devem ser graduais e feitos fora do horário da academia.
 
 ## Sequência recomendada
 

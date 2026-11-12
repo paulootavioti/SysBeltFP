@@ -18,6 +18,8 @@ export interface PagamentoMercadoPago {
   status_detail?: string;
   transaction_amount: number;
   external_reference?: string | null;
+  // "recurring_payment" nos pagamentos gerados por uma assinatura (preapproval).
+  operation_type?: string;
   date_of_expiration?: string | null;
   point_of_interaction?: {
     transaction_data?: {

@@ -83,6 +83,53 @@ describe("AutorizarAcessoService", () => {
     expect(decisao.motivo).toContain("Mensalidade em aberto");
   });
 
+  describe("tolerância de 35 dias corridos após o vencimento", () => {
+    // vencimento em 10/01: entra até 14/02 (10/01 + 35), é negado a partir de 15/02
+    async function comMensalidade(dados: { pago?: boolean; status?: "ABERTA" | "PAGA" | "CANCELADA" } = {}) {
+      const cenario = await criarCenario();
+      await prisma.mensalidade.create({
+        data: {
+          unidadeId: cenario.unidade.id,
+          alunoId: cenario.aluno.id,
+          valor: 150,
+          vencimento: new Date("2027-01-10"),
+          status: dados.status ?? "ABERTA",
+          pago: dados.pago ?? false,
+        },
+      });
+      return cenario;
+    }
+
+    it("libera no 35º dia e nega no 36º", async () => {
+      const { credencial } = await comMensalidade();
+
+      const ultimoDia = await autorizar.execute({ credencialId: credencial.id, referencia: new Date("2027-02-14T12:00:00-03:00") });
+      expect(ultimoDia.autorizado).toBe(true);
+
+      const diaSeguinte = await autorizar.execute({ credencialId: credencial.id, referencia: new Date("2027-02-15T08:00:00-03:00") });
+      expect(diaSeguinte.autorizado).toBe(false);
+      expect(diaSeguinte.motivo).toContain("há mais de 35 dias");
+    });
+
+    it("conta o dia pelo relógio de Brasília, não pelo UTC", async () => {
+      const { credencial } = await comMensalidade();
+
+      // 22h de 14/02 em Brasília já é 15/02 em UTC — ainda é o último dia de tolerância
+      const noite = await autorizar.execute({ credencialId: credencial.id, referencia: new Date("2027-02-14T22:30:00-03:00") });
+      expect(noite.autorizado).toBe(true);
+    });
+
+    it("mensalidade paga ou cancelada não bloqueia", async () => {
+      const paga = await comMensalidade({ pago: true, status: "PAGA" });
+      const referencia = new Date("2027-06-01T12:00:00-03:00");
+      expect((await autorizar.execute({ credencialId: paga.credencial.id, referencia })).autorizado).toBe(true);
+
+      await limpar();
+      const cancelada = await comMensalidade({ status: "CANCELADA" });
+      expect((await autorizar.execute({ credencialId: cancelada.credencial.id, referencia })).autorizado).toBe(true);
+    });
+  });
+
   it("nega credencial revogada e credencial expirada", async () => {
     const { credencial } = await criarCenario();
 

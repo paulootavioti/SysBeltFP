@@ -1,5 +1,5 @@
 import { prismaDaRequisicao } from "../../shared/database/prismaDaRequisicao";
-import { concessaoV1Schema, validarConcessao } from "./concessaoContrato";
+import { ConcessaoConflitoError, ConcessaoRecusadaError, concessaoV1Schema, validarConcessao } from "./concessaoContrato";
 
 export class AplicarConcessaoService {
   async execute(entrada: unknown, agora = new Date()): Promise<{ revisao: number; duplicada: boolean }> {
@@ -9,15 +9,15 @@ export class AplicarConcessaoService {
 
     const identificacao = concessaoV1Schema.parse(entrada);
     const conta = await prisma.conta.findUnique({ where: { tenantKey: identificacao.tenantKey }, select: { id: true, tenantKey: true } });
-    if (!conta) throw new Error("Concessão pertence a outro tenant.");
+    if (!conta) throw new ConcessaoRecusadaError("Concessão pertence a outro tenant.");
     const { concessao, payloadHash } = validarConcessao(entrada, conta.tenantKey, chavePublica, agora);
     return prisma.$transaction(async (tx) => {
       const atual = await tx.concessaoPlataforma.findUnique({ where: { contaId: conta.id } });
       if (atual && concessao.revisao < atual.revisao) {
-        throw new Error("Concessão mais antiga que a revisão local.");
+        throw new ConcessaoConflitoError("Concessão mais antiga que a revisão local.");
       }
       if (atual && concessao.revisao === atual.revisao) {
-        if (atual.payloadHash !== payloadHash) throw new Error("Conflito na revisão da concessão.");
+        if (atual.payloadHash !== payloadHash) throw new ConcessaoConflitoError("Conflito na revisão da concessão.");
         return { revisao: atual.revisao, duplicada: true };
       }
 

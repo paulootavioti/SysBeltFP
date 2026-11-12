@@ -3,6 +3,7 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "module": "commonjs",
     "target": "es2016",
     "lib": ["ES2022"],

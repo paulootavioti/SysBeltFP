@@ -77,3 +77,17 @@ export function comHorarioUTC(data: Date, horas: number, minutos: number): Date 
   resultado.setUTCHours(horas, minutos, 0, 0);
   return resultado;
 }
+
+/**
+ * O dia de calendário em que `instante` cai no relógio da academia
+ * (Brasília), ancorado na meia-noite UTC como as demais datas de
+ * calendário. Às 22h de 14/02 em Brasília já é 15/02 em UTC — e um
+ * `inicioDoDiaUTC(new Date())` erraria o dia a noite inteira.
+ */
+export function diaNaAcademia(instante: Date, fuso = "America/Sao_Paulo"): Date {
+  const partes = new Intl.DateTimeFormat("en-CA", {
+    timeZone: fuso, year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(instante);
+  const obter = (tipo: string) => partes.find((parte) => parte.type === tipo)?.value ?? "";
+  return new Date(`${obter("year")}-${obter("month")}-${obter("day")}T00:00:00.000Z`);
+}
