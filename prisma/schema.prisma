@@ -186,7 +186,12 @@ model Conta {
 // abaixo, com sufixo `Plataforma`, são a outra ponta: o que a academia paga
 // pro SysBelt. São domínios distintos e não devem se misturar.
 
-// Catálogo de planos de assinatura da plataforma. O preço é por faixa de
+enum TipoCobrancaPlataforma {
+  FAIXA_ALUNOS
+  FIXO_MENSAL
+}
+
+// Catálogo de planos de assinatura da plataforma. O preço legado é por faixa de
 // alunos: a cada `alunosPorBloco` alunos ativos, cobra-se
 // `precoPorBlocoCentavos` — 50 alunos em blocos de 10 a R$ 37,00 dão
 // 5 × 3700 = R$ 185,00. Assim o preço acompanha o tamanho do assinante.
@@ -205,6 +210,12 @@ model PlanoPlataforma {
   // Piso da fatura. Com 1, um assinante ativo sem nenhum aluno cadastrado
   // paga um bloco; com 0, pagaria zero. Ver comentário em precoPlataforma.ts.
   blocosMinimos         Int @default(1)
+
+  // Campos aditivos: planos já existentes continuam na regra por faixa.
+  // Em FIXO_MENSAL, precoFixoCentavos é a mensalidade da Conta inteira,
+  // independentemente de alunos ou unidades.
+  tipoCobranca TipoCobrancaPlataforma @default(FAIXA_ALUNOS)
+  precoFixoCentavos Int?
 
   // O que este plano libera. Recursos conhecidos em
   // src/modules/plataforma/utils/recursosDoPlano.ts.

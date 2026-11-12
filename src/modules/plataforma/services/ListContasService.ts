@@ -1,6 +1,6 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { LIMITE_PADRAO_LISTAGEM } from "../../../shared/constants/pagination";
-import { calcularPrecoPorUnidade } from "../utils/precoPlataforma";
+import { calcularMensalidade, calcularPrecoPorUnidade } from "../utils/precoPlataforma";
 
 // Painel do operador do SaaS: todas as contas assinantes, com quantos
 // alunos cada uma tem e quanto isso representa de receita no mês.
@@ -54,13 +54,22 @@ export class ListContasService {
           alunosContados: totalPorUnidade.get(unidade.id) ?? 0,
         }));
 
-      const previa = assinatura
+      const alunosContados = contagensDaConta.reduce((total, unidade) => total + unidade.alunosContados, 0);
+      const previaPorUnidade = assinatura?.plano.tipoCobranca === "FAIXA_ALUNOS"
         ? calcularPrecoPorUnidade(contagensDaConta, {
             alunosPorBloco: assinatura.plano.alunosPorBloco,
             precoPorBlocoCentavos:
               assinatura.precoPorBlocoCentavos ?? assinatura.plano.precoPorBlocoCentavos,
             blocosMinimos: assinatura.plano.blocosMinimos,
           })
+        : null;
+      const previa = assinatura
+        ? previaPorUnidade
+          ? {
+              blocos: previaPorUnidade.totalBlocos,
+              valorCentavos: previaPorUnidade.valorCentavos,
+            }
+          : calcularMensalidade(alunosContados, assinatura.plano, assinatura.precoPorBlocoCentavos)
         : null;
 
       return {
@@ -76,7 +85,8 @@ export class ListContasService {
               status: assinatura.status,
               plano: assinatura.plano.nome,
               diaVencimento: assinatura.diaVencimento,
-              blocos: previa?.totalBlocos ?? 0,
+              tipoCobranca: assinatura.plano.tipoCobranca,
+              blocos: previaPorUnidade?.totalBlocos ?? previa?.blocos ?? 0,
               valorCentavos: previa?.valorCentavos ?? 0,
             }
           : null,

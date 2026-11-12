@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   calcularPrecoPorFaixa,
+  calcularMensalidade,
   calcularPrecoPorUnidade,
   formatarCentavos,
 } from "./precoPlataforma";
@@ -67,6 +68,24 @@ describe("cobrança por faixa de alunos", () => {
 
     const faixaDe25 = { alunosPorBloco: 25, precoPorBlocoCentavos: 9000 };
     expect(calcularPrecoPorFaixa(26, faixaDe25).blocos).toBe(2);
+  });
+});
+
+describe("cobrança mensal fixa por conta", () => {
+  const dojo = { tipoCobranca: "FIXO_MENSAL" as const, precoFixoCentavos: 9700, alunosPorBloco: 1, precoPorBlocoCentavos: 0 };
+  const equipe = { ...dojo, precoFixoCentavos: 157000 };
+
+  it.each([0, 3, 10, 200])("Dojô custa R$ 97,00 com %i alunos", (alunos) => {
+    expect(calcularMensalidade(alunos, dojo).valorCentavos).toBe(9700);
+  });
+
+  it("Equipe custa R$ 1.570,00 e condição negociada vence a tabela", () => {
+    expect(calcularMensalidade(200, equipe).valorCentavos).toBe(157000);
+    expect(calcularMensalidade(200, equipe, 150000).valorCentavos).toBe(150000);
+  });
+
+  it("mantém o cálculo legado por faixa", () => {
+    expect(calcularMensalidade(11, ESSENCIAL).valorCentavos).toBe(7400);
   });
 });
 

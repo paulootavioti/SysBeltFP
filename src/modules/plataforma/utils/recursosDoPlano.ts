@@ -13,6 +13,11 @@ export const RECURSOS_PLATAFORMA = [
   "GATEWAY_AUTOMATICO",
   // Catraca, leitor facial e registro de entrada/saída.
   "CONTROLE_ACESSO",
+  // Serviços operacionais do plano Equipe. São marcadores contratuais: não
+  // autorizam rotas e não entram na concessão assinada.
+  "SDR_WHATSAPP",
+  "TRAFEGO",
+  "SOCIAL_MEDIA",
 ] as const;
 
 export type RecursoPlataforma = (typeof RECURSOS_PLATAFORMA)[number];

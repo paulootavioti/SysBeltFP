@@ -9,7 +9,7 @@
     content="Alunos, aulas, graduações, financeiro, Pix e comunicação em um sistema feito para academias de artes marciais.">
   <meta property="og:title" content="Sys Belt | Sua academia inteira em uma única tela">
   <meta property="og:description"
-    content="Gestão administrativa e pedagógica para academias de artes marciais. Grátis para até 3 alunos.">
+    content="Gestão administrativa e pedagógica para academias de artes marciais.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="img/tela-dashboard.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,11 +43,9 @@
       <div>
         <p class="eyebrow">Sistema de gestão para academias de artes marciais</p>
         <h1>Sua academia inteira <br>em uma única tela.</h1>
-        <p class="lead">Cadastro de alunos, chamada, currículo técnico, graduações, mensalidades com Pix e mensagens de
-          WhatsApp. Pare de operar em três planilhas e um caderno de chamada.</p>
-        <div class="actions"><a class="btn primary large" href="#contato">Começar grátis</a><a
-            class="btn secondary large" href="#preco">Calcular meu valor</a></div>
-        <p class="note">Grátis até 3 alunos, sem prazo · Sem cartão de crédito · Cancele quando quiser</p>
+        <p class="lead">Cadastro de alunos, chamada, currículo técnico, graduações e mensalidades com Pix. Pare de operar em três planilhas e um caderno de chamada.</p>
+        <div class="actions"><a class="btn primary large" href="#contato">Pedir teste</a><a
+            class="btn secondary large" href="#preco">Conhecer os planos</a></div>
       </div>
       <figure>
         <figcaption>Dashboard executivo · tela real do sistema</figcaption>
@@ -57,9 +55,9 @@
     </section>
     <div class="belt" aria-hidden="true"><span></span><i></i><span></span></div>
     <section class="metrics rules content" aria-label="Destaques" data-reveal="out">
-      <article><strong data-preco-faixa>R$ 37</strong><span>por faixa de <span data-alunos-faixa>10</span> alunos, por mês</span></article>
+      <article><strong>R$ 97</strong><span>por mês no plano Dojô</span></article>
       <article><strong>Sem limite</strong><span>de usuários da equipe</span></article>
-      <article><strong>3 alunos</strong><span>grátis para sempre</span></article>
+      <article><strong>Sem limite</strong><span>de alunos</span></article>
       <article><strong>Pix</strong><span>cobrado e baixado no sistema</span></article>
     </section>
     <section class="section content" data-reveal="out">
@@ -166,8 +164,8 @@
           <p>Gestão integrada com sigilo e acesso por unidade.</p>
         </article>
         <article><b>Comercial</b>
-          <h3>Cobrança por unidade</h3>
-          <p>O preço acompanha o tamanho da operação.</p>
+          <h3>Preço fixo por conta</h3>
+          <p>O preço não muda com o número de unidades.</p>
         </article>
         <article><b>Gestão</b>
           <h3>Indicadores consolidados</h3>
@@ -230,46 +228,11 @@
       </div>
     </section>
     <section class="pricing" id="preco" data-reveal="out">
-      <div class="content">
-        <p class="eyebrow">Preço</p>
-        <h2>Você paga pelo tamanho que tem hoje.</h2>
-        <p class="section-copy">Cada faixa cobre até <span data-alunos-faixa>10</span> alunos e custa <span data-preco-faixa>R$ 37,00</span> por mês, contada por unidade. Não existe
-          degrau que force a academia pequena a subir de plano.</p>
-        <div class="calculator">
-          <div class="controls"><label for="alunos">Alunos ativos</label><output id="alunosValor"
-              for="alunos">40</output><input id="alunos" type="range" min="1" max="400" value="40">
-            <div class="range-marks"><span>1</span><span>400+</span></div>
-            <p class="control-label">Unidades ativas</p>
-            <div class="segments" role="group" aria-label="Unidades ativas"><button type="button" data-unidades="1"
-                aria-pressed="true">1</button><button type="button" data-unidades="2"
-                aria-pressed="false">2</button><button type="button" data-unidades="3"
-                aria-pressed="false">3</button><button type="button" data-unidades="5" aria-pressed="false">5</button>
-            </div>
-            <p class="hint">As faixas são contadas por unidade, com no mínimo uma faixa por unidade ativa.</p>
-          </div>
-          <div class="result">
-            <p class="control-label">Sua assinatura</p><strong id="precoValor">R$ 148,00</strong>
-            <p id="precoLegenda">por mês · 4 faixas em 1 unidade</p>
-            <dl>
-              <div>
-                <dt>Faixas de 10 alunos</dt>
-                <dd id="faixasValor">4</dd>
-              </div>
-              <div>
-                <dt>Custo por aluno</dt>
-                <dd id="custoValor">R$ 3,70</dd>
-              </div>
-              <div>
-                <dt>Usuários da equipe</dt>
-                <dd>Sem limite</dd>
-              </div>
-              <div>
-                <dt>Funcionalidades</dt>
-                <dd>Todas incluídas</dd>
-              </div>
-            </dl><a class="btn primary large" href="#contato">Começar com este tamanho</a><small>Até 3 alunos, sua
-              assinatura é grátis e sem prazo.</small>
-          </div>
+      <div class="content"><p class="eyebrow">Planos</p><h2>Escolha o apoio que sua academia precisa.</h2>
+        <p class="section-copy">Preço mensal fixo por conta, sem limite de alunos.</p>
+        <div class="pricing-grid" id="planos" aria-live="polite">
+          <article class="result" data-plano="Dojô"><p class="control-label">Dojô</p><strong>R$ 97,00</strong><p>por mês</p><p>Funções básicas para a gestão da academia.</p><a class="btn primary large" href="#contato" data-escolher-plano="Dojô">Pedir teste</a></article>
+          <article class="result" data-plano="Equipe"><p class="control-label">Equipe</p><strong>R$ 1.570,00</strong><p>por mês</p><p>Tudo do Dojô + SDR para WhatsApp, Tráfego e Social Media.</p><a class="btn primary large" href="#contato" data-escolher-plano="Equipe">Pedir teste</a></article>
         </div>
       </div>
     </section>
@@ -298,11 +261,11 @@
           <ul>
             <li>Ajudamos a configurar turmas, planos e currículo</li>
             <li>Importamos sua lista de alunos</li>
-            <li>Grátis até 3 alunos para testar sem pressa</li>
+            <li>Escolha o plano que faz sentido para sua operação</li>
           </ul>
         </div>
         <form name="contato" method="POST" data-netlify="true" netlify-honeypot="bot-field"><input type="hidden"
-            name="form-name" value="contato">
+            name="form-name" value="contato"><input type="hidden" name="plano-escolhido" id="planoEscolhido" value="Dojô">
           <p class="hp"><label>Não preencha: <input name="bot-field"></label></p><label for="f-nome">Seu
             nome</label><input id="f-nome" name="nome" autocomplete="name" required><label for="f-academia">Nome da
             academia</label><input id="f-academia" name="academia" autocomplete="organization" required><label

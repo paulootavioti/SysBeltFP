@@ -58,44 +58,27 @@
       if (section) navObserver.observe(section);
     });
   } else { reveals.forEach(revelar); }
-  var alunos = document.getElementById("alunos");
-  var alunoOutput = document.getElementById("alunosValor");
-  var unidadeButtons = Array.from(document.querySelectorAll("[data-unidades]"));
-  var unidades = 1;
-  var precoPublico = { alunosGratis: 3, alunosPorBloco: 10, precoPorBlocoCentavos: 3700 };
   var brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-  function calcular() {
-    var quantidade = Math.max(1, Number(alunos.value) || 1);
-    alunoOutput.textContent = quantidade;
-    var gratis = quantidade <= precoPublico.alunosGratis;
-    var porUnidade = Math.ceil(quantidade / unidades);
-    var faixas = gratis ? 0 : Math.max(1, Math.ceil(porUnidade / precoPublico.alunosPorBloco)) * unidades;
-    var total = faixas * (precoPublico.precoPorBlocoCentavos / 100);
-    document.getElementById("precoValor").textContent = brl.format(total);
-    document.getElementById("faixasValor").textContent = gratis ? "—" : String(faixas);
-    document.getElementById("custoValor").textContent = gratis ? brl.format(0) : brl.format(total / quantidade);
-    document.getElementById("precoLegenda").textContent = gratis ? "Plano grátis: até 3 alunos, sem prazo de expiração." : "por mês · " + faixas + (faixas === 1 ? " faixa" : " faixas") + " em " + unidades + (unidades === 1 ? " unidade" : " unidades");
+  var planoEscolhido = document.getElementById("planoEscolhido");
+  function selecionarPlano(nome) {
+    if (planoEscolhido) planoEscolhido.value = nome;
   }
-  if (alunos && alunoOutput) {
-    alunos.addEventListener("input", calcular);
-    unidadeButtons.forEach(function (button) {
-      button.addEventListener("click", function () {
-        unidades = Number(button.dataset.unidades);
-        unidadeButtons.forEach(function (item) { item.setAttribute("aria-pressed", String(item === button)); });
-        calcular();
-      });
-    });
-    calcular();
-    fetch((window.SYSBELT_API_URL || "") + "/publico/preco-plataforma").then(function (resposta) {
-      if (!resposta.ok) throw new Error();
-      return resposta.json();
-    }).then(function (preco) {
-      precoPublico = preco;
-      document.querySelectorAll("[data-preco-faixa]").forEach(function (item) { item.textContent = brl.format(preco.precoPorBlocoCentavos / 100); });
-      document.querySelectorAll("[data-alunos-faixa]").forEach(function (item) { item.textContent = String(preco.alunosPorBloco); });
-      calcular();
-    }).catch(function () { /* mantém o último preço publicado se a API estiver indisponível */ });
+  document.querySelectorAll("[data-escolher-plano]").forEach(function (link) {
+    link.addEventListener("click", function () { selecionarPlano(link.dataset.escolherPlano || "Dojô"); });
+  });
+  function renderizarPlanos(planos) {
+    var area = document.getElementById("planos");
+    if (!area || !Array.isArray(planos) || planos.length === 0) return;
+    area.innerHTML = planos.map(function (plano) {
+      var itens = (plano.inclui || []).map(function (item) { return "<li>" + item + "</li>"; }).join("");
+      return '<article class="result"><p class="control-label">' + plano.nome + '</p><strong>' + brl.format(plano.precoCentavos / 100) + '</strong><p>por mês</p><p>' + plano.descricaoCurta + '</p><ul>' + itens + '</ul><a class="btn primary large" href="#contato" data-escolher-plano="' + plano.nome + '">Pedir teste</a></article>';
+    }).join("");
+    area.querySelectorAll("[data-escolher-plano]").forEach(function (link) { link.addEventListener("click", function () { selecionarPlano(link.dataset.escolherPlano || "Dojô"); }); });
   }
+  fetch((window.SYSBELT_API_URL || "") + "/publico/planos")
+    .then(function (resposta) { if (!resposta.ok) throw new Error(); return resposta.json(); })
+    .then(renderizarPlanos)
+    .catch(function () { /* os cartões estáticos seguem visíveis sem a API */ });
   var form = document.querySelector('form[name="contato"]');
   var status = document.getElementById("formStatus");
   if (form && status) {

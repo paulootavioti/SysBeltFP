@@ -10,6 +10,7 @@ O formato utilizado segue o conceito do **Keep a Changelog**, adaptado para o pr
 
 ## Melhorado
 
+- Planos comerciais: Dojô (R$ 97,00/mês) e Equipe (R$ 1.570,00/mês), com preço fixo por conta e sem limite de alunos
 - Planejamento pedagógico: editor de etapas com duração ao vivo, reordenação, duplicação, foco no bloco recém-inserido e painel unificado de adição
 - Planejamento pedagógico: memorandos com escrita livre sempre visível e sugestões inseridas no próprio texto
 - Portal do Professor: seleção de turma por identificador da turma e ordenação sem mutar o estado

@@ -24,12 +24,15 @@ export const STATUS_FATURA_LABEL: Record<StatusFaturaPlataforma, string> = {
   ESTORNADA: "Estornada",
 };
 
-export type RecursoPlataforma = "WHATSAPP" | "GATEWAY_AUTOMATICO" | "CONTROLE_ACESSO";
+export type RecursoPlataforma = "WHATSAPP" | "GATEWAY_AUTOMATICO" | "CONTROLE_ACESSO" | "SDR_WHATSAPP" | "TRAFEGO" | "SOCIAL_MEDIA";
 
 export const RECURSO_LABEL: Record<RecursoPlataforma, string> = {
   WHATSAPP: "Mensagens por WhatsApp",
   GATEWAY_AUTOMATICO: "Cobrança automática (PIX e cartão)",
   CONTROLE_ACESSO: "Catraca e leitor facial",
+  SDR_WHATSAPP: "SDR para WhatsApp",
+  TRAFEGO: "Tráfego",
+  SOCIAL_MEDIA: "Social Media",
 };
 
 export interface PrecoUnidadePlataforma {
@@ -74,6 +77,8 @@ export interface MinhaAssinatura {
     id: number;
     nome: string;
     descricao: string | null;
+    tipoCobranca: "FAIXA_ALUNOS" | "FIXO_MENSAL";
+    precoFixoCentavos: number | null;
     alunosPorBloco: number;
     precoPorBlocoCentavos: number;
     recursos: string[];

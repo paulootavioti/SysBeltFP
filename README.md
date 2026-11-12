@@ -10,7 +10,7 @@ Primeira academia em produção: **Cia de Lutas Weberty Viana**.
 
 O Sys Belt centraliza a gestão de uma ou mais unidades (filiais) de uma academia: alunos, responsáveis, turmas, arenas (tatames/salas), aulas, planejamento pedagógico, graduações, financeiro, competições e relatórios.
 
-O produto é vendido por assinatura mensal, cobrada por faixa de alunos: cada faixa cobre até 10 alunos e custa R$ 37,00, somada **por unidade** — uma academia com 12 alunos numa filial e 8 em outra paga 3 faixas.
+O produto é vendido por assinatura mensal fixa por conta: Dojô custa R$ 97,00 e Equipe custa R$ 1.570,00, sem limite de alunos ou multiplicação por unidade. A cobrança por faixa permanece apenas para assinaturas legadas.
 
 **Todos os assinantes operam no mesmo banco PostgreSQL.** O isolamento e
 logico: `Conta` separa assinantes e `Unidade` separa filiais. Toda consulta,

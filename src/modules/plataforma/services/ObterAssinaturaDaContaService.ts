@@ -1,7 +1,7 @@
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { AppError } from "../../../shared/errors/AppError";
 import { competenciaDoMes, vencimentoDaCompetencia } from "../utils/competencia";
-import { calcularPrecoPorUnidade } from "../utils/precoPlataforma";
+import { calcularMensalidade, calcularPrecoPorUnidade } from "../utils/precoPlataforma";
 import { ContarAlunosPorUnidadeDaContaService } from "./ContarAlunosPorUnidadeDaContaService";
 import { listarFaturasControlPlane } from "../../../shared/tenant/FaturasControlPlane";
 
@@ -26,14 +26,21 @@ export class ObterAssinaturaDaContaService {
 
     const alunosPorUnidade = await new ContarAlunosPorUnidadeDaContaService().execute(contaId);
 
-    const precoPorBlocoCentavos =
-      assinatura.precoPorBlocoCentavos ?? assinatura.plano.precoPorBlocoCentavos;
-
-    const previa = calcularPrecoPorUnidade(alunosPorUnidade, {
+    const alunosContados = alunosPorUnidade.reduce((total, unidade) => total + unidade.alunosContados, 0);
+    const previaPorUnidade = assinatura.plano.tipoCobranca === "FAIXA_ALUNOS" ? calcularPrecoPorUnidade(alunosPorUnidade, {
       alunosPorBloco: assinatura.plano.alunosPorBloco,
-      precoPorBlocoCentavos,
+      precoPorBlocoCentavos: assinatura.precoPorBlocoCentavos ?? assinatura.plano.precoPorBlocoCentavos,
       blocosMinimos: assinatura.plano.blocosMinimos,
-    });
+    }) : null;
+    const previa = previaPorUnidade
+      ? {
+          alunosContados: previaPorUnidade.totalLotacoes,
+          alunosPorBloco: assinatura.plano.alunosPorBloco,
+          blocos: previaPorUnidade.totalBlocos,
+          precoPorBlocoCentavos: assinatura.precoPorBlocoCentavos ?? assinatura.plano.precoPorBlocoCentavos,
+          valorCentavos: previaPorUnidade.valorCentavos,
+        }
+      : calcularMensalidade(alunosContados, assinatura.plano, assinatura.precoPorBlocoCentavos);
 
     const competencia = competenciaDoMes();
 
@@ -68,20 +75,22 @@ export class ObterAssinaturaDaContaService {
         id: assinatura.plano.id,
         nome: assinatura.plano.nome,
         descricao: assinatura.plano.descricao,
+        tipoCobranca: assinatura.plano.tipoCobranca,
+        precoFixoCentavos: assinatura.precoPorBlocoCentavos ?? assinatura.plano.precoFixoCentavos,
         alunosPorBloco: assinatura.plano.alunosPorBloco,
         // o preço mostrado é o que VALE pra esta conta, já considerando
         // condição negociada — não o de tabela.
-        precoPorBlocoCentavos,
+        precoPorBlocoCentavos: previa.precoPorBlocoCentavos,
         recursos: assinatura.plano.recursos,
       },
       previaDoMes: {
         competencia,
         vencimento: vencimentoDaCompetencia(competencia, assinatura.diaVencimento),
-        unidades: previa.unidades,
-        alunosContados: previa.totalLotacoes,
-        alunosPorBloco: assinatura.plano.alunosPorBloco,
-        blocos: previa.totalBlocos,
-        precoPorBlocoCentavos,
+        unidades: previaPorUnidade?.unidades ?? [],
+        alunosContados,
+        alunosPorBloco: previa.alunosPorBloco,
+        blocos: previa.blocos,
+        precoPorBlocoCentavos: previa.precoPorBlocoCentavos,
         valorCentavos: previa.valorCentavos,
       },
       faturas,
