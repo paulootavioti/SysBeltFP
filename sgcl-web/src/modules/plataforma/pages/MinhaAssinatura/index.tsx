@@ -61,6 +61,7 @@ export function MinhaAssinatura() {
 
   const { plano, previaDoMes, faturas } = assinatura;
   const planoFixo = plano.tipoCobranca === "FIXO_MENSAL";
+  const valorMensalFixo = plano.precoFixoCentavos ?? previaDoMes.valorCentavos;
   const concessao = assinatura.concessaoControlPlane;
   const concessaoValida = concessao?.vigente === true;
 
@@ -139,10 +140,15 @@ export function MinhaAssinatura() {
           ))}
         </section>
 
-        {!planoFixo && <section className="assinatura-cartao">
+        <section className="assinatura-cartao">
           <span className="assinatura-rotulo">Plano</span>
           <strong className="assinatura-plano">{plano.nome}</strong>
           {plano.descricao && <p className="assinatura-detalhe">{plano.descricao}</p>}
+          {planoFixo && (
+            <p className="assinatura-detalhe">
+              Mensalidade: {formatarCentavos(valorMensalFixo)} por conta.
+            </p>
+          )}
           <p className="assinatura-detalhe">
             Situação: {STATUS_ASSINATURA_LABEL[assinatura.status]}
           </p>
@@ -151,14 +157,22 @@ export function MinhaAssinatura() {
               Teste até {formatarData(assinatura.fimTesteEm)}
             </p>
           )}
-        </section>}
+        </section>
 
         <section className="assinatura-cartao">
-          <span className="assinatura-rotulo">Licenças ativas</span>
-          <strong className="assinatura-valor">{previaDoMes.unidades.length}</strong>
-          <p className="assinatura-detalhe">
-            Cada unidade é calculada separadamente e paga ao menos uma faixa.
-          </p>
+          {planoFixo ? <>
+            <span className="assinatura-rotulo">Cobertura do plano</span>
+            <strong className="assinatura-plano">Sem limites por faixa</strong>
+            <p className="assinatura-detalhe">
+              Alunos e unidades não alteram a mensalidade do plano {plano.nome}.
+            </p>
+          </> : <>
+            <span className="assinatura-rotulo">Licenças ativas</span>
+            <strong className="assinatura-valor">{previaDoMes.unidades.length}</strong>
+            <p className="assinatura-detalhe">
+              Cada unidade é calculada separadamente e paga ao menos uma faixa.
+            </p>
+          </>}
         </section>
       </div>
 
