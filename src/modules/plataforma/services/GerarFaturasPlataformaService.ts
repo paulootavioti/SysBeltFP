@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 
 import { prismaDaRequisicao } from "../../../shared/database/prismaDaRequisicao";
 import { competenciaDoMes, vencimentoDaCompetencia } from "../utils/competencia";
-import { calcularPrecoPorUnidade } from "../utils/precoPlataforma";
+import { calcularMensalidade, calcularPrecoPorUnidade } from "../utils/precoPlataforma";
 import { ContarAlunosPorUnidadeDaContaService } from "./ContarAlunosPorUnidadeDaContaService";
 
 export interface ResultadoFechamento {
@@ -56,13 +56,23 @@ export class GerarFaturasPlataformaService {
     for (const assinatura of assinaturas) {
       const alunosPorUnidade = await contarAlunos.execute(assinatura.contaId);
 
-      const preco = calcularPrecoPorUnidade(alunosPorUnidade, {
+      const alunosContados = alunosPorUnidade.reduce((total, unidade) => total + unidade.alunosContados, 0);
+      const precoPorUnidade = assinatura.plano.tipoCobranca === "FAIXA_ALUNOS"
+        ? calcularPrecoPorUnidade(alunosPorUnidade, {
         alunosPorBloco: assinatura.plano.alunosPorBloco,
-        // preço negociado na assinatura vence o preço de tabela do plano.
-        precoPorBlocoCentavos:
-          assinatura.precoPorBlocoCentavos ?? assinatura.plano.precoPorBlocoCentavos,
+        precoPorBlocoCentavos: assinatura.precoPorBlocoCentavos ?? assinatura.plano.precoPorBlocoCentavos,
         blocosMinimos: assinatura.plano.blocosMinimos,
-      });
+          })
+        : null;
+      const preco = precoPorUnidade
+        ? {
+            alunosContados: precoPorUnidade.totalLotacoes,
+            alunosPorBloco: assinatura.plano.alunosPorBloco,
+            blocos: precoPorUnidade.totalBlocos,
+            precoPorBlocoCentavos: assinatura.precoPorBlocoCentavos ?? assinatura.plano.precoPorBlocoCentavos,
+            valorCentavos: precoPorUnidade.valorCentavos,
+          }
+        : calcularMensalidade(alunosContados, assinatura.plano, assinatura.precoPorBlocoCentavos);
 
       try {
         await prisma.faturaPlataforma.create({
@@ -74,13 +84,12 @@ export class GerarFaturasPlataformaService {
             // os parâmetros vão gravados junto com o resultado: se o plano
             // mudar de preço mês que vem, a fatura de hoje continua
             // explicando por que cobrou o que cobrou.
-            alunosContados: preco.totalLotacoes,
-            alunosPorBloco: assinatura.plano.alunosPorBloco,
-            blocos: preco.totalBlocos,
-            precoPorBlocoCentavos:
-              assinatura.precoPorBlocoCentavos ?? assinatura.plano.precoPorBlocoCentavos,
+            alunosContados,
+            alunosPorBloco: preco.alunosPorBloco,
+            blocos: preco.blocos,
+            precoPorBlocoCentavos: preco.precoPorBlocoCentavos,
             valorCentavos: preco.valorCentavos,
-            detalhamentoUnidades: preco.unidades as unknown as Prisma.InputJsonValue,
+            detalhamentoUnidades: (precoPorUnidade?.unidades ?? []) as unknown as Prisma.InputJsonValue,
           },
         });
 

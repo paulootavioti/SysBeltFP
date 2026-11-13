@@ -13,6 +13,7 @@ const publicoRoutes = Router();
 const publicoController = new PublicoController();
 
 publicoRoutes.get("/preco-plataforma", publicoController.precoPlataforma);
+publicoRoutes.get("/planos", publicoController.planos);
 
 publicoRoutes.get("/modalidades", publicoController.modalidades);
 

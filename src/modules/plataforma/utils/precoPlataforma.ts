@@ -26,6 +26,13 @@ export interface PrecoCalculado {
   valorCentavos: number;
 }
 
+export type TipoCobranca = "FAIXA_ALUNOS" | "FIXO_MENSAL";
+
+export interface PlanoParaCalculo extends ParametrosPreco {
+  tipoCobranca?: TipoCobranca;
+  precoFixoCentavos?: number | null;
+}
+
 export const PRECO_PUBLICO_PLATAFORMA = Object.freeze({
   alunosGratis: 3,
   alunosPorBloco: 10,
@@ -66,6 +73,40 @@ export function calcularPrecoPorFaixa(
     precoPorBlocoCentavos,
     valorCentavos: blocos * precoPorBlocoCentavos,
   };
+}
+
+/**
+ * Fonte única da mensalidade. O preço negociado, quando informado, substitui
+ * o preço de tabela aplicável: preço por bloco em planos legados e preço fixo
+ * mensal em planos FIXO_MENSAL.
+ */
+export function calcularMensalidade(
+  alunosContados: number,
+  plano: PlanoParaCalculo,
+  precoNegociadoCentavos?: number | null
+): PrecoCalculado {
+  if (plano.tipoCobranca === "FIXO_MENSAL") {
+    const precoFixoCentavos = precoNegociadoCentavos ?? plano.precoFixoCentavos;
+    if (precoFixoCentavos == null || !Number.isInteger(precoFixoCentavos) || precoFixoCentavos < 0) {
+      throw new Error("precoFixoCentavos precisa ser um inteiro em centavos para plano fixo.");
+    }
+    if (!Number.isInteger(alunosContados) || alunosContados < 0) {
+      throw new Error("alunosContados precisa ser um inteiro não negativo.");
+    }
+    return {
+      alunosContados,
+      alunosPorBloco: 0,
+      blocos: 1,
+      precoPorBlocoCentavos: precoFixoCentavos,
+      valorCentavos: precoFixoCentavos,
+    };
+  }
+
+  return calcularPrecoPorFaixa(alunosContados, {
+    alunosPorBloco: plano.alunosPorBloco,
+    precoPorBlocoCentavos: precoNegociadoCentavos ?? plano.precoPorBlocoCentavos,
+    blocosMinimos: plano.blocosMinimos,
+  });
 }
 
 /** Centavos -> "R$ 185,00", pra exibir em tela e em mensagem de cobrança. */

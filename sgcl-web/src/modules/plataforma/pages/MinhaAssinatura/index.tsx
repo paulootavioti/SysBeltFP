@@ -60,6 +60,7 @@ export function MinhaAssinatura() {
   }
 
   const { plano, previaDoMes, faturas } = assinatura;
+  const planoFixo = plano.tipoCobranca === "FIXO_MENSAL";
   const concessao = assinatura.concessaoControlPlane;
   const concessaoValida = concessao?.vigente === true;
 
@@ -70,10 +71,11 @@ export function MinhaAssinatura() {
       render: (fatura: FaturaPlataforma) => formatarCompetencia(fatura.competencia),
     },
     {
-      header: "Alunos",
+      header: planoFixo ? "Referência" : "Alunos",
       accessor: "alunosContados" as keyof FaturaPlataforma,
-      render: (fatura: FaturaPlataforma) =>
-        `${fatura.alunosContados} (${fatura.blocos} ${fatura.blocos === 1 ? "faixa" : "faixas"})`,
+      render: (fatura: FaturaPlataforma) => planoFixo
+        ? "Mensalidade fixa"
+        : `${fatura.alunosContados} (${fatura.blocos} ${fatura.blocos === 1 ? "faixa" : "faixas"})`,
     },
     {
       header: "Valor",
@@ -122,15 +124,14 @@ export function MinhaAssinatura() {
             {formatarCentavos(previaDoMes.valorCentavos)}
           </strong>
           <p className="assinatura-detalhe">
-            {previaDoMes.alunosContados}{" "}
-            {previaDoMes.alunosContados === 1 ? "aluno ativo" : "alunos ativos"} ·{" "}
-            {previaDoMes.blocos} {previaDoMes.blocos === 1 ? "faixa" : "faixas"} de{" "}
-            {plano.alunosPorBloco} a {formatarCentavos(plano.precoPorBlocoCentavos)}
+            {planoFixo
+              ? "Mensalidade fixa por conta, sem limite de alunos ou unidades."
+              : `${previaDoMes.alunosContados} ${previaDoMes.alunosContados === 1 ? "aluno ativo" : "alunos ativos"} · ${previaDoMes.blocos} ${previaDoMes.blocos === 1 ? "faixa" : "faixas"} de ${plano.alunosPorBloco} a ${formatarCentavos(plano.precoPorBlocoCentavos)}`}
           </p>
           <p className="assinatura-detalhe assinatura-detalhe--fraco">
             Vence em {formatarData(previaDoMes.vencimento)}
           </p>
-          {previaDoMes.unidades.map((unidade) => (
+          {!planoFixo && previaDoMes.unidades.map((unidade) => (
             <p className="assinatura-detalhe assinatura-detalhe--fraco" key={unidade.unidadeId}>
               {unidade.nomeUnidade}: {unidade.alunosContados} aluno(s), {unidade.blocos}{" "}
               {unidade.blocos === 1 ? "faixa" : "faixas"} — {formatarCentavos(unidade.valorCentavos)}
@@ -138,7 +139,7 @@ export function MinhaAssinatura() {
           ))}
         </section>
 
-        <section className="assinatura-cartao">
+        {!planoFixo && <section className="assinatura-cartao">
           <span className="assinatura-rotulo">Plano</span>
           <strong className="assinatura-plano">{plano.nome}</strong>
           {plano.descricao && <p className="assinatura-detalhe">{plano.descricao}</p>}
@@ -150,7 +151,7 @@ export function MinhaAssinatura() {
               Teste até {formatarData(assinatura.fimTesteEm)}
             </p>
           )}
-        </section>
+        </section>}
 
         <section className="assinatura-cartao">
           <span className="assinatura-rotulo">Licenças ativas</span>

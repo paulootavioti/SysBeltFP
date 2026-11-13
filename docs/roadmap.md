@@ -11,7 +11,7 @@ Versão do documento: 3.0
 # Visão
 
 O Sys Belt é uma plataforma SaaS de gestão para academias de artes marciais,
-vendida por assinatura mensal e cobrada por faixa de alunos.
+vendida por assinatura mensal em planos fixos por conta.
 
 Todos os assinantes operam no mesmo banco PostgreSQL. `Conta` separa tenants e
 `Unidade` separa filiais; nenhuma operacao pode atravessar esse escopo. A
@@ -30,22 +30,11 @@ O produto une, numa única plataforma:
 
 # Modelo comercial
 
-A assinatura é cobrada **por unidade**, em faixas de alunos:
-
-- cada faixa cobre até 10 alunos e custa R$ 37,00;
-- o valor da conta é a soma das faixas de cada unidade, com mínimo de uma
-  faixa por unidade ativa;
-- um aluno que treina em mais de uma unidade da mesma academia **conta uma
-  vez em cada unidade** onde está lotado.
-
-Uma academia com duas unidades — 12 alunos numa, 8 na outra — paga
-`2 faixas + 1 faixa = 3 × R$ 37,00 = R$ 111,00`. As unidades da mesma
-academia compartilham dados entre si; academias diferentes, nunca.
-
-O cálculo vive em `src/modules/plataforma/utils/precoPlataforma.ts` e usa
-aritmética inteira em centavos. Ele não lê banco nem relógio, o que o torna
-testável isoladamente e imune a arredondamento de ponto flutuante — uma faixa
-a mais é dinheiro cobrado a mais.
+Há dois planos mensais fixos por conta, sem limite de alunos ou multiplicação
+por unidade: **Dojô** (R$ 97,00) e **Equipe** (R$ 1.570,00). Equipe inclui o
+Dojô e os marcadores contratuais SDR para WhatsApp, Tráfego e Social Media.
+Planos por faixa permanecem somente para honrar assinaturas e faturas legadas.
+O cálculo usa centavos inteiros em `src/modules/plataforma/utils/precoPlataforma.ts`.
 
 ---
 
@@ -126,7 +115,7 @@ assinante provisionado.
 | Concessões assinadas Ed25519, com revisão e revogação | Completo |
 | Snapshot de contagem Tenant → Control Plane | Completo |
 | Cofre de credenciais de gateway (AES-256-GCM) | Completo |
-| Precificação por faixa e por unidade | Completo |
+| Precificação fixa por conta; faixa por unidade preservada para legado | Completo |
 | Banco do Control Plane provisionado (Neon, 8 migrações aplicadas) | Concluído |
 | Control Plane publicado, com API e painel na mesma origem | Concluído |
 | Painel do operador: login, visão geral, assinantes e detalhe | Concluído |

@@ -858,9 +858,11 @@ Ação
 Regras do modelo comercial do SysBelt. Elas pertencem ao Control Plane; o
 sistema da academia apenas **lê** a própria assinatura.
 
-## RN-200 — Cobrança por faixa de alunos
+## RN-200 — Cobrança por faixa de alunos (legado)
 
-Cada faixa cobre até 10 alunos e custa R$ 37,00.
+Cada faixa cobre até 10 alunos e custa R$ 37,00. Esta regra é mantida apenas
+para assinaturas históricas; novas contratações usam os planos fixos Dojô e
+Equipe, definidos em `mudanca-planos-dojo-equipe.md`.
 
 ---
 

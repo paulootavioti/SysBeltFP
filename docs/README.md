@@ -7,7 +7,7 @@
 # Sobre o projeto
 
 O **Sys Belt** é uma plataforma de gestão para academias de Jiu-Jitsu,
-vendida por assinatura mensal e cobrada por faixa de alunos.
+vendida por assinatura mensal fixa por conta.
 
 Todos os assinantes operam sobre um **banco PostgreSQL compartilhado**. O
 isolamento e logico e obrigatorio: `Conta` separa assinantes, `Unidade` separa
@@ -64,7 +64,7 @@ Documentos de referência:
 
 Cobrança **por unidade**, em faixas de alunos:
 
-- cada faixa cobre até 10 alunos e custa R$ 37,00;
+- Dojô custa R$ 97,00 por mês e Equipe custa R$ 1.570,00 por mês;
 - o valor da conta é a soma das faixas de cada unidade, mínimo de uma faixa
   por unidade ativa;
 - aluno lotado em mais de uma unidade conta **uma vez em cada unidade**.
