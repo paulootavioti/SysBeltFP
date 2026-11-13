@@ -14,6 +14,7 @@ Não é pertinente reintroduzir o domínio comercial no Tenant Plane nem criar b
   - Comprovação: após o deploy, `npm run deploy:verificar` precisa sair todo ✅ (versão dos quatro sites e CORS dos portais; ver "Verificação pós-deploy" em `docs/deploy.md`)
   - Concluído em 13/11/2026: `npm run deploy:verificar -- --sha db7fb09850b95b64dc2e877df43e36e38f2c6fd8` saiu todo ✅ (API, sgcl-web, Portal da Família e Portal do Professor em `db7fb09`; CORS dos dois portais liberado)
 - [ ] Homologar duas contas reais de teste: leitura, escrita, busca por ID, upload, exportação, jobs e webhooks sem acesso cruzado
+  - Parte automatizada concluída: leitura (`EscopoEntreContas.test.ts`), escrita e vínculo (`EscopoContaUnidade.test.ts`, `PerfilDonoEFronteira.test.ts`), busca e escrita por ID, exportação e jobs (`FronteiraIdExportacaoJobs.test.ts`) e webhook (`WebhookMercadoPagoRota.test.ts`). Upload usa URL assinada com validade de 6 h, sem vínculo da chave com a conta. Falta a passada manual com as duas contas.
 - [x] Definir e aprovar matriz RBAC, incluindo a decisão sobre os papéis Gerente e Usuário comum
   - Decidido em 13/11/2026: o MVP lança com Dono, Administrador, Recepção e Professor. Gerente e Usuário comum ficam para depois do lançamento (ver "Matriz RBAC")
 - [ ] Homologar o gateway de cobrança SaaS em sandbox: aprovação, recusa, atraso, tolerância, cancelamento, reenvio e idempotência do webhook
